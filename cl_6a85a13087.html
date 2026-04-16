@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
 <meta http-equiv="refresh" content="1800">
 <title>글램독 가평(가평점) 체크인 리스트</title>
-<!-- v2026-04-16 17:45 -->
+<!-- v2026-04-16 17:56 -->
 <style>
   :root {
     --navy: #1B3A5C;
@@ -529,7 +529,7 @@
     <button class="btn-view"        id="btnRes"   onclick="setView('rescal')">🏠 예약현황</button>
     <button class="btn-view"        id="btnField" onclick="setView('field')">💰 현장기록</button>
   </div>
-  <span class="update-time">갱신: 2026-04-16 17:45</span>
+  <span class="update-time">갱신: 2026-04-16 17:56</span>
 </div>
 <div class="content" id="content">
   <div class="print-header" id="printHeader"></div>
@@ -1122,7 +1122,7 @@ function loadTodayFieldEntries() {
         res.data.forEach(function(e){
           if(e.bookingNo) _fieldEntries[e.bookingNo]={
             entryId:e.entryId, total:e.total, payMethod:e.payMethod,
-            bbq:e.bbq||0, person:e.personCount||0, dog:e.dogCount||0, bigdog:e.bigDogCount||0,
+            bbq:Math.round((e.bbq||0)/20000), person:e.personCount||0, dog:e.dogCount||0, bigdog:e.bigDogCount||0,
             etc:e.etcNote?[{note:e.etcNote,amount:e.etcAmount||0}]:[],
             room:e.room, guest:e.guest
           };
