@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
 <meta http-equiv="refresh" content="1800">
 <title>글램독 영흥도 체크인 리스트</title>
-<!-- v2026-04-16 18:32 -->
+<!-- v2026-04-16 18:39 -->
 <style>
   :root {
     --navy: #1B3A5C;
@@ -529,7 +529,7 @@
     <button class="btn-view"        id="btnRes"   onclick="setView('rescal')">🏠 예약현황</button>
     <button class="btn-view"        id="btnField" onclick="setView('field')">💰 현장기록</button>
   </div>
-  <span class="update-time">갱신: 2026-04-16 18:32</span>
+  <span class="update-time">갱신: 2026-04-16 18:39</span>
 </div>
 <div class="content" id="content">
   <div class="print-header" id="printHeader"></div>
@@ -1037,8 +1037,8 @@ function fmRender() {
   document.getElementById("fmItems").innerHTML = items;
   var total = fmCalcTotal();
   document.getElementById("fmTotalAmt").textContent = total.toLocaleString()+"원";
-  // 수정 모드: 0원도 저장 허용 (금액 전체 취소 시나리오)
-  document.getElementById("fmSaveBtn").disabled = (!_fm.editMode && total===0) || !_fm.pay;
+  // 수정 모드: 언제나 저장 활성화 (0원 포함) / 신규: total>0 AND 결제방식 필요
+  document.getElementById("fmSaveBtn").disabled = _fm.editMode ? false : (total===0 || !_fm.pay);
 }
 
 function fmSave() {
