@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>글램독 가격 정책서 v2</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:#0f1117;color:#e2e8f0;line-height:1.75}
+.page{max-width:900px;margin:0 auto;padding:40px 28px}
+.hero{text-align:center;padding:50px 20px 36px;border-bottom:1px solid #2d3448;margin-bottom:36px}
+.hero h1{font-size:28px;font-weight:800;color:#fff;letter-spacing:-0.5px}
+.hero .sub{color:#94a3b8;font-size:14px;margin-top:6px}
+
+.section{margin-bottom:36px}
+.snum{display:inline-block;background:#4f6ef7;color:#fff;font-size:11px;font-weight:800;padding:3px 10px;border-radius:12px;margin-bottom:6px}
+.section h2{font-size:19px;font-weight:700;color:#fff;margin-bottom:14px}
+.section h3{font-size:15px;font-weight:700;color:#c8d6f0;margin-top:18px;margin-bottom:8px}
+.section p{color:#cbd5e1;font-size:13.5px;margin-bottom:10px}
+
+.tbl-wrap{overflow-x:auto;margin:14px 0;border-radius:10px;border:1px solid #2d3448}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th{background:#1e2535;color:#94a3b8;font-weight:600;padding:9px 12px;text-align:center;border-bottom:1px solid #2d3448;white-space:nowrap}
+td{padding:8px 12px;border-bottom:1px solid #1a2030;text-align:center;white-space:nowrap}
+.left{text-align:left}
+.hl td{background:#1a2a3e!important}
+
+.callout{background:#1a2535;border-left:4px solid #4f6ef7;padding:14px 18px;border-radius:0 10px 10px 0;margin:14px 0}
+.callout.warn{border-left-color:#f59e0b;background:#1f1a0f}
+.callout.red{border-left-color:#f87171;background:#1f0f0f}
+.callout.green{border-left-color:#22c55e;background:#0f1f17}
+.callout strong{color:#fff}
+.callout p{margin:0}
+
+.badge{display:inline-block;padding:2px 8px;border-radius:6px;font-size:11px;font-weight:700}
+.b-peak{background:#7f1d1d;color:#fca5a5}
+.b-high{background:#78350f;color:#fcd34d}
+.b-mid{background:#14532d;color:#86efac}
+.b-low{background:#1e3a5f;color:#93c5fd}
+
+.flow{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin:14px 0}
+.fstep{background:#1e2535;border:1px solid #2d3448;border-radius:10px;padding:10px 14px;text-align:center;min-width:100px}
+.fstep .n{font-size:18px;font-weight:800;color:#4f6ef7}
+.fstep .t{font-size:10px;color:#94a3b8;margin-top:2px}
+.farrow{color:#4a5568;font-size:18px}
+
+hr{border:none;border-top:1px solid #2d3448;margin:36px 0}
+</style>
+</head>
+<body>
+<div class="page">
+
+<div class="hero">
+  <div style="font-size:48px;margin-bottom:12px">🐾</div>
+  <h1>글램독 가격 정책서 (최종안)</h1>
+  <div class="sub">논의 완료 사항 정리 | 2026-04-14</div>
+</div>
+
+<!-- ================================================================ -->
+<div class="section">
+  <span class="snum">01</span>
+  <h2>가격 산출 공식</h2>
+
+  <div class="flow">
+    <div class="fstep"><div class="n">①</div><div class="t">기초가<br>(비수기 평일)</div></div>
+    <div class="farrow">×</div>
+    <div class="fstep"><div class="n">②</div><div class="t">계절배율<br>(4단계)</div></div>
+    <div class="farrow">×</div>
+    <div class="fstep"><div class="n">③</div><div class="t">요일배율<br>(평/금/토)</div></div>
+    <div class="farrow">×</div>
+    <div class="fstep"><div class="n">④</div><div class="t">OCC배율<br>(선형보간)</div></div>
+    <div class="farrow">→</div>
+    <div class="fstep" style="border-color:#4f6ef7"><div class="n" style="color:#22c55e">⑤</div><div class="t">가드레일<br>적용</div></div>
+    <div class="farrow">=</div>
+    <div class="fstep" style="border-color:#22c55e"><div class="n" style="color:#fff">₩</div><div class="t">최종가</div></div>
+  </div>
+
+  <p>각 단계를 곱한 뒤, 마지막에 가드레일(작년 실거래 범위)로 클램핑합니다.</p>
+</div>
+
+<hr>
+
+<!-- ================================================================ -->
+<div class="section">
+  <span class="snum">02</span>
+  <h2>① 기초가</h2>
+  <p>비수기 평일(월~목) 기준 객실 가격입니다. <strong>동일한 형태의 객실은 동일 가격</strong>을 적용합니다.</p>
+  <p>현재 시스템에 설정된 BASE_PRICES를 그대로 사용합니다. 기초가 자체를 변경하는 일은 거의 없습니다.</p>
+</div>
+
+<hr>
+
+<!-- ================================================================ -->
+<div class="section">
+  <span class="snum">03</span>
+  <h2>② 계절 배율 (연 4단계)</h2>
+  <p>가격 변경은 <strong>계절이 바뀔 때만</strong> 발생합니다. 연간 4~5회.</p>
+
+  <div class="tbl-wrap">
+    <table>
+      <thead><tr><th class="left">계절</th><th>기간</th><th>배율</th><th>예시 (기초가 10만원)</th></tr></thead>
+      <tbody>
+        <tr class="hl"><td class="left"><span class="badge b-peak">극성수기</span></td><td>7/25~8/15, 10월 초중</td><td style="color:#fca5a5;font-weight:700">×1.60</td><td style="font-weight:700">160,000원</td></tr>
+        <tr><td class="left"><span class="badge b-high">성수기</span></td><td>7/1~7/24</td><td style="color:#fcd34d;font-weight:700">×1.40</td><td style="font-weight:700">140,000원</td></tr>
+        <tr><td class="left"><span class="badge b-mid">준성수기</span></td><td>5~6월, 8/16~8/31, 9월</td><td style="color:#86efac;font-weight:700">×1.20</td><td style="font-weight:700">120,000원</td></tr>
+        <tr><td class="left"><span class="badge b-low">비수기</span></td><td>1~4월, 11~12월</td><td style="color:#93c5fd;font-weight:700">×1.00</td><td style="font-weight:700">100,000원</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p>공휴일·황금연휴는 별도 배율 적용 (계절 배율과 비교해서 큰 값 사용).</p>
+</div>
+
+<hr>
+
+<!-- ================================================================ -->
+<div class="section">
+  <span class="snum">04</span>
+  <h2>③ 요일 배율 (주 3단계)</h2>
+
+  <div class="tbl-wrap">
+    <table>
+      <thead><tr><th class="left">요일</th><th>배율</th><th>비고</th></tr></thead>
+      <tbody>
+        <tr><td class="left">월~목, 일</td><td style="font-weight:700">×1.00</td><td style="color:#94a3b8">평일 기준가. 일요일 = 평일</td></tr>
+        <tr><td class="left">금요일</td><td style="color:#f59e0b;font-weight:700">×1.25</td><td style="color:#94a3b8">작년 데이터 기반 금요일 프리미엄</td></tr>
+        <tr class="hl"><td class="left">토요일</td><td style="color:#f87171;font-weight:700">×1.55</td><td style="color:#94a3b8">작년 데이터 기반 토요일 프리미엄</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p>시스템이 자동 적용. 별도 작업 불필요.</p>
+</div>
+
+<hr>
+
+<!-- ================================================================ -->
+<div class="section">
+  <span class="snum">05</span>
+  <h2>④ OCC 배율 (선형 보간 — 핵심 변경)</h2>
+
+  <p>기존 10% 단위 계단식 → <strong>선형 보간(Linear Interpolation)</strong>으로 변경합니다. 기준점 사이를 부드럽게 연결하여 OCC 1% 차이에도 가격이 자연스럽게 변동합니다.</p>
+
+  <h3>기준점 (Anchor Points)</h3>
+  <div class="tbl-wrap">
+    <table>
+      <thead><tr><th>OCC</th><th>배율</th><th>의미</th><th>비수기 10만원 객실 기준</th></tr></thead>
+      <tbody>
+        <tr style="background:#1a0a0a"><td style="font-weight:700">0%</td><td style="color:#f87171;font-weight:700">×0.70</td><td>위기 — 최대 할인</td><td>70,000원</td></tr>
+        <tr><td style="font-weight:700">30%</td><td style="color:#60a5fa;font-weight:700">×0.88</td><td>부진 — 적극 할인</td><td>88,000원</td></tr>
+        <tr class="hl"><td style="font-weight:700">50%</td><td style="font-weight:700">×1.00</td><td>기준선 — 기초가 그대로</td><td>100,000원</td></tr>
+        <tr><td style="font-weight:700">70%</td><td style="color:#86efac;font-weight:700">×1.05</td><td>양호 — 소폭 프리미엄</td><td>105,000원</td></tr>
+        <tr><td style="font-weight:700">85%</td><td style="color:#f59e0b;font-weight:700">×1.10</td><td>좋음 — 프리미엄</td><td>110,000원</td></tr>
+        <tr style="background:#0a1a0a"><td style="font-weight:700">100%</td><td style="color:#f87171;font-weight:700">×1.20</td><td>완판 — 최대 프리미엄</td><td>120,000원</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3>보간 예시</h3>
+  <div class="tbl-wrap">
+    <table>
+      <thead><tr><th>OCC</th><th>계산 과정</th><th>배율</th></tr></thead>
+      <tbody>
+        <tr><td>15%</td><td>0%~30% 구간, 15/30 지점 → 0.70 + (0.88-0.70) × 15/30</td><td style="font-weight:700">×0.79</td></tr>
+        <tr><td>37%</td><td>30%~50% 구간, 7/20 지점 → 0.88 + (1.00-0.88) × 7/20</td><td style="font-weight:700">×0.922</td></tr>
+        <tr><td>63%</td><td>50%~70% 구간, 13/20 지점 → 1.00 + (1.05-1.00) × 13/20</td><td style="font-weight:700">×1.0325</td></tr>
+        <tr><td>92%</td><td>85%~100% 구간, 7/15 지점 → 1.10 + (1.20-1.10) × 7/15</td><td style="font-weight:700">×1.147</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="callout">
+    <p><strong>특징:</strong> 하방(0~50%)은 경사가 가파르고(-30%), 상방(50~100%)은 완만합니다(+20%). 빈 방을 적극 채우되 프리미엄은 과하지 않게.</p>
+  </div>
+</div>
+
+<hr>
+
+<!-- ================================================================ -->
+<div class="section">
+  <span class="snum">06</span>
+  <h2>⑤ 가격 가드레일 (작년 실거래 기반)</h2>
+
+  <p>모든 배율 계산이 끝난 후, <strong>작년 실제 판매 가격의 최저~최고 범위</strong>로 최종 클램핑합니다.</p>
+
+  <div class="tbl-wrap">
+    <table>
+      <thead><tr><th class="left">가드레일</th><th>기준</th><th>적용 방식</th></tr></thead>
+      <tbody>
+        <tr class="hl"><td class="left" style="font-weight:700;color:#f87171">상한 (Ceiling)</td><td>작년 해당 객실 + 해당 요일(평일/금/토) <strong>최고가</strong></td><td>계산 가격이 이 이상이면 → 상한으로 제한</td></tr>
+        <tr class="hl"><td class="left" style="font-weight:700;color:#60a5fa">하한 (Floor)</td><td>작년 해당 객실 + 해당 요일(평일/금/토) <strong>최저가</strong></td><td>계산 가격이 이 이하면 → 하한으로 제한</td></tr>
+        <tr><td class="left" style="font-weight:700;color:#818cf8">절대 하한</td><td>50,000원</td><td>어떤 경우에도 5만원 미만으로 판매하지 않음</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3>예시: 영흥 101호 토요일</h3>
+  <div class="tbl-wrap">
+    <table>
+      <thead><tr><th class="left">시나리오</th><th>계산값</th><th>가드레일</th><th>최종가</th></tr></thead>
+      <tbody>
+        <tr><td class="left">극성수기, OCC 95%</td><td>473,000원</td><td style="color:#f87171">상한 349,000원</td><td style="font-weight:700">349,000원 ⬆</td></tr>
+        <tr><td class="left">비수기, OCC 50%</td><td>247,000원</td><td style="color:#94a3b8">범위 내</td><td style="font-weight:700">247,000원</td></tr>
+        <tr><td class="left">비수기, OCC 0%</td><td>111,000원</td><td style="color:#94a3b8">범위 내 (하한 161K는 토요일)</td><td style="font-weight:700">161,000원 ⬇</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="callout green">
+    <p><strong>핵심:</strong> 작년에 실제로 시장에서 거래된 가격 범위를 절대 벗어나지 않습니다. 비현실적인 고가도, 가치를 깎는 저가도 방지합니다.</p>
+  </div>
+</div>
+
+<hr>
+
+<!-- ================================================================ -->
+<div class="section">
+  <span class="snum">07</span>
+  <h2>얼리버드 전략 (시즌별 차등)</h2>
+
+  <p>먼 예약일수록 OCC가 자연히 낮으므로, OCC 기반 배율이 자동으로 얼리버드 효과를 냅니다. 다만 시즌별로 할인 폭을 차등 적용합니다.</p>
+
+  <div class="tbl-wrap">
+    <table>
+      <thead><tr><th class="left">시즌</th><th>얼리버드 적용</th><th>할인 폭</th><th>이유</th></tr></thead>
+      <tbody>
+        <tr><td class="left"><span class="badge b-low">비수기</span> <span class="badge b-mid">준성수기</span></td><td style="color:#22c55e;font-weight:700">적극 적용</td><td style="font-weight:700">OCC 배율 그대로 (최대 -30%)</td><td style="color:#94a3b8">수요 부족 → 초기 물량 확보 중요</td></tr>
+        <tr class="hl"><td class="left"><span class="badge b-high">성수기</span> <span class="badge b-peak">극성수기</span></td><td style="color:#f59e0b;font-weight:700">소폭 적용</td><td style="font-weight:700">최대 -5%</td><td style="color:#94a3b8">어차피 채워지는 구간 → 약간의 혜택만</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="callout">
+    <p><strong>구현 방식:</strong> 성수기/극성수기에는 OCC 배율의 하한을 ×0.95로 제한합니다. 즉 OCC가 0%여도 -5% 이상 내려가지 않습니다. 비수기/준성수기는 제한 없이 ×0.70까지 내려갑니다.</p>
+  </div>
+</div>
+
+<hr>
+
+<!-- ================================================================ -->
+<div class="section">
+  <span class="snum">08</span>
+  <h2>상방 전략 (가격 인상)</h2>
+
+  <p><strong>리드타임과 무관하게 OCC 기반으로 판단합니다.</strong> 30일 전이든 3일 전이든, 예약이 차면 가격을 올립니다.</p>
+
+  <div class="tbl-wrap">
+    <table>
+      <thead><tr><th>OCC</th><th>배율</th><th>판단</th></tr></thead>
+      <tbody>
+        <tr><td>50~70%</td><td style="font-weight:700">×1.00 ~ ×1.05</td><td style="color:#94a3b8">기준가 ~ 소폭 프리미엄</td></tr>
+        <tr><td>70~85%</td><td style="color:#f59e0b;font-weight:700">×1.05 ~ ×1.10</td><td>채워지고 있음 → 프리미엄</td></tr>
+        <tr class="hl"><td>85~100%</td><td style="color:#f87171;font-weight:700">×1.10 ~ ×1.20</td><td>완판 임박 → 최대 프리미엄</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="callout green">
+    <p><strong>상한은 작년 최고가.</strong> 아무리 OCC가 높아도 작년에 실제 팔린 최고 가격을 넘지 않습니다. 고객 입장에서 "작년보다 비싸다"는 느낌을 주지 않습니다.</p>
+  </div>
+</div>
+
+<hr>
+
+<!-- ================================================================ -->
+<div class="section">
+  <span class="snum">09</span>
+  <h2>하방 전략 (가격 인하)</h2>
+
+  <h3>비수기 / 준성수기</h3>
+  <p>OCC 배율이 그대로 적용됩니다. OCC가 낮을수록 자동 할인.</p>
+  <div class="tbl-wrap">
+    <table>
+      <thead><tr><th>OCC</th><th>배율</th><th>할인 수준</th></tr></thead>
+      <tbody>
+        <tr><td>30~50%</td><td style="font-weight:700">×0.88 ~ ×1.00</td><td style="color:#60a5fa">-12% ~ 0%</td></tr>
+        <tr><td>10~30%</td><td style="color:#f59e0b;font-weight:700">×0.76 ~ ×0.88</td><td style="color:#f59e0b">-24% ~ -12%</td></tr>
+        <tr style="background:#1a0a0a"><td>0~10%</td><td style="color:#f87171;font-weight:700">×0.70 ~ ×0.76</td><td style="color:#f87171">-30% ~ -24%</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p>단, <strong>작년 최저가</strong> 이하로는 절대 내려가지 않으며, 어떤 경우든 <strong>50,000원 미만</strong>은 불가.</p>
+
+  <h3>성수기 / 극성수기 / 특정일</h3>
+
+  <div class="callout red">
+    <p><strong>자동 할인 없음.</strong> 성수기는 OCC 배율 하한이 ×0.95이므로, 시스템이 자동으로 큰 폭의 할인을 하지 않습니다.</p>
+  </div>
+
+  <p>대신 예약이 기대만큼 안 찰 경우, <strong>경고 알림</strong>을 보냅니다:</p>
+
+  <div class="tbl-wrap">
+    <table>
+      <thead><tr><th class="left">조건</th><th>알림 내용</th><th>채널</th></tr></thead>
+      <tbody>
+        <tr><td class="left">성수기 날짜, 7일 전 기준 OCC 50% 미만</td><td style="color:#f59e0b;font-weight:700">⚠️ 성수기 예약 부진 경고</td><td>대시보드 + 슬랙</td></tr>
+        <tr class="hl"><td class="left">극성수기 날짜, 7일 전 기준 OCC 60% 미만</td><td style="color:#f87171;font-weight:700">🚨 극성수기 예약 위기 경고</td><td>대시보드 + 슬랙</td></tr>
+        <tr><td class="left">특정일(공휴일), 5일 전 기준 OCC 40% 미만</td><td style="color:#f59e0b;font-weight:700">⚠️ 특정일 예약 부진 경고</td><td>대시보드 + 슬랙</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <p>알림을 받으면 <strong>대표님이 직접 판단</strong>하여 가격 조정 여부를 결정합니다. 시스템은 권장안만 제시합니다.</p>
+</div>
+
+<hr>
+
+<!-- ================================================================ -->
+<div class="section">
+  <span class="snum">10</span>
+  <h2>직전 할인 마지노선 (가안)</h2>
+
+  <div class="callout warn">
+    <p><strong>가안 — 추후 확정 필요.</strong> 현장 운영 경험을 바탕으로 조정할 사항입니다.</p>
+  </div>
+
+  <p>체크인이 임박한 시점에 가격을 내리면 기존 고객과 충돌이 발생합니다. 이를 완화하기 위한 가안입니다:</p>
+
+  <div class="tbl-wrap">
+    <table>
+      <thead><tr><th class="left">규칙</th><th>가안</th><th>설명</th></tr></thead>
+      <tbody>
+        <tr><td class="left" style="font-weight:700">할인 마감 시점</td><td style="font-weight:700;color:#f59e0b">체크인 48시간 전</td><td style="color:#94a3b8">이 시점 이후로는 가격을 더 내리지 않음</td></tr>
+        <tr><td class="left" style="font-weight:700">할인 결정 시점</td><td style="font-weight:700">체크인 3~5일 전</td><td style="color:#94a3b8">이 구간에서 할인 여부를 최종 결정</td></tr>
+        <tr><td class="left" style="font-weight:700">할인 후 가격 고정</td><td style="font-weight:700">결정 후 변동 없음</td><td style="color:#94a3b8">한번 내리면 그 이후 다시 내리지 않음</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <p style="color:#64748b;font-size:12px;margin-top:8px">* 이 규칙은 예약이 안 차서 어쩔 수 없이 내려야 하는 경우도 있으므로 가안으로 유지합니다. 운영하면서 확정합니다.</p>
+</div>
+
+<hr>
+
+<!-- ================================================================ -->
+<div class="section">
+  <span class="snum">11</span>
+  <h2>전체 가격 흐름 요약</h2>
+
+  <h3>비수기/준성수기 흐름</h3>
+  <div class="tbl-wrap">
+    <table>
+      <thead><tr><th>시점</th><th>OCC 상태</th><th>가격 움직임</th></tr></thead>
+      <tbody>
+        <tr><td>30일+ 전</td><td style="color:#94a3b8">자연히 낮음 (10~20%)</td><td style="color:#22c55e">얼리버드 할인가 → 기본 물량 확보</td></tr>
+        <tr><td>14~30일 전</td><td style="color:#94a3b8">채워지는 중 (20~40%)</td><td>할인 폭 줄어들며 상승</td></tr>
+        <tr><td>7~14일 전</td><td>정상 궤도 (40~60%)</td><td>기준가 근처</td></tr>
+        <tr class="hl"><td>3~7일 전</td><td style="color:#22c55e">잘 채워짐 (60%+)</td><td style="color:#f59e0b">소폭 프리미엄</td></tr>
+        <tr class="hl"><td>3~7일 전</td><td style="color:#f87171">부진 (30% 미만)</td><td style="color:#f87171">할인 적용 (작년 최저가가 하한)</td></tr>
+        <tr><td>0~2일 전</td><td>높으면 유지 / 낮으면 유지</td><td>직전 마지노선 규칙 적용 (가안)</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3>성수기/극성수기 흐름</h3>
+  <div class="tbl-wrap">
+    <table>
+      <thead><tr><th>시점</th><th>OCC 상태</th><th>가격 움직임</th></tr></thead>
+      <tbody>
+        <tr><td>30일+ 전</td><td style="color:#94a3b8">아직 낮음</td><td style="color:#22c55e">시즌 프리미엄 + 소폭 얼리버드 (-5%)</td></tr>
+        <tr><td>14~30일 전</td><td>빠르게 채워짐</td><td>얼리버드 소멸 → 시즌 프리미엄 유지</td></tr>
+        <tr class="hl"><td>7~14일 전</td><td style="color:#22c55e">높음 (70%+)</td><td style="color:#f59e0b">OCC 프리미엄 추가</td></tr>
+        <tr><td>7일 전</td><td style="color:#f87171">부진 시</td><td style="color:#f87171">⚠️ 경고 알림 발송 → 대표 판단</td></tr>
+        <tr><td>0~3일 전</td><td style="color:#22c55e">잘 참</td><td>최대 프리미엄 (작년 최고가가 상한)</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<hr>
+
+<!-- ================================================================ -->
+<div class="section">
+  <span class="snum">12</span>
+  <h2>구현 범위</h2>
+
+  <div class="tbl-wrap">
+    <table>
+      <thead><tr><th class="left">항목</th><th>방식</th><th>비고</th></tr></thead>
+      <tbody>
+        <tr><td class="left">OCC 선형 보간</td><td style="color:#22c55e;font-weight:700">대시보드 자동 계산</td><td>6개 기준점 + 선형 보간</td></tr>
+        <tr><td class="left">계절/요일 배율</td><td style="color:#22c55e;font-weight:700">대시보드 자동 적용</td><td>설정값 변경으로 조정</td></tr>
+        <tr><td class="left">가격 가드레일</td><td style="color:#22c55e;font-weight:700">대시보드 자동 클램핑</td><td>작년 데이터 기반</td></tr>
+        <tr><td class="left">성수기 얼리버드 제한</td><td style="color:#22c55e;font-weight:700">대시보드 자동</td><td>성수기 OCC 배율 하한 ×0.95</td></tr>
+        <tr><td class="left">성수기 부진 경고</td><td style="color:#f59e0b;font-weight:700">슬랙 + 대시보드 알림</td><td>조건 충족 시 자동 발송</td></tr>
+        <tr><td class="left">직전 할인 마지노선</td><td style="color:#94a3b8;font-weight:700">가안 — 추후 구현</td><td>확정 후 적용</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<div style="text-align:center;padding:36px 0;color:#4a5568;font-size:12px">
+  🐾 글램독 가격 정책서 v2 | 2026-04-14 | 논의 기반 최종 정리
+</div>
+
+</div>
+</body>
+</html>

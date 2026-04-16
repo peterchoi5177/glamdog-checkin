@@ -1,0 +1,1329 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="theme-color" content="#4A7C59">
+  <title>글램독 웰컴 등록</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+  <style>
+    /* ── 브랜드 색상 ── */
+    :root {
+      --green:       #4A7C59;
+      --green-dark:  #345A40;
+      --green-light: #EBF4EE;
+      --amber:       #C8793A;
+      --amber-light: #FDF0E6;
+      --text:        #1E1E1E;
+      --text-mid:    #555555;
+      --text-light:  #888888;
+      --bg:          #F7F7F4;
+      --white:       #FFFFFF;
+      --border:      #D8D8D0;
+      --error:       #D94F4F;
+      --success:     #4A7C59;
+      --shadow:      0 2px 12px rgba(0,0,0,0.10);
+      --radius:      14px;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+    body {
+      font-family: 'Noto Sans KR', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      overscroll-behavior: none;
+    }
+
+    /* ── 헤더 ── */
+    .header {
+      background: var(--green);
+      color: var(--white);
+      padding: 20px 20px 16px;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    .header-top {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 14px;
+    }
+    .header-logo {
+      font-size: 22px;
+      font-weight: 900;
+      letter-spacing: -0.5px;
+    }
+    .header-logo span { color: #A8D5B5; }
+    .header-subtitle { font-size: 12px; opacity: 0.8; margin-top: 1px; }
+
+    /* ── 진행률 바 ── */
+    .progress-bar-wrap {
+      background: rgba(255,255,255,0.25);
+      border-radius: 99px;
+      height: 5px;
+      overflow: hidden;
+    }
+    .progress-bar-fill {
+      height: 100%;
+      background: var(--white);
+      border-radius: 99px;
+      transition: width 0.4s ease;
+    }
+    .progress-label {
+      display: flex;
+      justify-content: space-between;
+      font-size: 11px;
+      opacity: 0.8;
+      margin-top: 6px;
+    }
+
+    /* ── 컨테이너 ── */
+    .container {
+      max-width: 480px;
+      margin: 0 auto;
+      padding: 20px 16px 120px;
+    }
+
+    /* ── 스텝 카드 ── */
+    .step { display: none; }
+    .step.active { display: block; animation: fadeIn 0.3s ease; }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(8px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .step-title {
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 6px;
+      line-height: 1.3;
+    }
+    .step-desc {
+      font-size: 14px;
+      color: var(--text-mid);
+      margin-bottom: 20px;
+      line-height: 1.5;
+    }
+
+    /* ── 예약 확인 카드 (Step 1) ── */
+    .booking-card {
+      background: var(--white);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+      margin-bottom: 20px;
+    }
+    .booking-card-header {
+      background: var(--green);
+      color: var(--white);
+      padding: 14px 18px;
+      font-size: 13px;
+      font-weight: 500;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .booking-card-body { padding: 16px 18px; }
+    .booking-name {
+      font-size: 22px;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 12px;
+    }
+    .booking-name span {
+      font-size: 16px;
+      font-weight: 400;
+      color: var(--text-mid);
+    }
+    .booking-row {
+      display: flex;
+      align-items: center;
+      padding: 8px 0;
+      border-bottom: 1px solid var(--border);
+      font-size: 14px;
+      gap: 8px;
+    }
+    .booking-row:last-child { border-bottom: none; }
+    .booking-row-icon { font-size: 16px; width: 22px; text-align: center; }
+    .booking-row-label { color: var(--text-light); min-width: 60px; font-size: 13px; }
+    .booking-row-value { color: var(--text); font-weight: 500; flex: 1; }
+
+    .notice-box {
+      background: var(--amber-light);
+      border: 1px solid #F0C89A;
+      border-radius: 10px;
+      padding: 12px 14px;
+      font-size: 13px;
+      color: var(--amber);
+      line-height: 1.5;
+    }
+    .notice-box strong { display: block; margin-bottom: 4px; font-size: 14px; }
+
+    /* ── 섹션 카드 ── */
+    .card {
+      background: var(--white);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 18px;
+      margin-bottom: 14px;
+    }
+    .card-title {
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 14px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .card-title-icon { font-size: 18px; }
+
+    /* ── 폼 요소 ── */
+    .field { margin-bottom: 16px; }
+    .field:last-child { margin-bottom: 0; }
+
+    label {
+      display: block;
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--text-mid);
+      margin-bottom: 6px;
+    }
+    label .req { color: var(--error); margin-left: 2px; }
+
+    input[type="text"],
+    input[type="number"],
+    input[type="time"],
+    select,
+    textarea {
+      width: 100%;
+      padding: 12px 14px;
+      border: 1.5px solid var(--border);
+      border-radius: 10px;
+      font-size: 15px;
+      font-family: inherit;
+      color: var(--text);
+      background: var(--white);
+      appearance: none;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    input:focus, select:focus, textarea:focus {
+      border-color: var(--green);
+    }
+    input.error, select.error, textarea.error {
+      border-color: var(--error);
+    }
+    textarea { resize: none; line-height: 1.5; }
+
+    /* ── 카운터 ── */
+    .counter {
+      display: flex;
+      align-items: center;
+      gap: 0;
+      border: 1.5px solid var(--border);
+      border-radius: 10px;
+      overflow: hidden;
+      width: 140px;
+    }
+    .counter-btn {
+      width: 44px;
+      height: 44px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--bg);
+      font-size: 20px;
+      font-weight: 500;
+      color: var(--green);
+      cursor: pointer;
+      border: none;
+      transition: background 0.15s;
+      user-select: none;
+      flex-shrink: 0;
+    }
+    .counter-btn:active { background: var(--green-light); }
+    .counter-btn:disabled { color: var(--border); cursor: default; }
+    .counter-value {
+      flex: 1;
+      text-align: center;
+      font-size: 17px;
+      font-weight: 700;
+      color: var(--text);
+      background: var(--white);
+      padding: 0;
+      height: 44px;
+      line-height: 44px;
+      border-left: 1.5px solid var(--border);
+      border-right: 1.5px solid var(--border);
+    }
+
+    /* ── 토글 버튼 ── */
+    .toggle-group {
+      display: flex;
+      gap: 8px;
+    }
+    .toggle-btn {
+      flex: 1;
+      padding: 11px;
+      border: 1.5px solid var(--border);
+      border-radius: 10px;
+      font-size: 14px;
+      font-family: inherit;
+      font-weight: 500;
+      background: var(--white);
+      color: var(--text-mid);
+      cursor: pointer;
+      transition: all 0.15s;
+      text-align: center;
+    }
+    .toggle-btn.selected {
+      border-color: var(--green);
+      background: var(--green-light);
+      color: var(--green-dark);
+    }
+
+    /* ── 시간 버튼 ── */
+    .time-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+      margin-bottom: 10px;
+    }
+    .time-btn {
+      padding: 10px 6px;
+      border: 1.5px solid var(--border);
+      border-radius: 10px;
+      font-size: 14px;
+      font-family: inherit;
+      font-weight: 500;
+      background: var(--white);
+      color: var(--text-mid);
+      cursor: pointer;
+      text-align: center;
+      transition: all 0.15s;
+    }
+    .time-btn.selected {
+      border-color: var(--green);
+      background: var(--green-light);
+      color: var(--green-dark);
+    }
+    .time-direct {
+      display: none;
+      margin-top: 8px;
+    }
+    .time-direct.show { display: block; }
+
+    /* ── 반려견 카드 ── */
+    .dog-card {
+      background: var(--bg);
+      border: 1.5px solid var(--border);
+      border-radius: 12px;
+      padding: 14px;
+      margin-bottom: 10px;
+    }
+    .dog-card-title {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--green);
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+    .dog-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+    .dog-row.three { grid-template-columns: 1fr 1fr 1fr; }
+    .dog-row:last-child { margin-bottom: 0; }
+
+    /* ── 체중 버튼 ── */
+    .weight-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 6px;
+    }
+    .weight-btn {
+      padding: 9px 4px;
+      border: 1.5px solid var(--border);
+      border-radius: 8px;
+      font-size: 12px;
+      font-family: inherit;
+      font-weight: 500;
+      background: var(--white);
+      color: var(--text-mid);
+      cursor: pointer;
+      text-align: center;
+      transition: all 0.15s;
+    }
+    .weight-btn.selected {
+      border-color: var(--green);
+      background: var(--green-light);
+      color: var(--green-dark);
+    }
+
+    /* ── 약관 ── */
+    .term-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      padding: 10px 0;
+      border-bottom: 1px solid var(--border);
+      cursor: pointer;
+    }
+    .term-item:last-child { border-bottom: none; }
+    .term-check {
+      width: 22px;
+      height: 22px;
+      border: 2px solid var(--border);
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      transition: all 0.15s;
+      margin-top: 1px;
+    }
+    .term-check.checked {
+      background: var(--green);
+      border-color: var(--green);
+    }
+    .term-check.checked::after {
+      content: "✓";
+      color: white;
+      font-size: 13px;
+      font-weight: 700;
+    }
+    .term-text {
+      font-size: 13px;
+      color: var(--text-mid);
+      line-height: 1.5;
+      flex: 1;
+    }
+    .term-text strong { color: var(--text); }
+
+    .all-agree-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 12px 14px;
+      background: var(--green-light);
+      border-radius: 10px;
+      cursor: pointer;
+      margin-bottom: 12px;
+    }
+    .all-agree-check {
+      width: 24px;
+      height: 24px;
+      border: 2px solid var(--green);
+      border-radius: 7px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      transition: all 0.15s;
+    }
+    .all-agree-check.checked {
+      background: var(--green);
+      border-color: var(--green);
+    }
+    .all-agree-check.checked::after {
+      content: "✓";
+      color: white;
+      font-size: 14px;
+      font-weight: 700;
+    }
+    .all-agree-text {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--green-dark);
+    }
+
+    /* ── 서명 캔버스 ── */
+    .sig-wrap {
+      border: 1.5px solid var(--border);
+      border-radius: 10px;
+      overflow: hidden;
+      position: relative;
+      background: var(--white);
+    }
+    #sig-canvas {
+      display: block;
+      width: 100%;
+      height: 140px;
+      touch-action: none;
+      cursor: crosshair;
+    }
+    .sig-placeholder {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      color: var(--border);
+      font-size: 13px;
+      pointer-events: none;
+      text-align: center;
+    }
+    .sig-clear-btn {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      background: rgba(0,0,0,0.08);
+      border: none;
+      border-radius: 6px;
+      padding: 4px 8px;
+      font-size: 11px;
+      color: var(--text-mid);
+      cursor: pointer;
+      font-family: inherit;
+    }
+
+    /* ── 완료 화면 ── */
+    .done-wrap {
+      text-align: center;
+      padding: 40px 20px;
+    }
+    .done-icon {
+      font-size: 64px;
+      margin-bottom: 20px;
+      display: block;
+    }
+    .done-title {
+      font-size: 24px;
+      font-weight: 700;
+      color: var(--green);
+      margin-bottom: 10px;
+    }
+    .done-desc {
+      font-size: 15px;
+      color: var(--text-mid);
+      line-height: 1.6;
+      margin-bottom: 28px;
+    }
+    .done-info-card {
+      background: var(--white);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 18px;
+      text-align: left;
+      margin-bottom: 16px;
+    }
+    .done-info-title {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--text-light);
+      margin-bottom: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    .done-info-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 7px 0;
+      border-bottom: 1px solid var(--border);
+      font-size: 14px;
+    }
+    .done-info-row:last-child { border-bottom: none; }
+    .done-call-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      width: 100%;
+      padding: 14px;
+      background: var(--green);
+      color: var(--white);
+      border: none;
+      border-radius: 12px;
+      font-size: 16px;
+      font-weight: 700;
+      font-family: inherit;
+      cursor: pointer;
+      text-decoration: none;
+    }
+
+    /* ── 하단 버튼 ── */
+    .btn-wrap {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      padding: 12px 16px 28px;
+      background: linear-gradient(transparent, var(--bg) 30%);
+      display: flex;
+      gap: 10px;
+      max-width: 480px;
+      margin: 0 auto;
+    }
+    .btn-back {
+      width: 50px;
+      height: 50px;
+      border: 1.5px solid var(--border);
+      border-radius: 12px;
+      background: var(--white);
+      font-size: 20px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      color: var(--text-mid);
+    }
+    .btn-next {
+      flex: 1;
+      height: 50px;
+      background: var(--green);
+      color: var(--white);
+      border: none;
+      border-radius: 12px;
+      font-size: 16px;
+      font-weight: 700;
+      font-family: inherit;
+      cursor: pointer;
+      transition: background 0.15s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+    }
+    .btn-next:active { background: var(--green-dark); }
+    .btn-next:disabled { background: var(--border); cursor: default; }
+
+    /* ── 로딩 ── */
+    .loading-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.4);
+      z-index: 999;
+      align-items: center;
+      justify-content: center;
+    }
+    .loading-overlay.show { display: flex; }
+    .loading-box {
+      background: var(--white);
+      border-radius: 16px;
+      padding: 28px 32px;
+      text-align: center;
+    }
+    .loading-spinner {
+      width: 36px;
+      height: 36px;
+      border: 3px solid var(--green-light);
+      border-top-color: var(--green);
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+      margin: 0 auto 12px;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .loading-text { font-size: 14px; color: var(--text-mid); }
+
+    /* ── 에러 메시지 ── */
+    .err-msg {
+      font-size: 12px;
+      color: var(--error);
+      margin-top: 5px;
+      display: none;
+    }
+    .err-msg.show { display: block; }
+  </style>
+</head>
+<body>
+
+<!-- 헤더 -->
+<div class="header">
+  <div class="header-top">
+    <div>
+      <div class="header-logo">🐾 글램독<span>.</span></div>
+      <div class="header-subtitle">웰컴 등록 — 입실 전 필수 절차</div>
+    </div>
+  </div>
+  <div class="progress-bar-wrap">
+    <div class="progress-bar-fill" id="progressFill" style="width: 20%"></div>
+  </div>
+  <div class="progress-label">
+    <span id="progressLabel">1 / 5단계</span>
+    <span id="progressPct">20%</span>
+  </div>
+</div>
+
+<!-- 컨테이너 -->
+<div class="container">
+
+  <!-- ════════════ STEP 1: 예약 확인 ════════════ -->
+  <div class="step active" id="step1">
+    <div class="step-title">예약 확인</div>
+    <div class="step-desc">아래 예약 정보를 확인해 주세요.</div>
+
+    <div class="booking-card">
+      <div class="booking-card-header">
+        ✅ &nbsp;예약이 확정되었습니다
+      </div>
+      <div class="booking-card-body">
+        <div class="booking-name" id="disp-name">고객님 <span>의 예약</span></div>
+        <div class="booking-row">
+          <div class="booking-row-icon">🏕️</div>
+          <div class="booking-row-label">지점</div>
+          <div class="booking-row-value" id="disp-branch">—</div>
+        </div>
+        <div class="booking-row">
+          <div class="booking-row-icon">📅</div>
+          <div class="booking-row-label">입실일</div>
+          <div class="booking-row-value" id="disp-checkin">—</div>
+        </div>
+        <div class="booking-row">
+          <div class="booking-row-icon">🛏️</div>
+          <div class="booking-row-label">객실</div>
+          <div class="booking-row-value" id="disp-room">—</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="notice-box">
+      <strong>⚠️ 웰컴 등록은 입실 전 필수입니다</strong>
+      미완료 시 현장에서 등록 후 입실이 가능하므로, 입실 전 미리 완료해 주세요. (5분 소요)
+    </div>
+  </div>
+
+  <!-- ════════════ STEP 2: 방문 인원 & 도착 시간 ════════════ -->
+  <div class="step" id="step2">
+    <div class="step-title">방문 정보</div>
+    <div class="step-desc">방문 인원 수와 도착 예정 시간을 알려주세요.</div>
+
+    <div class="card">
+      <div class="card-title"><span class="card-title-icon">👨‍👩‍👧‍👦</span> 총 방문 인원 수</div>
+      <div class="field">
+        <label>성인 + 아이 모두 포함한 인원 수<span class="req">*</span></label>
+        <div style="display:flex; align-items:center; gap:12px;">
+          <div class="counter">
+            <button class="counter-btn" id="personMinus" onclick="changeCount('person', -1)">−</button>
+            <div class="counter-value" id="personVal">1</div>
+            <button class="counter-btn" id="personPlus" onclick="changeCount('person', 1)">+</button>
+          </div>
+          <span style="font-size:15px; color:var(--text-mid);">명</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title"><span class="card-title-icon">🕐</span> 예상 도착 시간</div>
+      <div class="field">
+        <label>입실은 오후 2시부터 가능합니다<span class="req">*</span></label>
+        <div class="time-grid">
+          <button class="time-btn" data-time="14:00" onclick="selectTime(this)">14:00</button>
+          <button class="time-btn" data-time="15:00" onclick="selectTime(this)">15:00</button>
+          <button class="time-btn" data-time="16:00" onclick="selectTime(this)">16:00</button>
+          <button class="time-btn" data-time="17:00" onclick="selectTime(this)">17:00</button>
+          <button class="time-btn" data-time="18:00" onclick="selectTime(this)">18:00</button>
+          <button class="time-btn" data-time="direct" onclick="selectTime(this)">직접 입력</button>
+        </div>
+        <div class="time-direct" id="timeDirect">
+          <input type="time" id="timeInput" min="14:00" max="23:59">
+        </div>
+        <div class="err-msg" id="err-time">도착 예정 시간을 선택해 주세요.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ════════════ STEP 3: 반려견 정보 ════════════ -->
+  <div class="step" id="step3">
+    <div class="step-title">반려견 정보</div>
+    <div class="step-desc">함께 오시는 반려견 정보를 입력해 주세요.</div>
+
+    <div class="card">
+      <div class="card-title"><span class="card-title-icon">🐕</span> 반려견 수</div>
+      <div class="field">
+        <label>동반 반려견 수<span class="req">*</span></label>
+        <div style="display:flex; align-items:center; gap:12px;">
+          <div class="counter">
+            <button class="counter-btn" id="dogMinus" onclick="changeCount('dog', -1)">−</button>
+            <div class="counter-value" id="dogVal">1</div>
+            <button class="counter-btn" id="dogPlus" onclick="changeCount('dog', 1)">+</button>
+          </div>
+          <span style="font-size:15px; color:var(--text-mid);">마리</span>
+        </div>
+      </div>
+    </div>
+
+    <div id="dogFields"></div>
+  </div>
+
+  <!-- ════════════ STEP 4: 추가 서비스 & 요청사항 ════════════ -->
+  <div class="step" id="step4">
+    <div class="step-title">추가 서비스</div>
+    <div class="step-desc">바베큐 이용 여부와 요청 사항을 알려주세요.</div>
+
+    <div class="card">
+      <div class="card-title"><span class="card-title-icon">🔥</span> 바베큐 이용</div>
+      <div class="field">
+        <label>바베큐 이용 예정이신가요?<span class="req">*</span></label>
+        <div class="toggle-group">
+          <button class="toggle-btn" id="bbqYes" onclick="selectBBQ('yes')">🔥 네, 이용합니다</button>
+          <button class="toggle-btn" id="bbqNo" onclick="selectBBQ('no')">✖ 이용 안 합니다</button>
+        </div>
+        <div style="margin-top:8px; font-size:12px; color:var(--text-light);">
+          바베큐 도구는 현장에 구비되어 있으며, 식재료는 직접 준비해 주세요.
+        </div>
+        <div class="err-msg" id="err-bbq">바베큐 이용 여부를 선택해 주세요.</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title"><span class="card-title-icon">📝</span> 요청 사항</div>
+      <div class="field">
+        <label>특별 요청 사항이 있으시면 알려주세요 (선택)</label>
+        <textarea id="request" rows="4" placeholder="예: 알레르기 유발 물질 제거, 특정 시설 이용 문의 등"></textarea>
+      </div>
+    </div>
+  </div>
+
+  <!-- ════════════ STEP 5: 이용 약관 동의 & 서명 ════════════ -->
+  <div class="step" id="step5">
+    <div class="step-title">이용 약관 동의</div>
+    <div class="step-desc">아래 내용을 확인하고 동의해 주세요.</div>
+
+    <div class="card">
+      <div class="all-agree-row" onclick="toggleAllAgree()">
+        <div class="all-agree-check" id="allAgreeCheck"></div>
+        <div class="all-agree-text">전체 약관에 동의합니다</div>
+      </div>
+
+      <div class="term-item" onclick="toggleTerm(0)">
+        <div class="term-check" id="term0"></div>
+        <div class="term-text"><strong>[필수]</strong> 반려견은 공용 구역에서 리드줄을 반드시 착용해야 합니다.</div>
+      </div>
+      <div class="term-item" onclick="toggleTerm(1)">
+        <div class="term-check" id="term1"></div>
+        <div class="term-text"><strong>[필수]</strong> 반려견의 배변은 즉시 처리하고, 지정 구역에 폐기해 주세요.</div>
+      </div>
+      <div class="term-item" onclick="toggleTerm(2)">
+        <div class="term-check" id="term2"></div>
+        <div class="term-text"><strong>[필수]</strong> 퇴실 시간은 오전 11:00이며, 초과 시 추가 요금이 부과됩니다.</div>
+      </div>
+      <div class="term-item" onclick="toggleTerm(3)">
+        <div class="term-check" id="term3"></div>
+        <div class="term-text"><strong>[필수]</strong> 오후 10시 이후 소음(짖음, 음악, 대화)을 자제해 주세요.</div>
+      </div>
+      <div class="term-item" onclick="toggleTerm(4)">
+        <div class="term-check" id="term4"></div>
+        <div class="term-text"><strong>[필수]</strong> 흡연은 지정 흡연 구역에서만 가능합니다. 시설 내 흡연 시 추가 청소비가 부과됩니다.</div>
+      </div>
+      <div class="term-item" onclick="toggleTerm(5)">
+        <div class="term-check" id="term5"></div>
+        <div class="term-text"><strong>[필수]</strong> 시설 파손 시 원상복구 비용을 부담하셔야 합니다.</div>
+      </div>
+      <div class="term-item" onclick="toggleTerm(6)">
+        <div class="term-check" id="term6"></div>
+        <div class="term-text"><strong>[선택]</strong> 마케팅 목적의 사진·영상 활용에 동의합니다.</div>
+      </div>
+      <div class="err-msg show" id="err-terms" style="display:none; margin-top:10px;"></div>
+    </div>
+
+    <div class="card">
+      <div class="card-title"><span class="card-title-icon">✍️</span> 서명</div>
+      <div class="field">
+        <label>위 내용에 동의하며 서명합니다<span class="req">*</span></label>
+        <div class="sig-wrap">
+          <canvas id="sig-canvas"></canvas>
+          <div class="sig-placeholder" id="sigPlaceholder">여기에 서명해 주세요</div>
+          <button class="sig-clear-btn" onclick="clearSig()">지우기</button>
+        </div>
+        <div class="err-msg" id="err-sig">서명을 완료해 주세요.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ════════════ STEP 6: 완료 ════════════ -->
+  <div class="step" id="step6">
+    <div class="done-wrap">
+      <span class="done-icon">🎉</span>
+      <div class="done-title">웰컴 등록 완료!</div>
+      <div class="done-desc" id="done-desc">
+        소중한 정보를 알려주셔서 감사합니다.<br>
+        즐거운 글램독 스테이 되세요! 🐾
+      </div>
+
+      <div class="done-info-card">
+        <div class="done-info-title">📋 제출된 정보 요약</div>
+        <div class="done-info-row">📍 <span id="done-branch">—</span></div>
+        <div class="done-info-row">📅 입실: <span id="done-checkin">—</span></div>
+        <div class="done-info-row">👥 <span id="done-persons">—</span></div>
+        <div class="done-info-row">🐾 반려견 <span id="done-dogs">—</span></div>
+        <div class="done-info-row">🕐 도착 예정: <span id="done-time">—</span></div>
+        <div class="done-info-row">🔥 바베큐: <span id="done-bbq">—</span></div>
+      </div>
+
+      <a class="done-call-btn" id="done-call-btn" href="#">
+        📞 지점 문의하기
+      </a>
+    </div>
+  </div>
+
+</div><!-- /container -->
+
+<!-- 하단 버튼 -->
+<div class="btn-wrap" id="btnWrap">
+  <button class="btn-back" id="btnBack" onclick="prevStep()" style="display:none;">←</button>
+  <button class="btn-next" id="btnNext" onclick="nextStep()">시작하기 →</button>
+</div>
+
+<!-- 로딩 -->
+<div class="loading-overlay" id="loadingOverlay">
+  <div class="loading-box">
+    <div class="loading-spinner"></div>
+    <div class="loading-text">등록 중입니다...</div>
+  </div>
+</div>
+
+<script>
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// ★ 설정 — 이 두 줄만 수정하세요
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+const SUBMIT_ENDPOINT = "https://script.google.com/macros/s/YOUR_SCRIPT_ID/exec";  // Google Apps Script URL
+const BRANCH_PHONES = {
+  "가평(가평점)":  "010-9196-2597",
+  "가평(청평점)":  "010-3590-2597",
+  "경주":          "010-2006-2597",
+  "영흥도":        "010-8650-2597",
+  "양양":          "010-9397-2597",
+  "통영":          "010-3516-2597",
+};
+
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// URL 파라미터 파싱
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+const params  = new URLSearchParams(window.location.search);
+const TOKEN   = params.get("token") || "";
+const NAME    = decodeURIComponent(params.get("name")    || "고객");
+const BRANCH  = decodeURIComponent(params.get("branch")  || "");
+const CHECKIN = decodeURIComponent(params.get("checkin") || "");
+const ROOM    = decodeURIComponent(params.get("room")    || "");
+
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// 상태
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+let currentStep = 1;
+const TOTAL_STEPS = 5;
+
+let personCount = 1;
+let dogCount    = 1;
+let selectedTime = "";
+let bbqChoice    = "";
+let terms        = [false, false, false, false, false, false, false];
+let sigDrawn     = false;
+
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// 초기화
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+window.addEventListener("DOMContentLoaded", () => {
+  // 예약 정보 표시
+  document.getElementById("disp-name").innerHTML =
+    NAME + ' <span>님의 예약</span>';
+  document.getElementById("disp-branch").textContent  = BRANCH  || "—";
+  document.getElementById("disp-checkin").textContent = CHECKIN || "—";
+  document.getElementById("disp-room").textContent    = ROOM    || "—";
+
+  // 반려견 필드 초기화
+  renderDogFields();
+
+  // 서명 캔버스 설정
+  initSigCanvas();
+});
+
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// 스텝 이동
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+function showStep(n) {
+  document.querySelectorAll(".step").forEach(el => el.classList.remove("active"));
+  document.getElementById("step" + n).classList.add("active");
+  currentStep = n;
+
+  const pct = Math.round((n / TOTAL_STEPS) * 100);
+  document.getElementById("progressFill").style.width = pct + "%";
+  document.getElementById("progressLabel").textContent = n + " / " + TOTAL_STEPS + "단계";
+  document.getElementById("progressPct").textContent   = pct + "%";
+
+  document.getElementById("btnBack").style.display = (n > 1 && n <= TOTAL_STEPS) ? "" : "none";
+  const btnNext = document.getElementById("btnNext");
+
+  if (n === TOTAL_STEPS) {
+    btnNext.textContent = "등록 완료 ✓";
+  } else if (n > TOTAL_STEPS) {
+    document.getElementById("btnWrap").style.display = "none";
+  } else {
+    btnNext.innerHTML = (n === 1 ? "시작하기 →" : "다음 →");
+  }
+
+  window.scrollTo({ top: 0, behavior: "smooth" });
+}
+
+function nextStep() {
+  if (!validateStep(currentStep)) return;
+  if (currentStep === TOTAL_STEPS) {
+    submitForm();
+    return;
+  }
+  showStep(currentStep + 1);
+}
+
+function prevStep() {
+  if (currentStep > 1) showStep(currentStep - 1);
+}
+
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// 유효성 검사
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+function validateStep(n) {
+  if (n === 2) {
+    if (!selectedTime) {
+      document.getElementById("err-time").classList.add("show");
+      return false;
+    }
+    if (selectedTime === "direct" && !document.getElementById("timeInput").value) {
+      document.getElementById("err-time").classList.add("show");
+      document.getElementById("err-time").textContent = "도착 시간을 직접 입력해 주세요.";
+      return false;
+    }
+    document.getElementById("err-time").classList.remove("show");
+  }
+
+  if (n === 3) {
+    let ok = true;
+    for (let i = 0; i < dogCount; i++) {
+      const nameEl = document.getElementById("dog-name-" + i);
+      if (nameEl && !nameEl.value.trim()) {
+        nameEl.classList.add("error");
+        ok = false;
+      } else if (nameEl) {
+        nameEl.classList.remove("error");
+      }
+      const wtEl = document.querySelector(`[data-dog="${i}"].weight-btn.selected`);
+      const indicator = document.getElementById("err-weight-" + i);
+      if (!wtEl) {
+        if (indicator) { indicator.classList.add("show"); }
+        ok = false;
+      } else {
+        if (indicator) { indicator.classList.remove("show"); }
+      }
+    }
+    return ok;
+  }
+
+  if (n === 4) {
+    if (!bbqChoice) {
+      document.getElementById("err-bbq").classList.add("show");
+      return false;
+    }
+    document.getElementById("err-bbq").classList.remove("show");
+  }
+
+  if (n === 5) {
+    const required = [0, 1, 2, 3, 4, 5];
+    const missing  = required.filter(i => !terms[i]);
+    if (missing.length > 0) {
+      const errEl = document.getElementById("err-terms");
+      errEl.textContent = "필수 항목에 모두 동의해 주세요.";
+      errEl.style.display = "block";
+      return false;
+    }
+    document.getElementById("err-terms").style.display = "none";
+    if (!sigDrawn) {
+      document.getElementById("err-sig").classList.add("show");
+      return false;
+    }
+    document.getElementById("err-sig").classList.remove("show");
+  }
+
+  return true;
+}
+
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// 카운터
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+function changeCount(type, delta) {
+  if (type === "person") {
+    personCount = Math.max(1, Math.min(20, personCount + delta));
+    document.getElementById("personVal").textContent = personCount;
+    document.getElementById("personMinus").disabled = personCount <= 1;
+    document.getElementById("personPlus").disabled  = personCount >= 20;
+  } else if (type === "dog") {
+    const prev = dogCount;
+    dogCount = Math.max(1, Math.min(5, dogCount + delta));
+    document.getElementById("dogVal").textContent = dogCount;
+    document.getElementById("dogMinus").disabled = dogCount <= 1;
+    document.getElementById("dogPlus").disabled  = dogCount >= 5;
+    if (dogCount !== prev) renderDogFields();
+  }
+}
+
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// 반려견 필드 렌더링
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+const WEIGHTS = ["5kg 미만", "5-10kg", "10-15kg", "15-20kg", "20-25kg", "25kg 이상"];
+
+function renderDogFields() {
+  const wrap = document.getElementById("dogFields");
+  // 기존 값 저장
+  const savedNames  = [];
+  const savedBreeds = [];
+  const savedWeights = [];
+  for (let i = 0; i < 5; i++) {
+    savedNames[i]   = document.getElementById("dog-name-"  + i)?.value || "";
+    savedBreeds[i]  = document.getElementById("dog-breed-" + i)?.value || "";
+    savedWeights[i] = document.querySelector(`[data-dog="${i}"].weight-btn.selected`)?.dataset.weight || "";
+  }
+
+  wrap.innerHTML = "";
+  for (let i = 0; i < dogCount; i++) {
+    const card = document.createElement("div");
+    card.className = "dog-card";
+    card.innerHTML = `
+      <div class="dog-card-title">🐾 반려견 ${dogCount > 1 ? (i + 1) + "번째" : ""}</div>
+      <div class="dog-row">
+        <div class="field">
+          <label>이름<span class="req">*</span></label>
+          <input type="text" id="dog-name-${i}" placeholder="예: 복실이" value="${savedNames[i]}">
+        </div>
+        <div class="field">
+          <label>견종 (선택)</label>
+          <input type="text" id="dog-breed-${i}" placeholder="예: 말티즈" value="${savedBreeds[i]}">
+        </div>
+      </div>
+      <div class="field">
+        <label>체중<span class="req">*</span></label>
+        <div class="weight-grid" id="weight-group-${i}">
+          ${WEIGHTS.map(w => `<button class="weight-btn${savedWeights[i] === w ? " selected" : ""}" data-dog="${i}" data-weight="${w}" onclick="selectWeight(this)">${w}</button>`).join("")}
+        </div>
+        <div class="err-msg" id="err-weight-${i}">체중을 선택해 주세요.</div>
+      </div>
+    `;
+    wrap.appendChild(card);
+  }
+}
+
+function selectWeight(btn) {
+  const dogIdx = btn.dataset.dog;
+  document.querySelectorAll(`[data-dog="${dogIdx}"].weight-btn`).forEach(b => b.classList.remove("selected"));
+  btn.classList.add("selected");
+  const err = document.getElementById("err-weight-" + dogIdx);
+  if (err) err.classList.remove("show");
+}
+
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// 시간 선택
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+function selectTime(btn) {
+  document.querySelectorAll(".time-btn").forEach(b => b.classList.remove("selected"));
+  btn.classList.add("selected");
+  selectedTime = btn.dataset.time;
+  const direct = document.getElementById("timeDirect");
+  if (selectedTime === "direct") {
+    direct.classList.add("show");
+  } else {
+    direct.classList.remove("show");
+  }
+  document.getElementById("err-time").classList.remove("show");
+}
+
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// 바베큐 선택
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+function selectBBQ(val) {
+  bbqChoice = val;
+  document.getElementById("bbqYes").classList.toggle("selected", val === "yes");
+  document.getElementById("bbqNo").classList.toggle("selected",  val === "no");
+  document.getElementById("err-bbq").classList.remove("show");
+}
+
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// 약관 동의
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+function toggleTerm(idx) {
+  terms[idx] = !terms[idx];
+  const el = document.getElementById("term" + idx);
+  el.classList.toggle("checked", terms[idx]);
+  updateAllAgree();
+}
+
+function updateAllAgree() {
+  const required = [0, 1, 2, 3, 4, 5];
+  const allDone  = required.every(i => terms[i]);
+  document.getElementById("allAgreeCheck").classList.toggle("checked", allDone && terms[6]);
+}
+
+function toggleAllAgree() {
+  const required = [0, 1, 2, 3, 4, 5];
+  const allDone  = required.every(i => terms[i]) && terms[6];
+  const newVal   = !allDone;
+  terms = terms.map(() => newVal);
+  for (let i = 0; i < 7; i++) {
+    document.getElementById("term" + i).classList.toggle("checked", newVal);
+  }
+  document.getElementById("allAgreeCheck").classList.toggle("checked", newVal);
+}
+
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// 서명 캔버스
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+function initSigCanvas() {
+  const canvas = document.getElementById("sig-canvas");
+  const ctx    = canvas.getContext("2d");
+  const placeholder = document.getElementById("sigPlaceholder");
+
+  // 실제 픽셀 크기 맞추기
+  function resize() {
+    const rect = canvas.getBoundingClientRect();
+    canvas.width  = rect.width  * window.devicePixelRatio;
+    canvas.height = rect.height * window.devicePixelRatio;
+    ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
+    ctx.strokeStyle = "#1E1E1E";
+    ctx.lineWidth   = 2.5;
+    ctx.lineCap     = "round";
+    ctx.lineJoin    = "round";
+  }
+  resize();
+  window.addEventListener("resize", resize);
+
+  let drawing = false;
+  let lastX = 0, lastY = 0;
+
+  function getPos(e) {
+    const rect = canvas.getBoundingClientRect();
+    const src  = e.touches ? e.touches[0] : e;
+    return {
+      x: src.clientX - rect.left,
+      y: src.clientY - rect.top,
+    };
+  }
+
+  function startDraw(e) {
+    e.preventDefault();
+    drawing = true;
+    const pos = getPos(e);
+    lastX = pos.x; lastY = pos.y;
+    ctx.beginPath();
+    ctx.moveTo(lastX, lastY);
+    placeholder.style.display = "none";
+    sigDrawn = true;
+    document.getElementById("err-sig").classList.remove("show");
+  }
+
+  function draw(e) {
+    if (!drawing) return;
+    e.preventDefault();
+    const pos = getPos(e);
+    ctx.lineTo(pos.x, pos.y);
+    ctx.stroke();
+    lastX = pos.x; lastY = pos.y;
+  }
+
+  function endDraw(e) {
+    e.preventDefault();
+    drawing = false;
+  }
+
+  canvas.addEventListener("mousedown",  startDraw);
+  canvas.addEventListener("mousemove",  draw);
+  canvas.addEventListener("mouseup",    endDraw);
+  canvas.addEventListener("mouseleave", endDraw);
+  canvas.addEventListener("touchstart", startDraw, { passive: false });
+  canvas.addEventListener("touchmove",  draw,      { passive: false });
+  canvas.addEventListener("touchend",   endDraw,   { passive: false });
+}
+
+function clearSig() {
+  const canvas = document.getElementById("sig-canvas");
+  const ctx    = canvas.getContext("2d");
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  document.getElementById("sigPlaceholder").style.display = "";
+  sigDrawn = false;
+}
+
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// 폼 제출
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+async function submitForm() {
+  document.getElementById("loadingOverlay").classList.add("show");
+
+  // 반려견 정보 수집
+  const dogs = [];
+  for (let i = 0; i < dogCount; i++) {
+    dogs.push({
+      name:   document.getElementById("dog-name-"  + i)?.value.trim() || "",
+      breed:  document.getElementById("dog-breed-" + i)?.value.trim() || "",
+      weight: document.querySelector(`[data-dog="${i}"].weight-btn.selected`)?.dataset.weight || "",
+    });
+  }
+
+  const arrivalTime = selectedTime === "direct"
+    ? document.getElementById("timeInput").value
+    : selectedTime;
+
+  const canvas  = document.getElementById("sig-canvas");
+  const sigData = canvas.toDataURL("image/png");
+
+  const payload = {
+    token:       TOKEN,
+    name:        NAME,
+    branch:      BRANCH,
+    checkin:     CHECKIN,
+    room:        ROOM,
+    persons:     personCount,
+    arrivalTime: arrivalTime,
+    dogs:        JSON.stringify(dogs),
+    dogCount:    dogCount,
+    bbq:         bbqChoice,
+    request:     document.getElementById("request").value.trim(),
+    marketing:   terms[6] ? "동의" : "미동의",
+    signature:   sigData,
+    submittedAt: new Date().toLocaleString("ko-KR", { timeZone: "Asia/Seoul" }),
+  };
+
+  try {
+    // Google Apps Script로 전송 (CORS 우회: no-cors)
+    await fetch(SUBMIT_ENDPOINT, {
+      method: "POST",
+      mode:   "no-cors",
+      headers: { "Content-Type": "application/json" },
+      body:    JSON.stringify(payload),
+    });
+  } catch (e) {
+    // no-cors 모드에서는 성공도 오류로 보일 수 있음 — 무시
+    console.log("Submit response:", e);
+  }
+
+  document.getElementById("loadingOverlay").classList.remove("show");
+
+  // 완료 화면 채우기
+  const dogsDesc = dogs.map(d => `${d.name || "이름없음"} (${d.weight})`).join(", ");
+  document.getElementById("done-branch").textContent   = BRANCH;
+  document.getElementById("done-checkin").textContent  = CHECKIN;
+  document.getElementById("done-persons").textContent  = `방문 인원 ${personCount}명`;
+  document.getElementById("done-dogs").textContent     = `${dogCount}마리 — ${dogsDesc}`;
+  document.getElementById("done-time").textContent     = arrivalTime;
+  document.getElementById("done-bbq").textContent      = bbqChoice === "yes" ? "이용 예정" : "미이용";
+
+  const phone = BRANCH_PHONES[BRANCH] || "";
+  const callBtn = document.getElementById("done-call-btn");
+  if (phone) {
+    callBtn.href = "tel:" + phone.replace(/-/g, "");
+    callBtn.textContent = "📞 " + BRANCH + " 문의 (" + phone + ")";
+  } else {
+    callBtn.style.display = "none";
+  }
+
+  showStep(6);
+}
+</script>
+</body>
+</html>

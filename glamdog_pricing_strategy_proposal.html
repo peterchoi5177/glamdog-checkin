@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>글램독 가격전략 제안서</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:#0f1117;color:#e2e8f0;line-height:1.7}
+.page{max-width:960px;margin:0 auto;padding:40px 32px}
+
+/* Header */
+.hero{text-align:center;padding:60px 20px 40px;border-bottom:1px solid #2d3448;margin-bottom:40px}
+.hero h1{font-size:32px;font-weight:800;color:#fff;margin-bottom:8px;letter-spacing:-0.5px}
+.hero .sub{color:#94a3b8;font-size:15px;margin-bottom:4px}
+.hero .date{color:#64748b;font-size:13px}
+.hero .logo{font-size:60px;margin-bottom:16px}
+
+/* Section */
+.section{margin-bottom:40px}
+.section-num{display:inline-block;background:#4f6ef7;color:#fff;font-size:11px;font-weight:800;padding:3px 10px;border-radius:12px;margin-bottom:8px}
+.section h2{font-size:20px;font-weight:700;color:#fff;margin-bottom:16px}
+.section h3{font-size:16px;font-weight:700;color:#c8d6f0;margin-top:20px;margin-bottom:10px}
+.section p{color:#cbd5e1;font-size:14px;margin-bottom:12px}
+
+/* Cards */
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:14px;margin:16px 0}
+.card{background:#1a1f2e;border:1px solid #2d3448;border-radius:12px;padding:18px}
+.card .label{font-size:11px;color:#94a3b8;font-weight:600;margin-bottom:4px}
+.card .value{font-size:24px;font-weight:800;color:#60a5fa}
+.card .value.red{color:#f87171}
+.card .value.green{color:#22c55e}
+.card .value.amber{color:#f59e0b}
+.card .detail{font-size:11px;color:#64748b;margin-top:4px}
+
+/* Table */
+.tbl-wrap{overflow-x:auto;margin:16px 0;border-radius:10px;border:1px solid #2d3448}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th{background:#1e2535;color:#94a3b8;font-weight:600;padding:10px 12px;text-align:center;border-bottom:1px solid #2d3448;white-space:nowrap}
+td{padding:9px 12px;border-bottom:1px solid #1a2030;text-align:center;white-space:nowrap}
+tr:hover td{background:#1a2535}
+.left{text-align:left}
+.highlight-row td{background:#1a2a3e!important}
+
+/* Callout */
+.callout{background:#1a2535;border-left:4px solid #4f6ef7;padding:16px 20px;border-radius:0 10px 10px 0;margin:16px 0}
+.callout.warn{border-left-color:#f59e0b;background:#1f1a0f}
+.callout.success{border-left-color:#22c55e;background:#0f1f17}
+.callout strong{color:#fff}
+.callout p{margin-bottom:0}
+
+/* Flow diagram */
+.flow{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:16px 0}
+.flow-step{background:#1e2535;border:1px solid #2d3448;border-radius:10px;padding:12px 16px;text-align:center;min-width:120px}
+.flow-step .num{font-size:20px;font-weight:800;color:#4f6ef7}
+.flow-step .txt{font-size:11px;color:#94a3b8;margin-top:2px}
+.flow-arrow{color:#4a5568;font-size:20px}
+
+/* Badge */
+.badge{display:inline-block;padding:2px 8px;border-radius:6px;font-size:11px;font-weight:700}
+.badge-peak{background:#7f1d1d;color:#fca5a5}
+.badge-high{background:#78350f;color:#fcd34d}
+.badge-mid{background:#14532d;color:#86efac}
+.badge-low{background:#1e3a5f;color:#93c5fd}
+
+/* Multiplier visual */
+.mult-bar{display:flex;align-items:center;gap:8px;margin:6px 0}
+.mult-bar .bar{height:22px;border-radius:4px;display:flex;align-items:center;padding:0 8px;font-size:11px;font-weight:700;color:#fff;min-width:40px}
+
+/* Divider */
+.divider{border:none;border-top:1px solid #2d3448;margin:40px 0}
+
+@media print{
+  body{background:#fff;color:#1a1a1a}
+  .card{border-color:#ddd}
+  th{background:#f0f0f0;color:#333}
+  td{color:#333}
+}
+</style>
+</head>
+<body>
+<div class="page">
+
+<div class="hero">
+  <div class="logo">🐾</div>
+  <h1>글램독 가격전략 제안서</h1>
+  <div class="sub">데이터 기반 동적 가격 관리 시스템 설계</div>
+  <div class="date">2026년 4월 14일 | 분석 기간: 9,403건 (2024.02 ~ 2025.12) + 올해 977건</div>
+</div>
+
+<!-- ================================================================ -->
+<div class="section">
+  <span class="section-num">01</span>
+  <h2>현황 분석: 무엇이 문제인가</h2>
+
+  <div class="cards">
+    <div class="card">
+      <div class="label">전 지점 평균 ADR 변화</div>
+      <div class="value red">-28.5%</div>
+      <div class="detail">작년 동기(4/14~5/31) 대비</div>
+    </div>
+    <div class="card">
+      <div class="label">전 지점 예약 건수 변화</div>
+      <div class="value red">-70.6%</div>
+      <div class="detail">작년 동기 대비 예약 급감</div>
+    </div>
+    <div class="card">
+      <div class="label">당일~3일전 예약 비율</div>
+      <div class="value amber">56-61%</div>
+      <div class="detail">과반수가 직전 예약</div>
+    </div>
+    <div class="card">
+      <div class="label">토요일 vs 평일 프리미엄</div>
+      <div class="value green">+42%</div>
+      <div class="detail">전 지점 평균 토요일 프리미엄</div>
+    </div>
+  </div>
+
+  <h3>지점별 YoY 성과 (4/14 ~ 5/31 기준)</h3>
+  <div class="tbl-wrap">
+    <table>
+      <thead>
+        <tr><th class="left">지점</th><th>작년 ADR</th><th>올해 ADR</th><th>ADR 변동</th><th>작년 건수</th><th>올해 건수</th><th>건수 변동</th></tr>
+      </thead>
+      <tbody>
+        <tr><td class="left">가평</td><td>134,683원</td><td>130,112원</td><td style="color:#f87171">-3.4%</td><td>126건</td><td>24건</td><td style="color:#f87171">-81.0%</td></tr>
+        <tr><td class="left">영흥</td><td>136,088원</td><td>87,306원</td><td style="color:#f87171">-35.8%</td><td>306건</td><td>93건</td><td style="color:#f87171">-69.6%</td></tr>
+        <tr><td class="left">양양</td><td>176,356원</td><td>170,337원</td><td style="color:#f87171">-3.4%</td><td>589건</td><td>89건</td><td style="color:#f87171">-84.8%</td></tr>
+        <tr><td class="left">경주</td><td>166,735원</td><td>91,836원</td><td style="color:#f87171">-45.0%</td><td>395건</td><td>140건</td><td style="color:#f87171">-64.6%</td></tr>
+        <tr><td class="left">통영</td><td>173,622원</td><td>129,196원</td><td style="color:#f87171">-25.6%</td><td>298건</td><td>65건</td><td style="color:#f87171">-78.2%</td></tr>
+        <tr><td class="left">청평</td><td>161,538원</td><td>67,562원</td><td style="color:#f87171">-58.2%</td><td>176건</td><td>96건</td><td style="color:#f87171">-45.2%</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="callout warn">
+    <p><strong>핵심 문제:</strong> 전 지점에서 ADR과 예약 건수가 동시에 하락하고 있습니다. 단순히 가격만 낮춘다고 예약이 회복되지 않습니다. <strong>기간별 전략적 가격 설정</strong>과 <strong>얼리버드/막판 할인의 체계화</strong>가 필요합니다.</p>
+  </div>
+</div>
+
+<hr class="divider">
+
+<!-- ================================================================ -->
+<div class="section">
+  <span class="section-num">02</span>
+  <h2>가격전략 핵심 원칙</h2>
+
+  <p>대표님의 운영 철학에 맞춰 다음 3가지 원칙을 기본으로 합니다:</p>
+
+  <div class="cards" style="grid-template-columns:repeat(3,1fr)">
+    <div class="card" style="border-top:3px solid #4f6ef7">
+      <div class="label">원칙 1</div>
+      <div style="font-size:16px;font-weight:700;color:#fff;margin:8px 0">기간 단위 가격 설정</div>
+      <p style="font-size:12px;color:#94a3b8;margin:0">매일 가격을 바꾸지 않고, 계절(비수기/준성수기/성수기/극성수기) × 요일(평일/금/토) 조합으로 기간 단위로 가격을 관리합니다.</p>
+    </div>
+    <div class="card" style="border-top:3px solid #22c55e">
+      <div class="label">원칙 2</div>
+      <div style="font-size:16px;font-weight:700;color:#fff;margin:8px 0">동일 객실 = 동일 가격</div>
+      <p style="font-size:12px;color:#94a3b8;margin:0">같은 형태의 객실은 같은 가격으로 운영합니다. 객실별이 아닌 <strong>객실 등급(티어)</strong>별로 가격을 설정합니다.</p>
+    </div>
+    <div class="card" style="border-top:3px solid #f59e0b">
+      <div class="label">원칙 3</div>
+      <div style="font-size:16px;font-weight:700;color:#fff;margin:8px 0">시점별 가격 조절</div>
+      <p style="font-size:12px;color:#94a3b8;margin:0">얼리버드(30일+전): 할인으로 기본 예약 확보 → 직전(0-3일): OCC에 따라 프리미엄 유지 또는 막판 할인</p>
+    </div>
+  </div>
+</div>
+
+<hr class="divider">
+
+<!-- ================================================================ -->
+<div class="section">
+  <span class="section-num">03</span>
+  <h2>가격 구조 설계: 4단계 곱하기 모델</h2>
+
+  <p>최종 가격 = <strong>기초가</strong> × <strong>계절 배율</strong> × <strong>요일 배율</strong> × <strong>리드타임/OCC 조정</strong></p>
+
+  <div class="flow">
+    <div class="flow-step"><div class="num">①</div><div class="txt">기초가<br>(비수기 평일)</div></div>
+    <div class="flow-arrow">×</div>
+    <div class="flow-step"><div class="num">②</div><div class="txt">계절배율<br>(4단계)</div></div>
+    <div class="flow-arrow">×</div>
+    <div class="flow-step"><div class="num">③</div><div class="txt">요일배율<br>(평/금/토)</div></div>
+    <div class="flow-arrow">×</div>
+    <div class="flow-step"><div class="num">④</div><div class="txt">리드타임+OCC<br>자동 조정</div></div>
+    <div class="flow-arrow">=</div>
+    <div class="flow-step" style="border-color:#4f6ef7"><div class="num" style="color:#22c55e">₩</div><div class="txt">최종<br>판매가</div></div>
+  </div>
+
+  <!-- Step 1: 기초가 -->
+  <h3>① 기초가 (비수기 평일 기준)</h3>
+  <p>현재 설정된 BASE_PRICES를 기초가로 사용합니다. 이 가격은 <strong>비수기 평일(월~목)</strong> 기준이며, 여기에 계절/요일/OCC 배율이 곱해집니다.</p>
+
+  <div class="callout">
+    <p><strong>객실 등급(티어) 체계:</strong> 같은 형태의 객실은 같은 기초가를 적용합니다. 예: 영흥 3층 일반실(301, 302, 303)은 모두 89,000원으로 통일.</p>
+  </div>
+
+  <!-- Step 2: 계절 배율 -->
+  <h3>② 계절 배율 (연 4단계)</h3>
+  <p>작년 데이터에서 확인된 ADR 패턴을 기반으로, 연간을 4단계로 나눕니다. 가격 변경은 <strong>계절이 바뀔 때만</strong> 일어나므로 운영 부담이 적습니다.</p>
+
+  <div class="tbl-wrap">
+    <table>
+      <thead>
+        <tr><th class="left">계절 등급</th><th>기간</th><th>배율</th><th>근거 (작년 ADR 범위)</th><th>예시 (기초가 10만원)</th></tr>
+      </thead>
+      <tbody>
+        <tr class="highlight-row"><td class="left"><span class="badge badge-peak">극성수기</span></td><td>7/25~8/15, 10월 초중</td><td style="color:#fca5a5;font-weight:700">×1.60</td><td>200K~400K (피크)</td><td style="font-weight:700">160,000원</td></tr>
+        <tr><td class="left"><span class="badge badge-high">성수기</span></td><td>7/1~7/24</td><td style="color:#fcd34d;font-weight:700">×1.40</td><td>160K~250K</td><td style="font-weight:700">140,000원</td></tr>
+        <tr><td class="left"><span class="badge badge-mid">준성수기</span></td><td>5~6월, 8/16~8/31, 9월</td><td style="color:#86efac;font-weight:700">×1.20</td><td>120K~170K</td><td style="font-weight:700">120,000원</td></tr>
+        <tr><td class="left"><span class="badge badge-low">비수기</span></td><td>1~4월, 11~12월</td><td style="color:#93c5fd;font-weight:700">×1.00</td><td>85K~130K (기초가)</td><td style="font-weight:700">100,000원</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Step 3: 요일 배율 -->
+  <h3>③ 요일 배율 (주 3단계)</h3>
+  <p>작년 데이터에서 확인된 요일별 프리미엄을 반영합니다. 일요일은 대표님 말씀대로 <strong>평일과 동일</strong>하게 운영합니다.</p>
+
+  <div class="tbl-wrap">
+    <table>
+      <thead>
+        <tr><th class="left">요일</th><th>배율</th><th>근거</th><th>예시 (기초가 10만원, 비수기)</th></tr>
+      </thead>
+      <tbody>
+        <tr><td class="left">월~목, 일</td><td style="font-weight:700">×1.00</td><td>평일 기준가</td><td>100,000원</td></tr>
+        <tr><td class="left">금요일</td><td style="color:#f59e0b;font-weight:700">×1.25</td><td>평일 대비 +19~25% (데이터 평균)</td><td style="font-weight:700">125,000원</td></tr>
+        <tr class="highlight-row"><td class="left">토요일</td><td style="color:#f87171;font-weight:700">×1.55</td><td>평일 대비 +42~63% (데이터 평균 → 보수적 설정)</td><td style="font-weight:700">155,000원</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="callout success">
+    <p><strong>가격 변경 빈도:</strong> 계절이 바뀔 때(연 4~5회) + 공휴일/황금연휴(연 5~8회) = 연간 약 10~13회만 가격 조정이 필요합니다. 요일 배율은 시스템이 자동으로 적용하므로 별도 작업이 없습니다.</p>
+  </div>
+
+  <!-- Step 4: 리드타임/OCC -->
+  <h3>④ 리드타임 + OCC 자동 조정</h3>
+  <p>이 단계는 <strong>시스템이 자동으로 권장</strong>하며, 판대사가 최종 판단합니다.</p>
+
+  <div class="tbl-wrap">
+    <table>
+      <thead>
+        <tr><th class="left">예약 시점</th><th>전체 비율</th><th>전략</th><th>조정 배율</th><th>설명</th></tr>
+      </thead>
+      <tbody>
+        <tr style="background:#0f2010"><td class="left" style="font-weight:700">30일+ 전 (얼리버드)</td><td>3~7%</td><td style="color:#22c55e">할인 유도</td><td style="color:#22c55e;font-weight:700">×0.88</td><td>-12% → 기본 예약 물량 확보</td></tr>
+        <tr><td class="left">15~29일 전</td><td>7~11%</td><td style="color:#60a5fa">소폭 할인</td><td style="color:#60a5fa;font-weight:700">×0.92</td><td>-8% → 중간 계획자 유치</td></tr>
+        <tr><td class="left">8~14일 전</td><td>10~12%</td><td style="color:#94a3b8">소폭 할인</td><td style="font-weight:700">×0.95</td><td>-5%</td></tr>
+        <tr><td class="left">4~7일 전</td><td>16~20%</td><td style="color:#94a3b8">기준가 유지</td><td style="font-weight:700">×1.00</td><td>변동 없음</td></tr>
+        <tr style="background:#1a0f0f"><td class="left" style="font-weight:700">0~3일 전 (직전 예약)</td><td style="color:#f59e0b;font-weight:700">56~61%</td><td style="color:#f87171">OCC 연동</td><td style="color:#f87171;font-weight:700">OCC별 차등</td><td>아래 표 참조</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3>직전 예약(0~3일) OCC 연동 전략</h3>
+  <p>체크인 3일 이내의 예약은 전체의 56~61%를 차지합니다. 이 시점의 가격은 <strong>현재 OCC에 따라 자동 조정</strong>합니다.</p>
+
+  <div class="tbl-wrap">
+    <table>
+      <thead>
+        <tr><th>OCC 수준</th><th>상태</th><th>전략</th><th>조정</th></tr>
+      </thead>
+      <tbody>
+        <tr style="background:#2a1010"><td style="font-weight:700">90% 이상</td><td>🔴 완판 임박</td><td>프리미엄 유지</td><td style="color:#f87171;font-weight:700">+20%</td></tr>
+        <tr><td style="font-weight:700">75~89%</td><td>🟠 양호</td><td>소폭 프리미엄</td><td style="color:#f59e0b;font-weight:700">+10%</td></tr>
+        <tr><td style="font-weight:700">60~74%</td><td>🟡 적정</td><td>기준가 유지</td><td style="color:#86efac;font-weight:700">+5%</td></tr>
+        <tr><td style="font-weight:700">40~59%</td><td>🔵 보통</td><td>기준가</td><td style="font-weight:700">±0%</td></tr>
+        <tr style="background:#0f1520"><td style="font-weight:700">20~39%</td><td>🔷 부진</td><td>소폭 할인</td><td style="color:#60a5fa;font-weight:700">-10%</td></tr>
+        <tr style="background:#1a0f1a"><td style="font-weight:700">10~19%</td><td>⚠️ 심각</td><td>적극 할인</td><td style="color:#818cf8;font-weight:700">-20%</td></tr>
+        <tr style="background:#0f1025"><td style="font-weight:700">10% 미만</td><td>🆘 위기</td><td>막판 할인</td><td style="color:#f87171;font-weight:700">-30%</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="callout warn">
+    <p><strong>핵심 포인트:</strong> 얼리버드 할인(30일+전)으로 기본 물량을 채우고, 직전에 OCC가 높으면 프리미엄을 유지하고, 낮으면 막판 할인으로 빈 객실을 채웁니다. 가격을 "매일" 바꾸는 게 아니라, <strong>리드타임 버킷이 자동으로 조절</strong>해주는 구조입니다.</p>
+  </div>
+</div>
+
+<hr class="divider">
+
+<!-- ================================================================ -->
+<div class="section">
+  <span class="section-num">04</span>
+  <h2>가격 시뮬레이션 예시</h2>
+
+  <p>영흥 101호(기초가 159,000원)를 예시로 전체 가격 흐름을 보겠습니다. <strong>작년 실제 판매가: 평일 80,100~700,000원, 토요일 161,100~349,000원</strong></p>
+
+  <div class="tbl-wrap">
+    <table>
+      <thead>
+        <tr><th class="left">시나리오</th><th>기초가</th><th>계절</th><th>요일</th><th>OCC</th><th>계산값</th><th>가드레일</th><th>최종 가격</th></tr>
+      </thead>
+      <tbody>
+        <tr><td class="left">비수기 평일, 빈방(OCC 0%)</td><td>159K</td><td>×1.00</td><td>×1.00</td><td>×0.70</td><td>111K</td><td>80K~700K</td><td style="color:#60a5fa;font-weight:700">111,000원</td></tr>
+        <tr><td class="left">비수기 금요일, OCC 40%</td><td>159K</td><td>×1.00</td><td>×1.25</td><td>×1.00</td><td>199K</td><td>80K~348K</td><td style="font-weight:700">199,000원</td></tr>
+        <tr><td class="left">비수기 토요일, OCC 80%</td><td>159K</td><td>×1.00</td><td>×1.55</td><td>×1.10</td><td>271K</td><td>161K~349K</td><td style="color:#f59e0b;font-weight:700">271,000원</td></tr>
+        <tr class="highlight-row"><td class="left">준성수기 토, OCC 60%</td><td>159K</td><td>×1.20</td><td>×1.55</td><td>×1.05</td><td>310K</td><td>161K~349K</td><td style="color:#f59e0b;font-weight:700">310,000원</td></tr>
+        <tr class="highlight-row"><td class="left">극성수기 토, OCC 90%</td><td>159K</td><td>×1.60</td><td>×1.55</td><td>×1.20</td><td>473K</td><td style="color:#f87171">→ 349K 상한</td><td style="color:#f87171;font-weight:700">349,000원 ⬆</td></tr>
+        <tr><td class="left">비수기 수요일, OCC 0%</td><td>159K</td><td>×1.00</td><td>×1.00</td><td>×0.70</td><td>111K</td><td>80K~700K</td><td style="color:#60a5fa;font-weight:700">111,000원</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="callout">
+    <p><strong>핵심 변경:</strong> 이전에는 계산 배율만 적용하여 513,000원까지 올라갔지만, 이제 <strong>작년 실제 판매 데이터(토요일 최대 349,000원)</strong>가 상한으로 작용합니다. 반대로 하한도 작년 최저가(80,100원)가 적용되어, 비현실적인 가격이 나오지 않습니다.</p>
+  </div>
+
+  <div class="callout warn">
+    <p><strong>하방 가격 전략:</strong> 현재 전 지점 예약이 -45~85% 급감한 상황입니다. OCC가 10% 미만이면 <strong>기초가의 -30%까지</strong> 자동 인하를 권장하되, 작년 최저가 이하로는 내리지 않습니다. 이는 가격 신뢰를 유지하면서 빈 객실을 채우는 균형점입니다.</p>
+  </div>
+</div>
+
+<hr class="divider">
+
+<!-- ================================================================ -->
+<div class="section">
+  <span class="section-num">05</span>
+  <h2>공휴일·황금연휴 특별 배율</h2>
+  <p>공휴일과 황금연휴에는 계절 배율 대신 <strong>공휴일 배율</strong>이 적용됩니다 (둘 중 큰 값 사용).</p>
+
+  <div class="tbl-wrap">
+    <table>
+      <thead>
+        <tr><th class="left">일정</th><th>날짜</th><th>특별 배율</th><th>비고</th></tr>
+      </thead>
+      <tbody>
+        <tr class="highlight-row"><td class="left">🎏 황금연휴(어린이날)</td><td>5/2 ~ 5/6</td><td style="color:#f87171;font-weight:700">×1.30</td><td>토+일+월(대체) 3일 연휴</td></tr>
+        <tr><td class="left">현충일</td><td>6/6</td><td style="font-weight:700">×1.10</td><td>토요일 → 전날 금 추가 수요</td></tr>
+        <tr><td class="left">광복절</td><td>8/15</td><td style="font-weight:700">×1.15</td><td>극성수기와 겹침</td></tr>
+        <tr class="highlight-row"><td class="left">🎑 황금연휴(추석)</td><td>9/23 ~ 9/27</td><td style="color:#f87171;font-weight:700">×1.30</td><td>5일 연휴</td></tr>
+        <tr class="highlight-row"><td class="left">🍂 황금연휴(개천절~한글날)</td><td>10/3 ~ 10/11</td><td style="color:#f87171;font-weight:700">×1.25</td><td>단풍 시즌 + 연휴</td></tr>
+        <tr><td class="left">크리스마스</td><td>12/25</td><td style="font-weight:700">×1.15</td><td>금요일 → 주말 연계</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<hr class="divider">
+
+<!-- ================================================================ -->
+<div class="section">
+  <span class="section-num">06</span>
+  <h2>대시보드 시스템 개선안</h2>
+
+  <p>현재 가격전략 대시보드에 다음 기능을 추가합니다:</p>
+
+  <h3>🆕 추가 기능 1: YoY (전년 동기) 비교</h3>
+  <div class="cards" style="grid-template-columns:repeat(2,1fr)">
+    <div class="card">
+      <div class="label">현재 (없는 것)</div>
+      <p style="font-size:12px;color:#64748b;margin:0">현재 OCC와 권장 가격만 표시. 작년 대비 어떤 상태인지 알 수 없음.</p>
+    </div>
+    <div class="card" style="border-color:#4f6ef7">
+      <div class="label" style="color:#4f6ef7">개선 후</div>
+      <p style="font-size:12px;color:#cbd5e1;margin:0">같은 기간 작년 ADR, 예약 건수, 채널별 실적을 함께 표시. 지점별 트렌드 한눈에 파악.</p>
+    </div>
+  </div>
+
+  <h3>🆕 추가 기능 2: 리드타임 분석 탭</h3>
+  <div class="cards" style="grid-template-columns:repeat(2,1fr)">
+    <div class="card">
+      <div class="label">현재 (없는 것)</div>
+      <p style="font-size:12px;color:#64748b;margin:0">예약이 언제 들어오는지 분석 없음. 얼리버드 할인 효과 측정 불가.</p>
+    </div>
+    <div class="card" style="border-color:#4f6ef7">
+      <div class="label" style="color:#4f6ef7">개선 후</div>
+      <p style="font-size:12px;color:#cbd5e1;margin:0">리드타임별 예약 분포 차트 + 지점별 비교. 얼리버드 할인이 실제로 예약을 앞당기는지 추적.</p>
+    </div>
+  </div>
+
+  <h3>🆕 추가 기능 3: 채널별 수익성 분석</h3>
+  <div class="cards" style="grid-template-columns:repeat(2,1fr)">
+    <div class="card">
+      <div class="label">현재 (없는 것)</div>
+      <p style="font-size:12px;color:#64748b;margin:0">어떤 채널이 높은 ADR인지, 수수료 대비 수익은 어떤지 보이지 않음.</p>
+    </div>
+    <div class="card" style="border-color:#4f6ef7">
+      <div class="label" style="color:#4f6ef7">개선 후</div>
+      <p style="font-size:12px;color:#cbd5e1;margin:0">채널별 ADR 비교 + 점유율 + 트렌드. 수수료 차감 후 실질 수익 시각화.</p>
+    </div>
+  </div>
+</div>
+
+<hr class="divider">
+
+<!-- ================================================================ -->
+<div class="section">
+  <span class="section-num">07</span>
+  <h2>구현 로드맵</h2>
+
+  <div class="tbl-wrap">
+    <table>
+      <thead>
+        <tr><th>단계</th><th class="left">항목</th><th>시기</th><th>효과</th></tr>
+      </thead>
+      <tbody>
+        <tr class="highlight-row"><td style="font-weight:700">Phase 1</td><td class="left">요일 배율(평/금/토) + 리드타임 할인 구조 적용</td><td>즉시</td><td>+8~12% 매출 상승</td></tr>
+        <tr class="highlight-row"><td style="font-weight:700">Phase 1</td><td class="left">대시보드에 YoY 비교 섹션 추가</td><td>즉시</td><td>의사결정 속도 향상</td></tr>
+        <tr><td style="font-weight:700">Phase 2</td><td class="left">계절 배율 캘린더 + 공휴일 자동 반영</td><td>1~2주</td><td>+4~8% 피크 시즌 수익</td></tr>
+        <tr><td style="font-weight:700">Phase 2</td><td class="left">대시보드에 리드타임 분석 탭 추가</td><td>1~2주</td><td>얼리버드 전략 효과 측정</td></tr>
+        <tr><td style="font-weight:700">Phase 3</td><td class="left">채널별 수익성 분석 + 채널 가격 차등화</td><td>1개월</td><td>+2~5% 마진 개선</td></tr>
+        <tr><td style="font-weight:700">Phase 4</td><td class="left">A/B 테스트 + 자동 최적화 로직</td><td>지속</td><td>장기 +15~25%</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="callout success">
+    <p><strong>예상 총 효과:</strong> 완전 구현 시 연간 매출 <strong>+15~25%</strong> 상승 예상. 특히 성수기 프리미엄 포착(+40~80%)과 비수기 평일 빈방 감소(얼리버드 할인)에서 가장 큰 효과.</p>
+  </div>
+</div>
+
+<hr class="divider">
+
+<!-- ================================================================ -->
+<div class="section">
+  <span class="section-num">08</span>
+  <h2>즉시 실행 사항</h2>
+
+  <p>대시보드에 바로 적용할 개선사항입니다:</p>
+
+  <div class="cards">
+    <div class="card" style="border-top:3px solid #22c55e">
+      <div style="font-size:24px;margin-bottom:8px">📊</div>
+      <div style="font-size:14px;font-weight:700;color:#fff;margin-bottom:6px">YoY 비교 섹션</div>
+      <p style="font-size:12px;color:#94a3b8;margin:0">작년 동기 ADR·건수와 비교하는 카드 + 차트를 대시보드 상단에 추가</p>
+    </div>
+    <div class="card" style="border-top:3px solid #22c55e">
+      <div style="font-size:24px;margin-bottom:8px">⏰</div>
+      <div style="font-size:14px;font-weight:700;color:#fff;margin-bottom:6px">리드타임 분포 차트</div>
+      <p style="font-size:12px;color:#94a3b8;margin:0">지점별 예약 리드타임 분포를 보여주는 차트 추가</p>
+    </div>
+    <div class="card" style="border-top:3px solid #22c55e">
+      <div style="font-size:24px;margin-bottom:8px">📡</div>
+      <div style="font-size:14px;font-weight:700;color:#fff;margin-bottom:6px">채널별 ADR 비교</div>
+      <p style="font-size:12px;color:#94a3b8;margin:0">네이버/여기어때/야놀자 등 채널별 ADR을 비교하는 바 차트</p>
+    </div>
+    <div class="card" style="border-top:3px solid #22c55e">
+      <div style="font-size:24px;margin-bottom:8px">🔄</div>
+      <div style="font-size:14px;font-weight:700;color:#fff;margin-bottom:6px">요일배율 자동화</div>
+      <p style="font-size:12px;color:#94a3b8;margin:0">금(×1.25), 토(×1.55) 배율을 가격표에 자동 반영</p>
+    </div>
+  </div>
+</div>
+
+<div style="text-align:center;padding:40px 0;color:#4a5568;font-size:12px">
+  🐾 글램독 내부 자료 | 생성일: 2026-04-14 | 데이터 분석 기반
+</div>
+
+</div>
+</body>
+</html>

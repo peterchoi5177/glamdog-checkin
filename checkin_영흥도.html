@@ -1,0 +1,1089 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<meta http-equiv="refresh" content="1800">
+<title>글램독 영흥도 체크인 리스트</title>
+<!-- v2026-04-14 00:37 -->
+<style>
+  :root {
+    --navy: #1B3A5C;
+    --blue: #2D5F8A;
+    --light: #EBF3FA;
+    --accent: #E8740C;
+    --border: #AAAAAA;
+    --text: #222222;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif;
+         font-size: 14px; color: var(--text); background: #f0f2f5; }
+
+  /* 상단 바 */
+  .top-bar {
+    background: var(--navy); color: white;
+    padding: 12px 20px; display: flex; align-items: center;
+    gap: 14px; flex-wrap: wrap;
+  }
+  .top-bar h1 { font-size: 17px; font-weight: 700; }
+  .top-bar label { font-size: 13px; opacity: 0.8; }
+  .top-bar input[type=date] {
+    padding: 5px 10px; border: none; border-radius: 4px; font-size: 14px;
+  }
+  .update-time { font-size: 11px; opacity: 0.55; margin-left: auto; }
+
+  /* 뷰 토글 버튼 */
+  .view-toggle {
+    display: flex; gap: 4px; margin-left: 8px;
+  }
+  .btn-view {
+    padding: 5px 12px; border-radius: 4px; font-size: 12px; font-weight: 600;
+    border: none; cursor: pointer; background: rgba(255,255,255,0.15); color: white;
+  }
+  .btn-view.active { background: white; color: var(--navy); }
+
+  /* 달력 */
+  .calendar-wrap { padding: 16px 20px; }
+  .cal-nav {
+    display: flex; align-items: center; gap: 12px; margin-bottom: 14px;
+  }
+  .cal-nav h2 { font-size: 17px; font-weight: 700; color: var(--navy); }
+  .cal-nav button {
+    background: var(--navy); color: white; border: none;
+    border-radius: 4px; padding: 5px 12px; font-size: 14px; cursor: pointer;
+  }
+  .cal-nav button:hover { background: var(--blue); }
+  .cal-nav .today-btn {
+    background: #eee; color: #444; font-size: 12px; padding: 5px 10px;
+  }
+  .cal-grid {
+    display: grid; grid-template-columns: repeat(7, 1fr);
+    border: 1px solid var(--border); border-radius: 8px; overflow: hidden;
+  }
+  .cal-dow {
+    background: var(--navy); color: white;
+    text-align: center; padding: 8px 0;
+    font-size: 12px; font-weight: 600;
+  }
+  .cal-dow:first-child { color: #ffaaaa; }
+  .cal-dow:last-child  { color: #aaccff; }
+  .cal-cell {
+    min-height: 72px; padding: 6px;
+    border: 0.5px solid #dde3ea;
+    cursor: pointer; transition: background 0.15s;
+    background: white;
+  }
+  .cal-cell:hover { background: #f0f6ff; }
+  .cal-cell.empty { background: #f7f8fa; cursor: default; }
+  .cal-cell.today { background: #fff8e6; }
+  .cal-cell.selected { background: #e8f0fe; outline: 2px solid var(--blue); }
+  .cal-cell.sunday .cal-day  { color: #cc3333; }
+  .cal-cell.saturday .cal-day { color: #2255aa; }
+  .cal-day { font-size: 13px; font-weight: 700; margin-bottom: 4px; }
+  .cal-badges { display: flex; flex-wrap: wrap; gap: 3px; }
+  .cal-badge {
+    font-size: 10px; font-weight: 700; padding: 2px 5px;
+    border-radius: 10px; color: white; white-space: nowrap;
+  }
+  .cal-badge-total { background: var(--navy); }
+  .cal-badge-branch { background: var(--accent); }
+
+  @media (max-width: 600px) {
+    .cal-cell { min-height: 52px; padding: 4px; }
+    .cal-day { font-size: 11px; }
+    .cal-badge { font-size: 9px; padding: 1px 4px; }
+  }
+
+  /* 탭 (본사용만) */
+  .tabs {
+    display: flex; gap: 4px; padding: 10px 20px 0;
+    background: #e0e5ea; overflow-x: auto;
+  }
+  .tab {
+    padding: 8px 16px; border-radius: 6px 6px 0 0; cursor: pointer;
+    font-size: 13px; font-weight: 600; background: #c8d0d9;
+    color: #555; border: none; white-space: nowrap;
+  }
+  .tab.active { background: white; color: var(--navy); }
+  .tab .cnt {
+    display: inline-block; background: var(--accent); color: white;
+    font-size: 10px; font-weight: 700; border-radius: 10px;
+    padding: 1px 6px; margin-left: 5px;
+  }
+
+  .content { background: white; padding: 16px 20px; min-height: calc(100vh - 110px); }
+
+  .date-header {
+    font-size: 16px; font-weight: 700; color: var(--navy);
+    margin-bottom: 12px; padding-bottom: 8px;
+    border-bottom: 2px solid var(--navy);
+    display: flex; align-items: center; gap: 12px;
+  }
+  .date-header .summary { font-size: 13px; font-weight: 400; color: #666; }
+
+  /* 테이블 */
+  table { width: 100%; border-collapse: collapse; }
+  thead tr { background: var(--navy); color: white; }
+  th {
+    padding: 9px 7px; text-align: center;
+    font-size: 13px; font-weight: 600;
+    border: 1px solid #4a6a8a;
+  }
+  td {
+    padding: 9px 7px; border: 1px solid var(--border);
+    vertical-align: middle; font-size: 13px;
+  }
+  tbody tr:nth-child(even) { background: #f7f9fc; }
+
+  /* 열 너비 - 세로 A4 최적화 */
+  .col-room    { width: 11%; }
+  .col-guest   { width: 20%; }
+  .col-payment { width: 16%; }
+  .col-nights  { width: 12%; }
+  .col-dog     { width: 17%; }
+  .col-bbq     { width: 7%;  }
+  .col-arrive  { width: 9%;  }
+  .col-memo    { width: 8%;  }
+
+  .room-name { font-size: 15px; font-weight: 800; color: var(--navy); }
+
+  .guest-name  { font-size: 15px; font-weight: 700; color: #111; }
+  .guest-phone { font-size: 13px; font-weight: 700; color: #333; margin-top: 3px; }
+
+  .channel-badge {
+    display: inline-block; font-size: 10px; padding: 1px 5px;
+    border-radius: 3px; margin-top: 3px; font-weight: 600;
+  }
+  .ch-야놀자   { background:#fff0f5; color:#c41a5a; border:1px solid #f9c0d4; }
+  .ch-여기어때 { background:#fff3e0; color:#d46b00; border:1px solid #ffd08a; }
+  .ch-수기     { background:#f0f4ff; color:#3a5bd9; border:1px solid #b0c0f0; }
+  .ch-기타     { background:#f5f5f5; color:#666;    border:1px solid #ddd; }
+
+  .payment-box { font-size: 12px; line-height: 1.7; }
+  .payment-total  { font-size: 14px; font-weight: 700; color: var(--navy); }
+  .payment-onsite { color: var(--accent); font-weight: 600; }
+
+  .nights-box { text-align: center; font-size: 12px; line-height: 1.6; }
+  .nights-box b { font-size: 15px; color: var(--navy); }
+
+  /* 수기 공란 - 선 3개 */
+  .write-lines { padding-top: 4px; }
+  .write-line  {
+    border-bottom: 1px solid #999;
+    height: 18px; margin-bottom: 5px;
+    width: 100%;
+  }
+
+  /* BBQ 공란 */
+  .bbq-box { text-align: center; font-size: 18px; }
+
+  .empty-state { text-align: center; padding: 60px 20px; color: #999; font-size: 15px; }
+
+  /* 하단 인쇄 버튼 */
+  .print-bar {
+    position: sticky; bottom: 0; background: white;
+    border-top: 2px solid var(--border);
+    padding: 10px 20px; display: flex; gap: 10px; align-items: center;
+  }
+  .btn-print {
+    background: var(--navy); color: white; border: none;
+    padding: 9px 24px; border-radius: 5px;
+    font-size: 14px; font-weight: 600; cursor: pointer;
+  }
+  .btn-print:hover { background: var(--blue); }
+  .print-tip { font-size: 12px; color: #888; }
+
+  /* ── 예약현황 달력 ── */
+  .rescal-wrap { display: flex; flex-direction: column; height: calc(100vh - 110px); }
+  .rescal-controls {
+    display: flex; align-items: center; gap: 8px; padding: 10px 16px;
+    background: #f5f7fa; border-bottom: 1px solid #dde3ea; flex-shrink: 0; flex-wrap: wrap;
+  }
+  .rescal-nav { background: var(--navy); color: white; border: none;
+    border-radius: 4px; padding: 5px 12px; font-size: 15px; cursor: pointer; }
+  .rescal-nav:hover { background: var(--blue); }
+  .rescal-today { background: #eee; color: #444; border: none;
+    border-radius: 4px; padding: 5px 10px; font-size: 12px; cursor: pointer; }
+  .rescal-period { font-size: 13px; font-weight: 700; color: var(--navy); min-width: 160px; }
+  .rescal-range { display: flex; gap: 4px; }
+  .rescal-range-btn { padding: 4px 10px; border: 1px solid #ccd6e0; border-radius: 4px;
+    font-size: 12px; font-weight: 600; background: white; color: #555; cursor: pointer; }
+  .rescal-range-btn.active { background: var(--navy); color: white; border-color: var(--navy); }
+  .rescal-legend { display: flex; gap: 8px; align-items: center; margin-left: auto; flex-wrap: wrap; }
+  .rescal-legend-item { display: flex; align-items: center; gap: 4px; font-size: 11px; }
+  .rescal-legend-dot { width: 10px; height: 10px; border-radius: 2px; }
+
+  /* 그리드 스크롤 영역 */
+  .rescal-scroll {
+    flex: 1; overflow: auto; cursor: grab; user-select: none; position: relative;
+  }
+  .rescal-scroll.dragging { cursor: grabbing; }
+
+  /* 그리드 */
+  .rescal-grid { display: inline-flex; flex-direction: column; min-width: 100%; }
+
+  /* 헤더 행 */
+  .rescal-header-row { display: flex; position: sticky; top: 0; z-index: 20; }
+  .rescal-room-header {
+    min-width: 110px; max-width: 110px; background: var(--navy); color: white;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 700; padding: 8px 6px; border: 0.5px solid #4a6a8a;
+    position: sticky; left: 0; z-index: 30;
+  }
+  .rescal-date-header {
+    min-width: 82px; max-width: 82px; background: var(--navy); color: white;
+    text-align: center; padding: 6px 2px; border: 0.5px solid #4a6a8a;
+  }
+  .rescal-date-header.today-h { background: var(--accent); }
+  .rescal-date-header.sun-h .rescal-dow { color: #ffaaaa; }
+  .rescal-date-header.sat-h .rescal-dow { color: #aaddff; }
+  .rescal-dow  { font-size: 13px; font-weight: 700; }
+  .rescal-dnum { font-size: 11px; opacity: 0.75; }
+
+  /* 객실 행 */
+  .rescal-room-row { display: flex; }
+  .rescal-room-label {
+    min-width: 110px; max-width: 110px; display: flex; align-items: center;
+    padding: 0 10px; font-size: 13px; font-weight: 700; color: var(--navy);
+    border: 0.5px solid #dde3ea; background: white; min-height: 58px;
+    position: sticky; left: 0; z-index: 10;
+  }
+  .rescal-room-row:nth-child(even) .rescal-room-label { background: #f8faff; }
+
+  /* 날짜 셀 */
+  .rescal-day-cell {
+    min-width: 82px; max-width: 82px; min-height: 58px;
+    border: 0.5px solid #e4e8ee; position: relative; background: white;
+  }
+  .rescal-room-row:nth-child(even) .rescal-day-cell { background: #fafbff; }
+  .rescal-day-cell.today-col { background: #fffbef !important; }
+
+  /* 예약 블록 */
+  .rescal-block {
+    position: absolute; top: 7px; bottom: 7px;
+    border-radius: 4px; padding: 3px 7px;
+    font-size: 11px; font-weight: 600; color: white;
+    overflow: hidden; white-space: nowrap;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.25);
+    display: flex; flex-direction: column; justify-content: center; z-index: 5;
+  }
+  .rescal-block-name  { font-size: 11px; font-weight: 700; }
+  .rescal-block-phone { font-size: 10px; opacity: 0.9; }
+  .rescal-block.ch-야놀자   { background: #c41a5a; }
+  .rescal-block.ch-여기어때 { background: #d46b00; }
+  .rescal-block.ch-수기     { background: #1a5bc4; }
+  .rescal-block.ch-방막기   { background: #78909c; }
+  .rescal-block.ch-기타     { background: #546e7a; }
+
+  @media (max-width: 600px) {
+    .rescal-room-header, .rescal-room-label { min-width: 70px; max-width: 70px; font-size: 11px; }
+    .rescal-date-header, .rescal-day-cell   { min-width: 64px; max-width: 64px; }
+  }
+  @media print { .rescal-wrap { display: none !important; } }
+
+  /* ── 인쇄 스타일 ── */
+  @media print {
+    @page { size: A4 portrait; margin: 12mm 10mm; }
+    body { background: white; font-size: 12px; }
+    .top-bar, .tabs, .print-bar { display: none !important; }
+    .content { padding: 0; min-height: unset; }
+    .print-header {
+      display: flex !important;
+      justify-content: space-between; align-items: flex-end;
+      margin-bottom: 10px; padding-bottom: 7px;
+      border-bottom: 2px solid var(--navy);
+    }
+    .print-header h2 { font-size: 17px; font-weight: 700; color: var(--navy); }
+    .print-header span { font-size: 12px; color: #555; }
+    table { font-size: 11px; page-break-inside: auto; }
+    tr { page-break-inside: avoid; }
+    th {
+      font-size: 11px; padding: 6px 4px;
+      background: var(--navy) !important;
+      -webkit-print-color-adjust: exact; print-color-adjust: exact;
+    }
+    td { padding: 7px 4px; }
+    tbody tr:nth-child(even) {
+      background: #f7f9fc !important;
+      -webkit-print-color-adjust: exact; print-color-adjust: exact;
+    }
+    .channel-badge {
+      -webkit-print-color-adjust: exact; print-color-adjust: exact;
+    }
+    .room-name { font-size: 13px; }
+    .guest-name  { font-size: 13px; }
+    .guest-phone { font-size: 11px; }
+    .payment-total { font-size: 12px; }
+    .nights-box b { font-size: 13px; }
+    .write-line { height: 16px; margin-bottom: 4px; }
+    .date-header { display: none; }
+    .blank-row { display: table-row !important; }
+    .blank-row td { height: 28px; border-bottom: 1px solid #ccc; }
+  }
+  .blank-row { display: none; }
+  .print-header { display: none; }
+
+  /* ── 비밀번호 오버레이 ── */
+  #pwOverlay {
+    position: fixed; inset: 0; z-index: 9999;
+    background: rgba(27,58,92,0.96);
+    display: flex; align-items: center; justify-content: center;
+  }
+  .pw-box {
+    background: white; border-radius: 12px;
+    padding: 40px 36px; width: 320px; text-align: center;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+  }
+  .pw-logo { font-size: 48px; margin-bottom: 10px; }
+  .pw-box h2 { font-size: 18px; color: var(--navy); margin-bottom: 6px; }
+  .pw-box p  { font-size: 13px; color: #888; margin-bottom: 22px; }
+  #pwInput {
+    width: 100%; padding: 11px 14px; font-size: 15px;
+    border: 2px solid #ccd6e0; border-radius: 6px;
+    outline: none; margin-bottom: 10px;
+  }
+  #pwInput:focus { border-color: var(--blue); }
+  #pwError {
+    color: #d9534f; font-size: 12px; margin-bottom: 10px; display: none;
+  }
+  .pw-btn {
+    width: 100%; padding: 11px; font-size: 15px; font-weight: 700;
+    background: var(--navy); color: white; border: none; border-radius: 6px;
+    cursor: pointer;
+  }
+  .pw-btn:hover { background: var(--blue); }
+  @media print { #pwOverlay { display: none !important; } }
+
+  /* ==============================
+     현장기록 모달
+     ============================== */
+  .field-btn {
+    display:inline-flex;align-items:center;gap:3px;
+    background:#e8f5e9;color:#2e7d32;border:1px solid #a5d6a7;
+    border-radius:4px;padding:3px 7px;font-size:11px;font-weight:700;
+    cursor:pointer;margin-top:4px;white-space:nowrap;
+  }
+  .field-btn:active{background:#c8e6c9;}
+  .field-done-badge {
+    display:inline-flex;align-items:center;gap:3px;
+    background:#fff3e0;color:#e65100;border:1px solid #ffcc80;
+    border-radius:4px;padding:3px 7px;font-size:11px;font-weight:700;
+    margin-top:4px;cursor:pointer;
+  }
+  .fm-overlay {
+    display:none;position:fixed;inset:0;background:rgba(0,0,0,0.55);
+    z-index:2000;align-items:flex-end;justify-content:center;
+  }
+  .fm-overlay.open{display:flex;}
+  .fm-sheet {
+    background:#fff;width:100%;max-width:560px;
+    border-radius:16px 16px 0 0;padding:20px 20px 36px;
+    max-height:85vh;overflow-y:auto;
+  }
+  .fm-handle{width:40px;height:4px;background:#ddd;border-radius:2px;margin:0 auto 16px;}
+  .fm-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:16px;}
+  .fm-title{font-size:16px;font-weight:700;color:#1B3A5C;}
+  .fm-subtitle{font-size:13px;color:#666;margin-top:3px;}
+  .fm-close{background:none;border:none;font-size:24px;cursor:pointer;color:#888;line-height:1;}
+  .fm-sec{margin-bottom:14px;}
+  .fm-sec-label{font-size:11px;font-weight:700;color:#999;margin-bottom:7px;letter-spacing:0.5px;text-transform:uppercase;}
+  .fm-btns{display:flex;gap:8px;flex-wrap:wrap;}
+  .fm-btn {
+    padding:10px 14px;border:2px solid #dde3ea;border-radius:8px;
+    background:white;font-size:13px;font-weight:600;cursor:pointer;color:#333;
+  }
+  .fm-btn:active{background:#1B3A5C;color:white;border-color:#1B3A5C;}
+  .fm-etc-row{display:flex;gap:6px;align-items:center;flex-wrap:wrap;}
+  .fm-etc-input{padding:9px 10px;border:2px solid #dde3ea;border-radius:8px;font-size:13px;}
+  .fm-items{margin:10px 0 0;border-top:1px solid #eee;}
+  .fm-item{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid #f5f5f5;font-size:13px;}
+  .fm-item-label{color:#333;}
+  .fm-item-amt{font-weight:700;color:#1B3A5C;}
+  .fm-item-del{background:none;border:none;color:#ccc;font-size:18px;cursor:pointer;padding:0 2px;line-height:1;}
+  .fm-item-del:hover{color:#e53935;}
+  .fm-total{display:flex;justify-content:space-between;align-items:center;padding:12px 0;font-size:17px;font-weight:700;color:#1B3A5C;border-top:2px solid #1B3A5C;margin-top:4px;}
+  .fm-pay-row{display:flex;gap:10px;margin:14px 0 6px;}
+  .fm-pay-btn{flex:1;padding:12px;border:2px solid #dde3ea;border-radius:8px;background:white;font-size:15px;font-weight:700;cursor:pointer;color:#555;text-align:center;}
+  .fm-pay-btn.on{border-color:#1B3A5C;background:#1B3A5C;color:white;}
+  .fm-save{width:100%;padding:14px;background:#1B3A5C;color:white;border:none;border-radius:10px;font-size:16px;font-weight:700;cursor:pointer;margin-top:10px;}
+  .fm-save:disabled{background:#ccc;cursor:not-allowed;}
+  .fm-save:not(:disabled):active{background:#2a5298;}
+  .field-summary-section{margin:14px 8px 4px;padding:14px 16px;background:#f0f4f8;border-radius:10px;border:1px solid #dde3ea;}
+  .field-summary-title{font-size:13px;font-weight:700;color:#1B3A5C;margin-bottom:10px;}
+  .fs-item{display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px solid #dde3ea;font-size:13px;}
+  .fs-item:last-child{border-bottom:none;}
+  .fs-empty{font-size:12px;color:#aaa;text-align:center;padding:10px 0;}
+  @media print{.field-btn,.field-done-badge,.fm-overlay,.field-summary-section{display:none!important;}}
+</style>
+</head>
+<body>
+
+<div id="pwOverlay" style="display:flex">
+  <div class="pw-box">
+    <div class="pw-logo">🐾</div>
+    <h2>글램독 체크인 리스트</h2>
+    <p>직원 전용 페이지입니다</p>
+    <input type="password" id="pwInput" placeholder="비밀번호 입력"
+           onkeydown="if(event.key==='Enter')_submitPw()">
+    <div id="pwError">비밀번호가 틀렸습니다</div>
+    <button class="pw-btn" onclick="_submitPw()">확인</button>
+  </div>
+</div>
+
+<div class="top-bar">
+  <h1>🐾 글램독 영흥도 체크인 리스트</h1>
+  <label>날짜</label>
+  <input type="date" id="datePicker" value="2026-04-14">
+  <div class="view-toggle">
+    <button class="btn-view active" id="btnList" onclick="setView('list')">📋 체크인 리스트</button>
+    <button class="btn-view"        id="btnCal"  onclick="setView('calendar')">📅 월별 달력</button>
+    <button class="btn-view"        id="btnRes"  onclick="setView('rescal')">🏠 예약현황</button>
+  </div>
+  <span class="update-time">갱신: 2026-04-14 00:37</span>
+</div>
+<div class="content" id="content">
+  <div class="print-header" id="printHeader"></div>
+  <div id="listSection">
+    <div id="tableArea"></div>
+    <div id="fieldSummaryWrap" class="field-summary-section" style="display:none"><div class="field-summary-title">오늘의 현장기록</div><div id="fieldSummaryArea"><div class="fs-empty">불러오는 중...</div></div></div>
+  </div>
+  <div id="calSection" class="calendar-wrap" style="display:none"></div>
+  <div id="resCalSection" class="rescal-wrap" style="display:none">
+    <div class="rescal-controls">
+      <button class="rescal-nav" onclick="resCalMove(-1)">&#8249;</button>
+      <button class="rescal-today" onclick="resCalGoToday()">오늘</button>
+      <button class="rescal-nav" onclick="resCalMove(1)">&#8250;</button>
+      <span class="rescal-period" id="resCalPeriod"></span>
+      <div class="rescal-range">
+        <button class="rescal-range-btn active" data-days="7"  onclick="resCalSetRange(7)">1주</button>
+        <button class="rescal-range-btn"        data-days="15" onclick="resCalSetRange(15)">15일</button>
+        <button class="rescal-range-btn"        data-days="30" onclick="resCalSetRange(30)">1개월</button>
+      </div>
+      <div class="rescal-legend">
+        <div class="rescal-legend-item"><div class="rescal-legend-dot" style="background:#c41a5a"></div>야놀자</div>
+        <div class="rescal-legend-item"><div class="rescal-legend-dot" style="background:#d46b00"></div>여기어때</div>
+        <div class="rescal-legend-item"><div class="rescal-legend-dot" style="background:#1a5bc4"></div>수기</div>
+        <div class="rescal-legend-item"><div class="rescal-legend-dot" style="background:#78909c"></div>방막기</div>
+      </div>
+    </div>
+    <div class="rescal-scroll" id="resCalScroll">
+      <div class="rescal-grid" id="resCalGrid"></div>
+    </div>
+  </div>
+</div>
+<div class="print-bar">
+  <button class="btn-print" onclick="window.print()">🖨️ 인쇄</button>
+  <span class="print-tip">세로(Portrait) A4로 인쇄하세요.</span>
+</div>
+
+<!-- 현장기록 모달 -->
+<div id="fmOverlay" class="fm-overlay" onclick="if(event.target===this)closeFM()">
+  <div class="fm-sheet">
+    <div class="fm-handle"></div>
+    <div class="fm-header">
+      <div>
+        <div class="fm-title">현장 추가 기록</div>
+        <div class="fm-subtitle" id="fmSub"></div>
+      </div>
+      <button class="fm-close" onclick="closeFM()">&#215;</button>
+    </div>
+
+    <div class="fm-sec">
+      <div class="fm-sec-label">BBQ (1세트 20,000원)</div>
+      <div class="fm-btns">
+        <button class="fm-btn" onclick="fmAdd('bbq')">BBQ +20,000원</button>
+      </div>
+    </div>
+
+    <div class="fm-sec">
+      <div class="fm-sec-label">인원추가 (1인당 20,000원)</div>
+      <div class="fm-btns">
+        <button class="fm-btn" onclick="fmPerson(1)">1인</button>
+        <button class="fm-btn" onclick="fmPerson(2)">2인</button>
+        <button class="fm-btn" onclick="fmPerson(3)">3인</button>
+        <button class="fm-btn" onclick="fmPerson(4)">4인</button>
+        <button class="fm-btn" onclick="fmPerson(5)">5인</button>
+      </div>
+    </div>
+
+    <div class="fm-sec">
+      <div class="fm-sec-label">애견추가 (마리당 10,000원)</div>
+      <div class="fm-btns">
+        <button class="fm-btn" onclick="fmAdd('dog')">추가 마리 +10,000원</button>
+        <button class="fm-btn" onclick="fmAdd('bigdog')">10kg이상 +10,000원</button>
+      </div>
+    </div>
+
+    <div class="fm-sec">
+      <div class="fm-sec-label">기타</div>
+      <div class="fm-etc-row">
+        <input id="fmEtcNote" class="fm-etc-input" type="text" placeholder="내용" style="flex:1;min-width:100px;">
+        <input id="fmEtcAmt"  class="fm-etc-input" type="number" placeholder="금액" style="width:90px;">
+        <button class="fm-btn" onclick="fmAddEtc()">추가</button>
+      </div>
+    </div>
+
+    <div id="fmItems" class="fm-items"></div>
+    <div class="fm-total"><span>합계</span><span id="fmTotalAmt">0원</span></div>
+
+    <div class="fm-sec-label" style="margin-top:14px">결제 방식</div>
+    <div class="fm-pay-row">
+      <button class="fm-pay-btn" id="fmPay0" onclick="fmPay('현금')">현금</button>
+      <button class="fm-pay-btn" id="fmPay1" onclick="fmPay('계좌')">계좌</button>
+      <button class="fm-pay-btn" id="fmPay2" onclick="fmPay('카드')">카드</button>
+    </div>
+
+    <button class="fm-save" id="fmSaveBtn" onclick="fmSave()" disabled>기록하기</button>
+  </div>
+</div>
+
+<script>
+const ALL_RECORDS  = [{"branch": "영흥도", "booking_no": "2604132263720872", "guest": "Junsu Choi", "phone": "010-2253-0282", "channel": "기타", "room": "204", "checkin": "2026-05-12", "checkout": "2026-05-13", "nights": 1, "stay_dates": ["2026-05-12"], "price": 69000, "onsite": 0, "total": 69000, "is_block": false}, {"branch": "영흥도", "booking_no": "2604112163517374", "guest": "Seunghun Lim", "phone": "010-9617-5121", "channel": "기타", "room": "202", "checkin": "2026-05-11", "checkout": "2026-05-12", "nights": 1, "stay_dates": ["2026-05-11"], "price": 69000, "onsite": 0, "total": 69000, "is_block": false}, {"branch": "영흥도", "booking_no": "2604132263720828", "guest": "Junsu Choi", "phone": "010-2253-0282", "channel": "기타", "room": "204", "checkin": "2026-05-11", "checkout": "2026-05-12", "nights": 1, "stay_dates": ["2026-05-11"], "price": 69000, "onsite": 0, "total": 69000, "is_block": false}, {"branch": "영흥도", "booking_no": "2604092263305081", "guest": "Minjung Kim", "phone": "010-7223-9597", "channel": "기타", "room": "205", "checkin": "2026-05-09", "checkout": "2026-05-10", "nights": 1, "stay_dates": ["2026-05-09"], "price": 99000, "onsite": 0, "total": 99000, "is_block": false}, {"branch": "영흥도", "booking_no": "2604021362513459", "guest": "심민경", "phone": "010-4828-0086", "channel": "기타", "room": "101", "checkin": "2026-05-08", "checkout": "2026-05-09", "nights": 1, "stay_dates": ["2026-05-08"], "price": 119000, "onsite": 0, "total": 119000, "is_block": false}, {"branch": "영흥도", "booking_no": "2604051562837034", "guest": "Yejin Lim", "phone": "010-4890-2702", "channel": "기타", "room": "103", "checkin": "2026-05-08", "checkout": "2026-05-09", "nights": 1, "stay_dates": ["2026-05-08"], "price": 99000, "onsite": 0, "total": 99000, "is_block": false}, {"branch": "영흥도", "booking_no": "2604070062994493", "guest": "Jinhui Choi", "phone": "010-5140-2059", "channel": "기타", "room": "303", "checkin": "2026-05-07", "checkout": "2026-05-08", "nights": 1, "stay_dates": ["2026-05-07"], "price": 69000, "onsite": 0, "total": 69000, "is_block": false}, {"branch": "영흥도", "booking_no": "2603211000620554", "guest": "신슬기", "phone": "010-6244-8126", "channel": "기타", "room": "104", "checkin": "2026-05-04", "checkout": "2026-05-05", "nights": 1, "stay_dates": ["2026-05-04"], "price": 129000, "onsite": 0, "total": 129000, "is_block": false}, {"branch": "영흥도", "booking_no": "2604120023140078", "guest": "김정윤", "phone": "010-5617-4286", "channel": "기타", "room": "101", "checkin": "2026-05-02", "checkout": "2026-05-03", "nights": 1, "stay_dates": ["2026-05-02"], "price": 143100, "onsite": 0, "total": 143100, "is_block": false}, {"branch": "영흥도", "booking_no": "M26041311001571360e", "guest": "천영선(온다)", "phone": "010-6219-6319", "channel": "수기", "room": "102", "checkin": "2026-05-02", "checkout": "2026-05-03", "nights": 1, "stay_dates": ["2026-05-02"], "price": 129000, "onsite": 0, "total": 129000, "is_block": false}, {"branch": "영흥도", "booking_no": "2604021162500759", "guest": "신종환", "phone": "010-9035-6251", "channel": "기타", "room": "101", "checkin": "2026-05-01", "checkout": "2026-05-02", "nights": 1, "stay_dates": ["2026-05-01"], "price": 159000, "onsite": 0, "total": 159000, "is_block": false}, {"branch": "영흥도", "booking_no": "M260405235907822d05", "guest": "김동윤", "phone": "050240126622", "channel": "수기", "room": "104", "checkin": "2026-05-01", "checkout": "2026-05-02", "nights": 1, "stay_dates": ["2026-05-01"], "price": 129000, "onsite": 0, "total": 129000, "is_block": false}, {"branch": "영흥도", "booking_no": "2604130163632925", "guest": "Kyeongok Lim", "phone": "010-8931-1535", "channel": "기타", "room": "203", "checkin": "2026-05-01", "checkout": "2026-05-02", "nights": 1, "stay_dates": ["2026-05-01"], "price": 99000, "onsite": 0, "total": 99000, "is_block": false}, {"branch": "영흥도", "booking_no": "M260413105936852d01", "guest": "천영선(온다)", "phone": "010-6219-6319", "channel": "수기", "room": "102", "checkin": "2026-05-01", "checkout": "2026-05-02", "nights": 1, "stay_dates": ["2026-05-01"], "price": 129000, "onsite": 0, "total": 129000, "is_block": false}, {"branch": "영흥도", "booking_no": "2604132263725296", "guest": "최세준", "phone": "010-3913-9462", "channel": "기타", "room": "202", "checkin": "2026-05-01", "checkout": "2026-05-02", "nights": 1, "stay_dates": ["2026-05-01"], "price": 99000, "onsite": 0, "total": 99000, "is_block": false}, {"branch": "영흥도", "booking_no": "M260408161036130ec8", "guest": "임지현(다이클로)", "phone": "010-8870-3094", "channel": "수기", "room": "304", "checkin": "2026-04-30", "checkout": "2026-05-01", "nights": 1, "stay_dates": ["2026-04-30"], "price": 99000, "onsite": 0, "total": 99000, "is_block": false}, {"branch": "영흥도", "booking_no": "M2604091141243101f6", "guest": "김성윤(다이클로)", "phone": "010-9042-2557", "channel": "수기", "room": "202", "checkin": "2026-04-30", "checkout": "2026-05-01", "nights": 1, "stay_dates": ["2026-04-30"], "price": 109000, "onsite": 0, "total": 109000, "is_block": false}, {"branch": "영흥도", "booking_no": "2604051862859261", "guest": "Sanjung Kim", "phone": "010-9524-4130", "channel": "기타", "room": "101", "checkin": "2026-04-30", "checkout": "2026-05-01", "nights": 1, "stay_dates": ["2026-04-30"], "price": 119000, "onsite": 0, "total": 119000, "is_block": false}, {"branch": "영흥도", "booking_no": "2604131863697509", "guest": "Yeongseop Yoon", "phone": "010-3308-8898", "channel": "기타", "room": "103", "checkin": "2026-04-25", "checkout": "2026-04-26", "nights": 1, "stay_dates": ["2026-04-25"], "price": 139000, "onsite": 0, "total": 139000, "is_block": false}, {"branch": "영흥도", "booking_no": "2603261561833861", "guest": "김지애", "phone": "010-5049-3121", "channel": "기타", "room": "101", "checkin": "2026-04-25", "checkout": "2026-04-26", "nights": 1, "stay_dates": ["2026-04-25"], "price": 159000, "onsite": 0, "total": 159000, "is_block": false}, {"branch": "영흥도", "booking_no": "M260401204521266dd1", "guest": "신영수", "phone": "050440330289", "channel": "수기", "room": "104", "checkin": "2026-04-25", "checkout": "2026-04-26", "nights": 1, "stay_dates": ["2026-04-25"], "price": 129000, "onsite": 0, "total": 129000, "is_block": false}, {"branch": "영흥도", "booking_no": "M260411003023590962", "guest": "박성근(여기어때)", "phone": "0502-4029-0744", "channel": "여기어때", "room": "305", "checkin": "2026-04-25", "checkout": "2026-04-26", "nights": 1, "stay_dates": ["2026-04-25"], "price": 98100, "onsite": 0, "total": 98100, "is_block": false}, {"branch": "영흥도", "booking_no": "2604131763692703", "guest": "Jisu Yoon", "phone": "010-9239-9839", "channel": "기타", "room": "102", "checkin": "2026-04-25", "checkout": "2026-04-26", "nights": 1, "stay_dates": ["2026-04-25"], "price": 139000, "onsite": 0, "total": 139000, "is_block": false}, {"branch": "영흥도", "booking_no": "2604080963103231", "guest": "천나래", "phone": "010-4716-1597", "channel": "기타", "room": "205", "checkin": "2026-04-24", "checkout": "2026-04-25", "nights": 1, "stay_dates": ["2026-04-24"], "price": 69000, "onsite": 0, "total": 69000, "is_block": false}, {"branch": "영흥도", "booking_no": "M26040115054841047e", "guest": "최다민", "phone": "010-2284-6435", "channel": "수기", "room": "303", "checkin": "2026-04-24", "checkout": "2026-04-25", "nights": 1, "stay_dates": ["2026-04-24"], "price": 48300, "onsite": 0, "total": 48300, "is_block": false}, {"branch": "영흥도", "booking_no": "2603121660486652", "guest": "신소진", "phone": "010-6341-9336", "channel": "기타", "room": "104", "checkin": "2026-04-24", "checkout": "2026-04-25", "nights": 1, "stay_dates": ["2026-04-24"], "price": 139000, "onsite": 0, "total": 139000, "is_block": false}, {"branch": "영흥도", "booking_no": "2604131741040030", "guest": "김자연", "phone": "010-6320-2500", "channel": "기타", "room": "102", "checkin": "2026-04-21", "checkout": "2026-04-22", "nights": 1, "stay_dates": ["2026-04-21"], "price": 99000, "onsite": 0, "total": 99000, "is_block": false}, {"branch": "영흥도", "booking_no": "2604110163428406", "guest": "Yeongwoo Kim", "phone": "010-6290-7766", "channel": "기타", "room": "202", "checkin": "2026-04-20", "checkout": "2026-04-21", "nights": 1, "stay_dates": ["2026-04-20"], "price": 69000, "onsite": 0, "total": 69000, "is_block": false}, {"branch": "영흥도", "booking_no": "M2603061340028307f8", "guest": "기존예약  이영미 님", "phone": "-", "channel": "수기", "room": "103", "checkin": "2026-04-19", "checkout": "2026-04-20", "nights": 1, "stay_dates": ["2026-04-19"], "price": 119000, "onsite": 0, "total": 119000, "is_block": false}, {"branch": "영흥도", "booking_no": "M2604012127280574cf", "guest": "신영수", "phone": "050440330289", "channel": "수기", "room": "104", "checkin": "2026-04-19", "checkout": "2026-04-20", "nights": 1, "stay_dates": ["2026-04-19"], "price": 99000, "onsite": 0, "total": 99000, "is_block": false}, {"branch": "영흥도", "booking_no": "2604110163428323", "guest": "Yoojung Kim", "phone": "010-7623-6081", "channel": "기타", "room": "202", "checkin": "2026-04-19", "checkout": "2026-04-20", "nights": 1, "stay_dates": ["2026-04-19"], "price": 69000, "onsite": 0, "total": 69000, "is_block": false}, {"branch": "영흥도", "booking_no": "M260411081937690567", "guest": "최수", "phone": "0504-4023-9929", "channel": "수기", "room": "101", "checkin": "2026-04-18", "checkout": "2026-04-19", "nights": 1, "stay_dates": ["2026-04-18"], "price": 199000, "onsite": 0, "total": 199000, "is_block": false}, {"branch": "영흥도", "booking_no": "2604091763272262", "guest": "곽명규", "phone": "010-9960-7513", "channel": "기타", "room": "301", "checkin": "2026-04-18", "checkout": "2026-04-19", "nights": 1, "stay_dates": ["2026-04-18"], "price": 119000, "onsite": 0, "total": 119000, "is_block": false}, {"branch": "영흥도", "booking_no": "M26041022392385362e", "guest": "조다빈(여기어때)", "phone": "0502-4029-6936", "channel": "여기어때", "room": "102", "checkin": "2026-04-18", "checkout": "2026-04-19", "nights": 1, "stay_dates": ["2026-04-18"], "price": 161100, "onsite": 0, "total": 161100, "is_block": false}, {"branch": "영흥도", "booking_no": "2604090941320081", "guest": "남우주", "phone": "010-4928-1696", "channel": "기타", "room": "204", "checkin": "2026-04-18", "checkout": "2026-04-19", "nights": 1, "stay_dates": ["2026-04-18"], "price": 99000, "onsite": 0, "total": 99000, "is_block": false}, {"branch": "영흥도", "booking_no": "2604111963500775", "guest": "이대호", "phone": "010-2416-2955", "channel": "기타", "room": "304", "checkin": "2026-04-18", "checkout": "2026-04-19", "nights": 1, "stay_dates": ["2026-04-18"], "price": 119000, "onsite": 0, "total": 119000, "is_block": false}, {"branch": "영흥도", "booking_no": "2604091763271445", "guest": "김성화", "phone": "010-5132-2293", "channel": "기타", "room": "303", "checkin": "2026-04-18", "checkout": "2026-04-19", "nights": 1, "stay_dates": ["2026-04-18"], "price": 109000, "onsite": 0, "total": 109000, "is_block": false}, {"branch": "영흥도", "booking_no": "2604081963173361", "guest": "강성재", "phone": "010-7727-2230", "channel": "기타", "room": "201", "checkin": "2026-04-18", "checkout": "2026-04-19", "nights": 1, "stay_dates": ["2026-04-18"], "price": 109000, "onsite": 0, "total": 109000, "is_block": false}, {"branch": "영흥도", "booking_no": "2604070662999991", "guest": "김영남", "phone": "010-2519-3121", "channel": "기타", "room": "202", "checkin": "2026-04-18", "checkout": "2026-04-19", "nights": 1, "stay_dates": ["2026-04-18"], "price": 99000, "onsite": 0, "total": 99000, "is_block": false}, {"branch": "영흥도", "booking_no": "2604041662741543", "guest": "송지후", "phone": "010-2067-3764", "channel": "기타", "room": "302", "checkin": "2026-04-18", "checkout": "2026-04-19", "nights": 1, "stay_dates": ["2026-04-18"], "price": 99000, "onsite": 0, "total": 99000, "is_block": false}, {"branch": "영흥도", "booking_no": "M260402143924578340", "guest": "황미진", "phone": "050213838443", "channel": "수기", "room": "104", "checkin": "2026-04-18", "checkout": "2026-04-19", "nights": 1, "stay_dates": ["2026-04-18"], "price": 129000, "onsite": 0, "total": 129000, "is_block": false}, {"branch": "영흥도", "booking_no": "2604011362405241", "guest": "최재우", "phone": "010-9986-9389", "channel": "기타", "room": "203", "checkin": "2026-04-18", "checkout": "2026-04-19", "nights": 1, "stay_dates": ["2026-04-18"], "price": 99000, "onsite": 0, "total": 99000, "is_block": false}, {"branch": "영흥도", "booking_no": "2603231261535246", "guest": "이예니", "phone": "010-9753-0158", "channel": "기타", "room": "103", "checkin": "2026-04-18", "checkout": "2026-04-19", "nights": 1, "stay_dates": ["2026-04-18"], "price": 129000, "onsite": 0, "total": 129000, "is_block": false}, {"branch": "영흥도", "booking_no": "2604071463029811", "guest": "김소담", "phone": "010-4106-4375", "channel": "기타", "room": "305", "checkin": "2026-04-18", "checkout": "2026-04-19", "nights": 1, "stay_dates": ["2026-04-18"], "price": 99000, "onsite": 0, "total": 99000, "is_block": false}, {"branch": "영흥도", "booking_no": "2604091363240312", "guest": "이선영", "phone": "010-5042-8992", "channel": "기타", "room": "202", "checkin": "2026-04-17", "checkout": "2026-04-18", "nights": 1, "stay_dates": ["2026-04-17"], "price": 69000, "onsite": 0, "total": 69000, "is_block": false}, {"branch": "영흥도", "booking_no": "2604091363240504", "guest": "서형경", "phone": "010-9156-9850", "channel": "기타", "room": "203", "checkin": "2026-04-17", "checkout": "2026-04-18", "nights": 1, "stay_dates": ["2026-04-17"], "price": 69000, "onsite": 0, "total": 69000, "is_block": false}, {"branch": "영흥도", "booking_no": "2604122163617804", "guest": "강혜림", "phone": "010-2666-9961", "channel": "기타", "room": "205", "checkin": "2026-04-17", "checkout": "2026-04-19", "nights": 2, "stay_dates": ["2026-04-17", "2026-04-18"], "price": 188000, "onsite": 0, "total": 188000, "is_block": false}, {"branch": "영흥도", "booking_no": "M260409133421616a93", "guest": "남경호(여기어때)", "phone": "0504-4000-5096", "channel": "여기어때", "room": "104", "checkin": "2026-04-17", "checkout": "2026-04-18", "nights": 1, "stay_dates": ["2026-04-17"], "price": 98100, "onsite": 0, "total": 98100, "is_block": false}, {"branch": "영흥도", "booking_no": "2604091363239491", "guest": "김예지", "phone": "010-5205-7002", "channel": "기타", "room": "101", "checkin": "2026-04-17", "checkout": "2026-04-18", "nights": 1, "stay_dates": ["2026-04-17"], "price": 119000, "onsite": 0, "total": 119000, "is_block": false}, {"branch": "영흥도", "booking_no": "2604081663149815", "guest": "Hyerin Kim", "phone": "010-7591-0201", "channel": "기타", "room": "305", "checkin": "2026-04-17", "checkout": "2026-04-18", "nights": 1, "stay_dates": ["2026-04-17"], "price": 69000, "onsite": 0, "total": 69000, "is_block": false}, {"branch": "영흥도", "booking_no": "2604091063225672", "guest": "최은미", "phone": "010-7140-0012", "channel": "기타", "room": "202", "checkin": "2026-04-16", "checkout": "2026-04-17", "nights": 1, "stay_dates": ["2026-04-16"], "price": 69000, "onsite": 0, "total": 69000, "is_block": false}, {"branch": "영흥도", "booking_no": "2604131252590150", "guest": "윤복희", "phone": "010-4349-5355", "channel": "기타", "room": "203", "checkin": "2026-04-15", "checkout": "2026-04-16", "nights": 1, "stay_dates": ["2026-04-15"], "price": 69000, "onsite": 0, "total": 69000, "is_block": false}, {"branch": "영흥도", "booking_no": "2604132044100121", "guest": "권정협", "phone": "010-9030-5226", "channel": "기타", "room": "202", "checkin": "2026-04-15", "checkout": "2026-04-16", "nights": 1, "stay_dates": ["2026-04-15"], "price": 62100, "onsite": 0, "total": 62100, "is_block": false}, {"branch": "영흥도", "booking_no": "2604131914380170", "guest": "이은수", "phone": "010-8452-3430", "channel": "기타", "room": "103", "checkin": "2026-04-14", "checkout": "2026-04-15", "nights": 1, "stay_dates": ["2026-04-14"], "price": 89100, "onsite": 0, "total": 89100, "is_block": false}, {"branch": "영흥도", "booking_no": "M260403171705724d1c", "guest": "박하늘", "phone": "050440339580", "channel": "수기", "room": "304", "checkin": "2026-04-14", "checkout": "2026-04-15", "nights": 1, "stay_dates": ["2026-04-14"], "price": 69000, "onsite": 0, "total": 69000, "is_block": false}, {"branch": "영흥도", "booking_no": "M260410175043861703", "guest": "이세훈(여기어때)", "phone": "0504-4007-1409", "channel": "여기어때", "room": "104", "checkin": "2026-04-13", "checkout": "2026-04-14", "nights": 1, "stay_dates": ["2026-04-13"], "price": 98100, "onsite": 0, "total": 98100, "is_block": false}, {"branch": "영흥도", "booking_no": "2604122363627084", "guest": "김다영", "phone": "010-5283-7708", "channel": "기타", "room": "205", "checkin": "2026-04-13", "checkout": "2026-04-14", "nights": 1, "stay_dates": ["2026-04-13"], "price": 69000, "onsite": 0, "total": 69000, "is_block": false}, {"branch": "영흥도", "booking_no": "M2604131405238275f2", "guest": "김진호(여기어때)", "phone": "0504-4037-4333", "channel": "여기어때", "room": "103", "checkin": "2026-04-13", "checkout": "2026-04-14", "nights": 1, "stay_dates": ["2026-04-13"], "price": 98100, "onsite": 0, "total": 98100, "is_block": false}, {"branch": "영흥도", "booking_no": "2604060962903182", "guest": "류성미", "phone": "010-4728-7376", "channel": "기타", "room": "102", "checkin": "2026-04-13", "checkout": "2026-04-14", "nights": 1, "stay_dates": ["2026-04-13"], "price": 99000, "onsite": 0, "total": 99000, "is_block": false}, {"branch": "영흥도", "booking_no": "M26041201082264970d", "guest": "손채은(여기어때)", "phone": "0504-4049-8458", "channel": "여기어때", "room": "104", "checkin": "2026-04-12", "checkout": "2026-04-13", "nights": 1, "stay_dates": ["2026-04-12"], "price": 98100, "onsite": 0, "total": 98100, "is_block": false}, {"branch": "영흥도", "booking_no": "M260412163245094140", "guest": "김지호", "phone": "010-9427-5188", "channel": "수기", "room": "102", "checkin": "2026-04-12", "checkout": "2026-04-13", "nights": 1, "stay_dates": ["2026-04-12"], "price": 89000, "onsite": 0, "total": 89000, "is_block": false}, {"branch": "영흥도", "booking_no": "2604111443120184", "guest": "홍순철", "phone": "010-9257-7932", "channel": "기타", "room": "202", "checkin": "2026-04-12", "checkout": "2026-04-14", "nights": 2, "stay_dates": ["2026-04-12", "2026-04-13"], "price": 124200, "onsite": 0, "total": 124200, "is_block": false}, {"branch": "영흥도", "booking_no": "M2604121455042553f9", "guest": "김승주", "phone": "010-3371-6309", "channel": "수기", "room": "304", "checkin": "2026-04-12", "checkout": "2026-04-13", "nights": 1, "stay_dates": ["2026-04-12"], "price": 69000, "onsite": 0, "total": 69000, "is_block": false}, {"branch": "영흥도", "booking_no": "2604121663586469", "guest": "Joohui Han", "phone": "010-4652-2780", "channel": "기타", "room": "205", "checkin": "2026-04-12", "checkout": "2026-04-13", "nights": 1, "stay_dates": ["2026-04-12"], "price": 69000, "onsite": 0, "total": 69000, "is_block": false}, {"branch": "영흥도", "booking_no": "2604110663433425", "guest": "이나영", "phone": "010-5704-8757", "channel": "기타", "room": "303", "checkin": "2026-04-12", "checkout": "2026-04-14", "nights": 2, "stay_dates": ["2026-04-12", "2026-04-13"], "price": 138000, "onsite": 0, "total": 138000, "is_block": false}, {"branch": "영흥도", "booking_no": "2604111063440258", "guest": "이윤지", "phone": "010-8922-1712", "channel": "기타", "room": "305", "checkin": "2026-04-12", "checkout": "2026-04-13", "nights": 1, "stay_dates": ["2026-04-12"], "price": 69000, "onsite": 0, "total": 69000, "is_block": false}, {"branch": "영흥도", "booking_no": "M260412103422537c75", "guest": "이향이(여기어때)", "phone": "0504-4001-6341", "channel": "여기어때", "room": "201", "checkin": "2026-04-12", "checkout": "2026-04-13", "nights": 1, "stay_dates": ["2026-04-12"], "price": 80100, "onsite": 0, "total": 80100, "is_block": false}, {"branch": "영흥도", "booking_no": "2604111447120248", "guest": "홍순철", "phone": "010-9257-7932", "channel": "기타", "room": "203", "checkin": "2026-04-12", "checkout": "2026-04-14", "nights": 2, "stay_dates": ["2026-04-12", "2026-04-13"], "price": 124200, "onsite": 0, "total": 124200, "is_block": false}, {"branch": "영흥도", "booking_no": "2604101636210037", "guest": "이은성", "phone": "010-9152-1365", "channel": "기타", "room": "202", "checkin": "2026-04-11", "checkout": "2026-04-12", "nights": 1, "stay_dates": ["2026-04-11"], "price": 107100, "onsite": 0, "total": 107100, "is_block": false}, {"branch": "영흥도", "booking_no": "2604032062668139", "guest": "기주환", "phone": "010-4688-1269", "channel": "기타", "room": "305", "checkin": "2026-04-11", "checkout": "2026-04-12", "nights": 1, "stay_dates": ["2026-04-11"], "price": 99000, "onsite": 0, "total": 99000, "is_block": false}, {"branch": "영흥도", "booking_no": "2604091163228330", "guest": "김상겸", "phone": "010-8992-1167", "channel": "기타", "room": "203", "checkin": "2026-04-11", "checkout": "2026-04-12", "nights": 1, "stay_dates": ["2026-04-11"], "price": 109000, "onsite": 0, "total": 109000, "is_block": false}, {"branch": "영흥도", "booking_no": "2603231761568916", "guest": "현문환", "phone": "010-4282-4828", "channel": "기타", "room": "102", "checkin": "2026-04-11", "checkout": "2026-04-12", "nights": 1, "stay_dates": ["2026-04-11"], "price": 129000, "onsite": 0, "total": 129000, "is_block": false}, {"branch": "영흥도", "booking_no": "2604071263021235", "guest": "권영준", "phone": "010-9902-4282", "channel": "기타", "room": "104", "checkin": "2026-04-11", "checkout": "2026-04-12", "nights": 1, "stay_dates": ["2026-04-11"], "price": 149000, "onsite": 0, "total": 149000, "is_block": false}, {"branch": "영흥도", "booking_no": "M260405145208869f83", "guest": "suharyeon Yoon", "phone": "1544-3812", "channel": "수기", "room": "304", "checkin": "2026-04-11", "checkout": "2026-04-12", "nights": 1, "stay_dates": ["2026-04-11"], "price": 99000, "onsite": 0, "total": 99000, "is_block": false}, {"branch": "영흥도", "booking_no": "2604100863321853", "guest": "유나원", "phone": "010-8236-1012", "channel": "기타", "room": "201", "checkin": "2026-04-11", "checkout": "2026-04-12", "nights": 1, "stay_dates": ["2026-04-11"], "price": 119000, "onsite": 0, "total": 119000, "is_block": false}, {"branch": "영흥도", "booking_no": "M260410200123907577", "guest": "이광용(ONDA)", "phone": "010-8996-2479", "channel": "수기", "room": "204", "checkin": "2026-04-11", "checkout": "2026-04-12", "nights": 1, "stay_dates": ["2026-04-11"], "price": 109000, "onsite": 0, "total": 109000, "is_block": false}, {"branch": "영흥도", "booking_no": "2604101163340085", "guest": "윤태민", "phone": "010-5027-6221", "channel": "기타", "room": "205", "checkin": "2026-04-11", "checkout": "2026-04-12", "nights": 1, "stay_dates": ["2026-04-11"], "price": 109000, "onsite": 0, "total": 109000, "is_block": false}, {"branch": "영흥도", "booking_no": "2603281362019656", "guest": "정하연", "phone": "010-2108-2656", "channel": "기타", "room": "101", "checkin": "2026-04-11", "checkout": "2026-04-12", "nights": 1, "stay_dates": ["2026-04-11"], "price": 159000, "onsite": 0, "total": 159000, "is_block": false}, {"branch": "영흥도", "booking_no": "2604041762750289", "guest": "조두희", "phone": "010-6580-0931", "channel": "기타", "room": "103", "checkin": "2026-04-11", "checkout": "2026-04-12", "nights": 1, "stay_dates": ["2026-04-11"], "price": 129000, "onsite": 0, "total": 129000, "is_block": false}, {"branch": "영흥도", "booking_no": "M260405145146736d21", "guest": "Sungjin Jo", "phone": "1544-3812", "channel": "수기", "room": "303", "checkin": "2026-04-11", "checkout": "2026-04-12", "nights": 1, "stay_dates": ["2026-04-11"], "price": 99000, "onsite": 0, "total": 99000, "is_block": false}, {"branch": "영흥도", "booking_no": "2604091563256960", "guest": "Changhak Kang", "phone": "010-6216-2314", "channel": "기타", "room": "204", "checkin": "2026-04-10", "checkout": "2026-04-11", "nights": 1, "stay_dates": ["2026-04-10"], "price": 69000, "onsite": 0, "total": 69000, "is_block": false}, {"branch": "영흥도", "booking_no": "2604071105530035", "guest": "공경록", "phone": "010-9734-5525", "channel": "기타", "room": "301", "checkin": "2026-04-10", "checkout": "2026-04-12", "nights": 2, "stay_dates": ["2026-04-10", "2026-04-11"], "price": 178200, "onsite": 0, "total": 178200, "is_block": false}, {"branch": "영흥도", "booking_no": "M260408070220867263", "guest": "한재은(여기어때)", "phone": "0504-4012-7615", "channel": "여기어때", "room": "101", "checkin": "2026-04-10", "checkout": "2026-04-11", "nights": 1, "stay_dates": ["2026-04-10"], "price": 116100, "onsite": 0, "total": 116100, "is_block": false}, {"branch": "영흥도", "booking_no": "M260407100121510318", "guest": "유희영(여기어때)", "phone": "0502-1472-9123", "channel": "여기어때", "room": "201", "checkin": "2026-04-10", "checkout": "2026-04-11", "nights": 1, "stay_dates": ["2026-04-10"], "price": 80100, "onsite": 0, "total": 80100, "is_block": false}, {"branch": "영흥도", "booking_no": "M2604051812297566c3", "guest": "배콩이", "phone": "050440391331", "channel": "수기", "room": "205", "checkin": "2026-04-10", "checkout": "2026-04-11", "nights": 1, "stay_dates": ["2026-04-10"], "price": 69000, "onsite": 0, "total": 69000, "is_block": false}, {"branch": "영흥도", "booking_no": "2604042227070157", "guest": "김창훈", "phone": "010-9448-1607", "channel": "기타", "room": "302", "checkin": "2026-04-10", "checkout": "2026-04-12", "nights": 2, "stay_dates": ["2026-04-10", "2026-04-11"], "price": 151200, "onsite": 0, "total": 151200, "is_block": false}, {"branch": "영흥도", "booking_no": "M260410115705076a33", "guest": "김종석", "phone": "010-9143-5245", "channel": "수기", "room": "303", "checkin": "2026-04-10", "checkout": "2026-04-11", "nights": 1, "stay_dates": ["2026-04-10"], "price": 70000, "onsite": 0, "total": 70000, "is_block": false}, {"branch": "영흥도", "booking_no": "M2604101223272190cd", "guest": "서지은(여기어때)", "phone": "0502-4018-9573", "channel": "여기어때", "room": "102", "checkin": "2026-04-10", "checkout": "2026-04-11", "nights": 1, "stay_dates": ["2026-04-10"], "price": 98100, "onsite": 0, "total": 98100, "is_block": false}, {"branch": "영흥도", "booking_no": "2603312162344744", "guest": "최성진", "phone": "010-8951-3931", "channel": "기타", "room": "305", "checkin": "2026-04-08", "checkout": "2026-04-09", "nights": 1, "stay_dates": ["2026-04-08"], "price": 69000, "onsite": 0, "total": 69000, "is_block": false}, {"branch": "영흥도", "booking_no": "2604080063091328", "guest": "Dawon Kim", "phone": "010-7506-4940", "channel": "기타", "room": "103", "checkin": "2026-04-08", "checkout": "2026-04-09", "nights": 1, "stay_dates": ["2026-04-08"], "price": 99000, "onsite": 0, "total": 99000, "is_block": false}, {"branch": "영흥도", "booking_no": "2604062134030031", "guest": "김민지", "phone": "010-8474-4247", "channel": "기타", "room": "302", "checkin": "2026-04-08", "checkout": "2026-04-10", "nights": 2, "stay_dates": ["2026-04-08", "2026-04-09"], "price": 124200, "onsite": 0, "total": 124200, "is_block": false}, {"branch": "영흥도", "booking_no": "M2604081125298947e3", "guest": "김숙정", "phone": "010-6286-8347", "channel": "수기", "room": "102", "checkin": "2026-04-08", "checkout": "2026-04-09", "nights": 1, "stay_dates": ["2026-04-08"], "price": 90000, "onsite": 0, "total": 90000, "is_block": false}, {"branch": "영흥도", "booking_no": "2604080063090620", "guest": "이종명", "phone": "010-9520-8449", "channel": "기타", "room": "205", "checkin": "2026-04-08", "checkout": "2026-04-09", "nights": 1, "stay_dates": ["2026-04-08"], "price": 69000, "onsite": 0, "total": 69000, "is_block": false}, {"branch": "영흥도", "booking_no": "2604042262784218", "guest": "양선주", "phone": "010-9043-7461", "channel": "기타", "room": "205", "checkin": "2026-04-06", "checkout": "2026-04-07", "nights": 1, "stay_dates": ["2026-04-06"], "price": 69000, "onsite": 0, "total": 69000, "is_block": false}, {"branch": "영흥도", "booking_no": "M2604051812075825a1", "guest": "배콩이", "phone": "050440451520", "channel": "수기", "room": "203", "checkin": "2026-04-06", "checkout": "2026-04-11", "nights": 5, "stay_dates": ["2026-04-06", "2026-04-07", "2026-04-08", "2026-04-09", "2026-04-10"], "price": 345000, "onsite": 0, "total": 345000, "is_block": false}, {"branch": "영흥도", "booking_no": "2603221312150057", "guest": "윤철환", "phone": "010-6380-1167", "channel": "기타", "room": "104", "checkin": "2026-04-06", "checkout": "2026-04-07", "nights": 1, "stay_dates": ["2026-04-06"], "price": 99000, "onsite": 0, "total": 99000, "is_block": false}, {"branch": "영흥도", "booking_no": "2604031362619957", "guest": "이명우", "phone": "010-5568-2184", "channel": "기타", "room": "101", "checkin": "2026-04-06", "checkout": "2026-04-07", "nights": 1, "stay_dates": ["2026-04-06"], "price": 119000, "onsite": 0, "total": 119000, "is_block": false}, {"branch": "영흥도", "booking_no": "2604051262821054", "guest": "임동산", "phone": "010-4038-0094", "channel": "기타", "room": "102", "checkin": "2026-04-05", "checkout": "2026-04-06", "nights": 1, "stay_dates": ["2026-04-05"], "price": 99000, "onsite": 0, "total": 99000, "is_block": false}, {"branch": "영흥도", "booking_no": "2603312262350779", "guest": "이순관", "phone": "010-8028-8502", "channel": "기타", "room": "305", "checkin": "2026-04-04", "checkout": "2026-04-05", "nights": 1, "stay_dates": ["2026-04-04"], "price": 99000, "onsite": 0, "total": 99000, "is_block": false}, {"branch": "영흥도", "booking_no": "2603311000100440", "guest": "박현정", "phone": "010-2935-9306", "channel": "기타", "room": "302", "checkin": "2026-04-04", "checkout": "2026-04-05", "nights": 1, "stay_dates": ["2026-04-04"], "price": 89100, "onsite": 0, "total": 89100, "is_block": false}, {"branch": "영흥도", "booking_no": "2603222261503583", "guest": "Seunghoe Kim", "phone": "010-4035-7313", "channel": "기타", "room": "103", "checkin": "2026-04-04", "checkout": "2026-04-05", "nights": 1, "stay_dates": ["2026-04-04"], "price": 129000, "onsite": 0, "total": 129000, "is_block": false}, {"branch": "영흥도", "booking_no": "2603221761478104", "guest": "이광우", "phone": "010-6235-8220", "channel": "기타", "room": "102", "checkin": "2026-04-04", "checkout": "2026-04-05", "nights": 1, "stay_dates": ["2026-04-04"], "price": 129000, "onsite": 0, "total": 129000, "is_block": false}, {"branch": "영흥도", "booking_no": "2604021820050057", "guest": "허훈만", "phone": "010-3863-8149", "channel": "기타", "room": "203", "checkin": "2026-04-04", "checkout": "2026-04-05", "nights": 1, "stay_dates": ["2026-04-04"], "price": 89100, "onsite": 0, "total": 89100, "is_block": false}, {"branch": "영흥도", "booking_no": "2603311662317450", "guest": "김창숙", "phone": "010-2726-7632", "channel": "기타", "room": "303", "checkin": "2026-04-04", "checkout": "2026-04-05", "nights": 1, "stay_dates": ["2026-04-04"], "price": 99000, "onsite": 0, "total": 99000, "is_block": false}, {"branch": "영흥도", "booking_no": "2603261159110158", "guest": "손정현", "phone": "010-5607-5275", "channel": "기타", "room": "205", "checkin": "2026-04-04", "checkout": "2026-04-05", "nights": 1, "stay_dates": ["2026-04-04"], "price": 99000, "onsite": 0, "total": 99000, "is_block": false}, {"branch": "영흥도", "booking_no": "M26040222122272196d", "guest": "송요한", "phone": "0504-4019-4844", "channel": "수기", "room": "201", "checkin": "2026-04-04", "checkout": "2026-04-05", "nights": 1, "stay_dates": ["2026-04-04"], "price": 107100, "onsite": 0, "total": 107100, "is_block": false}, {"branch": "영흥도", "booking_no": "2603181761079142", "guest": "Jungwon Kwon", "phone": "010-4499-7678", "channel": "기타", "room": "101", "checkin": "2026-04-04", "checkout": "2026-04-05", "nights": 1, "stay_dates": ["2026-04-04"], "price": 159000, "onsite": 0, "total": 159000, "is_block": false}, {"branch": "영흥도", "booking_no": "2603211961397012", "guest": "Jungsuk Lee", "phone": "010-4569-2938", "channel": "기타", "room": "204", "checkin": "2026-04-04", "checkout": "2026-04-05", "nights": 1, "stay_dates": ["2026-04-04"], "price": 99000, "onsite": 0, "total": 99000, "is_block": false}, {"branch": "영흥도", "booking_no": "2604022212200185", "guest": "장필규", "phone": "010-8662-9140", "channel": "기타", "room": "301", "checkin": "2026-04-04", "checkout": "2026-04-05", "nights": 1, "stay_dates": ["2026-04-04"], "price": 98100, "onsite": 0, "total": 98100, "is_block": false}, {"branch": "영흥도", "booking_no": "2603312262353313", "guest": "이상규", "phone": "010-5554-0239", "channel": "기타", "room": "304", "checkin": "2026-04-04", "checkout": "2026-04-05", "nights": 1, "stay_dates": ["2026-04-04"], "price": 99000, "onsite": 0, "total": 99000, "is_block": false}, {"branch": "영흥도", "booking_no": "2603241061618688", "guest": "배경아", "phone": "010-7234-7545", "channel": "기타", "room": "202", "checkin": "2026-04-04", "checkout": "2026-04-05", "nights": 1, "stay_dates": ["2026-04-04"], "price": 99000, "onsite": 0, "total": 99000, "is_block": false}, {"branch": "영흥도", "booking_no": "2603181461059745", "guest": "Cheongbi Han", "phone": "010-4036-4503", "channel": "기타", "room": "205", "checkin": "2026-04-03", "checkout": "2026-04-04", "nights": 1, "stay_dates": ["2026-04-03"], "price": 69000, "onsite": 0, "total": 69000, "is_block": false}, {"branch": "영흥도", "booking_no": "2603311862329568", "guest": "김정은", "phone": "010-3210-8780", "channel": "기타", "room": "301", "checkin": "2026-04-03", "checkout": "2026-04-04", "nights": 1, "stay_dates": ["2026-04-03"], "price": 79000, "onsite": 0, "total": 79000, "is_block": false}, {"branch": "영흥도", "booking_no": "M2604021100361718c2", "guest": "채수로", "phone": "010-5210-6161", "channel": "수기", "room": "202", "checkin": "2026-04-03", "checkout": "2026-04-04", "nights": 1, "stay_dates": ["2026-04-03"], "price": 69000, "onsite": 0, "total": 69000, "is_block": false}, {"branch": "영흥도", "booking_no": "2604021826390190", "guest": "김혜진", "phone": "010-8078-0263", "channel": "기타", "room": "303", "checkin": "2026-04-03", "checkout": "2026-04-04", "nights": 1, "stay_dates": ["2026-04-03"], "price": 62100, "onsite": 0, "total": 62100, "is_block": false}, {"branch": "영흥도", "booking_no": "2603290062089960", "guest": "Hoseong Hwang", "phone": "010-4776-7414", "channel": "기타", "room": "305", "checkin": "2026-04-03", "checkout": "2026-04-04", "nights": 1, "stay_dates": ["2026-04-03"], "price": 69000, "onsite": 0, "total": 69000, "is_block": false}, {"branch": "영흥도", "booking_no": "2603261461829303", "guest": "조혜영", "phone": "010-4023-9040", "channel": "기타", "room": "104", "checkin": "2026-04-03", "checkout": "2026-04-04", "nights": 1, "stay_dates": ["2026-04-03"], "price": 99000, "onsite": 0, "total": 99000, "is_block": false}, {"branch": "영흥도", "booking_no": "M260402182811118a0b", "guest": "이우석", "phone": "050440158553", "channel": "수기", "room": "103", "checkin": "2026-04-03", "checkout": "2026-04-04", "nights": 1, "stay_dates": ["2026-04-03"], "price": 99000, "onsite": 0, "total": 99000, "is_block": false}, {"branch": "영흥도", "booking_no": "2604021448000076", "guest": "변석기", "phone": "010-6465-3824", "channel": "기타", "room": "103", "checkin": "2026-04-02", "checkout": "2026-04-03", "nights": 1, "stay_dates": ["2026-04-02"], "price": 89100, "onsite": 0, "total": 89100, "is_block": false}, {"branch": "영흥도", "booking_no": "2604021453130006", "guest": "김수민", "phone": "010-7987-3293", "channel": "기타", "room": "102", "checkin": "2026-04-02", "checkout": "2026-04-03", "nights": 1, "stay_dates": ["2026-04-02"], "price": 89100, "onsite": 0, "total": 89100, "is_block": false}, {"branch": "영흥도", "booking_no": "2603300224500020", "guest": "김예빈", "phone": "010****3810", "channel": "기타", "room": "102", "checkin": "2026-04-01", "checkout": "2026-04-02", "nights": 1, "stay_dates": ["2026-04-01"], "price": 89100, "onsite": 0, "total": 89100, "is_block": false}, {"branch": "영흥도", "booking_no": "2604011558500022", "guest": "황현우", "phone": "010****7922", "channel": "기타", "room": "202", "checkin": "2026-04-01", "checkout": "2026-04-02", "nights": 1, "stay_dates": ["2026-04-01"], "price": 65550, "onsite": 0, "total": 65550, "is_block": false}, {"branch": "영흥도", "booking_no": "2604012162459231", "guest": "김유경", "phone": "010****5557", "channel": "기타", "room": "101", "checkin": "2026-04-01", "checkout": "2026-04-02", "nights": 1, "stay_dates": ["2026-04-01"], "price": 119000, "onsite": 0, "total": 119000, "is_block": false}, {"branch": "영흥도", "booking_no": "2603281562030418", "guest": "Dasom Kim", "phone": "010****7433", "channel": "기타", "room": "201", "checkin": "2026-04-01", "checkout": "2026-04-02", "nights": 1, "stay_dates": ["2026-04-01"], "price": 79000, "onsite": 0, "total": 79000, "is_block": false}, {"branch": "영흥도", "booking_no": "2603312329070045", "guest": "정경미", "phone": "010****3303", "channel": "기타", "room": "305", "checkin": "2026-04-01", "checkout": "2026-04-02", "nights": 1, "stay_dates": ["2026-04-01"], "price": 62100, "onsite": 0, "total": 62100, "is_block": false}, {"branch": "영흥도", "booking_no": "2603161160858394", "guest": "Songhyeon Lee", "phone": "010****9224", "channel": "기타", "room": "101", "checkin": "2026-03-31", "checkout": "2026-04-01", "nights": 1, "stay_dates": ["2026-03-31"], "price": 109000, "onsite": 0, "total": 109000, "is_block": false}, {"branch": "영흥도", "booking_no": "2603302262261315", "guest": "고은미", "phone": "010****1234", "channel": "기타", "room": "303", "checkin": "2026-03-31", "checkout": "2026-04-01", "nights": 1, "stay_dates": ["2026-03-31"], "price": 69000, "onsite": 0, "total": 69000, "is_block": false}, {"branch": "영흥도", "booking_no": "2603232261593262", "guest": "안윤서", "phone": "010****2006", "channel": "기타", "room": "203", "checkin": "2026-03-30", "checkout": "2026-03-31", "nights": 1, "stay_dates": ["2026-03-30"], "price": 69000, "onsite": 0, "total": 69000, "is_block": false}, {"branch": "영흥도", "booking_no": "2603251661740891", "guest": "이인우", "phone": "010****9560", "channel": "기타", "room": "302", "checkin": "2026-03-30", "checkout": "2026-03-31", "nights": 1, "stay_dates": ["2026-03-30"], "price": 69000, "onsite": 0, "total": 69000, "is_block": false}, {"branch": "영흥도", "booking_no": "2603290062087205", "guest": "황순용", "phone": "010****9098", "channel": "기타", "room": "104", "checkin": "2026-03-29", "checkout": "2026-03-30", "nights": 1, "stay_dates": ["2026-03-29"], "price": 99000, "onsite": 0, "total": 99000, "is_block": false}, {"branch": "영흥도", "booking_no": "2603291262112613", "guest": "최현지", "phone": "010****1476", "channel": "기타", "room": "203", "checkin": "2026-03-29", "checkout": "2026-03-30", "nights": 1, "stay_dates": ["2026-03-29"], "price": 69000, "onsite": 0, "total": 69000, "is_block": false}, {"branch": "영흥도", "booking_no": "2603262230430103", "guest": "유지석", "phone": "010****2491", "channel": "기타", "room": "202", "checkin": "2026-03-29", "checkout": "2026-03-30", "nights": 1, "stay_dates": ["2026-03-29"], "price": 62100, "onsite": 0, "total": 62100, "is_block": false}, {"branch": "영흥도", "booking_no": "2603291262111393", "guest": "김정호", "phone": "010****9946", "channel": "기타", "room": "205", "checkin": "2026-03-29", "checkout": "2026-03-30", "nights": 1, "stay_dates": ["2026-03-29"], "price": 69000, "onsite": 0, "total": 69000, "is_block": false}, {"branch": "영흥도", "booking_no": "2603270961898837", "guest": "Junghun Lee", "phone": "010****9503", "channel": "기타", "room": "304", "checkin": "2026-03-28", "checkout": "2026-03-29", "nights": 1, "stay_dates": ["2026-03-28"], "price": 99000, "onsite": 0, "total": 99000, "is_block": false}, {"branch": "영흥도", "booking_no": "2603191261143797", "guest": "Eunjung Yang", "phone": "010****4060", "channel": "기타", "room": "301", "checkin": "2026-03-28", "checkout": "2026-03-29", "nights": 1, "stay_dates": ["2026-03-28"], "price": 109000, "onsite": 0, "total": 109000, "is_block": false}, {"branch": "영흥도", "booking_no": "2603171760986463", "guest": "이일영", "phone": "010****8172", "channel": "기타", "room": "104", "checkin": "2026-03-28", "checkout": "2026-03-29", "nights": 1, "stay_dates": ["2026-03-28"], "price": 129000, "onsite": 0, "total": 129000, "is_block": false}, {"branch": "영흥도", "booking_no": "2603241614590043", "guest": "강수정", "phone": "010****9435", "channel": "기타", "room": "204", "checkin": "2026-03-28", "checkout": "2026-03-29", "nights": 1, "stay_dates": ["2026-03-28"], "price": 99000, "onsite": 0, "total": 99000, "is_block": false}, {"branch": "영흥도", "booking_no": "2603251361725305", "guest": "김준수", "phone": "010****1003", "channel": "기타", "room": "202", "checkin": "2026-03-28", "checkout": "2026-03-29", "nights": 1, "stay_dates": ["2026-03-28"], "price": 99000, "onsite": 0, "total": 99000, "is_block": false}, {"branch": "영흥도", "booking_no": "2603150360753665", "guest": "권차신", "phone": "010****3727", "channel": "기타", "room": "101", "checkin": "2026-03-28", "checkout": "2026-03-29", "nights": 1, "stay_dates": ["2026-03-28"], "price": 159000, "onsite": 0, "total": 159000, "is_block": false}, {"branch": "영흥도", "booking_no": "2603222261504297", "guest": "이대형", "phone": "010****0728", "channel": "기타", "room": "102", "checkin": "2026-03-28", "checkout": "2026-03-29", "nights": 1, "stay_dates": ["2026-03-28"], "price": 129000, "onsite": 0, "total": 129000, "is_block": false}, {"branch": "영흥도", "booking_no": "2603261603010033", "guest": "정재희", "phone": "010****9857", "channel": "기타", "room": "203", "checkin": "2026-03-28", "checkout": "2026-03-29", "nights": 1, "stay_dates": ["2026-03-28"], "price": 89100, "onsite": 0, "total": 89100, "is_block": false}, {"branch": "영흥도", "booking_no": "2603271561929691", "guest": "최규환", "phone": "010****1910", "channel": "기타", "room": "303", "checkin": "2026-03-28", "checkout": "2026-03-29", "nights": 1, "stay_dates": ["2026-03-28"], "price": 99000, "onsite": 0, "total": 99000, "is_block": false}, {"branch": "영흥도", "booking_no": "M26032810255354636d", "guest": "김윤정", "phone": "010****6948", "channel": "수기", "room": "302", "checkin": "2026-03-28", "checkout": "2026-03-29", "nights": 1, "stay_dates": ["2026-03-28"], "price": 99000, "onsite": 0, "total": 99000, "is_block": false}, {"branch": "영흥도", "booking_no": "2603252161775791", "guest": "홍정우", "phone": "010****7258", "channel": "기타", "room": "305", "checkin": "2026-03-28", "checkout": "2026-03-29", "nights": 1, "stay_dates": ["2026-03-28"], "price": 99000, "onsite": 0, "total": 99000, "is_block": false}, {"branch": "영흥도", "booking_no": "2603231261538929", "guest": "이고운", "phone": "010****8871", "channel": "기타", "room": "103", "checkin": "2026-03-28", "checkout": "2026-03-29", "nights": 1, "stay_dates": ["2026-03-28"], "price": 129000, "onsite": 0, "total": 129000, "is_block": false}, {"branch": "영흥도", "booking_no": "2603241611240070", "guest": "김아진", "phone": "010****5992", "channel": "기타", "room": "205", "checkin": "2026-03-28", "checkout": "2026-03-29", "nights": 1, "stay_dates": ["2026-03-28"], "price": 99000, "onsite": 0, "total": 99000, "is_block": false}, {"branch": "영흥도", "booking_no": "2603241761655177", "guest": "Jinwoo Park", "phone": "010****0313", "channel": "기타", "room": "302", "checkin": "2026-03-27", "checkout": "2026-03-28", "nights": 1, "stay_dates": ["2026-03-27"], "price": 69000, "onsite": 0, "total": 69000, "is_block": false}, {"branch": "영흥도", "booking_no": "2603232361599781", "guest": "김혜미", "phone": "010****0845", "channel": "기타", "room": "201", "checkin": "2026-03-27", "checkout": "2026-03-29", "nights": 2, "stay_dates": ["2026-03-27", "2026-03-28"], "price": 188000, "onsite": 0, "total": 188000, "is_block": false}, {"branch": "영흥도", "booking_no": "2603211861389135", "guest": "Hoseong Jeon", "phone": "010****6456", "channel": "기타", "room": "205", "checkin": "2026-03-27", "checkout": "2026-03-28", "nights": 1, "stay_dates": ["2026-03-27"], "price": 69000, "onsite": 0, "total": 69000, "is_block": false}, {"branch": "영흥도", "booking_no": "M260326215647173912", "guest": "강다혜", "phone": "050440573611", "channel": "수기", "room": "203", "checkin": "2026-03-27", "checkout": "2026-03-28", "nights": 1, "stay_dates": ["2026-03-27"], "price": 69000, "onsite": 0, "total": 69000, "is_block": false}, {"branch": "영흥도", "booking_no": "2603271611540166", "guest": "조윤주", "phone": "010****2022", "channel": "기타", "room": "304", "checkin": "2026-03-27", "checkout": "2026-03-28", "nights": 1, "stay_dates": ["2026-03-27"], "price": 65550, "onsite": 0, "total": 65550, "is_block": false}, {"branch": "영흥도", "booking_no": "2603191661167975", "guest": "홍성민", "phone": "010****6742", "channel": "기타", "room": "301", "checkin": "2026-03-27", "checkout": "2026-03-28", "nights": 1, "stay_dates": ["2026-03-27"], "price": 79000, "onsite": 0, "total": 79000, "is_block": false}, {"branch": "영흥도", "booking_no": "2603241319410059", "guest": "최은영", "phone": "010****8969", "channel": "기타", "room": "202", "checkin": "2026-03-27", "checkout": "2026-03-28", "nights": 1, "stay_dates": ["2026-03-27"], "price": 69000, "onsite": 0, "total": 69000, "is_block": false}, {"branch": "영흥도", "booking_no": "2603270261891631", "guest": "이기영", "phone": "010****9659", "channel": "기타", "room": "303", "checkin": "2026-03-27", "checkout": "2026-03-28", "nights": 1, "stay_dates": ["2026-03-27"], "price": 69000, "onsite": 0, "total": 69000, "is_block": false}, {"branch": "영흥도", "booking_no": "M2603271128579435a2", "guest": "김예린", "phone": "0504-4009-5167", "channel": "수기", "room": "204", "checkin": "2026-03-27", "checkout": "2026-03-28", "nights": 1, "stay_dates": ["2026-03-27"], "price": 71100, "onsite": 0, "total": 71100, "is_block": false}, {"branch": "영흥도", "booking_no": "2603250961706020", "guest": "장지환", "phone": "010****2823", "channel": "기타", "room": "305", "checkin": "2026-03-26", "checkout": "2026-03-28", "nights": 2, "stay_dates": ["2026-03-26", "2026-03-27"], "price": 138000, "onsite": 0, "total": 138000, "is_block": false}, {"branch": "영흥도", "booking_no": "2603261061808195", "guest": "유현정", "phone": "010****5937", "channel": "기타", "room": "102", "checkin": "2026-03-26", "checkout": "2026-03-27", "nights": 1, "stay_dates": ["2026-03-26"], "price": 99000, "onsite": 0, "total": 99000, "is_block": false}, {"branch": "영흥도", "booking_no": "M2603071710455903d8", "guest": "이종찬", "phone": "050440168015", "channel": "수기", "room": "102", "checkin": "2026-03-25", "checkout": "2026-03-26", "nights": 1, "stay_dates": ["2026-03-25"], "price": 119000, "onsite": 0, "total": 119000, "is_block": false}, {"branch": "영흥도", "booking_no": "2603231353360022", "guest": "손영탁", "phone": "010****9780", "channel": "기타", "room": "104", "checkin": "2026-03-25", "checkout": "2026-03-27", "nights": 2, "stay_dates": ["2026-03-25", "2026-03-26"], "price": 198000, "onsite": 0, "total": 198000, "is_block": false}, {"branch": "영흥도", "booking_no": "2603251558450233", "guest": "정은주", "phone": "010****7469", "channel": "기타", "room": "303", "checkin": "2026-03-25", "checkout": "2026-03-26", "nights": 1, "stay_dates": ["2026-03-25"], "price": 69000, "onsite": 0, "total": 69000, "is_block": false}, {"branch": "영흥도", "booking_no": "M26030613385564097d", "guest": "기존예약 대표 님", "phone": "-", "channel": "수기", "room": "101", "checkin": "2026-03-24", "checkout": "2026-03-27", "nights": 3, "stay_dates": ["2026-03-24", "2026-03-25", "2026-03-26"], "price": 387000, "onsite": 0, "total": 387000, "is_block": false}, {"branch": "영흥도", "booking_no": "M260324131104756ec1", "guest": "황세진", "phone": "010****2737", "channel": "수기", "room": "103", "checkin": "2026-03-24", "checkout": "2026-03-25", "nights": 1, "stay_dates": ["2026-03-24"], "price": 70000, "onsite": 0, "total": 70000, "is_block": false}, {"branch": "영흥도", "booking_no": "2603241261630824", "guest": "공성화", "phone": "010****5449", "channel": "기타", "room": "102", "checkin": "2026-03-24", "checkout": "2026-03-25", "nights": 1, "stay_dates": ["2026-03-24"], "price": 99000, "onsite": 0, "total": 99000, "is_block": false}, {"branch": "영흥도", "booking_no": "M26030613393878094c", "guest": "기존예약  이강호 님", "phone": "010****8825", "channel": "수기", "room": "302", "checkin": "2026-03-23", "checkout": "2026-03-27", "nights": 4, "stay_dates": ["2026-03-23", "2026-03-24", "2026-03-25", "2026-03-26"], "price": 276000, "onsite": 0, "total": 276000, "is_block": false}, {"branch": "영흥도", "booking_no": "2603231444330082", "guest": "황세진", "phone": "010****2737", "channel": "기타", "room": "102", "checkin": "2026-03-23", "checkout": "2026-03-24", "nights": 1, "stay_dates": ["2026-03-23"], "price": 99000, "onsite": 0, "total": 99000, "is_block": false}, {"branch": "영흥도", "booking_no": "M260318121035320526", "guest": "김희윤", "phone": "010****7327", "channel": "수기", "room": "104", "checkin": "2026-03-22", "checkout": "2026-03-23", "nights": 1, "stay_dates": ["2026-03-22"], "price": 89000, "onsite": 0, "total": 89000, "is_block": false}, {"branch": "영흥도", "booking_no": "2603122360528759", "guest": "김형수", "phone": "010****4492", "channel": "기타", "room": "101", "checkin": "2026-03-22", "checkout": "2026-03-23", "nights": 1, "stay_dates": ["2026-03-22"], "price": 109000, "onsite": 0, "total": 109000, "is_block": false}, {"branch": "영흥도", "booking_no": "2603201214630078", "guest": "이수성", "phone": "010****1823", "channel": "기타", "room": "202", "checkin": "2026-03-22", "checkout": "2026-03-23", "nights": 1, "stay_dates": ["2026-03-22"], "price": 69000, "onsite": 0, "total": 69000, "is_block": false}, {"branch": "영흥도", "booking_no": "2603211616590113", "guest": "조서우", "phone": "010****7531", "channel": "기타", "room": "205", "checkin": "2026-03-22", "checkout": "2026-03-24", "nights": 2, "stay_dates": ["2026-03-22", "2026-03-23"], "price": 138000, "onsite": 0, "total": 138000, "is_block": false}, {"branch": "영흥도", "booking_no": "2603201861280301", "guest": "황지현", "phone": "010****3925", "channel": "기타", "room": "102", "checkin": "2026-03-22", "checkout": "2026-03-23", "nights": 1, "stay_dates": ["2026-03-22"], "price": 99000, "onsite": 0, "total": 99000, "is_block": false}, {"branch": "영흥도", "booking_no": "2603171000051375", "guest": "민병조", "phone": "010****5221", "channel": "기타", "room": "205", "checkin": "2026-03-21", "checkout": "2026-03-22", "nights": 1, "stay_dates": ["2026-03-21"], "price": 99000, "onsite": 0, "total": 99000, "is_block": false}, {"branch": "영흥도", "booking_no": "2603201319130147", "guest": "신석하", "phone": "010****6509", "channel": "기타", "room": "204", "checkin": "2026-03-21", "checkout": "2026-03-22", "nights": 1, "stay_dates": ["2026-03-21"], "price": 99000, "onsite": 0, "total": 99000, "is_block": false}, {"branch": "영흥도", "booking_no": "2603171260955599", "guest": "이슬기", "phone": "010****3744", "channel": "기타", "room": "102", "checkin": "2026-03-21", "checkout": "2026-03-22", "nights": 1, "stay_dates": ["2026-03-21"], "price": 129000, "onsite": 0, "total": 129000, "is_block": false}, {"branch": "영흥도", "booking_no": "2603112160420238", "guest": "이서인", "phone": "010****9598", "channel": "기타", "room": "201", "checkin": "2026-03-21", "checkout": "2026-03-22", "nights": 1, "stay_dates": ["2026-03-21"], "price": 109000, "onsite": 0, "total": 109000, "is_block": false}, {"branch": "영흥도", "booking_no": "2603171760988398", "guest": "오세민", "phone": "010****9069", "channel": "기타", "room": "101", "checkin": "2026-03-21", "checkout": "2026-03-22", "nights": 1, "stay_dates": ["2026-03-21"], "price": 159000, "onsite": 0, "total": 159000, "is_block": false}, {"branch": "영흥도", "booking_no": "M26030613374392859c", "guest": "기존예약  남예준 님", "phone": "0502-1460-7069", "channel": "수기", "room": "301", "checkin": "2026-03-21", "checkout": "2026-03-22", "nights": 1, "stay_dates": ["2026-03-21"], "price": 179000, "onsite": 0, "total": 179000, "is_block": false}, {"branch": "영흥도", "booking_no": "2603111932210108", "guest": "김진영", "phone": "010****0917", "channel": "기타", "room": "305", "checkin": "2026-03-21", "checkout": "2026-03-22", "nights": 1, "stay_dates": ["2026-03-21"], "price": 99000, "onsite": 0, "total": 99000, "is_block": false}, {"branch": "영흥도", "booking_no": "2603191657200157", "guest": "김희선", "phone": "010****9524", "channel": "기타", "room": "202", "checkin": "2026-03-21", "checkout": "2026-03-22", "nights": 1, "stay_dates": ["2026-03-21"], "price": 99000, "onsite": 0, "total": 99000, "is_block": false}, {"branch": "영흥도", "booking_no": "2603181861089505", "guest": "최동운", "phone": "010****2482", "channel": "기타", "room": "103", "checkin": "2026-03-21", "checkout": "2026-03-22", "nights": 1, "stay_dates": ["2026-03-21"], "price": 129000, "onsite": 0, "total": 129000, "is_block": false}, {"branch": "영흥도", "booking_no": "2603182055000052", "guest": "홍경현", "phone": "010****5568", "channel": "기타", "room": "203", "checkin": "2026-03-21", "checkout": "2026-03-23", "nights": 2, "stay_dates": ["2026-03-21", "2026-03-22"], "price": 168000, "onsite": 0, "total": 168000, "is_block": false}, {"branch": "영흥도", "booking_no": "2603192261202977", "guest": "김성진", "phone": "010****5299", "channel": "기타", "room": "302", "checkin": "2026-03-21", "checkout": "2026-03-22", "nights": 1, "stay_dates": ["2026-03-21"], "price": 99000, "onsite": 0, "total": 99000, "is_block": false}, {"branch": "영흥도", "booking_no": "2603181761083043", "guest": "전희연", "phone": "010****0972", "channel": "기타", "room": "104", "checkin": "2026-03-21", "checkout": "2026-03-22", "nights": 1, "stay_dates": ["2026-03-21"], "price": 129000, "onsite": 0, "total": 129000, "is_block": false}, {"branch": "영흥도", "booking_no": "2603202017450127", "guest": "이무진", "phone": "010****5693", "channel": "기타", "room": "304", "checkin": "2026-03-21", "checkout": "2026-03-22", "nights": 1, "stay_dates": ["2026-03-21"], "price": 99000, "onsite": 0, "total": 99000, "is_block": false}, {"branch": "영흥도", "booking_no": "2603161860903399", "guest": "조우방", "phone": "010****0279", "channel": "기타", "room": "303", "checkin": "2026-03-21", "checkout": "2026-03-22", "nights": 1, "stay_dates": ["2026-03-21"], "price": 99000, "onsite": 0, "total": 99000, "is_block": false}, {"branch": "영흥도", "booking_no": "2603160860847830", "guest": "이영민", "phone": "010****1977", "channel": "기타", "room": "205", "checkin": "2026-03-20", "checkout": "2026-03-21", "nights": 1, "stay_dates": ["2026-03-20"], "price": 69000, "onsite": 0, "total": 69000, "is_block": false}, {"branch": "영흥도", "booking_no": "2603171118480094", "guest": "이서진", "phone": "010****8480", "channel": "기타", "room": "104", "checkin": "2026-03-20", "checkout": "2026-03-21", "nights": 1, "stay_dates": ["2026-03-20"], "price": 99000, "onsite": 0, "total": 99000, "is_block": false}, {"branch": "영흥도", "booking_no": "2603181561069145", "guest": "김윤이", "phone": "010****9402", "channel": "기타", "room": "201", "checkin": "2026-03-19", "checkout": "2026-03-20", "nights": 1, "stay_dates": ["2026-03-19"], "price": 79000, "onsite": 0, "total": 79000, "is_block": false}, {"branch": "영흥도", "booking_no": "Y17404643", "guest": "유승택", "phone": "010****0944", "channel": "기타", "room": "202", "checkin": "2026-03-19", "checkout": "2026-03-21", "nights": 2, "stay_dates": ["2026-03-19", "2026-03-20"], "price": 138000, "onsite": 0, "total": 138000, "is_block": false}, {"branch": "영흥도", "booking_no": "2603161560880595", "guest": "안미선", "phone": "010****1750", "channel": "기타", "room": "303", "checkin": "2026-03-18", "checkout": "2026-03-20", "nights": 2, "stay_dates": ["2026-03-18", "2026-03-19"], "price": 118000, "onsite": 0, "total": 118000, "is_block": false}, {"branch": "영흥도", "booking_no": "2603162051330126", "guest": "최민지", "phone": "010****7489", "channel": "기타", "room": "302", "checkin": "2026-03-17", "checkout": "2026-03-18", "nights": 1, "stay_dates": ["2026-03-17"], "price": 59000, "onsite": 0, "total": 59000, "is_block": false}, {"branch": "영흥도", "booking_no": "2603161260865245", "guest": "백지영", "phone": "010****9993", "channel": "기타", "room": "201", "checkin": "2026-03-16", "checkout": "2026-03-17", "nights": 1, "stay_dates": ["2026-03-16"], "price": 69000, "onsite": 0, "total": 69000, "is_block": false}, {"branch": "영흥도", "booking_no": "M26030613360742134e", "guest": "기존예약  박민수 님", "phone": "050350735586", "channel": "수기", "room": "101", "checkin": "2026-03-15", "checkout": "2026-03-16", "nights": 1, "stay_dates": ["2026-03-15"], "price": 144000, "onsite": 0, "total": 144000, "is_block": false}, {"branch": "영흥도", "booking_no": "2603141660695813", "guest": "이영준", "phone": "010****1882", "channel": "기타", "room": "102", "checkin": "2026-03-15", "checkout": "2026-03-16", "nights": 1, "stay_dates": ["2026-03-15"], "price": 89000, "onsite": 0, "total": 89000, "is_block": false}, {"branch": "영흥도", "booking_no": "2603142303470048", "guest": "박나현", "phone": "010****8031", "channel": "기타", "room": "104", "checkin": "2026-03-15", "checkout": "2026-03-16", "nights": 1, "stay_dates": ["2026-03-15"], "price": 89000, "onsite": 0, "total": 89000, "is_block": false}, {"branch": "영흥도", "booking_no": "2603112260427077", "guest": "이한성", "phone": "010****0031", "channel": "기타", "room": "102", "checkin": "2026-03-14", "checkout": "2026-03-15", "nights": 1, "stay_dates": ["2026-03-14"], "price": 129000, "onsite": 0, "total": 129000, "is_block": false}, {"branch": "영흥도", "booking_no": "2603140960652641", "guest": "한진규", "phone": "010****4439", "channel": "기타", "room": "202", "checkin": "2026-03-14", "checkout": "2026-03-15", "nights": 1, "stay_dates": ["2026-03-14"], "price": 99000, "onsite": 0, "total": 99000, "is_block": false}, {"branch": "영흥도", "booking_no": "M260313004321930e7c", "guest": "이은비", "phone": "010****0484", "channel": "수기", "room": "204", "checkin": "2026-03-14", "checkout": "2026-03-15", "nights": 1, "stay_dates": ["2026-03-14"], "price": 99000, "onsite": 0, "total": 99000, "is_block": false}, {"branch": "영흥도", "booking_no": "M26031115163225660e", "guest": "윤혜숙", "phone": "010****7818", "channel": "수기", "room": "205", "checkin": "2026-03-14", "checkout": "2026-03-15", "nights": 1, "stay_dates": ["2026-03-14"], "price": 99000, "onsite": 0, "total": 99000, "is_block": false}, {"branch": "영흥도", "booking_no": "2603131860604495", "guest": "한화정", "phone": "010****6638", "channel": "기타", "room": "103", "checkin": "2026-03-14", "checkout": "2026-03-15", "nights": 1, "stay_dates": ["2026-03-14"], "price": 129000, "onsite": 0, "total": 129000, "is_block": false}, {"branch": "영흥도", "booking_no": "2603141002360308", "guest": "최수정", "phone": "010****5028", "channel": "기타", "room": "305", "checkin": "2026-03-14", "checkout": "2026-03-15", "nights": 1, "stay_dates": ["2026-03-14"], "price": 99000, "onsite": 0, "total": 99000, "is_block": false}, {"branch": "영흥도", "booking_no": "2603141260665486", "guest": "노지현", "phone": "010****3899", "channel": "기타", "room": "303", "checkin": "2026-03-14", "checkout": "2026-03-15", "nights": 1, "stay_dates": ["2026-03-14"], "price": 99000, "onsite": 0, "total": 99000, "is_block": false}, {"branch": "영흥도", "booking_no": "2603140760648173", "guest": "최영자", "phone": "010****7510", "channel": "기타", "room": "302", "checkin": "2026-03-14", "checkout": "2026-03-15", "nights": 1, "stay_dates": ["2026-03-14"], "price": 99000, "onsite": 0, "total": 99000, "is_block": false}, {"branch": "영흥도", "booking_no": "M260312214245570f06", "guest": "이경미", "phone": "010****5602", "channel": "수기", "room": "203", "checkin": "2026-03-14", "checkout": "2026-03-15", "nights": 1, "stay_dates": ["2026-03-14"], "price": 99000, "onsite": 0, "total": 99000, "is_block": false}, {"branch": "영흥도", "booking_no": "2603112160423863", "guest": "노종민", "phone": "010****6745", "channel": "기타", "room": "201", "checkin": "2026-03-14", "checkout": "2026-03-15", "nights": 1, "stay_dates": ["2026-03-14"], "price": 109000, "onsite": 0, "total": 109000, "is_block": false}, {"branch": "영흥도", "booking_no": "2603141760701898", "guest": "이호준", "phone": "010****3522", "channel": "기타", "room": "104", "checkin": "2026-03-14", "checkout": "2026-03-15", "nights": 1, "stay_dates": ["2026-03-14"], "price": 129000, "onsite": 0, "total": 129000, "is_block": false}, {"branch": "영흥도", "booking_no": "M260309221739006f0d", "guest": "석은빈", "phone": "010****9912", "channel": "수기", "room": "203", "checkin": "2026-03-13", "checkout": "2026-03-14", "nights": 1, "stay_dates": ["2026-03-13"], "price": 99000, "onsite": 0, "total": 99000, "is_block": false}, {"branch": "영흥도", "booking_no": "2603110954270079", "guest": "문아영", "phone": "010****8427", "channel": "기타", "room": "202", "checkin": "2026-03-13", "checkout": "2026-03-14", "nights": 1, "stay_dates": ["2026-03-13"], "price": 69000, "onsite": 0, "total": 69000, "is_block": false}, {"branch": "영흥도", "booking_no": "2603111000270901", "guest": "문아영", "phone": "010****8427", "channel": "기타", "room": "101", "checkin": "2026-03-13", "checkout": "2026-03-14", "nights": 1, "stay_dates": ["2026-03-13"], "price": 119000, "onsite": 0, "total": 119000, "is_block": false}, {"branch": "영흥도", "booking_no": "M26030613352988213a", "guest": "기존예약 김윤지 님", "phone": "-", "channel": "수기", "room": "102", "checkin": "2026-03-10", "checkout": "2026-03-11", "nights": 1, "stay_dates": ["2026-03-10"], "price": 109000, "onsite": 0, "total": 109000, "is_block": false}, {"branch": "영흥도", "booking_no": "M2603090005397823d9", "guest": "공병진", "phone": "010****4878", "channel": "수기", "room": "204", "checkin": "2026-03-10", "checkout": "2026-03-11", "nights": 1, "stay_dates": ["2026-03-10"], "price": 69000, "onsite": 0, "total": 69000, "is_block": false}, {"branch": "영흥도", "booking_no": "M260306133541286d6d", "guest": "기존예약 이영택  님", "phone": "-", "channel": "수기", "room": "202", "checkin": "2026-03-10", "checkout": "2026-03-11", "nights": 1, "stay_dates": ["2026-03-10"], "price": 69000, "onsite": 0, "total": 69000, "is_block": false}, {"branch": "영흥도", "booking_no": "2603091502490120", "guest": "이지수", "phone": "010****0625", "channel": "기타", "room": "204", "checkin": "2026-03-09", "checkout": "2026-03-10", "nights": 1, "stay_dates": ["2026-03-09"], "price": 69000, "onsite": 0, "total": 69000, "is_block": false}, {"branch": "영흥도", "booking_no": "M260309173929282f76", "guest": "장준혁", "phone": "010****9880", "channel": "수기", "room": "301", "checkin": "2026-03-09", "checkout": "2026-03-10", "nights": 1, "stay_dates": ["2026-03-09"], "price": 79000, "onsite": 0, "total": 79000, "is_block": false}, {"branch": "영흥도", "booking_no": "M260306133512235260", "guest": "기존예약  이국진 님", "phone": "1", "channel": "수기", "room": "102", "checkin": "2026-03-08", "checkout": "2026-03-09", "nights": 1, "stay_dates": ["2026-03-08"], "price": 109000, "onsite": 0, "total": 109000, "is_block": false}];
+let currentDate    = document.getElementById('datePicker').value;
+const currentBranch = "영흥도";
+
+
+
+// ==============================
+// 현장기록
+// ==============================
+var GAS_ENDPOINT = "https://script.google.com/macros/s/AKfycbzgA5z1GICaqgstqht-gwY-pNFCLnoGijGjbVGI5tGSs-3A5mcoex7bl6x9BIDLgUeXgQ/exec";
+var _fm = { bno:"", room:"", guest:"", bbq:0, person:0, dog:0, bigdog:0, etc:[] , pay:"" };
+
+function openFM(btn) {
+  var bno   = btn.dataset.bno;
+  var room  = btn.dataset.room;
+  var guest = btn.dataset.guest;
+  _fm = { bno:bno, room:room, guest:guest, bbq:0, person:0, dog:0, bigdog:0, etc:[], pay:"" };
+  document.getElementById("fmSub").textContent = guest + " · " + room;
+  ["fmPay0","fmPay1","fmPay2"].forEach(function(id){ document.getElementById(id).classList.remove("on"); });
+  document.getElementById("fmEtcNote").value = "";
+  document.getElementById("fmEtcAmt").value  = "";
+  fmRender();
+  document.getElementById("fmOverlay").classList.add("open");
+  document.body.style.overflow = "hidden";
+}
+function closeFM() {
+  document.getElementById("fmOverlay").classList.remove("open");
+  document.body.style.overflow = "";
+}
+function fmAdd(type) {
+  if (type === "bbq")    _fm.bbq++;
+  if (type === "dog")    _fm.dog++;
+  if (type === "bigdog") _fm.bigdog++;
+  fmRender();
+}
+function fmPerson(n) { _fm.person = n; fmRender(); }
+function fmAddEtc() {
+  var note = document.getElementById("fmEtcNote").value.trim();
+  var amt  = parseInt(document.getElementById("fmEtcAmt").value) || 0;
+  if (!note || !amt) { alert("내용과 금액을 모두 입력하세요."); return; }
+  _fm.etc.push({ note:note, amount:amt });
+  document.getElementById("fmEtcNote").value = "";
+  document.getElementById("fmEtcAmt").value  = "";
+  fmRender();
+}
+function fmRemove(type, idx) {
+  if (type === "bbq")    { _fm.bbq    = Math.max(0, _fm.bbq - 1); }
+  if (type === "person") { _fm.person = 0; }
+  if (type === "dog")    { _fm.dog    = Math.max(0, _fm.dog - 1); }
+  if (type === "bigdog") { _fm.bigdog = Math.max(0, _fm.bigdog - 1); }
+  if (type === "etc")    { _fm.etc.splice(idx, 1); }
+  fmRender();
+}
+function fmPay(method) {
+  _fm.pay = method;
+  var labels = ["현금","계좌","카드"];
+  labels.forEach(function(l, i) {
+    document.getElementById("fmPay"+i).classList.toggle("on", l === method);
+  });
+  fmRender();
+}
+function fmCalcTotal() {
+  return _fm.bbq*20000 + _fm.person*20000 + _fm.dog*10000 + _fm.bigdog*10000
+       + _fm.etc.reduce(function(s,i){ return s+i.amount; }, 0);
+}
+function fmRender() {
+  var items = "";
+  if (_fm.bbq > 0)
+    items += '<div class="fm-item"><span class="fm-item-label">BBQ ' + _fm.bbq + '세트</span>' +
+             '<span><span class="fm-item-amt">' + (_fm.bbq*20000).toLocaleString() + '원</span>' +
+             ' <button class="fm-item-del" onclick="fmRemove('bbq')">&#215;</button></span></div>';
+  if (_fm.person > 0)
+    items += '<div class="fm-item"><span class="fm-item-label">인원추가 ' + _fm.person + '명</span>' +
+             '<span><span class="fm-item-amt">' + (_fm.person*20000).toLocaleString() + '원</span>' +
+             ' <button class="fm-item-del" onclick="fmRemove('person')">&#215;</button></span></div>';
+  if (_fm.dog > 0)
+    items += '<div class="fm-item"><span class="fm-item-label">애견 추가 ' + _fm.dog + '마리</span>' +
+             '<span><span class="fm-item-amt">' + (_fm.dog*10000).toLocaleString() + '원</span>' +
+             ' <button class="fm-item-del" onclick="fmRemove('dog')">&#215;</button></span></div>';
+  if (_fm.bigdog > 0)
+    items += '<div class="fm-item"><span class="fm-item-label">대형견(10kg+) ' + _fm.bigdog + '마리</span>' +
+             '<span><span class="fm-item-amt">' + (_fm.bigdog*10000).toLocaleString() + '원</span>' +
+             ' <button class="fm-item-del" onclick="fmRemove('bigdog')">&#215;</button></span></div>';
+  _fm.etc.forEach(function(it, i) {
+    items += '<div class="fm-item"><span class="fm-item-label">' + it.note + '</span>' +
+             '<span><span class="fm-item-amt">' + it.amount.toLocaleString() + '원</span>' +
+             ' <button class="fm-item-del" onclick="fmRemove('etc',' + i + ')">&#215;</button></span></div>';
+  });
+  document.getElementById("fmItems").innerHTML = items;
+  var total = fmCalcTotal();
+  document.getElementById("fmTotalAmt").textContent = total.toLocaleString() + "원";
+  document.getElementById("fmSaveBtn").disabled = (total === 0 || !_fm.pay);
+}
+function fmSave() {
+  var bbqAmt    = _fm.bbq    * 20000;
+  var personAmt = _fm.person * 20000;
+  var dogAmt    = _fm.dog    * 10000;
+  var bigdogAmt = _fm.bigdog * 10000;
+  var etcAmt    = _fm.etc.reduce(function(s,i){ return s+i.amount; }, 0);
+  var etcNote   = _fm.etc.map(function(i){ return i.note; }).join(", ");
+  var total     = bbqAmt + personAmt + dogAmt + bigdogAmt + etcAmt;
+
+  var payload = JSON.stringify({
+    action:"fieldEntry", date:currentDate, branch:currentBranch,
+    room:_fm.room, guest:_fm.guest, bookingNo:_fm.bno,
+    bbq:bbqAmt, personCount:_fm.person, personAmount:personAmt,
+    dogCount:_fm.dog, dogAmount:dogAmt,
+    bigDogCount:_fm.bigdog, bigDogAmount:bigdogAmt,
+    etcNote:etcNote, etcAmount:etcAmt,
+    total:total, payMethod:_fm.pay
+  });
+
+  var btn = document.getElementById("fmSaveBtn");
+  btn.textContent = "저장 중..."; btn.disabled = true;
+
+  fetch(GAS_ENDPOINT, { method:"POST", body:payload })
+    .then(function(r){ return r.json(); })
+    .then(function(res) {
+      if (res.ok) {
+        document.querySelectorAll('[data-bno="' + _fm.bno + '"]').forEach(function(b){
+          b.textContent = total.toLocaleString() + "원 완료";
+          b.className = "field-done-badge";
+          b.onclick = null;
+        });
+        closeFM();
+        loadTodayFieldEntries();
+      } else {
+        alert("저장 실패: " + (res.error || "오류"));
+        btn.textContent = "기록하기"; btn.disabled = false;
+      }
+    })
+    .catch(function(err) {
+      alert("네트워크 오류: " + err.message);
+      btn.textContent = "기록하기"; btn.disabled = false;
+    });
+}
+function loadTodayFieldEntries() {
+  var wrap = document.getElementById("fieldSummaryWrap");
+  var area = document.getElementById("fieldSummaryArea");
+  if (!wrap || !area) return;
+  wrap.style.display = "";
+  area.innerHTML = '<div class="fs-empty">불러오는 중...</div>';
+  fetch(GAS_ENDPOINT + "?action=getDayEntries&date=" + currentDate + "&branch=" + encodeURIComponent(currentBranch))
+    .then(function(r){ return r.json(); })
+    .then(function(res) {
+      if (!res.ok || !res.data || res.data.length === 0) {
+        wrap.style.display = "none"; return;
+      }
+      wrap.style.display = "";
+      var dayTotal = 0; var html = "";
+      res.data.forEach(function(r) {
+        dayTotal += Number(r.total) || 0;
+        html += '<div class="fs-item">' +
+          '<span>' + r.room + ' ' + r.guest + '</span>' +
+          '<span style="display:flex;gap:8px;align-items:center">' +
+            '<span style="color:#888;font-size:11px">' + r.payMethod + '</span>' +
+            '<strong>' + Number(r.total).toLocaleString() + '원</strong>' +
+          '</span></div>';
+      });
+      html += '<div class="fs-item" style="font-weight:700;color:#1B3A5C">' +
+        '<span>일계</span><span>' + dayTotal.toLocaleString() + '원</span></div>';
+      area.innerHTML = html;
+    })
+    .catch(function(){ wrap.style.display = "none"; });
+}
+
+function generateBlankRows(existingCount) {
+  const cols = 8; // 객실, 예약자/연락처, 결제액, 연박, 강아지정보, BBQ, 도착예정, 기타요청
+  const count = Math.max(15 - existingCount, 3);
+  let html = '';
+  for (let i = 0; i < count; i++) {
+    html += `<tr class="blank-row">${'<td></td>'.repeat(cols)}</tr>`;
+  }
+  return html;
+}
+
+function nightsLabel(r, dateStr) {
+  const target = new Date(dateStr);
+  const ci     = new Date(r.checkin);
+  const co     = new Date(r.checkout);
+  if (r.nights === 1) return '<b>1박</b>';
+  const dayNo = Math.round((target - ci) / 86400000) + 1;
+  const ciStr = (ci.getMonth()+1) + '/' + ci.getDate();
+  const coStr = (co.getMonth()+1) + '/' + co.getDate();
+  return `<b>${r.nights}박</b><br>${ciStr}~${coStr}<br><span style="color:#888">${dayNo}일차</span>`;
+}
+
+function channelBadge(ch) {
+  return `<span class="channel-badge ch-${ch}">${ch}</span>`;
+}
+
+function writeLine() {
+  return '<div class="write-line"></div>';
+}
+
+function renderTable() {
+  const records = ALL_RECORDS
+    .filter(r => !r.is_block && r.stay_dates.includes(currentDate) && true)
+    .sort((a,b) => a.room.localeCompare(b.room, 'ko'));
+
+  const dateObj = new Date(currentDate);
+  const dateKo  = dateObj.getFullYear() + '년 ' + (dateObj.getMonth()+1) + '월 ' + dateObj.getDate() + '일';
+  const brLabel = "영흥도";
+
+  document.getElementById('printHeader').innerHTML =
+    `<h2>글램독 ${brLabel} 체크인 리스트</h2><span>${dateKo} &nbsp;|&nbsp; 총 ${records.length}건</span>`;
+
+  const area = document.getElementById('tableArea');
+  if (records.length === 0) {
+    area.innerHTML = '<div class="empty-state">해당 날짜에 입실 예약이 없습니다.</div>';
+    return;
+  }
+
+  let rows = '';
+  records.forEach(r => {
+    const onsite = r.onsite > 0
+      ? `<div class="payment-onsite">현장: ${r.onsite.toLocaleString()}원</div>` : '';
+    rows += `
+    <tr>
+      <td class="col-room"><span class="room-name">${r.room}</span></td>
+      <td class="col-guest">
+        <div class="guest-name">${r.guest}</div>
+        <div class="guest-phone">${r.phone}</div>
+        ${channelBadge(r.channel)}
+      </td>
+      <td class="col-payment">
+        <div class="payment-box">
+          객실: ${r.price.toLocaleString()}원
+          ${onsite}
+          <div class="payment-total">계: ${r.total.toLocaleString()}원</div>
+        </div>
+      </td>
+      <td class="col-nights"><div class="nights-box">${nightsLabel(r, currentDate)}</div></td>
+      <td class="col-dog"><div class="write-lines">${writeLine()}${writeLine()}</div></td>
+      <td class="col-bbq"><div class="bbq-box">□</div></td>
+      <td class="col-arrive"><div class="write-lines">${writeLine()}</div></td>
+      <td class="col-memo"><div class="write-lines">${writeLine()}</div><button class="field-btn" data-bno="${r.booking_no}" data-room="${r.room}" data-guest="${r.guest}" onclick="openFM(this)">+ 현장기록</button></td>
+    </tr>`;
+  });
+
+  area.innerHTML = `
+  <div class="date-header">
+    ${dateKo} — ${brLabel}
+    <span class="summary">총 ${records.length}건 입실</span>
+  </div>
+  <table>
+    <thead>
+      <tr>
+        <th class="col-room">객실</th>
+        <th class="col-guest">예약자 / 연락처</th>
+        <th class="col-payment">결제액</th>
+        <th class="col-nights">연박</th>
+        <th class="col-dog">강아지 정보</th>
+        <th class="col-bbq">BBQ</th>
+        <th class="col-arrive">도착예정</th>
+        <th class="col-memo">기타요청</th>
+      </tr>
+    </thead>
+    <tbody>${rows}${generateBlankRows(records.length)}</tbody>
+  </table>`;
+}
+
+
+renderTable();
+loadTodayFieldEntries();
+document.getElementById('datePicker').addEventListener('change', e => {
+  currentDate = e.target.value; renderTable();
+});
+setTimeout(() => location.reload(), 30 * 60 * 1000);
+
+let calYear  = new Date().getFullYear();
+let calMonth = new Date().getMonth(); // 0-indexed
+let currentView = 'list'; // 'list' or 'calendar'
+
+function setView(v) {
+  currentView = v;
+  ['btnList','btnCal','btnRes'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.classList.remove('active');
+  });
+  const activeBtn = {list:'btnList', calendar:'btnCal', rescal:'btnRes'}[v];
+  if (activeBtn && document.getElementById(activeBtn))
+    document.getElementById(activeBtn).classList.add('active');
+
+  document.getElementById('listSection').style.display  = v === 'list'     ? '' : 'none';
+  document.getElementById('calSection').style.display   = v === 'calendar' ? '' : 'none';
+  const resEl = document.getElementById('resCalSection');
+  if (resEl) resEl.style.display = v === 'rescal' ? '' : 'none';
+
+  if (v === 'calendar') renderCalendar();
+  if (v === 'rescal') { renderResCal(); setupResCalDrag(); }
+  if (v === 'list') {
+    // 본사(renderAll)와 지점(renderTable) 분기
+    if (typeof renderAll === 'function') renderAll(); else renderTable();
+  }
+}
+
+function getDayCount(dateStr) {
+  return ALL_RECORDS.filter(r =>
+    r.stay_dates.includes(dateStr) && (true)
+  ).length;
+}
+
+function renderCalendar() {
+  const wrap = document.getElementById('calSection');
+  const monthNames = ['1월','2월','3월','4월','5월','6월','7월','8월','9월','10월','11월','12월'];
+  const todayStr = new Date().toISOString().slice(0,10);
+
+  const firstDay = new Date(calYear, calMonth, 1).getDay(); // 0=Sun
+  const lastDate = new Date(calYear, calMonth+1, 0).getDate();
+
+  let cells = '';
+  // 요일 헤더
+  ['일','월','화','수','목','금','토'].forEach((d,i) => {
+    cells += `<div class="cal-dow">${d}</div>`;
+  });
+
+  // 앞 빈칸
+  for (let i = 0; i < firstDay; i++) cells += '<div class="cal-cell empty"></div>';
+
+  // 날짜 셀
+  for (let d = 1; d <= lastDate; d++) {
+    const dateStr = `${calYear}-${String(calMonth+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    const dow = new Date(calYear, calMonth, d).getDay();
+    const cnt = getDayCount(dateStr);
+    const isToday    = dateStr === todayStr;
+    const isSelected = dateStr === currentDate;
+    const dowClass   = dow === 0 ? 'sunday' : dow === 6 ? 'saturday' : '';
+    const extraClass = [isToday?'today':'', isSelected?'selected':'', dowClass].filter(Boolean).join(' ');
+
+    const badge = cnt > 0
+      ? `<div class="cal-badges"><span class="cal-badge cal-badge-total">${cnt}건</span></div>` : '';
+
+    cells += `
+      <div class="cal-cell ${extraClass}" onclick="calSelectDate('${dateStr}')">
+        <div class="cal-day">${d}</div>
+        ${badge}
+      </div>`;
+  }
+
+  wrap.innerHTML = `
+    <div class="cal-nav">
+      <button onclick="calMove(-1)">&#8249;</button>
+      <h2>${calYear}년 ${monthNames[calMonth]}</h2>
+      <button onclick="calMove(1)">&#8250;</button>
+      <button class="today-btn" onclick="calGoToday()">오늘</button>
+    </div>
+    <div class="cal-grid">${cells}</div>
+  `;
+}
+
+function calMove(delta) {
+  calMonth += delta;
+  if (calMonth < 0)  { calMonth = 11; calYear--; }
+  if (calMonth > 11) { calMonth = 0;  calYear++; }
+  renderCalendar();
+}
+
+function calGoToday() {
+  const now = new Date();
+  calYear = now.getFullYear(); calMonth = now.getMonth();
+  renderCalendar();
+}
+
+function calSelectDate(dateStr) {
+  currentDate = dateStr;
+  // 날짜 피커도 동기화
+  const dp = document.getElementById('datePicker');
+  if (dp) dp.value = dateStr;
+  setView('list');
+}
+
+
+const COL_W = 82; // px per day
+function todayLocal() {
+  const d = new Date();
+  return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+}
+let resCalStart = todayLocal();
+let resCalDays  = 7;
+
+function resCalGetRecords() {
+  return ALL_RECORDS.filter(r => true);
+}
+
+function resCalDateAdd(dateStr, days) {
+  const d = new Date(dateStr + 'T00:00:00'); d.setDate(d.getDate() + days);
+  // toISOString()은 UTC 변환으로 한국(UTC+9)에서 하루 밀림 → 로컬 날짜로 직접 포맷
+  return d.getFullYear() + '-' +
+    String(d.getMonth()+1).padStart(2,'0') + '-' +
+    String(d.getDate()).padStart(2,'0');
+}
+function resCalDiff(a, b) {
+  return Math.round((new Date(b+'T00:00:00') - new Date(a+'T00:00:00')) / 86400000);
+}
+
+function renderResCal() {
+  const records  = resCalGetRecords();
+  const todayStr = todayLocal();
+  const endStr   = resCalDateAdd(resCalStart, resCalDays);
+
+  // 날짜 배열
+  const dates = [];
+  for (let i = 0; i < resCalDays; i++) dates.push(resCalDateAdd(resCalStart, i));
+
+  // 객실 정렬
+  const rooms = [...new Set(records.map(r => r.room))].sort((a,b) => a.localeCompare(b,'ko'));
+
+  const DOW = ['일','월','화','수','목','금','토'];
+
+  // ── 헤더 ──
+  let headerCells = '';
+  dates.forEach(d => {
+    const dt  = new Date(d+'T00:00:00');
+    const dow = DOW[dt.getDay()];
+    const md  = (dt.getMonth()+1) + '/' + dt.getDate();
+    const isT = d === todayStr;
+    const cls = [isT?'today-h':'', dt.getDay()===0?'sun-h':'', dt.getDay()===6?'sat-h':''].filter(Boolean).join(' ');
+    headerCells += `<div class="rescal-date-header ${cls}">
+      <div class="rescal-dow">${dow}</div>
+      <div class="rescal-dnum">${md}</div>
+    </div>`;
+  });
+
+  // ── 객실 행 ──
+  let roomRows = '';
+  rooms.forEach(room => {
+    // 이 기간과 겹치는 예약
+    const bookings = records.filter(r =>
+      r.room === room && r.checkin < endStr && r.checkout > resCalStart
+    );
+
+    // 날짜 셀
+    let dayCells = '';
+    dates.forEach(d => {
+      const isT = d === todayStr;
+      dayCells += `<div class="rescal-day-cell${isT?' today-col':''}"></div>`;
+    });
+
+    // 예약 블록 (절대 위치)
+    let blocks = '';
+    bookings.forEach(b => {
+      const startOff = Math.max(0, resCalDiff(resCalStart, b.checkin));
+      const endOff   = Math.min(resCalDays, resCalDiff(resCalStart, b.checkout));
+      if (endOff <= startOff) return;
+
+      const left  = startOff * COL_W + 1;
+      const width = (endOff - startOff) * COL_W - 3;
+      const ch    = b.is_block ? '방막기' : (b.channel || '기타');
+      const name  = b.is_block ? '■ 방막기' : b.guest;
+      const phone = b.is_block ? '' : b.phone;
+
+      blocks += `<div class="rescal-block ch-${ch}" style="left:${left}px;width:${width}px">
+        <div class="rescal-block-name">${name}</div>
+        ${phone ? `<div class="rescal-block-phone">${phone}</div>` : ''}
+      </div>`;
+    });
+
+    roomRows += `<div class="rescal-room-row">
+      <div class="rescal-room-label">${room}</div>
+      <div style="position:relative;display:flex">${dayCells}
+        <div style="position:absolute;inset:0;pointer-events:none">${blocks}</div>
+      </div>
+    </div>`;
+  });
+
+  // 기간 표시
+  const s = new Date(resCalStart+'T00:00:00');
+  const e = new Date(resCalDateAdd(resCalStart, resCalDays-1)+'T00:00:00');
+  const fmt = d => (d.getMonth()+1)+'월 '+d.getDate()+'일';
+  document.getElementById('resCalPeriod').textContent =
+    s.getFullYear()+'년 ' + fmt(s) + ' ~ ' + fmt(e) + ' ('+resCalDays+'일)';
+
+  const grid = document.getElementById('resCalGrid');
+  grid.innerHTML = `
+    <div class="rescal-header-row">
+      <div class="rescal-room-header">객실</div>
+      ${headerCells}
+    </div>
+    ${roomRows}
+  `;
+
+  if (rooms.length === 0) {
+    grid.innerHTML += '<div style="padding:40px;text-align:center;color:#999">예약 데이터가 없습니다</div>';
+  }
+}
+
+function resCalMove(delta) {
+  resCalStart = resCalDateAdd(resCalStart, delta * resCalDays);
+  renderResCal();
+}
+function resCalGoToday() {
+  resCalStart = new Date().toISOString().slice(0,10); renderResCal();
+}
+function resCalSetRange(days) {
+  resCalDays = days;
+  document.querySelectorAll('.rescal-range-btn').forEach(b =>
+    b.classList.toggle('active', parseInt(b.dataset.days) === days)
+  );
+  renderResCal();
+}
+
+// 드래그 스크롤
+function setupResCalDrag() {
+  const el = document.getElementById('resCalScroll');
+  if (!el) return;
+  let isDown = false, startX, startY, scrollL, scrollT;
+  el.addEventListener('mousedown', e => {
+    isDown = true; el.classList.add('dragging');
+    startX = e.pageX - el.offsetLeft; startY = e.pageY - el.offsetTop;
+    scrollL = el.scrollLeft; scrollT = el.scrollTop;
+  });
+  el.addEventListener('mouseleave', () => { isDown = false; el.classList.remove('dragging'); });
+  el.addEventListener('mouseup',    () => { isDown = false; el.classList.remove('dragging'); });
+  el.addEventListener('mousemove',  e => {
+    if (!isDown) return; e.preventDefault();
+    el.scrollLeft = scrollL - (e.pageX - el.offsetLeft - startX);
+    el.scrollTop  = scrollT - (e.pageY - el.offsetTop  - startY);
+  });
+}
+
+
+const _PW = "yh@2025";
+const _SK = "gd_089aa5b5";  // 페이지별 고유 세션 키
+function _checkAuth() {
+  if (sessionStorage.getItem(_SK) === _PW) {
+    document.getElementById('pwOverlay').style.display = 'none';
+  }
+}
+function _submitPw() {
+  const v = document.getElementById('pwInput').value;
+  if (v === _PW) {
+    sessionStorage.setItem(_SK, _PW);
+    document.getElementById('pwOverlay').style.display = 'none';
+    document.getElementById('pwInput').value = '';
+  } else {
+    document.getElementById('pwError').style.display = 'block';
+    document.getElementById('pwInput').value = '';
+    document.getElementById('pwInput').focus();
+  }
+}
+_checkAuth();
+
+// URL 해시로 뷰 자동 전환 (#rescal)
+if (window.location.hash === '#rescal') {
+  setTimeout(() => setView('rescal'), 100);
+}
+</script>
+</body></html>

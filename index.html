@@ -2,10 +2,760 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<meta http-equiv="refresh" content="0; url=checkin_sheet.html">
-<title>글램독 체크인 리스트</title>
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>글램독 예약 현황 대시보드</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+<style>
+:root{
+  --bg:#0f1117;--card:#1a1d27;--card2:#21243a;
+  --accent:#5b7fff;--a2:#ff6b6b;--a3:#4ecdc4;--a4:#ffe66d;
+  --green:#43e97b;--orange:#fa8231;--purple:#a29bfe;--pink:#fd79a8;
+  --text:#e8eaf6;--muted:#8892b0;--border:#2d3561;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--text);font-family:'Apple SD Gothic Neo','Noto Sans KR',sans-serif;font-size:14px}
+header{background:linear-gradient(135deg,#1a1d27,#12152a);border-bottom:1px solid var(--border);padding:18px 32px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px}
+header h1{font-size:20px;font-weight:700;color:#fff;display:flex;align-items:center;gap:10px}
+.badge{background:var(--accent);color:#fff;font-size:11px;padding:3px 8px;border-radius:10px;font-weight:600}
+.badge.warn{background:var(--a2)}
+.updated{color:var(--muted);font-size:12px}
+.filters{background:var(--card);border-bottom:1px solid var(--border);padding:12px 32px;display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.fl{color:var(--muted);font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px}
+select,button{background:var(--card2);color:var(--text);border:1px solid var(--border);border-radius:8px;padding:6px 11px;font-size:13px;cursor:pointer;outline:none}
+select:hover{border-color:var(--accent)}
+button.reset{background:var(--a2);border-color:var(--a2);color:#fff;font-weight:600}
+.container{padding:22px 32px;max-width:1600px;margin:0 auto}
+.kpi-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:14px;margin-bottom:24px}
+.kpi{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:18px 20px;position:relative;overflow:hidden}
+.kpi::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;border-radius:14px 14px 0 0}
+.kpi.blue::before{background:var(--accent)}.kpi.red::before{background:var(--a2)}.kpi.teal::before{background:var(--a3)}
+.kpi.yellow::before{background:var(--a4)}.kpi.green::before{background:var(--green)}.kpi.purple::before{background:var(--purple)}
+.kpi.orange::before{background:var(--orange)}
+.kpi-icon{position:absolute;right:14px;top:14px;font-size:24px;opacity:.15}
+.kpi-label{color:var(--muted);font-size:11px;font-weight:700;text-transform:uppercase;margin-bottom:6px}
+.kpi-value{font-size:22px;font-weight:800;color:#fff}
+.kpi-sub{color:var(--muted);font-size:11px;margin-top:5px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-bottom:22px}
+.grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:18px;margin-bottom:22px}
+.card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:20px 22px}
+.card.wide{grid-column:1/-1}
+.card-title{font-size:13px;font-weight:700;color:#fff;margin-bottom:14px;display:flex;align-items:center;gap:7px}
+canvas{max-height:270px}
+table{width:100%;border-collapse:collapse;min-width:600px}
+th{background:var(--card2);color:var(--muted);font-size:11px;font-weight:700;text-transform:uppercase;padding:9px 12px;text-align:left;border-bottom:1px solid var(--border);white-space:nowrap}
+th.r{text-align:right}
+td{padding:9px 12px;border-bottom:1px solid rgba(45,53,97,.35);vertical-align:middle}
+td.r{text-align:right}
+tr:hover td{background:rgba(91,127,255,.05)}
+.tag{display:inline-block;padding:2px 7px;border-radius:5px;font-size:11px;font-weight:600}
+.tag-ok{background:rgba(67,233,123,.15);color:var(--green)}
+.tag-cancel{background:rgba(255,107,107,.15);color:var(--a2)}
+.tag-nol{background:rgba(91,127,255,.2);color:var(--accent)}
+.tag-manual{background:rgba(255,230,109,.15);color:var(--a4)}
+.tag-rt{background:rgba(78,205,196,.2);color:var(--a3)}
+.tag-promo{background:rgba(162,155,254,.15);color:var(--purple)}
+.totals-row td{font-weight:700;color:#fff;background:var(--card2)!important;border-top:2px solid var(--border)}
+.occ-bar-bg{background:var(--border);border-radius:4px;height:7px;margin-top:7px}
+.occ-bar{height:7px;border-radius:4px;background:linear-gradient(90deg,var(--accent),var(--a3))}
+.occ-bar.danger{background:linear-gradient(90deg,var(--a2),var(--orange))}
+.occ-bar.warn{background:linear-gradient(90deg,var(--a4),var(--orange))}
+.pagination{display:flex;gap:5px;flex-wrap:wrap}
+.pg{background:var(--card2);border:1px solid var(--border);color:var(--text);border-radius:5px;padding:4px 9px;font-size:12px;cursor:pointer}
+.pg:hover{border-color:var(--accent);color:var(--accent)}
+.pg.active{background:var(--accent);border-color:var(--accent);color:#fff}
+.pi{color:var(--muted);font-size:12px}
+.alert-box{background:rgba(255,107,107,.08);border:1px solid rgba(255,107,107,.25);border-radius:10px;padding:14px 18px;margin-bottom:22px}
+.alert-title{color:var(--a2);font-size:13px;font-weight:700;margin-bottom:10px}
+.alert-list{list-style:none;display:flex;flex-wrap:wrap;gap:8px}
+.alert-item{background:rgba(255,107,107,.1);border:1px solid rgba(255,107,107,.2);border-radius:8px;padding:6px 12px;color:var(--text);font-size:12px}
+.no-alert{color:var(--green);font-size:12px}
+@media(max-width:900px){.grid2,.grid3{grid-template-columns:1fr}.card.wide{grid-column:1}.container{padding:14px}.filters{padding:10px 14px}}
+.wk-compare{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px}
+.wk-half{background:var(--card2);border-radius:10px;padding:16px 18px;border:1px solid var(--border)}
+.wk-half.weekend{border-color:rgba(255,230,109,.4)}
+.wk-half.weekday{border-color:rgba(78,205,196,.4)}
+.wk-label{font-size:12px;font-weight:700;margin-bottom:10px;text-transform:uppercase;letter-spacing:.5px}
+.wk-label.weekend{color:var(--a4)}.wk-label.weekday{color:var(--a3)}
+.wk-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;font-size:13px}
+.wk-key{color:var(--muted)}.wk-val{font-weight:700;color:#fff}
+.strat-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px;margin-top:14px}
+.strat-card{border-radius:10px;padding:14px 16px;border:1px solid}
+.strat-card.action{background:rgba(255,107,107,.07);border-color:rgba(255,107,107,.25)}
+.strat-card.opportunity{background:rgba(255,230,109,.07);border-color:rgba(255,230,109,.25)}
+.strat-card.good{background:rgba(67,233,123,.07);border-color:rgba(67,233,123,.25)}
+.strat-card.info{background:rgba(91,127,255,.07);border-color:rgba(91,127,255,.25)}
+.strat-title{font-size:12px;font-weight:700;margin-bottom:7px}
+.strat-title.action{color:var(--a2)}.strat-title.opportunity{color:var(--a4)}
+.strat-title.good{color:var(--green)}.strat-title.info{color:var(--accent)}
+.strat-body{font-size:12px;color:var(--muted);line-height:1.6}
+</style>
 </head>
 <body>
-<p>잠시 후 이동합니다... <a href="checkin_sheet.html">클릭</a></p>
+<header>
+  <h1>📅 글램독 예약 현황 대시보드 <span class="badge">LIVE</span></h1>
+  <div class="updated">마지막 업데이트: 2026-04-02 22:35</div>
+</header>
+<div class="filters">
+  <span class="fl">필터</span>
+  <select id="fBranch" onchange="applyFilters()"><option value="">전체 지점</option></select>
+  <select id="fStatus" onchange="applyFilters()"><option value="">전체 상태</option></select>
+  <select id="fType" onchange="applyFilters()"><option value="">전체 유형</option></select>
+  <select id="fWeek" onchange="applyFilters()"><option value="">전체 기간</option></select>
+  <button class="reset" onclick="resetFilters()">↺ 초기화</button>
+</div>
+<div class="container">
+  <div id="alertBox"></div>
+  <div class="kpi-grid" id="kpiGrid"></div>
+  <div class="grid2">
+    <div class="card">
+      <div class="card-title">📈 일별 예상 매출 (입실 기준)</div>
+      <canvas id="cDailyRev"></canvas>
+    </div>
+    <div class="card">
+      <div class="card-title">🏨 지점별 예약 현황</div>
+      <canvas id="cBranch"></canvas>
+    </div>
+    <div class="card wide">
+      <div class="card-title">📊 날짜별 예약 건수 (지점 구분)</div>
+      <canvas id="cDailyCount"></canvas>
+    </div>
+    <div class="card">
+      <div class="card-title">🎯 지점별 OCC (점유율)</div>
+      <div id="occGrid"></div>
+    </div>
+    <div class="card">
+      <div class="card-title">🥧 예약 유형 & 취소율</div>
+      <canvas id="cStatus"></canvas>
+    </div>
+    <div class="card">
+      <div class="card-title">🎁 프로모션 사용 현황</div>
+      <canvas id="cPromo"></canvas>
+    </div>
+    <div class="card">
+      <div class="card-title">⏱ 예약 리드타임 분포</div>
+      <canvas id="cLead"></canvas>
+    </div>
+  </div>
+
+  <!-- 주중/주말 인사이트 -->
+  <div class="card" style="margin-bottom:22px">
+    <div class="card-title">🌙 주중 vs 주말 인사이트</div>
+    <div class="wk-compare" id="wkCompare"></div>
+    <div class="grid2" style="margin-bottom:14px">
+      <div style="background:var(--card2);border-radius:10px;padding:16px;border:1px solid var(--border)">
+        <div class="card-title" style="margin-bottom:12px;font-size:12px">📅 요일별 예약 건수 &amp; ADR</div>
+        <canvas id="cDOW" style="max-height:200px"></canvas>
+      </div>
+      <div style="background:var(--card2);border-radius:10px;padding:16px;border:1px solid var(--border);overflow:auto">
+        <div class="card-title" style="margin-bottom:12px;font-size:12px">🏢 지점별 주중/주말 ADR 비교</div>
+        <table style="min-width:0">
+          <thead><tr>
+            <th>지점</th><th class="r">주중 ADR</th><th class="r">주말 ADR</th><th class="r">프리미엄</th><th>추천 전략</th>
+          </tr></thead>
+          <tbody id="wkBranchTable"></tbody>
+        </table>
+      </div>
+    </div>
+    <div id="stratGrid"></div>
+  </div>
+
+  <!-- 지점별 요약 -->
+  <div class="card" style="margin-bottom:22px;overflow:auto">
+    <div class="card-title">🏢 지점별 상세 분석</div>
+    <table>
+      <thead><tr>
+        <th>지점</th><th class="r">총 객실</th><th class="r">확정</th><th class="r">취소</th>
+        <th class="r">취소율</th><th class="r">예상 매출</th><th class="r">예상 순수익</th>
+        <th class="r">수수료율</th><th>OCC(주간)</th>
+      </tr></thead>
+      <tbody id="branchTable"></tbody>
+    </table>
+  </div>
+
+  <!-- 현금흐름 -->
+  <div class="card" style="margin-bottom:22px;overflow:auto">
+    <div class="card-title">💰 일별 현금흐름 예측 (확정 예약 기준)</div>
+    <table>
+      <thead><tr>
+        <th>날짜</th><th>요일</th><th class="r">예약 건수</th><th class="r">총 판매가</th>
+        <th class="r">수수료</th><th class="r">순수익</th><th>지점별 분포</th>
+      </tr></thead>
+      <tbody id="cashflowTable"></tbody>
+    </table>
+  </div>
+
+  <!-- 전체 예약 목록 -->
+  <div class="card" style="overflow:auto">
+    <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:14px">
+      <div class="card-title" style="margin-bottom:0">📋 전체 예약 목록</div>
+      <div style="display:flex;gap:8px;align-items:center">
+        <span class="pi" id="tInfo"></span>
+        <div class="pagination" id="pagination"></div>
+      </div>
+    </div>
+    <table>
+      <thead><tr>
+        <th>지점</th><th>상태</th><th>객실</th><th>입실</th><th>퇴실</th>
+        <th class="r">박수</th><th>유형</th><th class="r">판매가</th>
+        <th class="r">수수료</th><th class="r">순수익</th><th>프로모션</th>
+      </tr></thead>
+      <tbody id="detailBody"></tbody>
+    </table>
+  </div>
+</div>
+
+<script>
+const RAW = [{"branch": "가평(가평점)", "booking_no": "2603292162170229", "guest": "", "room": "106", "checkin": "2026-05-01", "checkout": "2026-05-02", "book_date": "2026-03-29", "cancel_date": "", "status": "예약완료", "btype": "NOL 예약", "nights": 1, "stay_type": "단박", "price": 129000.0, "onsite": 0.0, "total_price": 129000.0, "promo": "", "comm_rate": 0.07, "comm_amt": 9030, "net_rev": 119970, "confirmed": true, "lead_days": 33, "weekday": 4, "is_weekend": true}, {"branch": "가평(가평점)", "booking_no": "2603301662230059", "guest": "", "room": "105", "checkin": "2026-05-01", "checkout": "2026-05-02", "book_date": "2026-03-30", "cancel_date": "", "status": "예약완료", "btype": "NOL 예약", "nights": 1, "stay_type": "단박", "price": 129000.0, "onsite": 0.0, "total_price": 129000.0, "promo": "", "comm_rate": 0.07, "comm_amt": 9030, "net_rev": 119970, "confirmed": true, "lead_days": 32, "weekday": 4, "is_weekend": true}, {"branch": "가평(가평점)", "booking_no": "2603311021360135", "guest": "", "room": "205복층", "checkin": "2026-05-01", "checkout": "2026-05-03", "book_date": "2026-03-31", "cancel_date": "", "status": "예약완료", "btype": "NOL 예약", "nights": 2, "stay_type": "연박(2박)", "price": 187200.0, "onsite": 0.0, "total_price": 187200.0, "promo": "Gold Class 고객 대상 프로모션 할인 10% (프로모션 ID : 15621)", "comm_rate": 0.07, "comm_amt": 13104, "net_rev": 174096, "confirmed": true, "lead_days": 31, "weekday": 4, "is_weekend": true}, {"branch": "가평(가평점)", "booking_no": "M2604011407374489fa", "guest": "", "room": "201", "checkin": "2026-05-01", "checkout": "2026-05-02", "book_date": "2026-04-01", "cancel_date": "", "status": "예약완료", "btype": "수기 예약", "nights": 1, "stay_type": "단박", "price": 109000.0, "onsite": 0.0, "total_price": 109000.0, "promo": "", "comm_rate": 0, "comm_amt": 0, "net_rev": 109000, "confirmed": true, "lead_days": 30, "weekday": 4, "is_weekend": true}, {"branch": "가평(가평점)", "booking_no": "M2604012128306365b6", "guest": "", "room": "203", "checkin": "2026-05-01", "checkout": "2026-05-02", "book_date": "2026-04-01", "cancel_date": "", "status": "예약완료", "btype": "수기 예약", "nights": 1, "stay_type": "단박", "price": 109000.0, "onsite": 0.0, "total_price": 109000.0, "promo": "", "comm_rate": 0, "comm_amt": 0, "net_rev": 109000, "confirmed": true, "lead_days": 30, "weekday": 4, "is_weekend": true}, {"branch": "가평(가평점)", "booking_no": "2603251011510079", "guest": "", "room": "105", "checkin": "2026-04-11", "checkout": "2026-04-12", "book_date": "2026-03-25", "cancel_date": "", "status": "예약완료", "btype": "NOL 예약", "nights": 1, "stay_type": "단박", "price": 129000.0, "onsite": 0.0, "total_price": 129000.0, "promo": "", "comm_rate": 0.07, "comm_amt": 9030, "net_rev": 119970, "confirmed": true, "lead_days": 17, "weekday": 5, "is_weekend": true}, {"branch": "가평(가평점)", "booking_no": "M260327141312426d5e", "guest": "", "room": "106", "checkin": "2026-04-11", "checkout": "2026-04-12", "book_date": "2026-03-27", "cancel_date": "2026-03-27", "status": "예약취소(업체)", "btype": "수기 예약", "nights": 1, "stay_type": "단박", "price": 0.0, "onsite": 0.0, "total_price": 0.0, "promo": "", "comm_rate": 0, "comm_amt": 0, "net_rev": 0, "confirmed": false, "lead_days": 15, "weekday": 5, "is_weekend": true}, {"branch": "가평(가평점)", "booking_no": "M260327141808761f11", "guest": "", "room": "106", "checkin": "2026-04-11", "checkout": "2026-04-12", "book_date": "2026-03-27", "cancel_date": "", "status": "예약완료", "btype": "수기 예약", "nights": 1, "stay_type": "단박", "price": 0.0, "onsite": 0.0, "total_price": 0.0, "promo": "", "comm_rate": 0, "comm_amt": 0, "net_rev": 0, "confirmed": true, "lead_days": 15, "weekday": 5, "is_weekend": true}, {"branch": "가평(가평점)", "booking_no": "M260401104351942553", "guest": "", "room": "201", "checkin": "2026-04-11", "checkout": "2026-04-12", "book_date": "2026-04-01", "cancel_date": "", "status": "예약완료", "btype": "수기 예약", "nights": 1, "stay_type": "단박", "price": 99000.0, "onsite": 0.0, "total_price": 99000.0, "promo": "", "comm_rate": 0, "comm_amt": 0, "net_rev": 99000, "confirmed": true, "lead_days": 10, "weekday": 5, "is_weekend": true}, {"branch": "가평(가평점)", "booking_no": "M260306164111144814", "guest": "", "room": "106", "checkin": "2026-04-04", "checkout": "2026-04-05", "book_date": "2026-03-06", "cancel_date": "2026-03-31", "status": "예약취소(업체)", "btype": "수기 예약", "nights": 1, "stay_type": "단박", "price": 0.0, "onsite": 0.0, "total_price": 0.0, "promo": "", "comm_rate": 0, "comm_amt": 0, "net_rev": 0, "confirmed": false, "lead_days": 29, "weekday": 5, "is_weekend": true}, {"branch": "가평(가평점)", "booking_no": "2603261161813486", "guest": "", "room": "105", "checkin": "2026-04-04", "checkout": "2026-04-05", "book_date": "2026-03-26", "cancel_date": "2026-03-30", "status": "고객취소", "btype": "NOL 예약", "nights": 1, "stay_type": "단박", "price": 129000.0, "onsite": 0.0, "total_price": 129000.0, "promo": "", "comm_rate": 0.07, "comm_amt": 9030, "net_rev": 119970, "confirmed": false, "lead_days": 9, "weekday": 5, "is_weekend": true}, {"branch": "가평(가평점)", "booking_no": "2603302362266895", "guest": "", "room": "105", "checkin": "2026-04-04", "checkout": "2026-04-05", "book_date": "2026-03-30", "cancel_date": "", "status": "예약완료", "btype": "NOL 예약", "nights": 1, "stay_type": "단박", "price": 129000.0, "onsite": 0.0, "total_price": 129000.0, "promo": "", "comm_rate": 0.07, "comm_amt": 9030, "net_rev": 119970, "confirmed": true, "lead_days": 5, "weekday": 5, "is_weekend": true}, {"branch": "가평(가평점)", "booking_no": "M2604011908392933d0", "guest": "", "room": "201", "checkin": "2026-04-04", "checkout": "2026-04-05", "book_date": "2026-04-01", "cancel_date": "", "status": "예약완료", "btype": "수기 예약", "nights": 1, "stay_type": "단박", "price": 99000.0, "onsite": 0.0, "total_price": 99000.0, "promo": "", "comm_rate": 0, "comm_amt": 0, "net_rev": 99000, "confirmed": true, "lead_days": 3, "weekday": 5, "is_weekend": true}, {"branch": "가평(가평점)", "booking_no": "M2604020733168156e4", "guest": "", "room": "106", "checkin": "2026-04-04", "checkout": "2026-04-05", "book_date": "2026-04-02", "cancel_date": "", "status": "예약완료", "btype": "수기 예약", "nights": 1, "stay_type": "단박", "price": 125100.0, "onsite": 0.0, "total_price": 125100.0, "promo": "", "comm_rate": 0, "comm_amt": 0, "net_rev": 125100, "confirmed": true, "lead_days": 2, "weekday": 5, "is_weekend": true}, {"branch": "가평(청평점)", "booking_no": "2603301332260093", "guest": "", "room": "B103", "checkin": "2026-05-01", "checkout": "2026-05-02", "book_date": "2026-03-30", "cancel_date": "2026-03-30", "status": "고객취소", "btype": "NOL 예약", "nights": 1, "stay_type": "단박", "price": 98100.0, "onsite": 0.0, "total_price": 98100.0, "promo": "얼리버드 할인 10% (프로모션 ID : 15618)", "comm_rate": 0.07, "comm_amt": 6867, "net_rev": 91233, "confirmed": false, "lead_days": 32, "weekday": 4, "is_weekend": true}, {"branch": "가평(청평점)", "booking_no": "M260401135556936d54", "guest": "", "room": "A203", "checkin": "2026-04-26", "checkout": "2026-04-27", "book_date": "2026-04-01", "cancel_date": "", "status": "예약완료", "btype": "수기 예약", "nights": 1, "stay_type": "단박", "price": 79000.0, "onsite": 0.0, "total_price": 79000.0, "promo": "", "comm_rate": 0, "comm_amt": 0, "net_rev": 79000, "confirmed": true, "lead_days": 25, "weekday": 6, "is_weekend": true}, {"branch": "가평(청평점)", "booking_no": "M260327180824292217", "guest": "", "room": "A101", "checkin": "2026-04-25", "checkout": "2026-04-26", "book_date": "2026-03-27", "cancel_date": "", "status": "예약완료", "btype": "수기 예약", "nights": 1, "stay_type": "단박", "price": 0.0, "onsite": 0.0, "total_price": 0.0, "promo": "", "comm_rate": 0, "comm_amt": 0, "net_rev": 0, "confirmed": true, "lead_days": 29, "weekday": 5, "is_weekend": true}, {"branch": "가평(청평점)", "booking_no": "2604012162462287", "guest": "", "room": "A202", "checkin": "2026-04-25", "checkout": "2026-04-26", "book_date": "2026-04-01", "cancel_date": "", "status": "예약완료", "btype": "NOL 예약", "nights": 1, "stay_type": "단박", "price": 89000.0, "onsite": 0.0, "total_price": 89000.0, "promo": "", "comm_rate": 0.07, "comm_amt": 6230, "net_rev": 82770, "confirmed": true, "lead_days": 24, "weekday": 5, "is_weekend": true}, {"branch": "가평(청평점)", "booking_no": "2603271661939397", "guest": "", "room": "B102", "checkin": "2026-04-24", "checkout": "2026-04-25", "book_date": "2026-03-27", "cancel_date": "2026-03-28", "status": "고객취소", "btype": "NOL 예약", "nights": 1, "stay_type": "단박", "price": 89000.0, "onsite": 0.0, "total_price": 89000.0, "promo": "", "comm_rate": 0.07, "comm_amt": 6230, "net_rev": 82770, "confirmed": false, "lead_days": 28, "weekday": 4, "is_weekend": true}, {"branch": "가평(청평점)", "booking_no": "2603191047010142", "guest": "", "room": "A101", "checkin": "2026-04-18", "checkout": "2026-04-19", "book_date": "2026-03-19", "cancel_date": "", "status": "예약완료", "btype": "NOL 예약", "nights": 1, "stay_type": "단박", "price": 119000.0, "onsite": 0.0, "total_price": 119000.0, "promo": "", "comm_rate": 0.07, "comm_amt": 8330, "net_rev": 110670, "confirmed": true, "lead_days": 30, "weekday": 5, "is_weekend": true}, {"branch": "가평(청평점)", "booking_no": "2603232161592110", "guest": "", "room": "B202", "checkin": "2026-04-18", "checkout": "2026-04-19", "book_date": "2026-03-23", "cancel_date": "", "status": "예약완료", "btype": "NOL 예약", "nights": 1, "stay_type": "단박", "price": 89000.0, "onsite": 0.0, "total_price": 89000.0, "promo": "", "comm_rate": 0.07, "comm_amt": 6230, "net_rev": 82770, "confirmed": true, "lead_days": 26, "weekday": 5, "is_weekend": true}, {"branch": "가평(청평점)", "booking_no": "2604011562420204", "guest": "", "room": "B103", "checkin": "2026-04-18", "checkout": "2026-04-19", "book_date": "2026-04-01", "cancel_date": "", "status": "예약완료", "btype": "NOL 예약", "nights": 1, "stay_type": "단박", "price": 109000.0, "onsite": 0.0, "total_price": 109000.0, "promo": "", "comm_rate": 0.07, "comm_amt": 7630, "net_rev": 101370, "confirmed": true, "lead_days": 17, "weekday": 5, "is_weekend": true}, {"branch": "가평(청평점)", "booking_no": "2604012119350018", "guest": "", "room": "B203", "checkin": "2026-04-18", "checkout": "2026-04-19", "book_date": "2026-04-01", "cancel_date": "", "status": "예약완료", "btype": "NOL 예약", "nights": 1, "stay_type": "단박", "price": 80100.0, "onsite": 0.0, "total_price": 80100.0, "promo": "Gold Class 고객 대상 프로모션 할인 10% (프로모션 ID : 15619)", "comm_rate": 0.07, "comm_amt": 5607, "net_rev": 74493, "confirmed": true, "lead_days": 17, "weekday": 5, "is_weekend": true}, {"branch": "가평(청평점)", "booking_no": "2604012262466899", "guest": "", "room": "B102", "checkin": "2026-04-18", "checkout": "2026-04-19", "book_date": "2026-04-01", "cancel_date": "", "status": "예약완료", "btype": "NOL 예약", "nights": 1, "stay_type": "단박", "price": 109000.0, "onsite": 0.0, "total_price": 109000.0, "promo": "", "comm_rate": 0.07, "comm_amt": 7630, "net_rev": 101370, "confirmed": true, "lead_days": 17, "weekday": 5, "is_weekend": true}, {"branch": "가평(청평점)", "booking_no": "2603261861853248", "guest": "", "room": "B103", "checkin": "2026-04-15", "checkout": "2026-04-16", "book_date": "2026-03-26", "cancel_date": "2026-03-26", "status": "고객취소", "btype": "NOL 예약", "nights": 1, "stay_type": "단박", "price": 89000.0, "onsite": 0.0, "total_price": 89000.0, "promo": "", "comm_rate": 0.07, "comm_amt": 6230, "net_rev": 82770, "confirmed": false, "lead_days": 20, "weekday": 2, "is_weekend": false}, {"branch": "가평(청평점)", "booking_no": "2603261861854337", "guest": "", "room": "B102", "checkin": "2026-04-15", "checkout": "2026-04-16", "book_date": "2026-03-26", "cancel_date": "", "status": "예약완료", "btype": "NOL 예약", "nights": 1, "stay_type": "단박", "price": 89000.0, "onsite": 0.0, "total_price": 89000.0, "promo": "", "comm_rate": 0.07, "comm_amt": 6230, "net_rev": 82770, "confirmed": true, "lead_days": 20, "weekday": 2, "is_weekend": false}, {"branch": "가평(청평점)", "booking_no": "2603141452590088", "guest": "", "room": "A201", "checkin": "2026-04-11", "checkout": "2026-04-12", "book_date": "2026-03-14", "cancel_date": "2026-03-14", "status": "고객취소", "btype": "NOL 예약", "nights": 1, "stay_type": "단박", "price": 169000.0, "onsite": 0.0, "total_price": 169000.0, "promo": "", "comm_rate": 0.07, "comm_amt": 11830, "net_rev": 157170, "confirmed": false, "lead_days": 28, "weekday": 5, "is_weekend": true}, {"branch": "가평(청평점)", "booking_no": "2603141454590209", "guest": "", "room": "A201", "checkin": "2026-04-11", "checkout": "2026-04-12", "book_date": "2026-03-14", "cancel_date": "", "status": "예약완료", "btype": "NOL 예약", "nights": 1, "stay_type": "단박", "price": 169000.0, "onsite": 0.0, "total_price": 169000.0, "promo": "", "comm_rate": 0.07, "comm_amt": 11830, "net_rev": 157170, "confirmed": true, "lead_days": 28, "weekday": 5, "is_weekend": true}, {"branch": "가평(청평점)", "booking_no": "Y17405262", "guest": "", "room": "B102", "checkin": "2026-04-11", "checkout": "2026-04-12", "book_date": "2026-03-24", "cancel_date": "", "status": "예약완료", "btype": "실시간 달력 예약", "nights": 1, "stay_type": "단박", "price": 109000.0, "onsite": 0.0, "total_price": 109000.0, "promo": "", "comm_rate": 0.05, "comm_amt": 5450, "net_rev": 103550, "confirmed": true, "lead_days": 18, "weekday": 5, "is_weekend": true}, {"branch": "가평(청평점)", "booking_no": "M26032912593882283c", "guest": "", "room": "B201", "checkin": "2026-04-11", "checkout": "2026-04-12", "book_date": "2026-03-29", "cancel_date": "", "status": "예약완료", "btype": "수기 예약", "nights": 1, "stay_type": "단박", "price": 0.0, "onsite": 0.0, "total_price": 0.0, "promo": "", "comm_rate": 0, "comm_amt": 0, "net_rev": 0, "confirmed": true, "lead_days": 13, "weekday": 5, "is_weekend": true}, {"branch": "가평(청평점)", "booking_no": "2603162160920489", "guest": "", "room": "B202", "checkin": "2026-04-04", "checkout": "2026-04-05", "book_date": "2026-03-16", "cancel_date": "", "status": "예약완료", "btype": "NOL 예약", "nights": 1, "stay_type": "단박", "price": 89000.0, "onsite": 0.0, "total_price": 89000.0, "promo": "", "comm_rate": 0.07, "comm_amt": 6230, "net_rev": 82770, "confirmed": true, "lead_days": 19, "weekday": 5, "is_weekend": true}, {"branch": "가평(청평점)", "booking_no": "2603300862187671", "guest": "", "room": "A203", "checkin": "2026-04-04", "checkout": "2026-04-05", "book_date": "2026-03-30", "cancel_date": "", "status": "예약완료", "btype": "NOL 예약", "nights": 1, "stay_type": "단박", "price": 89000.0, "onsite": 0.0, "total_price": 89000.0, "promo": "", "comm_rate": 0.07, "comm_amt": 6230, "net_rev": 82770, "confirmed": true, "lead_days": 5, "weekday": 5, "is_weekend": true}, {"branch": "가평(청평점)", "booking_no": "2603300862187688", "guest": "", "room": "A202", "checkin": "2026-04-04", "checkout": "2026-04-05", "book_date": "2026-03-30", "cancel_date": "", "status": "예약완료", "btype": "NOL 예약", "nights": 1, "stay_type": "단박", "price": 89000.0, "onsite": 0.0, "total_price": 89000.0, "promo": "", "comm_rate": 0.07, "comm_amt": 6230, "net_rev": 82770, "confirmed": true, "lead_days": 5, "weekday": 5, "is_weekend": true}, {"branch": "가평(청평점)", "booking_no": "M2603311316400222cc", "guest": "", "room": "B203", "checkin": "2026-04-04", "checkout": "2026-04-05", "book_date": "2026-03-31", "cancel_date": "", "status": "예약완료", "btype": "수기 예약", "nights": 1, "stay_type": "단박", "price": 89100.0, "onsite": 0.0, "total_price": 89100.0, "promo": "", "comm_rate": 0, "comm_amt": 0, "net_rev": 89100, "confirmed": true, "lead_days": 4, "weekday": 5, "is_weekend": true}, {"branch": "가평(청평점)", "booking_no": "M2603312031530381b9", "guest": "", "room": "B102", "checkin": "2026-04-04", "checkout": "2026-04-05", "book_date": "2026-03-31", "cancel_date": "", "status": "예약완료", "btype": "수기 예약", "nights": 1, "stay_type": "단박", "price": 107100.0, "onsite": 0.0, "total_price": 107100.0, "promo": "", "comm_rate": 0, "comm_amt": 0, "net_rev": 107100, "confirmed": true, "lead_days": 4, "weekday": 5, "is_weekend": true}, {"branch": "가평(청평점)", "booking_no": "M260401100152175787", "guest": "", "room": "B103", "checkin": "2026-04-04", "checkout": "2026-04-05", "book_date": "2026-04-01", "cancel_date": "", "status": "예약완료", "btype": "수기 예약", "nights": 1, "stay_type": "단박", "price": 107100.0, "onsite": 0.0, "total_price": 107100.0, "promo": "", "comm_rate": 0, "comm_amt": 0, "net_rev": 107100, "confirmed": true, "lead_days": 3, "weekday": 5, "is_weekend": true}, {"branch": "가평(청평점)", "booking_no": "2604021562526080", "guest": "", "room": "A101", "checkin": "2026-04-04", "checkout": "2026-04-05", "book_date": "2026-04-02", "cancel_date": "", "status": "예약완료", "btype": "NOL 예약", "nights": 1, "stay_type": "단박", "price": 119000.0, "onsite": 0.0, "total_price": 119000.0, "promo": "", "comm_rate": 0.07, "comm_amt": 8330, "net_rev": 110670, "confirmed": true, "lead_days": 2, "weekday": 5, "is_weekend": true}, {"branch": "가평(청평점)", "booking_no": "2604021862545830", "guest": "", "room": "B201", "checkin": "2026-04-04", "checkout": "2026-04-05", "book_date": "2026-04-02", "cancel_date": "", "status": "예약완료", "btype": "NOL 예약", "nights": 1, "stay_type": "단박", "price": 169000.0, "onsite": 0.0, "total_price": 169000.0, "promo": "", "comm_rate": 0.07, "comm_amt": 11830, "net_rev": 157170, "confirmed": true, "lead_days": 2, "weekday": 5, "is_weekend": true}, {"branch": "가평(청평점)", "booking_no": "2603311962337739", "guest": "", "room": "B203", "checkin": "2026-04-03", "checkout": "2026-04-04", "book_date": "2026-03-31", "cancel_date": "", "status": "예약완료", "btype": "NOL 예약", "nights": 1, "stay_type": "단박", "price": 79000.0, "onsite": 0.0, "total_price": 79000.0, "promo": "", "comm_rate": 0.07, "comm_amt": 5530, "net_rev": 73470, "confirmed": true, "lead_days": 3, "weekday": 4, "is_weekend": true}, {"branch": "가평(청평점)", "booking_no": "M260401104648567bcf", "guest": "", "room": "A201", "checkin": "2026-04-03", "checkout": "2026-04-04", "book_date": "2026-04-01", "cancel_date": "2026-04-01", "status": "예약취소(업체)", "btype": "수기 예약", "nights": 1, "stay_type": "단박", "price": 0.0, "onsite": 0.0, "total_price": 0.0, "promo": "", "comm_rate": 0, "comm_amt": 0, "net_rev": 0, "confirmed": false, "lead_days": 2, "weekday": 4, "is_weekend": true}, {"branch": "가평(청평점)", "booking_no": "M2604011047449040c8", "guest": "", "room": "A201", "checkin": "2026-04-03", "checkout": "2026-04-05", "book_date": "2026-04-01", "cancel_date": "", "status": "예약완료", "btype": "수기 예약", "nights": 2, "stay_type": "연박(2박)", "price": 168000.0, "onsite": 0.0, "total_price": 168000.0, "promo": "", "comm_rate": 0, "comm_amt": 0, "net_rev": 168000, "confirmed": true, "lead_days": 2, "weekday": 4, "is_weekend": true}, {"branch": "경주", "booking_no": "2603182238380154", "guest": "", "room": "C102", "checkin": "2026-05-01", "checkout": "2026-05-03", "book_date": "2026-03-18", "cancel_date": "2026-03-18", "status": "고객취소", "btype": "NOL 예약", "nights": 2, "stay_type": "연박(2박)", "price": 218000.0, "onsite": 0.0, "total_price": 218000.0, "promo": "", "comm_rate": 0.07, "comm_amt": 15260, "net_rev": 202740, "confirmed": false, "lead_days": 44, "weekday": 4, "is_weekend": true}, {"branch": "경주", "booking_no": "2603262202340106", "guest": "", "room": "C202", "checkin": "2026-05-01", "checkout": "2026-05-03", "book_date": "2026-03-26", "cancel_date": "2026-03-31", "status": "고객취소", "btype": "NOL 예약", "nights": 2, "stay_type": "연박(2박)", "price": 196200.0, "onsite": 0.0, "total_price": 196200.0, "promo": "연박특가 할인 10% (프로모션 ID : 15608)", "comm_rate": 0.07, "comm_amt": 13734, "net_rev": 182466, "confirmed": false, "lead_days": 36, "weekday": 4, "is_weekend": true}, {"branch": "경주", "booking_no": "2603272112620176", "guest": "", "room": "A101", "checkin": "2026-05-01", "checkout": "2026-05-03", "book_date": "2026-03-27", "cancel_date": "", "status": "예약완료", "btype": "NOL 예약", "nights": 2, "stay_type": "연박(2박)", "price": 250200.0, "onsite": 0.0, "total_price": 250200.0, "promo": "Gold Class 고객 대상 프로모션 할인 10% (프로모션 ID : 15610)", "comm_rate": 0.07, "comm_amt": 17514, "net_rev": 232686, "confirmed": true, "lead_days": 35, "weekday": 4, "is_weekend": true}, {"branch": "경주", "booking_no": "2604011131240165", "guest": "", "room": "B101", "checkin": "2026-05-01", "checkout": "2026-05-03", "book_date": "2026-04-01", "cancel_date": "", "status": "예약완료", "btype": "NOL 예약", "nights": 2, "stay_type": "연박(2박)", "price": 250200.0, "onsite": 0.0, "total_price": 250200.0, "promo": "Gold Class 고객 대상 프로모션 할인 10% (프로모션 ID : 15610)", "comm_rate": 0.07, "comm_amt": 17514, "net_rev": 232686, "confirmed": true, "lead_days": 30, "weekday": 4, "is_weekend": true}, {"branch": "경주", "booking_no": "2604011131240166", "guest": "", "room": "B203", "checkin": "2026-05-01", "checkout": "2026-05-03", "book_date": "2026-04-01", "cancel_date": "", "status": "예약완료", "btype": "NOL 예약", "nights": 2, "stay_type": "연박(2박)", "price": 160200.0, "onsite": 0.0, "total_price": 160200.0, "promo": "Gold Class 고객 대상 프로모션 할인 10% (프로모션 ID : 15610)", "comm_rate": 0.07, "comm_amt": 11214, "net_rev": 148986, "confirmed": true, "lead_days": 30, "weekday": 4, "is_weekend": true}, {"branch": "경주", "booking_no": "2604011243340123", "guest": "", "room": "B201", "checkin": "2026-05-01", "checkout": "2026-05-03", "book_date": "2026-04-01", "cancel_date": "", "status": "예약완료", "btype": "NOL 예약", "nights": 2, "stay_type": "연박(2박)", "price": 196200.0, "onsite": 0.0, "total_price": 196200.0, "promo": "연박특가 할인 10% (프로모션 ID : 15608)", "comm_rate": 0.07, "comm_amt": 13734, "net_rev": 182466, "confirmed": true, "lead_days": 30, "weekday": 4, "is_weekend": true}, {"branch": "경주", "booking_no": "M260401124736928896", "guest": "", "room": "C203", "checkin": "2026-05-01", "checkout": "2026-05-03", "book_date": "2026-04-01", "cancel_date": "", "status": "예약완료", "btype": "수기 예약", "nights": 2, "stay_type": "연박(2박)", "price": 218000.0, "onsite": 0.0, "total_price": 218000.0, "promo": "", "comm_rate": 0, "comm_amt": 0, "net_rev": 218000, "confirmed": true, "lead_days": 30, "weekday": 4, "is_weekend": true}, {"branch": "경주", "booking_no": "2604012362472359", "guest": "", "room": "A203", "checkin": "2026-05-01", "checkout": "2026-05-03", "book_date": "2026-04-01", "cancel_date": "", "status": "예약완료", "btype": "NOL 예약", "nights": 2, "stay_type": "연박(2박)", "price": 218000.0, "onsite": 0.0, "total_price": 218000.0, "promo": "", "comm_rate": 0.07, "comm_amt": 15260, "net_rev": 202740, "confirmed": true, "lead_days": 30, "weekday": 4, "is_weekend": true}, {"branch": "경주", "booking_no": "2604010062368255", "guest": "", "room": "A103", "checkin": "2026-04-19", "checkout": "2026-04-20", "book_date": "2026-04-01", "cancel_date": "", "status": "예약완료", "btype": "NOL 예약", "nights": 1, "stay_type": "단박", "price": 79000.0, "onsite": 0.0, "total_price": 79000.0, "promo": "", "comm_rate": 0.07, "comm_amt": 5530, "net_rev": 73470, "confirmed": true, "lead_days": 18, "weekday": 6, "is_weekend": true}, {"branch": "경주", "booking_no": "M260401092948773a1f", "guest": "", "room": "C202", "checkin": "2026-04-19", "checkout": "2026-04-20", "book_date": "2026-04-01", "cancel_date": "", "status": "예약완료", "btype": "수기 예약", "nights": 1, "stay_type": "단박", "price": 59000.0, "onsite": 0.0, "total_price": 59000.0, "promo": "", "comm_rate": 0, "comm_amt": 0, "net_rev": 59000, "confirmed": true, "lead_days": 18, "weekday": 6, "is_weekend": true}, {"branch": "경주", "booking_no": "2603261000550283", "guest": "", "room": "B201", "checkin": "2026-04-18", "checkout": "2026-04-19", "book_date": "2026-03-26", "cancel_date": "", "status": "예약완료", "btype": "NOL 예약", "nights": 1, "stay_type": "단박", "price": 109000.0, "onsite": 0.0, "total_price": 109000.0, "promo": "", "comm_rate": 0.07, "comm_amt": 7630, "net_rev": 101370, "confirmed": true, "lead_days": 23, "weekday": 5, "is_weekend": true}, {"branch": "경주", "booking_no": "2603201009470035", "guest": "", "room": "B102", "checkin": "2026-04-12", "checkout": "2026-04-14", "book_date": "2026-03-20", "cancel_date": "", "status": "예약완료", "btype": "NOL 예약", "nights": 2, "stay_type": "연박(2박)", "price": 198000.0, "onsite": 0.0, "total_price": 198000.0, "promo": "", "comm_rate": 0.07, "comm_amt": 13860, "net_rev": 184140, "confirmed": true, "lead_days": 23, "weekday": 6, "is_weekend": true}, {"branch": "경주", "booking_no": "2603201009470034", "guest": "", "room": "B201", "checkin": "2026-04-12", "checkout": "2026-04-14", "book_date": "2026-03-20", "cancel_date": "", "status": "예약완료", "btype": "NOL 예약", "nights": 2, "stay_type": "연박(2박)", "price": 118000.0, "onsite": 0.0, "total_price": 118000.0, "promo": "", "comm_rate": 0.07, "comm_amt": 8260, "net_rev": 109740, "confirmed": true, "lead_days": 23, "weekday": 6, "is_weekend": true}, {"branch": "경주", "booking_no": "2603270601200008", "guest": "", "room": "B102", "checkin": "2026-04-11", "checkout": "2026-04-12", "book_date": "2026-03-27", "cancel_date": "", "status": "예약완료", "btype": "NOL 예약", "nights": 1, "stay_type": "단박", "price": 143100.0, "onsite": 0.0, "total_price": 143100.0, "promo": "Gold Class 고객 대상 프로모션 할인 10% (프로모션 ID : 15610)", "comm_rate": 0.07, "comm_amt": 10017, "net_rev": 133083, "confirmed": true, "lead_days": 15, "weekday": 5, "is_weekend": true}, {"branch": "경주", "booking_no": "M2603291305541112b2", "guest": "", "room": "A101", "checkin": "2026-04-11", "checkout": "2026-04-12", "book_date": "2026-03-29", "cancel_date": "", "status": "예약완료", "btype": "수기 예약", "nights": 1, "stay_type": "단박", "price": 139000.0, "onsite": 0.0, "total_price": 139000.0, "promo": "", "comm_rate": 0, "comm_amt": 0, "net_rev": 139000, "confirmed": true, "lead_days": 13, "weekday": 5, "is_weekend": true}, {"branch": "경주", "booking_no": "M2603291305541112b2", "guest": "", "room": "C202", "checkin": "2026-04-11", "checkout": "2026-04-12", "book_date": "2026-03-29", "cancel_date": "", "status": "예약완료", "btype": "수기 예약", "nights": 1, "stay_type": "단박", "price": 109000.0, "onsite": 0.0, "total_price": 109000.0, "promo": "", "comm_rate": 0, "comm_amt": 0, "net_rev": 109000, "confirmed": true, "lead_days": 13, "weekday": 5, "is_weekend": true}, {"branch": "경주", "booking_no": "2603231461546601", "guest": "", "room": "C102", "checkin": "2026-04-07", "checkout": "2026-04-09", "book_date": "2026-03-23", "cancel_date": "", "status": "예약완료", "btype": "NOL 예약", "nights": 2, "stay_type": "연박(2박)", "price": 118000.0, "onsite": 0.0, "total_price": 118000.0, "promo": "", "comm_rate": 0.07, "comm_amt": 8260, "net_rev": 109740, "confirmed": true, "lead_days": 15, "weekday": 1, "is_weekend": false}, {"branch": "경주", "booking_no": "2604010362374478", "guest": "", "room": "A201", "checkin": "2026-04-07", "checkout": "2026-04-08", "book_date": "2026-04-01", "cancel_date": "", "status": "예약완료", "btype": "NOL 예약", "nights": 1, "stay_type": "단박", "price": 59000.0, "onsite": 0.0, "total_price": 59000.0, "promo": "", "comm_rate": 0.07, "comm_amt": 4130, "net_rev": 54870, "confirmed": true, "lead_days": 6, "weekday": 1, "is_weekend": false}, {"branch": "경주", "booking_no": "M260401093029876df0", "guest": "", "room": "A202", "checkin": "2026-04-07", "checkout": "2026-04-08", "book_date": "2026-04-01", "cancel_date": "", "status": "예약완료", "btype": "수기 예약", "nights": 1, "stay_type": "단박", "price": 59000.0, "onsite": 0.0, "total_price": 59000.0, "promo": "", "comm_rate": 0, "comm_amt": 0, "net_rev": 59000, "confirmed": true, "lead_days": 6, "weekday": 1, "is_weekend": false}, {"branch": "경주", "booking_no": "M260402154241102e1d", "guest": "", "room": "A103", "checkin": "2026-04-06", "checkout": "2026-04-07", "book_date": "2026-04-02", "cancel_date": "", "status": "예약완료", "btype": "수기 예약", "nights": 1, "stay_type": "단박", "price": 79000.0, "onsite": 0.0, "total_price": 79000.0, "promo": "", "comm_rate": 0, "comm_amt": 0, "net_rev": 79000, "confirmed": true, "lead_days": 4, "weekday": 0, "is_weekend": false}, {"branch": "경주", "booking_no": "2603202161300890", "guest": "", "room": "A201", "checkin": "2026-04-05", "checkout": "2026-04-06", "book_date": "2026-03-20", "cancel_date": "", "status": "예약완료", "btype": "NOL 예약", "nights": 1, "stay_type": "단박", "price": 59000.0, "onsite": 0.0, "total_price": 59000.0, "promo": "", "comm_rate": 0.07, "comm_amt": 4130, "net_rev": 54870, "confirmed": true, "lead_days": 16, "weekday": 6, "is_weekend": true}, {"branch": "경주", "booking_no": "M26033021323799740d", "guest": "", "room": "C102", "checkin": "2026-04-05", "checkout": "2026-04-06", "book_date": "2026-03-30", "cancel_date": "", "status": "예약완료", "btype": "수기 예약", "nights": 1, "stay_type": "단박", "price": 62100.0, "onsite": 0.0, "total_price": 62100.0, "promo": "", "comm_rate": 0, "comm_amt": 0, "net_rev": 62100, "confirmed": true, "lead_days": 6, "weekday": 6, "is_weekend": true}, {"branch": "경주", "booking_no": "M260331084701630bff", "guest": "", "room": "A103", "checkin": "2026-04-05", "checkout": "2026-04-06", "book_date": "2026-03-31", "cancel_date": "", "status": "예약완료", "btype": "수기 예약", "nights": 1, "stay_type": "단박", "price": 79000.0, "onsite": 0.0, "total_price": 79000.0, "promo": "", "comm_rate": 0, "comm_amt": 0, "net_rev": 79000, "confirmed": true, "lead_days": 5, "weekday": 6, "is_weekend": true}, {"branch": "경주", "booking_no": "M260331084838701955", "guest": "", "room": "C202", "checkin": "2026-04-05", "checkout": "2026-04-06", "book_date": "2026-03-31", "cancel_date": "", "status": "예약완료", "btype": "수기 예약", "nights": 1, "stay_type": "단박", "price": 59000.0, "onsite": 0.0, "total_price": 59000.0, "promo": "", "comm_rate": 0, "comm_amt": 0, "net_rev": 59000, "confirmed": true, "lead_days": 5, "weekday": 6, "is_weekend": true}, {"branch": "경주", "booking_no": "2604011862443818", "guest": "", "room": "B203", "checkin": "2026-04-05", "checkout": "2026-04-06", "book_date": "2026-04-01", "cancel_date": "", "status": "예약완료", "btype": "NOL 예약", "nights": 1, "stay_type": "단박", "price": 59000.0, "onsite": 0.0, "total_price": 59000.0, "promo": "", "comm_rate": 0.07, "comm_amt": 4130, "net_rev": 54870, "confirmed": true, "lead_days": 4, "weekday": 6, "is_weekend": true}, {"branch": "경주", "booking_no": "M26040215410107500b", "guest": "", "room": "B101", "checkin": "2026-04-05", "checkout": "2026-04-07", "book_date": "2026-04-02", "cancel_date": "", "status": "예약완료", "btype": "수기 예약", "nights": 2, "stay_type": "연박(2박)", "price": 198000.0, "onsite": 0.0, "total_price": 198000.0, "promo": "", "comm_rate": 0, "comm_amt": 0, "net_rev": 198000, "confirmed": true, "lead_days": 3, "weekday": 6, "is_weekend": true}, {"branch": "경주", "booking_no": "M260306152548827568", "guest": "", "room": "B201", "checkin": "2026-04-04", "checkout": "2026-04-05", "book_date": "2026-03-06", "cancel_date": "", "status": "예약완료", "btype": "수기 예약", "nights": 1, "stay_type": "단박", "price": 179000.0, "onsite": 0.0, "total_price": 179000.0, "promo": "", "comm_rate": 0, "comm_amt": 0, "net_rev": 179000, "confirmed": true, "lead_days": 29, "weekday": 5, "is_weekend": true}, {"branch": "경주", "booking_no": "2603192049210173", "guest": "", "room": "A101", "checkin": "2026-04-04", "checkout": "2026-04-05", "book_date": "2026-03-19", "cancel_date": "", "status": "예약완료", "btype": "NOL 예약", "nights": 1, "stay_type": "단박", "price": 139000.0, "onsite": 0.0, "total_price": 139000.0, "promo": "", "comm_rate": 0.07, "comm_amt": 9730, "net_rev": 129270, "confirmed": true, "lead_days": 16, "weekday": 5, "is_weekend": true}, {"branch": "경주", "booking_no": "2603212161408427", "guest": "", "room": "B102", "checkin": "2026-04-04", "checkout": "2026-04-05", "book_date": "2026-03-21", "cancel_date": "", "status": "예약완료", "btype": "NOL 예약", "nights": 1, "stay_type": "단박", "price": 159000.0, "onsite": 0.0, "total_price": 159000.0, "promo": "", "comm_rate": 0.07, "comm_amt": 11130, "net_rev": 147870, "confirmed": true, "lead_days": 14, "weekday": 5, "is_weekend": true}, {"branch": "경주", "booking_no": "2603221743470087", "guest": "", "room": "A203", "checkin": "2026-04-04", "checkout": "2026-04-05", "book_date": "2026-03-22", "cancel_date": "", "status": "예약완료", "btype": "NOL 예약", "nights": 1, "stay_type": "단박", "price": 109000.0, "onsite": 0.0, "total_price": 109000.0, "promo": "", "comm_rate": 0.07, "comm_amt": 7630, "net_rev": 101370, "confirmed": true, "lead_days": 13, "weekday": 5, "is_weekend": true}, {"branch": "경주", "booking_no": "2603241217330077", "guest": "", "room": "B203", "checkin": "2026-04-04", "checkout": "2026-04-05", "book_date": "2026-03-24", "cancel_date": "2026-03-26", "status": "고객취소", "btype": "NOL 예약", "nights": 1, "stay_type": "단박", "price": 109000.0, "onsite": 0.0, "total_price": 109000.0, "promo": "", "comm_rate": 0.07, "comm_amt": 7630, "net_rev": 101370, "confirmed": false, "lead_days": 11, "weekday": 5, "is_weekend": true}, {"branch": "경주", "booking_no": "2603261728330067", "guest": "", "room": "C202", "checkin": "2026-04-04", "checkout": "2026-04-05", "book_date": "2026-03-26", "cancel_date": "", "status": "예약완료", "btype": "NOL 예약", "nights": 1, "stay_type": "단박", "price": 109000.0, "onsite": 0.0, "total_price": 109000.0, "promo": "", "comm_rate": 0.07, "comm_amt": 7630, "net_rev": 101370, "confirmed": true, "lead_days": 9, "weekday": 5, "is_weekend": true}, {"branch": "경주", "booking_no": "M260306152532689962", "guest": "", "room": "A203", "checkin": "2026-04-03", "checkout": "2026-04-04", "book_date": "2026-03-06", "cancel_date": "", "status": "예약완료", "btype": "수기 예약", "nights": 1, "stay_type": "단박", "price": 99000.0, "onsite": 0.0, "total_price": 99000.0, "promo": "", "comm_rate": 0, "comm_amt": 0, "net_rev": 99000, "confirmed": true, "lead_days": 28, "weekday": 4, "is_weekend": true}, {"branch": "경주", "booking_no": "Y17404664", "guest": "", "room": "B101", "checkin": "2026-04-03", "checkout": "2026-04-05", "book_date": "2026-03-19", "cancel_date": "", "status": "예약완료", "btype": "실시간 달력 예약", "nights": 2, "stay_type": "연박(2박)", "price": 228000.0, "onsite": 0.0, "total_price": 228000.0, "promo": "", "comm_rate": 0.05, "comm_amt": 11400, "net_rev": 216600, "confirmed": true, "lead_days": 15, "weekday": 4, "is_weekend": true}, {"branch": "경주", "booking_no": "Y17405987", "guest": "", "room": "A101", "checkin": "2026-04-03", "checkout": "2026-04-04", "book_date": "2026-03-28", "cancel_date": "", "status": "예약완료", "btype": "실시간 달력 예약", "nights": 1, "stay_type": "단박", "price": 89000.0, "onsite": 0.0, "total_price": 89000.0, "promo": "", "comm_rate": 0.05, "comm_amt": 4450, "net_rev": 84550, "confirmed": true, "lead_days": 6, "weekday": 4, "is_weekend": true}, {"branch": "경주", "booking_no": "M260329130841040532", "guest": "", "room": "C202", "checkin": "2026-04-03", "checkout": "2026-04-04", "book_date": "2026-03-29", "cancel_date": "", "status": "예약완료", "btype": "수기 예약", "nights": 1, "stay_type": "단박", "price": 69000.0, "onsite": 0.0, "total_price": 69000.0, "promo": "", "comm_rate": 0, "comm_amt": 0, "net_rev": 69000, "confirmed": true, "lead_days": 5, "weekday": 4, "is_weekend": true}, {"branch": "경주", "booking_no": "2603292229320098", "guest": "", "room": "C203", "checkin": "2026-04-03", "checkout": "2026-04-04", "book_date": "2026-03-29", "cancel_date": "", "status": "예약완료", "btype": "NOL 예약", "nights": 1, "stay_type": "단박", "price": 62100.0, "onsite": 0.0, "total_price": 62100.0, "promo": "Gold Class 고객 대상 프로모션 할인 10% (프로모션 ID : 15610)", "comm_rate": 0.07, "comm_amt": 4347, "net_rev": 57753, "confirmed": true, "lead_days": 5, "weekday": 4, "is_weekend": true}, {"branch": "경주", "booking_no": "2603301022550145", "guest": "", "room": "B102", "checkin": "2026-04-03", "checkout": "2026-04-04", "book_date": "2026-03-30", "cancel_date": "2026-03-30", "status": "고객취소", "btype": "NOL 예약", "nights": 1, "stay_type": "단박", "price": 98100.0, "onsite": 0.0, "total_price": 98100.0, "promo": "Gold Class 고객 대상 프로모션 할인 10% (프로모션 ID : 15610)", "comm_rate": 0.07, "comm_amt": 6867, "net_rev": 91233, "confirmed": false, "lead_days": 4, "weekday": 4, "is_weekend": true}, {"branch": "경주", "booking_no": "2603192161198891", "guest": "", "room": "B201", "checkin": "2026-04-02", "checkout": "2026-04-03", "book_date": "2026-03-19", "cancel_date": "", "status": "예약완료", "btype": "NOL 예약", "nights": 1, "stay_type": "단박", "price": 59000.0, "onsite": 0.0, "total_price": 59000.0, "promo": "", "comm_rate": 0.07, "comm_amt": 4130, "net_rev": 54870, "confirmed": true, "lead_days": 14, "weekday": 3, "is_weekend": false}, {"branch": "경주", "booking_no": "2603292156170070", "guest": "", "room": "C102", "checkin": "2026-04-02", "checkout": "2026-04-03", "book_date": "2026-03-29", "cancel_date": "", "status": "예약완료", "btype": "NOL 예약", "nights": 1, "stay_type": "단박", "price": 53100.0, "onsite": 0.0, "total_price": 53100.0, "promo": "Gold Class 고객 대상 프로모션 할인 10% (프로모션 ID : 15610)", "comm_rate": 0.07, "comm_amt": 3717, "net_rev": 49383, "confirmed": true, "lead_days": 4, "weekday": 3, "is_weekend": false}, {"branch": "경주", "booking_no": "M260330085439508024", "guest": "", "room": "A101", "checkin": "2026-04-02", "checkout": "2026-04-03", "book_date": "2026-03-30", "cancel_date": "", "status": "예약완료", "btype": "수기 예약", "nights": 1, "stay_type": "단박", "price": 79000.0, "onsite": 0.0, "total_price": 79000.0, "promo": "", "comm_rate": 0, "comm_amt": 0, "net_rev": 79000, "confirmed": true, "lead_days": 3, "weekday": 3, "is_weekend": false}, {"branch": "경주", "booking_no": "M260330085439508024", "guest": "", "room": "A203", "checkin": "2026-04-02", "checkout": "2026-04-03", "book_date": "2026-03-30", "cancel_date": "", "status": "예약완료", "btype": "수기 예약", "nights": 1, "stay_type": "단박", "price": 79000.0, "onsite": 0.0, "total_price": 79000.0, "promo": "", "comm_rate": 0, "comm_amt": 0, "net_rev": 79000, "confirmed": true, "lead_days": 3, "weekday": 3, "is_weekend": false}, {"branch": "경주", "booking_no": "M260330085439508024", "guest": "", "room": "B102", "checkin": "2026-04-02", "checkout": "2026-04-03", "book_date": "2026-03-30", "cancel_date": "", "status": "예약완료", "btype": "수기 예약", "nights": 1, "stay_type": "단박", "price": 99000.0, "onsite": 0.0, "total_price": 99000.0, "promo": "", "comm_rate": 0, "comm_amt": 0, "net_rev": 99000, "confirmed": true, "lead_days": 3, "weekday": 3, "is_weekend": false}, {"branch": "경주", "booking_no": "M260330085439508024", "guest": "", "room": "C202", "checkin": "2026-04-02", "checkout": "2026-04-03", "book_date": "2026-03-30", "cancel_date": "", "status": "예약완료", "btype": "수기 예약", "nights": 1, "stay_type": "단박", "price": 59000.0, "onsite": 0.0, "total_price": 59000.0, "promo": "", "comm_rate": 0, "comm_amt": 0, "net_rev": 59000, "confirmed": true, "lead_days": 3, "weekday": 3, "is_weekend": false}, {"branch": "경주", "booking_no": "M260330085439508024", "guest": "", "room": "C203", "checkin": "2026-04-02", "checkout": "2026-04-03", "book_date": "2026-03-30", "cancel_date": "", "status": "예약완료", "btype": "수기 예약", "nights": 1, "stay_type": "단박", "price": 59000.0, "onsite": 0.0, "total_price": 59000.0, "promo": "", "comm_rate": 0, "comm_amt": 0, "net_rev": 59000, "confirmed": true, "lead_days": 3, "weekday": 3, "is_weekend": false}, {"branch": "대부도(영흥도)", "booking_no": "2604021162500759", "guest": "", "room": "101", "checkin": "2026-05-01", "checkout": "2026-05-02", "book_date": "2026-04-02", "cancel_date": "", "status": "예약완료", "btype": "NOL 예약", "nights": 1, "stay_type": "단박", "price": 159000.0, "onsite": 0.0, "total_price": 159000.0, "promo": "", "comm_rate": 0.07, "comm_amt": 11130, "net_rev": 147870, "confirmed": true, "lead_days": 29, "weekday": 4, "is_weekend": true}, {"branch": "대부도(영흥도)", "booking_no": "2603181261051233", "guest": "", "room": "205", "checkin": "2026-04-30", "checkout": "2026-05-01", "book_date": "2026-03-18", "cancel_date": "2026-03-18", "status": "관리자취소", "btype": "NOL 예약", "nights": 1, "stay_type": "단박", "price": 69000.0, "onsite": 0.0, "total_price": 69000.0, "promo": "", "comm_rate": 0.07, "comm_amt": 4830, "net_rev": 64170, "confirmed": false, "lead_days": 43, "weekday": 3, "is_weekend": false}, {"branch": "대부도(영흥도)", "booking_no": "2603261561833861", "guest": "", "room": "101", "checkin": "2026-04-25", "checkout": "2026-04-26", "book_date": "2026-03-26", "cancel_date": "", "status": "예약완료", "btype": "NOL 예약", "nights": 1, "stay_type": "단박", "price": 159000.0, "onsite": 0.0, "total_price": 159000.0, "promo": "", "comm_rate": 0.07, "comm_amt": 11130, "net_rev": 147870, "confirmed": true, "lead_days": 30, "weekday": 5, "is_weekend": true}, {"branch": "대부도(영흥도)", "booking_no": "M260401204521266dd1", "guest": "", "room": "104", "checkin": "2026-04-25", "checkout": "2026-04-26", "book_date": "2026-04-01", "cancel_date": "", "status": "예약완료", "btype": "수기 예약", "nights": 1, "stay_type": "단박", "price": 129000.0, "onsite": 0.0, "total_price": 129000.0, "promo": "", "comm_rate": 0, "comm_amt": 0, "net_rev": 129000, "confirmed": true, "lead_days": 24, "weekday": 5, "is_weekend": true}, {"branch": "대부도(영흥도)", "booking_no": "2603121660486652", "guest": "", "room": "104", "checkin": "2026-04-24", "checkout": "2026-04-25", "book_date": "2026-03-12", "cancel_date": "", "status": "예약완료", "btype": "NOL 예약", "nights": 1, "stay_type": "단박", "price": 139000.0, "onsite": 0.0, "total_price": 139000.0, "promo": "", "comm_rate": 0.13, "comm_amt": 18070, "net_rev": 120930, "confirmed": true, "lead_days": 43, "weekday": 4, "is_weekend": true}, {"branch": "대부도(영흥도)", "booking_no": "M26040115054841047e", "guest": "", "room": "303", "checkin": "2026-04-24", "checkout": "2026-04-25", "book_date": "2026-04-01", "cancel_date": "", "status": "예약완료", "btype": "수기 예약", "nights": 1, "stay_type": "단박", "price": 48300.0, "onsite": 0.0, "total_price": 48300.0, "promo": "", "comm_rate": 0, "comm_amt": 0, "net_rev": 48300, "confirmed": true, "lead_days": 23, "weekday": 4, "is_weekend": true}, {"branch": "대부도(영흥도)", "booking_no": "M2603061340028307f8", "guest": "", "room": "103", "checkin": "2026-04-19", "checkout": "2026-04-20", "book_date": "2026-03-06", "cancel_date": "", "status": "예약완료", "btype": "수기 예약", "nights": 1, "stay_type": "단박", "price": 119000.0, "onsite": 0.0, "total_price": 119000.0, "promo": "", "comm_rate": 0, "comm_amt": 0, "net_rev": 119000, "confirmed": true, "lead_days": 44, "weekday": 6, "is_weekend": true}, {"branch": "대부도(영흥도)", "booking_no": "M2604012127280574cf", "guest": "", "room": "104", "checkin": "2026-04-19", "checkout": "2026-04-20", "book_date": "2026-04-01", "cancel_date": "", "status": "예약완료", "btype": "수기 예약", "nights": 1, "stay_type": "단박", "price": 99000.0, "onsite": 0.0, "total_price": 99000.0, "promo": "", "comm_rate": 0, "comm_amt": 0, "net_rev": 99000, "confirmed": true, "lead_days": 18, "weekday": 6, "is_weekend": true}, {"branch": "대부도(영흥도)", "booking_no": "2603231261535246", "guest": "", "room": "103", "checkin": "2026-04-18", "checkout": "2026-04-19", "book_date": "2026-03-23", "cancel_date": "", "status": "예약완료", "btype": "NOL 예약", "nights": 1, "stay_type": "단박", "price": 129000.0, "onsite": 0.0, "total_price": 129000.0, "promo": "", "comm_rate": 0.07, "comm_amt": 9030, "net_rev": 119970, "confirmed": true, "lead_days": 26, "weekday": 5, "is_weekend": true}, {"branch": "대부도(영흥도)", "booking_no": "2604011362405241", "guest": "", "room": "203", "checkin": "2026-04-18", "checkout": "2026-04-19", "book_date": "2026-04-01", "cancel_date": "", "status": "예약완료", "btype": "NOL 예약", "nights": 1, "stay_type": "단박", "price": 99000.0, "onsite": 0.0, "total_price": 99000.0, "promo": "", "comm_rate": 0.07, "comm_amt": 6930, "net_rev": 92070, "confirmed": true, "lead_days": 17, "weekday": 5, "is_weekend": true}, {"branch": "대부도(영흥도)", "booking_no": "M26040121000982126b", "guest": "", "room": "101", "checkin": "2026-04-18", "checkout": "2026-04-19", "book_date": "2026-04-01", "cancel_date": "", "status": "예약완료", "btype": "수기 예약", "nights": 1, "stay_type": "단박", "price": 152100.0, "onsite": 0.0, "total_price": 152100.0, "promo": "", "comm_rate": 0, "comm_amt": 0, "net_rev": 152100, "confirmed": true, "lead_days": 17, "weekday": 5, "is_weekend": true}, {"branch": "대부도(영흥도)", "booking_no": "M260402143924578340", "guest": "", "room": "104", "checkin": "2026-04-18", "checkout": "2026-04-19", "book_date": "2026-04-02", "cancel_date": "", "status": "예약완료", "btype": "수기 예약", "nights": 1, "stay_type": "단박", "price": 129000.0, "onsite": 0.0, "total_price": 129000.0, "promo": "", "comm_rate": 0, "comm_amt": 0, "net_rev": 129000, "confirmed": true, "lead_days": 16, "weekday": 5, "is_weekend": true}, {"branch": "대부도(영흥도)", "booking_no": "2603231761568916", "guest": "", "room": "102", "checkin": "2026-04-11", "checkout": "2026-04-12", "book_date": "2026-03-23", "cancel_date": "", "status": "예약완료", "btype": "NOL 예약", "nights": 1, "stay_type": "단박", "price": 129000.0, "onsite": 0.0, "total_price": 129000.0, "promo": "", "comm_rate": 0.07, "comm_amt": 9030, "net_rev": 119970, "confirmed": true, "lead_days": 19, "weekday": 5, "is_weekend": true}, {"branch": "대부도(영흥도)", "booking_no": "2603281362019656", "guest": "", "room": "101", "checkin": "2026-04-11", "checkout": "2026-04-12", "book_date": "2026-03-28", "cancel_date": "", "status": "예약완료", "btype": "NOL 예약", "nights": 1, "stay_type": "단박", "price": 159000.0, "onsite": 0.0, "total_price": 159000.0, "promo": "", "comm_rate": 0.07, "comm_amt": 11130, "net_rev": 147870, "confirmed": true, "lead_days": 14, "weekday": 5, "is_weekend": true}, {"branch": "대부도(영흥도)", "booking_no": "2603312162344744", "guest": "", "room": "305", "checkin": "2026-04-08", "checkout": "2026-04-09", "book_date": "2026-03-31", "cancel_date": "", "status": "예약완료", "btype": "NOL 예약", "nights": 1, "stay_type": "단박", "price": 69000.0, "onsite": 0.0, "total_price": 69000.0, "promo": "", "comm_rate": 0.07, "comm_amt": 4830, "net_rev": 64170, "confirmed": true, "lead_days": 8, "weekday": 2, "is_weekend": false}, {"branch": "대부도(영흥도)", "booking_no": "2604010862381456", "guest": "", "room": "303", "checkin": "2026-04-08", "checkout": "2026-04-09", "book_date": "2026-04-01", "cancel_date": "", "status": "예약완료", "btype": "NOL 예약", "nights": 1, "stay_type": "단박", "price": 69000.0, "onsite": 0.0, "total_price": 69000.0, "promo": "", "comm_rate": 0.07, "comm_amt": 4830, "net_rev": 64170, "confirmed": true, "lead_days": 7, "weekday": 2, "is_weekend": false}, {"branch": "대부도(영흥도)", "booking_no": "2603132048150115", "guest": "", "room": "104", "checkin": "2026-04-06", "checkout": "2026-04-07", "book_date": "2026-03-13", "cancel_date": "2026-03-22", "status": "고객취소", "btype": "NOL 예약", "nights": 1, "stay_type": "단박", "price": 119000.0, "onsite": 0.0, "total_price": 119000.0, "promo": "", "comm_rate": 0.13, "comm_amt": 15470, "net_rev": 103530, "confirmed": false, "lead_days": 24, "weekday": 0, "is_weekend": false}, {"branch": "대부도(영흥도)", "booking_no": "2603221312150057", "guest": "", "room": "104", "checkin": "2026-04-06", "checkout": "2026-04-07", "book_date": "2026-03-22", "cancel_date": "", "status": "예약완료", "btype": "NOL 예약", "nights": 1, "stay_type": "단박", "price": 99000.0, "onsite": 0.0, "total_price": 99000.0, "promo": "", "comm_rate": 0.07, "comm_amt": 6930, "net_rev": 92070, "confirmed": true, "lead_days": 15, "weekday": 0, "is_weekend": false}, {"branch": "대부도(영흥도)", "booking_no": "2603181761079142", "guest": "", "room": "101", "checkin": "2026-04-04", "checkout": "2026-04-05", "book_date": "2026-03-18", "cancel_date": "", "status": "예약완료", "btype": "NOL 예약", "nights": 1, "stay_type": "단박", "price": 159000.0, "onsite": 0.0, "total_price": 159000.0, "promo": "", "comm_rate": 0.07, "comm_amt": 11130, "net_rev": 147870, "confirmed": true, "lead_days": 17, "weekday": 5, "is_weekend": true}, {"branch": "대부도(영흥도)", "booking_no": "2603211961397012", "guest": "", "room": "204", "checkin": "2026-04-04", "checkout": "2026-04-05", "book_date": "2026-03-21", "cancel_date": "", "status": "예약완료", "btype": "NOL 예약", "nights": 1, "stay_type": "단박", "price": 99000.0, "onsite": 0.0, "total_price": 99000.0, "promo": "", "comm_rate": 0.07, "comm_amt": 6930, "net_rev": 92070, "confirmed": true, "lead_days": 14, "weekday": 5, "is_weekend": true}, {"branch": "대부도(영흥도)", "booking_no": "2603221761478104", "guest": "", "room": "102", "checkin": "2026-04-04", "checkout": "2026-04-05", "book_date": "2026-03-22", "cancel_date": "", "status": "예약완료", "btype": "NOL 예약", "nights": 1, "stay_type": "단박", "price": 129000.0, "onsite": 0.0, "total_price": 129000.0, "promo": "", "comm_rate": 0.07, "comm_amt": 9030, "net_rev": 119970, "confirmed": true, "lead_days": 13, "weekday": 5, "is_weekend": true}, {"branch": "대부도(영흥도)", "booking_no": "2603222261503583", "guest": "", "room": "103", "checkin": "2026-04-04", "checkout": "2026-04-05", "book_date": "2026-03-22", "cancel_date": "", "status": "예약완료", "btype": "NOL 예약", "nights": 1, "stay_type": "단박", "price": 129000.0, "onsite": 0.0, "total_price": 129000.0, "promo": "", "comm_rate": 0.07, "comm_amt": 9030, "net_rev": 119970, "confirmed": true, "lead_days": 13, "weekday": 5, "is_weekend": true}, {"branch": "대부도(영흥도)", "booking_no": "2603241061618688", "guest": "", "room": "202", "checkin": "2026-04-04", "checkout": "2026-04-05", "book_date": "2026-03-24", "cancel_date": "", "status": "예약완료", "btype": "NOL 예약", "nights": 1, "stay_type": "단박", "price": 99000.0, "onsite": 0.0, "total_price": 99000.0, "promo": "", "comm_rate": 0.07, "comm_amt": 6930, "net_rev": 92070, "confirmed": true, "lead_days": 11, "weekday": 5, "is_weekend": true}, {"branch": "대부도(영흥도)", "booking_no": "2603261159110158", "guest": "", "room": "205", "checkin": "2026-04-04", "checkout": "2026-04-05", "book_date": "2026-03-26", "cancel_date": "", "status": "예약완료", "btype": "NOL 예약", "nights": 1, "stay_type": "단박", "price": 99000.0, "onsite": 0.0, "total_price": 99000.0, "promo": "", "comm_rate": 0.07, "comm_amt": 6930, "net_rev": 92070, "confirmed": true, "lead_days": 9, "weekday": 5, "is_weekend": true}, {"branch": "대부도(영흥도)", "booking_no": "M260327151639257cd5", "guest": "", "room": "302", "checkin": "2026-04-04", "checkout": "2026-04-05", "book_date": "2026-03-27", "cancel_date": "2026-03-27", "status": "예약취소(업체)", "btype": "수기 예약", "nights": 1, "stay_type": "단박", "price": 0.0, "onsite": 0.0, "total_price": 0.0, "promo": "", "comm_rate": 0, "comm_amt": 0, "net_rev": 0, "confirmed": false, "lead_days": 8, "weekday": 5, "is_weekend": true}, {"branch": "대부도(영흥도)", "booking_no": "M2603272053055039f1", "guest": "", "room": "104", "checkin": "2026-04-04", "checkout": "2026-04-05", "book_date": "2026-03-27", "cancel_date": "", "status": "예약완료", "btype": "수기 예약", "nights": 1, "stay_type": "단박", "price": 0.0, "onsite": 0.0, "total_price": 0.0, "promo": "", "comm_rate": 0, "comm_amt": 0, "net_rev": 0, "confirmed": true, "lead_days": 8, "weekday": 5, "is_weekend": true}, {"branch": "대부도(영흥도)", "booking_no": "2603291062105659", "guest": "", "room": "203", "checkin": "2026-04-04", "checkout": "2026-04-05", "book_date": "2026-03-29", "cancel_date": "2026-04-01", "status": "고객취소", "btype": "NOL 예약", "nights": 1, "stay_type": "단박", "price": 99000.0, "onsite": 0.0, "total_price": 99000.0, "promo": "", "comm_rate": 0.07, "comm_amt": 6930, "net_rev": 92070, "confirmed": false, "lead_days": 6, "weekday": 5, "is_weekend": true}, {"branch": "대부도(영흥도)", "booking_no": "2603291362119416", "guest": "", "room": "303", "checkin": "2026-04-04", "checkout": "2026-04-05", "book_date": "2026-03-29", "cancel_date": "2026-03-29", "status": "고객취소", "btype": "NOL 예약", "nights": 1, "stay_type": "단박", "price": 99000.0, "onsite": 0.0, "total_price": 99000.0, "promo": "", "comm_rate": 0.07, "comm_amt": 6930, "net_rev": 92070, "confirmed": false, "lead_days": 6, "weekday": 5, "is_weekend": true}, {"branch": "대부도(영흥도)", "booking_no": "2603311000100440", "guest": "", "room": "302", "checkin": "2026-04-04", "checkout": "2026-04-05", "book_date": "2026-03-31", "cancel_date": "", "status": "예약완료", "btype": "NOL 예약", "nights": 1, "stay_type": "단박", "price": 89100.0, "onsite": 0.0, "total_price": 89100.0, "promo": "Gold Class 고객 대상 프로모션 할인 10% (프로모션 ID : 15605)", "comm_rate": 0.07, "comm_amt": 6237, "net_rev": 82863, "confirmed": true, "lead_days": 4, "weekday": 5, "is_weekend": true}, {"branch": "대부도(영흥도)", "booking_no": "2603311662317450", "guest": "", "room": "303", "checkin": "2026-04-04", "checkout": "2026-04-05", "book_date": "2026-03-31", "cancel_date": "", "status": "예약완료", "btype": "NOL 예약", "nights": 1, "stay_type": "단박", "price": 99000.0, "onsite": 0.0, "total_price": 99000.0, "promo": "", "comm_rate": 0.07, "comm_amt": 6930, "net_rev": 92070, "confirmed": true, "lead_days": 4, "weekday": 5, "is_weekend": true}, {"branch": "대부도(영흥도)", "booking_no": "2603312262350779", "guest": "", "room": "305", "checkin": "2026-04-04", "checkout": "2026-04-05", "book_date": "2026-03-31", "cancel_date": "", "status": "예약완료", "btype": "NOL 예약", "nights": 1, "stay_type": "단박", "price": 99000.0, "onsite": 0.0, "total_price": 99000.0, "promo": "", "comm_rate": 0.07, "comm_amt": 6930, "net_rev": 92070, "confirmed": true, "lead_days": 4, "weekday": 5, "is_weekend": true}, {"branch": "대부도(영흥도)", "booking_no": "2603312262353313", "guest": "", "room": "304", "checkin": "2026-04-04", "checkout": "2026-04-05", "book_date": "2026-03-31", "cancel_date": "", "status": "예약완료", "btype": "NOL 예약", "nights": 1, "stay_type": "단박", "price": 99000.0, "onsite": 0.0, "total_price": 99000.0, "promo": "", "comm_rate": 0.07, "comm_amt": 6930, "net_rev": 92070, "confirmed": true, "lead_days": 4, "weekday": 5, "is_weekend": true}, {"branch": "대부도(영흥도)", "booking_no": "2604021820050057", "guest": "", "room": "203", "checkin": "2026-04-04", "checkout": "2026-04-05", "book_date": "2026-04-02", "cancel_date": "", "status": "예약완료", "btype": "NOL 예약", "nights": 1, "stay_type": "단박", "price": 89100.0, "onsite": 0.0, "total_price": 89100.0, "promo": "Gold Class 고객 대상 프로모션 할인 10% (프로모션 ID : 15605)", "comm_rate": 0.07, "comm_amt": 6237, "net_rev": 82863, "confirmed": true, "lead_days": 2, "weekday": 5, "is_weekend": true}, {"branch": "대부도(영흥도)", "booking_no": "2604022048200002", "guest": "", "room": "201", "checkin": "2026-04-04", "checkout": "2026-04-05", "book_date": "2026-04-02", "cancel_date": "", "status": "예약완료", "btype": "NOL 예약", "nights": 1, "stay_type": "단박", "price": 98100.0, "onsite": 0.0, "total_price": 98100.0, "promo": "Gold Class 고객 대상 프로모션 할인 10% (프로모션 ID : 15605)", "comm_rate": 0.07, "comm_amt": 6867, "net_rev": 91233, "confirmed": true, "lead_days": 2, "weekday": 5, "is_weekend": true}, {"branch": "대부도(영흥도)", "booking_no": "2603181461059745", "guest": "", "room": "205", "checkin": "2026-04-03", "checkout": "2026-04-04", "book_date": "2026-03-18", "cancel_date": "", "status": "예약완료", "btype": "NOL 예약", "nights": 1, "stay_type": "단박", "price": 69000.0, "onsite": 0.0, "total_price": 69000.0, "promo": "", "comm_rate": 0.07, "comm_amt": 4830, "net_rev": 64170, "confirmed": true, "lead_days": 16, "weekday": 4, "is_weekend": true}, {"branch": "대부도(영흥도)", "booking_no": "2603231659270226", "guest": "", "room": "202", "checkin": "2026-04-03", "checkout": "2026-04-05", "book_date": "2026-03-23", "cancel_date": "2026-03-23", "status": "고객취소", "btype": "NOL 예약", "nights": 2, "stay_type": "연박(2박)", "price": 168000.0, "onsite": 0.0, "total_price": 168000.0, "promo": "", "comm_rate": 0.07, "comm_amt": 11760, "net_rev": 156240, "confirmed": false, "lead_days": 11, "weekday": 4, "is_weekend": true}, {"branch": "대부도(영흥도)", "booking_no": "2603261461829303", "guest": "", "room": "104", "checkin": "2026-04-03", "checkout": "2026-04-04", "book_date": "2026-03-26", "cancel_date": "", "status": "예약완료", "btype": "NOL 예약", "nights": 1, "stay_type": "단박", "price": 99000.0, "onsite": 0.0, "total_price": 99000.0, "promo": "", "comm_rate": 0.07, "comm_amt": 6930, "net_rev": 92070, "confirmed": true, "lead_days": 8, "weekday": 4, "is_weekend": true}, {"branch": "대부도(영흥도)", "booking_no": "2603290062089960", "guest": "", "room": "305", "checkin": "2026-04-03", "checkout": "2026-04-04", "book_date": "2026-03-29", "cancel_date": "", "status": "예약완료", "btype": "NOL 예약", "nights": 1, "stay_type": "단박", "price": 69000.0, "onsite": 0.0, "total_price": 69000.0, "promo": "", "comm_rate": 0.07, "comm_amt": 4830, "net_rev": 64170, "confirmed": true, "lead_days": 5, "weekday": 4, "is_weekend": true}, {"branch": "대부도(영흥도)", "booking_no": "2603311862329568", "guest": "", "room": "301", "checkin": "2026-04-03", "checkout": "2026-04-04", "book_date": "2026-03-31", "cancel_date": "", "status": "예약완료", "btype": "NOL 예약", "nights": 1, "stay_type": "단박", "price": 79000.0, "onsite": 0.0, "total_price": 79000.0, "promo": "", "comm_rate": 0.07, "comm_amt": 5530, "net_rev": 73470, "confirmed": true, "lead_days": 3, "weekday": 4, "is_weekend": true}, {"branch": "대부도(영흥도)", "booking_no": "M2604021100361718c2", "guest": "", "room": "202", "checkin": "2026-04-03", "checkout": "2026-04-04", "book_date": "2026-04-02", "cancel_date": "", "status": "예약완료", "btype": "수기 예약", "nights": 1, "stay_type": "단박", "price": 69000.0, "onsite": 0.0, "total_price": 69000.0, "promo": "", "comm_rate": 0, "comm_amt": 0, "net_rev": 69000, "confirmed": true, "lead_days": 1, "weekday": 4, "is_weekend": true}, {"branch": "대부도(영흥도)", "booking_no": "2604021826390190", "guest": "", "room": "303", "checkin": "2026-04-03", "checkout": "2026-04-04", "book_date": "2026-04-02", "cancel_date": "", "status": "예약완료", "btype": "NOL 예약", "nights": 1, "stay_type": "단박", "price": 62100.0, "onsite": 0.0, "total_price": 62100.0, "promo": "Gold Class 고객 대상 프로모션 할인 10% (프로모션 ID : 15605)", "comm_rate": 0.07, "comm_amt": 4347, "net_rev": 57753, "confirmed": true, "lead_days": 1, "weekday": 4, "is_weekend": true}, {"branch": "대부도(영흥도)", "booking_no": "M260402182811118a0b", "guest": "", "room": "103", "checkin": "2026-04-03", "checkout": "2026-04-04", "book_date": "2026-04-02", "cancel_date": "", "status": "예약완료", "btype": "수기 예약", "nights": 1, "stay_type": "단박", "price": 99000.0, "onsite": 0.0, "total_price": 99000.0, "promo": "", "comm_rate": 0, "comm_amt": 0, "net_rev": 99000, "confirmed": true, "lead_days": 1, "weekday": 4, "is_weekend": true}, {"branch": "대부도(영흥도)", "booking_no": "2604021448000076", "guest": "", "room": "103", "checkin": "2026-04-02", "checkout": "2026-04-03", "book_date": "2026-04-02", "cancel_date": "", "status": "예약완료", "btype": "NOL 예약", "nights": 1, "stay_type": "단박", "price": 89100.0, "onsite": 0.0, "total_price": 89100.0, "promo": "Gold Class 고객 대상 프로모션 할인 10% (프로모션 ID : 15605)", "comm_rate": 0.07, "comm_amt": 6237, "net_rev": 82863, "confirmed": true, "lead_days": 0, "weekday": 3, "is_weekend": false}, {"branch": "대부도(영흥도)", "booking_no": "2604021453130006", "guest": "", "room": "102", "checkin": "2026-04-02", "checkout": "2026-04-03", "book_date": "2026-04-02", "cancel_date": "", "status": "예약완료", "btype": "NOL 예약", "nights": 1, "stay_type": "단박", "price": 89100.0, "onsite": 0.0, "total_price": 89100.0, "promo": "Gold Class 고객 대상 프로모션 할인 10% (프로모션 ID : 15605)", "comm_rate": 0.07, "comm_amt": 6237, "net_rev": 82863, "confirmed": true, "lead_days": 0, "weekday": 3, "is_weekend": false}, {"branch": "양양", "booking_no": "2603232061585694", "guest": "", "room": "일반형303", "checkin": "2026-05-01", "checkout": "2026-05-02", "book_date": "2026-03-23", "cancel_date": "", "status": "예약완료", "btype": "NOL 예약", "nights": 1, "stay_type": "단박", "price": 89000.0, "onsite": 0.0, "total_price": 89000.0, "promo": "", "comm_rate": 0.07, "comm_amt": 6230, "net_rev": 82770, "confirmed": true, "lead_days": 39, "weekday": 4, "is_weekend": true}, {"branch": "양양", "booking_no": "2603252061768903", "guest": "", "room": "일반형308", "checkin": "2026-05-01", "checkout": "2026-05-04", "book_date": "2026-03-25", "cancel_date": "", "status": "예약완료", "btype": "NOL 예약", "nights": 3, "stay_type": "연박(3박)", "price": 267000.0, "onsite": 0.0, "total_price": 267000.0, "promo": "", "comm_rate": 0.07, "comm_amt": 18690, "net_rev": 248310, "confirmed": true, "lead_days": 37, "weekday": 4, "is_weekend": true}, {"branch": "양양", "booking_no": "2603261061807092", "guest": "", "room": "일반형610", "checkin": "2026-05-01", "checkout": "2026-05-02", "book_date": "2026-03-26", "cancel_date": "2026-03-26", "status": "고객취소", "btype": "NOL 예약", "nights": 1, "stay_type": "단박", "price": 99000.0, "onsite": 0.0, "total_price": 99000.0, "promo": "", "comm_rate": 0.07, "comm_amt": 6930, "net_rev": 92070, "confirmed": false, "lead_days": 36, "weekday": 4, "is_weekend": true}, {"branch": "양양", "booking_no": "2603261254300115", "guest": "", "room": "일반형609", "checkin": "2026-05-01", "checkout": "2026-05-02", "book_date": "2026-03-26", "cancel_date": "", "status": "예약완료", "btype": "NOL 예약", "nights": 1, "stay_type": "단박", "price": 89100.0, "onsite": 0.0, "total_price": 89100.0, "promo": "Gold Class 고객 대상 프로모션 할인 10% (프로모션 ID : 15565)", "comm_rate": 0.07, "comm_amt": 6237, "net_rev": 82863, "confirmed": true, "lead_days": 36, "weekday": 4, "is_weekend": true}, {"branch": "양양", "booking_no": "2603261256300143", "guest": "", "room": "일반형608", "checkin": "2026-05-01", "checkout": "2026-05-02", "book_date": "2026-03-26", "cancel_date": "", "status": "예약완료", "btype": "NOL 예약", "nights": 1, "stay_type": "단박", "price": 89100.0, "onsite": 0.0, "total_price": 89100.0, "promo": "Gold Class 고객 대상 프로모션 할인 10% (프로모션 ID : 15565)", "comm_rate": 0.07, "comm_amt": 6237, "net_rev": 82863, "confirmed": true, "lead_days": 36, "weekday": 4, "is_weekend": true}, {"branch": "양양", "booking_no": "2603291062105523", "guest": "", "room": "일반형602", "checkin": "2026-05-01", "checkout": "2026-05-03", "book_date": "2026-03-29", "cancel_date": "2026-04-02", "status": "고객취소", "btype": "NOL 예약", "nights": 2, "stay_type": "연박(2박)", "price": 198000.0, "onsite": 0.0, "total_price": 198000.0, "promo": "", "comm_rate": 0.07, "comm_amt": 13860, "net_rev": 184140, "confirmed": false, "lead_days": 33, "weekday": 4, "is_weekend": true}, {"branch": "양양", "booking_no": "2604011462413473", "guest": "", "room": "펜션형302", "checkin": "2026-05-01", "checkout": "2026-05-03", "book_date": "2026-04-01", "cancel_date": "", "status": "예약완료", "btype": "NOL 예약", "nights": 2, "stay_type": "연박(2박)", "price": 298000.0, "onsite": 0.0, "total_price": 298000.0, "promo": "", "comm_rate": 0.07, "comm_amt": 20860, "net_rev": 277140, "confirmed": true, "lead_days": 30, "weekday": 4, "is_weekend": true}, {"branch": "양양", "booking_no": "2604012062453293", "guest": "", "room": "일반형309", "checkin": "2026-05-01", "checkout": "2026-05-03", "book_date": "2026-04-01", "cancel_date": "", "status": "예약완료", "btype": "NOL 예약", "nights": 2, "stay_type": "연박(2박)", "price": 178000.0, "onsite": 0.0, "total_price": 178000.0, "promo": "", "comm_rate": 0.07, "comm_amt": 12460, "net_rev": 165540, "confirmed": true, "lead_days": 30, "weekday": 4, "is_weekend": true}, {"branch": "양양", "booking_no": "2604020758060064", "guest": "", "room": "일반형602", "checkin": "2026-05-01", "checkout": "2026-05-03", "book_date": "2026-04-02", "cancel_date": "", "status": "예약완료", "btype": "NOL 예약", "nights": 2, "stay_type": "연박(2박)", "price": 178200.0, "onsite": 0.0, "total_price": 178200.0, "promo": "Gold Class 고객 대상 프로모션 할인 10% (프로모션 ID : 15565)", "comm_rate": 0.07, "comm_amt": 12474, "net_rev": 165726, "confirmed": true, "lead_days": 29, "weekday": 4, "is_weekend": true}, {"branch": "양양", "booking_no": "2604021326060016", "guest": "", "room": "일반형603", "checkin": "2026-05-01", "checkout": "2026-05-03", "book_date": "2026-04-02", "cancel_date": "", "status": "예약완료", "btype": "NOL 예약", "nights": 2, "stay_type": "연박(2박)", "price": 178200.0, "onsite": 0.0, "total_price": 178200.0, "promo": "연박특가 할인 10% (프로모션 ID : 15563)", "comm_rate": 0.07, "comm_amt": 12474, "net_rev": 165726, "confirmed": true, "lead_days": 29, "weekday": 4, "is_weekend": true}, {"branch": "양양", "booking_no": "2603301243350078", "guest": "", "room": "펜션형301", "checkin": "2026-04-12", "checkout": "2026-04-14", "book_date": "2026-03-30", "cancel_date": "", "status": "예약완료", "btype": "NOL 예약", "nights": 2, "stay_type": "연박(2박)", "price": 196200.0, "onsite": 0.0, "total_price": 196200.0, "promo": "연박특가 할인 10% (프로모션 ID : 15563)", "comm_rate": 0.07, "comm_amt": 13734, "net_rev": 182466, "confirmed": true, "lead_days": 13, "weekday": 6, "is_weekend": true}, {"branch": "양양", "booking_no": "2603311762326149", "guest": "", "room": "펜션형302", "checkin": "2026-04-12", "checkout": "2026-04-13", "book_date": "2026-03-31", "cancel_date": "", "status": "예약완료", "btype": "NOL 예약", "nights": 1, "stay_type": "단박", "price": 109000.0, "onsite": 0.0, "total_price": 109000.0, "promo": "", "comm_rate": 0.07, "comm_amt": 7630, "net_rev": 101370, "confirmed": true, "lead_days": 12, "weekday": 6, "is_weekend": true}, {"branch": "양양", "booking_no": "2604021462519306", "guest": "", "room": "일반형602", "checkin": "2026-04-12", "checkout": "2026-04-13", "book_date": "2026-04-02", "cancel_date": "", "status": "예약완료", "btype": "NOL 예약", "nights": 1, "stay_type": "단박", "price": 69000.0, "onsite": 0.0, "total_price": 69000.0, "promo": "", "comm_rate": 0.07, "comm_amt": 4830, "net_rev": 64170, "confirmed": true, "lead_days": 10, "weekday": 6, "is_weekend": true}, {"branch": "양양", "booking_no": "2603271561930334", "guest": "", "room": "일반형309", "checkin": "2026-04-11", "checkout": "2026-04-12", "book_date": "2026-03-27", "cancel_date": "", "status": "예약완료", "btype": "NOL 예약", "nights": 1, "stay_type": "단박", "price": 89000.0, "onsite": 0.0, "total_price": 89000.0, "promo": "", "comm_rate": 0.07, "comm_amt": 6230, "net_rev": 82770, "confirmed": true, "lead_days": 15, "weekday": 5, "is_weekend": true}, {"branch": "양양", "booking_no": "2603181861084887", "guest": "", "room": "일반형309", "checkin": "2026-04-10", "checkout": "2026-04-11", "book_date": "2026-03-18", "cancel_date": "", "status": "예약완료", "btype": "NOL 예약", "nights": 1, "stay_type": "단박", "price": 69000.0, "onsite": 0.0, "total_price": 69000.0, "promo": "", "comm_rate": 0.07, "comm_amt": 4830, "net_rev": 64170, "confirmed": true, "lead_days": 23, "weekday": 4, "is_weekend": true}, {"branch": "양양", "booking_no": "2603211161337203", "guest": "", "room": "일반형308", "checkin": "2026-04-10", "checkout": "2026-04-12", "book_date": "2026-03-21", "cancel_date": "", "status": "예약완료", "btype": "NOL 예약", "nights": 2, "stay_type": "연박(2박)", "price": 158000.0, "onsite": 0.0, "total_price": 158000.0, "promo": "", "comm_rate": 0.07, "comm_amt": 11060, "net_rev": 146940, "confirmed": true, "lead_days": 20, "weekday": 4, "is_weekend": true}, {"branch": "양양", "booking_no": "2603221861485002", "guest": "", "room": "일반형303", "checkin": "2026-04-10", "checkout": "2026-04-12", "book_date": "2026-03-22", "cancel_date": "", "status": "예약완료", "btype": "NOL 예약", "nights": 2, "stay_type": "연박(2박)", "price": 158000.0, "onsite": 0.0, "total_price": 158000.0, "promo": "", "comm_rate": 0.07, "comm_amt": 11060, "net_rev": 146940, "confirmed": true, "lead_days": 19, "weekday": 4, "is_weekend": true}, {"branch": "양양", "booking_no": "2603242261688140", "guest": "", "room": "일반형306", "checkin": "2026-04-10", "checkout": "2026-04-12", "book_date": "2026-03-24", "cancel_date": "", "status": "예약완료", "btype": "NOL 예약", "nights": 2, "stay_type": "연박(2박)", "price": 158000.0, "onsite": 0.0, "total_price": 158000.0, "promo": "", "comm_rate": 0.07, "comm_amt": 11060, "net_rev": 146940, "confirmed": true, "lead_days": 17, "weekday": 4, "is_weekend": true}, {"branch": "양양", "booking_no": "2603242261688262", "guest": "", "room": "일반형307", "checkin": "2026-04-10", "checkout": "2026-04-12", "book_date": "2026-03-24", "cancel_date": "", "status": "예약완료", "btype": "NOL 예약", "nights": 2, "stay_type": "연박(2박)", "price": 158000.0, "onsite": 0.0, "total_price": 158000.0, "promo": "", "comm_rate": 0.07, "comm_amt": 11060, "net_rev": 146940, "confirmed": true, "lead_days": 17, "weekday": 4, "is_weekend": true}, {"branch": "양양", "booking_no": "2603232161591860", "guest": "", "room": "테라스형203", "checkin": "2026-04-08", "checkout": "2026-04-09", "book_date": "2026-03-23", "cancel_date": "2026-03-23", "status": "관리자취소", "btype": "NOL 예약", "nights": 1, "stay_type": "단박", "price": 89000.0, "onsite": 0.0, "total_price": 89000.0, "promo": "", "comm_rate": 0.07, "comm_amt": 6230, "net_rev": 82770, "confirmed": false, "lead_days": 16, "weekday": 2, "is_weekend": false}, {"branch": "양양", "booking_no": "2603141660692762", "guest": "", "room": "일반형303", "checkin": "2026-04-05", "checkout": "2026-04-06", "book_date": "2026-03-14", "cancel_date": "2026-03-23", "status": "관리자취소", "btype": "NOL 예약", "nights": 1, "stay_type": "단박", "price": 89000.0, "onsite": 0.0, "total_price": 89000.0, "promo": "", "comm_rate": 0.07, "comm_amt": 6230, "net_rev": 82770, "confirmed": false, "lead_days": 22, "weekday": 6, "is_weekend": true}, {"branch": "양양", "booking_no": "2603230961521929", "guest": "", "room": "일반형307", "checkin": "2026-04-05", "checkout": "2026-04-06", "book_date": "2026-03-23", "cancel_date": "", "status": "예약완료", "btype": "NOL 예약", "nights": 1, "stay_type": "단박", "price": 59000.0, "onsite": 0.0, "total_price": 59000.0, "promo": "", "comm_rate": 0.07, "comm_amt": 4130, "net_rev": 54870, "confirmed": true, "lead_days": 13, "weekday": 6, "is_weekend": true}, {"branch": "양양", "booking_no": "2603181161048140", "guest": "", "room": "일반형309", "checkin": "2026-04-04", "checkout": "2026-04-05", "book_date": "2026-03-18", "cancel_date": "2026-03-18", "status": "고객취소", "btype": "NOL 예약", "nights": 1, "stay_type": "단박", "price": 89000.0, "onsite": 0.0, "total_price": 89000.0, "promo": "", "comm_rate": 0.07, "comm_amt": 6230, "net_rev": 82770, "confirmed": false, "lead_days": 17, "weekday": 5, "is_weekend": true}, {"branch": "양양", "booking_no": "2603241803450188", "guest": "", "room": "일반형303", "checkin": "2026-04-04", "checkout": "2026-04-05", "book_date": "2026-03-24", "cancel_date": "", "status": "예약완료", "btype": "NOL 예약", "nights": 1, "stay_type": "단박", "price": 89000.0, "onsite": 0.0, "total_price": 89000.0, "promo": "", "comm_rate": 0.07, "comm_amt": 6230, "net_rev": 82770, "confirmed": true, "lead_days": 11, "weekday": 5, "is_weekend": true}, {"branch": "양양", "booking_no": "2603242061673045", "guest": "", "room": "펜션형302", "checkin": "2026-04-04", "checkout": "2026-04-05", "book_date": "2026-03-24", "cancel_date": "2026-03-25", "status": "관리자취소", "btype": "NOL 예약", "nights": 1, "stay_type": "단박", "price": 149000.0, "onsite": 0.0, "total_price": 149000.0, "promo": "", "comm_rate": 0.07, "comm_amt": 10430, "net_rev": 138570, "confirmed": false, "lead_days": 11, "weekday": 5, "is_weekend": true}, {"branch": "양양", "booking_no": "2603242161679414", "guest": "", "room": "일반형307", "checkin": "2026-04-04", "checkout": "2026-04-05", "book_date": "2026-03-24", "cancel_date": "", "status": "예약완료", "btype": "NOL 예약", "nights": 1, "stay_type": "단박", "price": 89000.0, "onsite": 0.0, "total_price": 89000.0, "promo": "", "comm_rate": 0.07, "comm_amt": 6230, "net_rev": 82770, "confirmed": true, "lead_days": 11, "weekday": 5, "is_weekend": true}, {"branch": "양양", "booking_no": "2603251461731853", "guest": "", "room": "펜션형302", "checkin": "2026-04-04", "checkout": "2026-04-05", "book_date": "2026-03-25", "cancel_date": "", "status": "예약완료", "btype": "NOL 예약", "nights": 1, "stay_type": "단박", "price": 149000.0, "onsite": 0.0, "total_price": 149000.0, "promo": "", "comm_rate": 0.07, "comm_amt": 10430, "net_rev": 138570, "confirmed": true, "lead_days": 10, "weekday": 5, "is_weekend": true}, {"branch": "양양", "booking_no": "2603310856540009", "guest": "", "room": "일반형505", "checkin": "2026-04-04", "checkout": "2026-04-05", "book_date": "2026-03-31", "cancel_date": "", "status": "예약완료", "btype": "NOL 예약", "nights": 1, "stay_type": "단박", "price": 89100.0, "onsite": 0.0, "total_price": 89100.0, "promo": "Gold Class 고객 대상 프로모션 할인 10% (프로모션 ID : 15565)", "comm_rate": 0.07, "comm_amt": 6237, "net_rev": 82863, "confirmed": true, "lead_days": 4, "weekday": 5, "is_weekend": true}, {"branch": "양양", "booking_no": "2603311162290841", "guest": "", "room": "일반형309", "checkin": "2026-04-04", "checkout": "2026-04-05", "book_date": "2026-03-31", "cancel_date": "", "status": "예약완료", "btype": "NOL 예약", "nights": 1, "stay_type": "단박", "price": 89000.0, "onsite": 0.0, "total_price": 89000.0, "promo": "", "comm_rate": 0.07, "comm_amt": 6230, "net_rev": 82770, "confirmed": true, "lead_days": 4, "weekday": 5, "is_weekend": true}, {"branch": "양양", "booking_no": "2604010862381688", "guest": "", "room": "일반형509", "checkin": "2026-04-04", "checkout": "2026-04-05", "book_date": "2026-04-01", "cancel_date": "", "status": "예약완료", "btype": "NOL 예약", "nights": 1, "stay_type": "단박", "price": 99000.0, "onsite": 0.0, "total_price": 99000.0, "promo": "", "comm_rate": 0.07, "comm_amt": 6930, "net_rev": 92070, "confirmed": true, "lead_days": 3, "weekday": 5, "is_weekend": true}, {"branch": "양양", "booking_no": "2603270942150075", "guest": "", "room": "일반형303", "checkin": "2026-04-03", "checkout": "2026-04-04", "book_date": "2026-03-27", "cancel_date": "", "status": "예약완료", "btype": "NOL 예약", "nights": 1, "stay_type": "단박", "price": 69000.0, "onsite": 0.0, "total_price": 69000.0, "promo": "", "comm_rate": 0.07, "comm_amt": 4830, "net_rev": 64170, "confirmed": true, "lead_days": 7, "weekday": 4, "is_weekend": true}, {"branch": "양양", "booking_no": "2603312162346411", "guest": "", "room": "일반형309", "checkin": "2026-04-03", "checkout": "2026-04-04", "book_date": "2026-03-31", "cancel_date": "", "status": "예약완료", "btype": "NOL 예약", "nights": 1, "stay_type": "단박", "price": 69000.0, "onsite": 0.0, "total_price": 69000.0, "promo": "", "comm_rate": 0.07, "comm_amt": 4830, "net_rev": 64170, "confirmed": true, "lead_days": 3, "weekday": 4, "is_weekend": true}, {"branch": "양양", "booking_no": "2604022062556352", "guest": "", "room": "일반형307", "checkin": "2026-04-03", "checkout": "2026-04-04", "book_date": "2026-04-02", "cancel_date": "", "status": "예약완료", "btype": "NOL 예약", "nights": 1, "stay_type": "단박", "price": 69000.0, "onsite": 0.0, "total_price": 69000.0, "promo": "", "comm_rate": 0.07, "comm_amt": 4830, "net_rev": 64170, "confirmed": true, "lead_days": 1, "weekday": 4, "is_weekend": true}, {"branch": "통영", "booking_no": "2603241333190061", "guest": "", "room": "203", "checkin": "2026-04-25", "checkout": "2026-04-26", "book_date": "2026-03-24", "cancel_date": "", "status": "예약완료", "btype": "NOL 예약", "nights": 1, "stay_type": "단박", "price": 109000.0, "onsite": 0.0, "total_price": 109000.0, "promo": "", "comm_rate": 0.11, "comm_amt": 11990, "net_rev": 97010, "confirmed": true, "lead_days": 32, "weekday": 5, "is_weekend": true}, {"branch": "통영", "booking_no": "M26033115281361125e", "guest": "", "room": "201", "checkin": "2026-04-18", "checkout": "2026-04-20", "book_date": "2026-03-31", "cancel_date": "", "status": "예약완료", "btype": "수기 예약", "nights": 2, "stay_type": "연박(2박)", "price": 178000.0, "onsite": 0.0, "total_price": 178000.0, "promo": "", "comm_rate": 0, "comm_amt": 0, "net_rev": 178000, "confirmed": true, "lead_days": 18, "weekday": 5, "is_weekend": true}, {"branch": "통영", "booking_no": "2603251161718537", "guest": "", "room": "204", "checkin": "2026-04-11", "checkout": "2026-04-12", "book_date": "2026-03-25", "cancel_date": "", "status": "예약완료", "btype": "NOL 예약", "nights": 1, "stay_type": "단박", "price": 109000.0, "onsite": 0.0, "total_price": 109000.0, "promo": "", "comm_rate": 0.11, "comm_amt": 11990, "net_rev": 97010, "confirmed": true, "lead_days": 17, "weekday": 5, "is_weekend": true}, {"branch": "통영", "booking_no": "2603251303330201", "guest": "", "room": "303", "checkin": "2026-04-11", "checkout": "2026-04-12", "book_date": "2026-03-25", "cancel_date": "", "status": "예약완료", "btype": "NOL 예약", "nights": 1, "stay_type": "단박", "price": 109000.0, "onsite": 0.0, "total_price": 109000.0, "promo": "", "comm_rate": 0.11, "comm_amt": 11990, "net_rev": 97010, "confirmed": true, "lead_days": 17, "weekday": 5, "is_weekend": true}, {"branch": "통영", "booking_no": "2603241040310130", "guest": "", "room": "305", "checkin": "2026-04-10", "checkout": "2026-04-12", "book_date": "2026-03-24", "cancel_date": "2026-03-26", "status": "고객취소", "btype": "NOL 예약", "nights": 2, "stay_type": "연박(2박)", "price": 188000.0, "onsite": 0.0, "total_price": 188000.0, "promo": "", "comm_rate": 0.11, "comm_amt": 20680, "net_rev": 167320, "confirmed": false, "lead_days": 17, "weekday": 4, "is_weekend": true}, {"branch": "통영", "booking_no": "2603261734310052", "guest": "", "room": "305", "checkin": "2026-04-10", "checkout": "2026-04-12", "book_date": "2026-03-26", "cancel_date": "", "status": "예약완료", "btype": "NOL 예약", "nights": 2, "stay_type": "연박(2박)", "price": 169200.0, "onsite": 0.0, "total_price": 169200.0, "promo": "Gold Class 고객 대상 프로모션 할인 10% (프로모션 ID : 15616)", "comm_rate": 0.11, "comm_amt": 18612, "net_rev": 150588, "confirmed": true, "lead_days": 15, "weekday": 4, "is_weekend": true}, {"branch": "통영", "booking_no": "2604021737010094", "guest": "", "room": "203", "checkin": "2026-04-08", "checkout": "2026-04-09", "book_date": "2026-04-02", "cancel_date": "2026-04-02", "status": "고객취소", "btype": "NOL 예약", "nights": 1, "stay_type": "단박", "price": 62100.0, "onsite": 0.0, "total_price": 62100.0, "promo": "Gold Class 고객 대상 프로모션 할인 10% (프로모션 ID : 15616)", "comm_rate": 0.11, "comm_amt": 6831, "net_rev": 55269, "confirmed": false, "lead_days": 6, "weekday": 2, "is_weekend": false}, {"branch": "통영", "booking_no": "2604021741010056", "guest": "", "room": "204", "checkin": "2026-04-08", "checkout": "2026-04-09", "book_date": "2026-04-02", "cancel_date": "2026-04-02", "status": "고객취소", "btype": "NOL 예약", "nights": 1, "stay_type": "단박", "price": 62100.0, "onsite": 0.0, "total_price": 62100.0, "promo": "Gold Class 고객 대상 프로모션 할인 10% (프로모션 ID : 15616)", "comm_rate": 0.11, "comm_amt": 6831, "net_rev": 55269, "confirmed": false, "lead_days": 6, "weekday": 2, "is_weekend": false}, {"branch": "통영", "booking_no": "2604021815010093", "guest": "", "room": "203", "checkin": "2026-04-08", "checkout": "2026-04-09", "book_date": "2026-04-02", "cancel_date": "2026-04-02", "status": "고객취소", "btype": "NOL 예약", "nights": 1, "stay_type": "단박", "price": 62100.0, "onsite": 0.0, "total_price": 62100.0, "promo": "Gold Class 고객 대상 프로모션 할인 10% (프로모션 ID : 15616)", "comm_rate": 0.11, "comm_amt": 6831, "net_rev": 55269, "confirmed": false, "lead_days": 6, "weekday": 2, "is_weekend": false}, {"branch": "통영", "booking_no": "2604021816010197", "guest": "", "room": "204", "checkin": "2026-04-08", "checkout": "2026-04-09", "book_date": "2026-04-02", "cancel_date": "2026-04-02", "status": "고객취소", "btype": "NOL 예약", "nights": 1, "stay_type": "단박", "price": 62100.0, "onsite": 0.0, "total_price": 62100.0, "promo": "Gold Class 고객 대상 프로모션 할인 10% (프로모션 ID : 15616)", "comm_rate": 0.11, "comm_amt": 6831, "net_rev": 55269, "confirmed": false, "lead_days": 6, "weekday": 2, "is_weekend": false}, {"branch": "통영", "booking_no": "2604021262510086", "guest": "", "room": "203", "checkin": "2026-04-07", "checkout": "2026-04-08", "book_date": "2026-04-02", "cancel_date": "", "status": "예약완료", "btype": "NOL 예약", "nights": 1, "stay_type": "단박", "price": 69000.0, "onsite": 0.0, "total_price": 69000.0, "promo": "", "comm_rate": 0.11, "comm_amt": 7590, "net_rev": 61410, "confirmed": true, "lead_days": 5, "weekday": 1, "is_weekend": false}, {"branch": "통영", "booking_no": "2604021262507746", "guest": "", "room": "301", "checkin": "2026-04-06", "checkout": "2026-04-07", "book_date": "2026-04-02", "cancel_date": "", "status": "예약완료", "btype": "NOL 예약", "nights": 1, "stay_type": "단박", "price": 69000.0, "onsite": 0.0, "total_price": 69000.0, "promo": "", "comm_rate": 0.11, "comm_amt": 7590, "net_rev": 61410, "confirmed": true, "lead_days": 4, "weekday": 0, "is_weekend": false}, {"branch": "통영", "booking_no": "Y17405752", "guest": "", "room": "305", "checkin": "2026-04-05", "checkout": "2026-04-06", "book_date": "2026-03-26", "cancel_date": "", "status": "예약완료", "btype": "실시간 달력 예약", "nights": 1, "stay_type": "단박", "price": 69000.0, "onsite": 0.0, "total_price": 69000.0, "promo": "", "comm_rate": 0.05, "comm_amt": 3450, "net_rev": 65550, "confirmed": true, "lead_days": 10, "weekday": 6, "is_weekend": true}, {"branch": "통영", "booking_no": "2603291000541336", "guest": "", "room": "201", "checkin": "2026-04-05", "checkout": "2026-04-06", "book_date": "2026-03-29", "cancel_date": "", "status": "예약완료", "btype": "NOL 예약", "nights": 1, "stay_type": "단박", "price": 62100.0, "onsite": 0.0, "total_price": 62100.0, "promo": "Gold Class 고객 대상 프로모션 할인 10% (프로모션 ID : 15616)", "comm_rate": 0.11, "comm_amt": 6831, "net_rev": 55269, "confirmed": true, "lead_days": 7, "weekday": 6, "is_weekend": true}, {"branch": "통영", "booking_no": "2603161000230933", "guest": "", "room": "205", "checkin": "2026-04-04", "checkout": "2026-04-05", "book_date": "2026-03-16", "cancel_date": "", "status": "예약완료", "btype": "NOL 예약", "nights": 1, "stay_type": "단박", "price": 169000.0, "onsite": 0.0, "total_price": 169000.0, "promo": "", "comm_rate": 0.13, "comm_amt": 21970, "net_rev": 147030, "confirmed": true, "lead_days": 19, "weekday": 5, "is_weekend": true}, {"branch": "통영", "booking_no": "2603241715160040", "guest": "", "room": "203", "checkin": "2026-04-04", "checkout": "2026-04-05", "book_date": "2026-03-24", "cancel_date": "", "status": "예약완료", "btype": "NOL 예약", "nights": 1, "stay_type": "단박", "price": 109000.0, "onsite": 0.0, "total_price": 109000.0, "promo": "", "comm_rate": 0.11, "comm_amt": 11990, "net_rev": 97010, "confirmed": true, "lead_days": 11, "weekday": 5, "is_weekend": true}, {"branch": "통영", "booking_no": "M2603061435372452f1", "guest": "", "room": "308", "checkin": "2026-04-03", "checkout": "2026-04-05", "book_date": "2026-03-06", "cancel_date": "", "status": "예약완료", "btype": "수기 예약", "nights": 2, "stay_type": "연박(2박)", "price": 268000.0, "onsite": 0.0, "total_price": 268000.0, "promo": "", "comm_rate": 0, "comm_amt": 0, "net_rev": 268000, "confirmed": true, "lead_days": 28, "weekday": 4, "is_weekend": true}, {"branch": "통영", "booking_no": "Y17405003", "guest": "", "room": "303", "checkin": "2026-04-03", "checkout": "2026-04-04", "book_date": "2026-03-22", "cancel_date": "2026-03-31", "status": "예약취소(업체)", "btype": "실시간 달력 예약", "nights": 1, "stay_type": "단박", "price": 0.0, "onsite": 0.0, "total_price": 0.0, "promo": "", "comm_rate": 0.05, "comm_amt": 0, "net_rev": 0, "confirmed": false, "lead_days": 12, "weekday": 4, "is_weekend": true}, {"branch": "통영", "booking_no": "2604021447360061", "guest": "", "room": "301", "checkin": "2026-04-03", "checkout": "2026-04-04", "book_date": "2026-04-02", "cancel_date": "", "status": "예약완료", "btype": "NOL 예약", "nights": 1, "stay_type": "단박", "price": 71100.0, "onsite": 0.0, "total_price": 71100.0, "promo": "Gold Class 고객 대상 프로모션 할인 10% (프로모션 ID : 15616)", "comm_rate": 0.11, "comm_amt": 7821, "net_rev": 63279, "confirmed": true, "lead_days": 1, "weekday": 4, "is_weekend": true}, {"branch": "통영", "booking_no": "2603272061963134", "guest": "", "room": "204", "checkin": "2026-04-02", "checkout": "2026-04-03", "book_date": "2026-03-27", "cancel_date": "", "status": "예약완료", "btype": "NOL 예약", "nights": 1, "stay_type": "단박", "price": 69000.0, "onsite": 0.0, "total_price": 69000.0, "promo": "", "comm_rate": 0.11, "comm_amt": 7590, "net_rev": 61410, "confirmed": true, "lead_days": 6, "weekday": 3, "is_weekend": false}, {"branch": "통영", "booking_no": "Y17406751", "guest": "", "room": "205", "checkin": "2026-04-02", "checkout": "2026-04-03", "book_date": "2026-04-02", "cancel_date": "", "status": "예약완료", "btype": "실시간 달력 예약", "nights": 1, "stay_type": "단박", "price": 69000.0, "onsite": 0.0, "total_price": 69000.0, "promo": "", "comm_rate": 0.05, "comm_amt": 3450, "net_rev": 65550, "confirmed": true, "lead_days": 0, "weekday": 3, "is_weekend": false}];
+const ROOMS = {"가평(가평점)": 8, "가평(청평점)": 11, "경주": 19, "대부도(영흥도)": 14, "양양": 31, "통영": 18};
+const COLORS = ['#5b7fff','#ff6b6b','#4ecdc4','#ffe66d','#a29bfe','#fd79a8','#43e97b','#fa8231'];
+const DAYS = ['일','월','화','수','목','금','토'];
+let filtered = RAW.slice();
+let page = 1;
+const PZ = 25;
+let charts = {};
+
+document.addEventListener('DOMContentLoaded', () => { initFilters(); applyFilters(); });
+
+function initFilters() {
+  fillSel('fBranch', unique(RAW,'branch'), '전체 지점');
+  fillSel('fStatus', unique(RAW,'status'), '전체 상태');
+  fillSel('fType',   unique(RAW,'btype'),  '전체 유형');
+  // weeks
+  var weeks = [];
+  var dates = RAW.filter(function(r){return r.confirmed;}).map(function(r){return r.checkin;}).sort();
+  if (dates.length) {
+    var cur = new Date(dates[0]);
+    var end = new Date(dates[dates.length-1]);
+    while (cur <= end) {
+      var mon = new Date(cur);
+      mon.setDate(mon.getDate() - mon.getDay() + 1);
+      var sun = new Date(mon); sun.setDate(sun.getDate()+6);
+      var label = fmtDate(mon)+'~'+fmtDate(sun);
+      if (weeks.indexOf(label) < 0) weeks.push(label);
+      cur.setDate(cur.getDate()+7);
+    }
+  }
+  fillSel('fWeek', weeks, '전체 기간');
+}
+
+function fillSel(id, opts, ph) {
+  var s = document.getElementById(id);
+  s.innerHTML = '<option value="">'+ph+'</option>';
+  opts.forEach(function(o){ var e=document.createElement('option'); e.value=e.textContent=o; s.appendChild(e); });
+}
+
+function applyFilters() {
+  var b=sel('fBranch'), st=sel('fStatus'), tp=sel('fType'), wk=sel('fWeek');
+  filtered = RAW.filter(function(r){
+    if (b && r.branch!==b) return false;
+    if (st && r.status!==st) return false;
+    if (tp && r.btype!==tp) return false;
+    if (wk) {
+      var parts=wk.split('~');
+      var ci=new Date(r.checkin);
+      if (ci<new Date(parts[0]) || ci>new Date(parts[1])) return false;
+    }
+    return true;
+  });
+  page=1;
+  renderAll();
+}
+function resetFilters() {
+  ['fBranch','fStatus','fType','fWeek'].forEach(function(id){document.getElementById(id).value='';});
+  applyFilters();
+}
+
+function renderAll() {
+  renderAlerts();
+  renderKPIs();
+  renderCharts();
+  renderOCC();
+  renderWeekendInsights();
+  renderBranchTable();
+  renderCashflow();
+  renderDetail();
+}
+
+/* ── Alerts ── */
+function renderAlerts() {
+  var conf = filtered.filter(function(r){return r.confirmed;});
+  var alerts = [];
+  // Low OCC branches
+  var today = new Date(); today.setHours(0,0,0,0);
+  Object.keys(ROOMS).forEach(function(br){
+    var total = ROOMS[br];
+    var upcoming7 = conf.filter(function(r){
+      if (r.branch!==br) return false;
+      var ci=new Date(r.checkin); var co=new Date(r.checkout);
+      var t7=new Date(today); t7.setDate(t7.getDate()+7);
+      return ci>=today && ci<=t7;
+    });
+    var occ = upcoming7.length / (total*7) * 100;
+    if (occ < 20) alerts.push('⚠️ '+br+' 향후 7일 OCC '+occ.toFixed(0)+'% — 프로모션 검토 필요');
+  });
+  // High cancel rate
+  var branches = unique(filtered,'branch');
+  branches.forEach(function(br){
+    var rows=filtered.filter(function(r){return r.branch===br;});
+    var cancel=rows.filter(function(r){return !r.confirmed;}).length;
+    var rate=cancel/rows.length*100;
+    if (rows.length>=5 && rate>25) alerts.push('🚨 '+br+' 취소율 '+rate.toFixed(0)+'% — 원인 파악 필요');
+  });
+  var box=document.getElementById('alertBox');
+  if (alerts.length) {
+    box.innerHTML='<div class="alert-box"><div class="alert-title">⚡ 주의가 필요한 항목</div><ul class="alert-list">'+
+      alerts.map(function(a){return '<li class="alert-item">'+a+'</li>';}).join('')+'</ul></div>';
+  } else {
+    box.innerHTML='';
+  }
+}
+
+/* ── KPIs ── */
+function renderKPIs() {
+  var conf=filtered.filter(function(r){return r.confirmed;});
+  var totalRev=sum(conf,'total_price'), totalNet=sum(conf,'net_rev'), totalComm=sum(conf,'comm_amt');
+  var cancelRate=filtered.length>0?(filtered.length-conf.length)/filtered.length*100:0;
+  var avgNights=conf.length>0?sum(conf,'nights')/conf.length:0;
+  var avgLead=conf.length>0?sum(conf,'lead_days')/conf.length:0;
+  var avgADR=conf.length>0?totalRev/conf.length:0;
+  document.getElementById('kpiGrid').innerHTML=[
+    {l:'확정 예약',   v:conf.length+'건',    s:filtered.length+'건 중',              i:'✅',c:'green'},
+    {l:'취소율',      v:cancelRate.toFixed(1)+'%', s:(filtered.length-conf.length)+'건 취소', i:'❌',c:'red'},
+    {l:'예상 매출',   v:fmt(totalRev)+'원',  s:'확정 예약 합산',                     i:'💰',c:'blue'},
+    {l:'예상 순수익', v:fmt(totalNet)+'원',  s:'수수료 '+fmt(totalComm)+'원 제외',    i:'🏦',c:'teal'},
+    {l:'ADR(평균객단가)',v:fmt(avgADR)+'원', s:'1박 평균',                           i:'🏷',c:'yellow'},
+    {l:'평균 리드타임',v:avgLead.toFixed(0)+'일', s:'예약→입실 평균',                i:'⏱',c:'purple'},
+    {l:'평균 박수',   v:avgNights.toFixed(1)+'박',s:'1건당 평균',                    i:'🌙',c:'orange'},
+  ].map(function(k){
+    return '<div class="kpi '+k.c+'"><div class="kpi-icon">'+k.i+'</div>'+
+      '<div class="kpi-label">'+k.l+'</div>'+
+      '<div class="kpi-value">'+k.v+'</div>'+
+      '<div class="kpi-sub">'+k.s+'</div></div>';
+  }).join('');
+}
+
+/* ── Charts ── */
+function dk(id){if(charts[id]){charts[id].destroy();delete charts[id];}}
+
+function renderCharts() {
+  dk('dr'); renderDailyRev();
+  dk('br'); renderBranchChart();
+  dk('dc'); renderDailyCount();
+  dk('st'); renderStatusChart();
+  dk('pr'); renderPromoChart();
+  dk('ld'); renderLeadChart();
+}
+
+function renderDailyRev() {
+  var conf=filtered.filter(function(r){return r.confirmed;});
+  var byDate={};
+  conf.forEach(function(r){ byDate[r.checkin]=(byDate[r.checkin]||0)+r.total_price; });
+  var dates=Object.keys(byDate).sort();
+  charts['dr']=new Chart(document.getElementById('cDailyRev'),{
+    type:'bar',
+    data:{labels:dates.map(shortDate),datasets:[{
+      label:'예상 매출',data:dates.map(function(d){return byDate[d];}),
+      backgroundColor:'#5b7fff88',borderColor:'#5b7fff',borderWidth:1,borderRadius:4
+    }]},
+    options:cOpts('₩')
+  });
+}
+
+function renderBranchChart() {
+  var branches=unique(filtered,'branch');
+  var conf=branches.map(function(b){return filtered.filter(function(r){return r.branch===b&&r.confirmed;}).length;});
+  var cancel=branches.map(function(b){return filtered.filter(function(r){return r.branch===b&&!r.confirmed;}).length;});
+  charts['br']=new Chart(document.getElementById('cBranch'),{
+    type:'bar',
+    data:{labels:branches,datasets:[
+      {label:'확정',data:conf,backgroundColor:'#43e97b88',borderColor:'#43e97b',borderWidth:1,borderRadius:4},
+      {label:'취소',data:cancel,backgroundColor:'#ff6b6b88',borderColor:'#ff6b6b',borderWidth:1,borderRadius:4}
+    ]},
+    options:{
+      plugins:{legend:{labels:{color:'#8892b0'}},tooltip:{callbacks:{label:function(c){return ' '+c.dataset.label+': '+c.raw+'건';}}}},
+      scales:{x:{ticks:{color:'#8892b0'},grid:{color:'rgba(255,255,255,0.05)'}},
+              y:{ticks:{color:'#8892b0',callback:function(v){return v+'건';}},grid:{color:'rgba(255,255,255,0.05)'}}}
+    }
+  });
+}
+
+function renderDailyCount() {
+  var conf=filtered.filter(function(r){return r.confirmed;});
+  var dates=[...new Set(conf.map(function(r){return r.checkin;}))].sort();
+  var branches=unique(filtered,'branch');
+  var datasets=branches.map(function(b,i){
+    return {
+      label:b,
+      data:dates.map(function(d){return conf.filter(function(r){return r.branch===b&&r.checkin===d;}).length;}),
+      backgroundColor:COLORS[i]+'88',borderColor:COLORS[i],borderWidth:1,borderRadius:3
+    };
+  });
+  charts['dc']=new Chart(document.getElementById('cDailyCount'),{
+    type:'bar',
+    data:{labels:dates.map(shortDate),datasets:datasets},
+    options:{
+      plugins:{legend:{labels:{color:'#8892b0',font:{size:11}}}},
+      scales:{
+        x:{stacked:true,ticks:{color:'#8892b0',maxRotation:45},grid:{color:'rgba(255,255,255,0.05)'}},
+        y:{stacked:true,ticks:{color:'#8892b0',callback:function(v){return v+'건';}},grid:{color:'rgba(255,255,255,0.05)'}}
+      }
+    }
+  });
+}
+
+function renderStatusChart() {
+  var statuses=['예약완료','고객취소','예약취소(업체)','관리자취소'];
+  var counts=statuses.map(function(s){return filtered.filter(function(r){return r.status===s;}).length;});
+  charts['st']=new Chart(document.getElementById('cStatus'),{
+    type:'doughnut',
+    data:{labels:statuses,datasets:[{
+      data:counts,
+      backgroundColor:['#43e97bcc','#ff6b6bcc','#ffe66dcc','#fa8231cc'],
+      borderColor:['#43e97b','#ff6b6b','#ffe66d','#fa8231'],borderWidth:2,hoverOffset:8
+    }]},
+    options:{plugins:{legend:{labels:{color:'#e8eaf6',font:{size:12}}},
+      tooltip:{callbacks:{label:function(c){return ' '+c.label+': '+c.raw+'건';}}}},cutout:'55%'}
+  });
+}
+
+function renderPromoChart() {
+  var promoMap={};
+  filtered.filter(function(r){return r.confirmed&&r.promo;}).forEach(function(r){
+    var key=r.promo.split(' (')[0];
+    promoMap[key]=(promoMap[key]||0)+1;
+  });
+  var noPromo=filtered.filter(function(r){return r.confirmed&&!r.promo;}).length;
+  if (noPromo>0) promoMap['프로모션 없음']=noPromo;
+  var labels=Object.keys(promoMap), vals=Object.values(promoMap);
+  charts['pr']=new Chart(document.getElementById('cPromo'),{
+    type:'doughnut',
+    data:{labels:labels,datasets:[{data:vals,
+      backgroundColor:COLORS.map(function(c){return c+'cc';}),
+      borderColor:COLORS,borderWidth:2,hoverOffset:8
+    }]},
+    options:{plugins:{legend:{labels:{color:'#8892b0',font:{size:11}}},
+      tooltip:{callbacks:{label:function(c){return ' '+c.label+': '+c.raw+'건';}}}},cutout:'50%'}
+  });
+}
+
+function renderLeadChart() {
+  var conf=filtered.filter(function(r){return r.confirmed;});
+  var buckets={'당일':0,'1-3일':0,'4-7일':0,'8-14일':0,'15-30일':0,'30일+':0};
+  conf.forEach(function(r){
+    var d=r.lead_days;
+    if(d===0) buckets['당일']++;
+    else if(d<=3) buckets['1-3일']++;
+    else if(d<=7) buckets['4-7일']++;
+    else if(d<=14) buckets['8-14일']++;
+    else if(d<=30) buckets['15-30일']++;
+    else buckets['30일+']++;
+  });
+  charts['ld']=new Chart(document.getElementById('cLead'),{
+    type:'bar',
+    data:{labels:Object.keys(buckets),datasets:[{
+      label:'예약 건수',data:Object.values(buckets),
+      backgroundColor:COLORS.map(function(c){return c+'88';}),
+      borderColor:COLORS,borderWidth:1,borderRadius:4
+    }]},
+    options:{plugins:{legend:{display:false},tooltip:{callbacks:{label:function(c){return ' '+c.raw+'건';}}}},
+      scales:{x:{ticks:{color:'#8892b0'},grid:{color:'rgba(255,255,255,.05)'}},
+              y:{ticks:{color:'#8892b0',callback:function(v){return v+'건';}},grid:{color:'rgba(255,255,255,.05)'}}}}
+  });
+}
+
+/* ── Weekend Insights ── */
+function renderWeekendInsights() {
+  var conf = filtered.filter(function(r){return r.confirmed;});
+  var wkd = conf.filter(function(r){return !r.is_weekend;});
+  var wke = conf.filter(function(r){return r.is_weekend;});
+  var allWkd = filtered.filter(function(r){return !r.is_weekend;});
+  var allWke = filtered.filter(function(r){return r.is_weekend;});
+
+  function stats(rows, all) {
+    var rev = sum(rows,'total_price');
+    var net = sum(rows,'net_rev');
+    var adr = rows.length ? rev/rows.length : 0;
+    var nights = rows.length ? sum(rows,'nights')/rows.length : 0;
+    var cancelRate = all.length ? (all.length-rows.length)/all.length*100 : 0;
+    var promoRate = rows.length ? rows.filter(function(r){return r.promo;}).length/rows.length*100 : 0;
+    return {cnt:rows.length, rev:rev, net:net, adr:adr, nights:nights, cancelRate:cancelRate, promoRate:promoRate};
+  }
+
+  var sd = stats(wkd, allWkd);
+  var se = stats(wke, allWke);
+
+  function row(label, dval, eval_, fmt_fn) {
+    return '<div class="wk-row"><span class="wk-key">'+label+'</span><span class="wk-val">'+fmt_fn(dval)+'</span></div>' +
+           '<div class="wk-row"><span class="wk-key">'+label+'</span><span class="wk-val">'+fmt_fn(eval_)+'</span></div>';
+  }
+
+  function mkHalf(s, cls, label) {
+    return '<div class="wk-half '+cls+'">' +
+      '<div class="wk-label '+cls+'">'+label+'</div>' +
+      '<div class="wk-row"><span class="wk-key">확정 예약</span><span class="wk-val">'+s.cnt+'건</span></div>' +
+      '<div class="wk-row"><span class="wk-key">ADR (평균 객단가)</span><span class="wk-val">'+fmt(s.adr)+'원</span></div>' +
+      '<div class="wk-row"><span class="wk-key">총 예상 매출</span><span class="wk-val">'+fmt(s.rev)+'원</span></div>' +
+      '<div class="wk-row"><span class="wk-key">예상 순수익</span><span class="wk-val">'+fmt(s.net)+'원</span></div>' +
+      '<div class="wk-row"><span class="wk-key">평균 박수</span><span class="wk-val">'+s.nights.toFixed(2)+'박</span></div>' +
+      '<div class="wk-row"><span class="wk-key">취소율</span><span class="wk-val" style="color:'+(s.cancelRate>25?'var(--a2)':s.cancelRate>15?'var(--a4)':'var(--green)')+'">'+s.cancelRate.toFixed(1)+'%</span></div>' +
+      '<div class="wk-row"><span class="wk-key">프로모션 사용률</span><span class="wk-val">'+s.promoRate.toFixed(0)+'%</span></div>' +
+    '</div>';
+  }
+
+  document.getElementById('wkCompare').innerHTML =
+    mkHalf(sd,'weekday','📅 주중 (월~목)') + mkHalf(se,'weekend','🌟 주말 (금~일)');
+
+  // DOW chart
+  dk('dow');
+  var days=['월','화','수','목','금','토','일'];
+  var dowCnt=days.map(function(d,i){return conf.filter(function(r){return r.weekday===i;}).length;});
+  var dowADR=days.map(function(d,i){
+    var rows=conf.filter(function(r){return r.weekday===i;});
+    return rows.length?sum(rows,'total_price')/rows.length:0;
+  });
+  var bgColors=['#4ecdc488','#4ecdc488','#4ecdc488','#4ecdc488','#ffe66d88','#ff6b6b88','#fa823188'];
+  var bdColors=['#4ecdc4','#4ecdc4','#4ecdc4','#4ecdc4','#ffe66d','#ff6b6b','#fa8231'];
+  charts['dow']=new Chart(document.getElementById('cDOW'),{
+    type:'bar',
+    data:{
+      labels:days,
+      datasets:[
+        {label:'예약 건수',data:dowCnt,backgroundColor:bgColors,borderColor:bdColors,borderWidth:1,borderRadius:4,yAxisID:'y'},
+        {label:'ADR(원)',data:dowADR,type:'line',borderColor:'#a29bfe',backgroundColor:'transparent',borderWidth:2,pointRadius:4,pointBackgroundColor:'#a29bfe',yAxisID:'y2'}
+      ]
+    },
+    options:{
+      plugins:{legend:{labels:{color:'#8892b0',font:{size:11}}},
+        tooltip:{callbacks:{label:function(c){return c.datasetIndex===0?' '+c.raw+'건':' ADR: ₩'+fmt(c.raw);}}}},
+      scales:{
+        x:{ticks:{color:'#8892b0'},grid:{color:'rgba(255,255,255,0.05)'}},
+        y:{position:'left',ticks:{color:'#8892b0',callback:function(v){return v+'건';}},grid:{color:'rgba(255,255,255,0.05)'}},
+        y2:{position:'right',ticks:{color:'#a29bfe',callback:function(v){return '₩'+fmt(v);}},grid:{display:false}}
+      }
+    }
+  });
+
+  // Branch weekday vs weekend table
+  var branches = unique(filtered,'branch');
+  var bHtml='';
+  branches.forEach(function(br){
+    var bConf=conf.filter(function(r){return r.branch===br;});
+    var bWkd=bConf.filter(function(r){return !r.is_weekend;});
+    var bWke=bConf.filter(function(r){return r.is_weekend;});
+    var adrD=bWkd.length?sum(bWkd,'total_price')/bWkd.length:0;
+    var adrE=bWke.length?sum(bWke,'total_price')/bWke.length:0;
+    var prem=adrD>0?(adrE/adrD-1)*100:0;
+    var hasWkd=bWkd.length>0;
+    var strat='', stratColor='var(--muted)';
+    if (!hasWkd) { strat='주중 프로모션 시급'; stratColor='var(--a2)'; }
+    else if (bWkd.length<3) { strat='주중 마케팅 강화'; stratColor='var(--a4)'; }
+    else if (prem>80) { strat='주말 가격 추가 인상 가능'; stratColor='var(--green)'; }
+    else { strat='주중 프로모션 검토'; stratColor='var(--accent)'; }
+    bHtml+='<tr>'+
+      '<td><b>'+br+'</b></td>'+
+      '<td class="r">'+(adrD>0?fmt(adrD)+'원':'<span style="color:var(--a2)">예약없음</span>')+'</td>'+
+      '<td class="r">'+(adrE>0?fmt(adrE)+'원':'<span style="color:var(--muted)">-</span>')+'</td>'+
+      '<td class="r" style="color:'+(prem>50?'var(--green)':prem>20?'var(--a4)':'var(--muted)')+'">'+
+        (adrD>0?'+'+prem.toFixed(0)+'%':'-')+'</td>'+
+      '<td style="color:'+stratColor+';font-size:12px;font-weight:600">'+strat+'</td>'+
+    '</tr>';
+  });
+  document.getElementById('wkBranchTable').innerHTML=bHtml;
+
+  // Strategy recommendations
+  var wkdSharePct = conf.length>0 ? wkd.length/conf.length*100 : 0;
+  var adrGap = se.adr > 0 && sd.adr > 0 ? (se.adr/sd.adr-1)*100 : 0;
+  var strategies = [];
+
+  if (sd.cnt < 5 || wkdSharePct < 15) {
+    strategies.push({type:'action', title:'⚠️ 주중 수요 부족',
+      body:'주중 예약 비중이 '+wkdSharePct.toFixed(0)+'%로 낮습니다. 주중 전용 할인(얼리버드 or 특가) 프로모션을 검토하세요. 특히 월~목 숙박 할인으로 빈 객실을 채울 수 있습니다.'});
+  }
+  if (sd.cancelRate > 25) {
+    strategies.push({type:'action', title:'🚨 주중 취소율 높음',
+      body:'주중 취소율 '+sd.cancelRate.toFixed(0)+'%로 매우 높습니다. 비환불 특가 상품을 만들거나, 예약 확정 인센티브(웰컴 기프트 등)를 제공해보세요.'});
+  }
+  if (adrGap > 50) {
+    strategies.push({type:'opportunity', title:'💡 주말 가격 최적화 기회',
+      body:'주말 ADR이 주중보다 '+adrGap.toFixed(0)+'% 높습니다. 수요가 집중되는 금/토요일은 추가 인상 여지가 있을 수 있습니다. 가격 탄력성을 테스트해보세요.'});
+  }
+  if (se.promoRate < 10) {
+    strategies.push({type:'opportunity', title:'🎯 주말 연박 프로모션 기회',
+      body:'주말 프로모션 사용률이 '+se.promoRate.toFixed(0)+'%로 낮습니다. 금토 2박 패키지나 Gold Class 혜택을 강화하면 객단가와 체류 기간을 동시에 높일 수 있습니다.'});
+  }
+  if (se.nights > 1.1) {
+    strategies.push({type:'good', title:'✅ 주말 연박 수요 양호',
+      body:'주말 평균 숙박일수 '+se.nights.toFixed(2)+'박으로 연박 수요가 있습니다. 연박 패키지 가격을 단박 대비 90% 수준으로 유지하면 이탈 없이 매출을 높일 수 있습니다.'});
+  }
+  strategies.push({type:'info', title:'📊 현황 요약',
+    body:'전체 매출의 '+Math.round(se.rev/(se.rev+sd.rev||1)*100)+'%가 주말에서 발생. 주말 ADR ₩'+fmt(se.adr)+' / 주중 ADR ₩'+fmt(sd.adr)+'. 주중 공실을 줄이는 것이 전체 RevPAR 향상의 핵심입니다.'});
+
+  document.getElementById('stratGrid').innerHTML='<div class="strat-grid">'+
+    strategies.map(function(s){
+      return '<div class="strat-card '+s.type+'">' +
+        '<div class="strat-title '+s.type+'">'+s.title+'</div>'+
+        '<div class="strat-body">'+s.body+'</div></div>';
+    }).join('')+'</div>';
+}
+
+/* ── OCC ── */
+function renderOCC() {
+  var conf=filtered.filter(function(r){return r.confirmed;});
+  var dates=[...new Set(conf.map(function(r){return r.checkin;}))].sort();
+  var html='';
+  Object.keys(ROOMS).forEach(function(br){
+    var total=ROOMS[br];
+    var rows=conf.filter(function(r){return r.branch===br;});
+    var occupiedNights=sum(rows,'nights');
+    var availableNights=total*(dates.length||1);
+    var occ=availableNights>0?occupiedNights/availableNights*100:0;
+    var barCls=occ<30?'danger':occ<60?'warn':'';
+    var revenue=sum(rows,'total_price'), net=sum(rows,'net_rev');
+    var adr=rows.length>0?revenue/rows.length:0;
+    html+='<div style="margin-bottom:14px">'+
+      '<div style="display:flex;justify-content:space-between;align-items:center">'+
+        '<span style="font-weight:700;font-size:13px">'+br+'</span>'+
+        '<span style="font-size:12px;color:var(--muted)">ADR '+fmt(adr)+'원 | 순수익 '+fmt(net)+'원</span>'+
+      '</div>'+
+      '<div style="display:flex;justify-content:space-between;align-items:center;margin-top:4px">'+
+        '<span style="font-size:12px;color:var(--muted)">객실 '+total+'개 | 확정 '+rows.length+'건 '+occupiedNights+'박</span>'+
+        '<span style="font-weight:700;font-size:14px;color:'+(occ<30?'var(--a2)':occ<60?'var(--a4)':'var(--green)')+'">OCC '+occ.toFixed(1)+'%</span>'+
+      '</div>'+
+      '<div class="occ-bar-bg"><div class="occ-bar '+barCls+'" style="width:'+Math.min(occ,100)+'%"></div></div>'+
+    '</div>';
+  });
+  document.getElementById('occGrid').innerHTML=html;
+}
+
+/* ── Branch table ── */
+function renderBranchTable() {
+  var html='';
+  var branches=unique(filtered,'branch');
+  branches.forEach(function(br){
+    var rows=filtered.filter(function(r){return r.branch===br;});
+    var conf=rows.filter(function(r){return r.confirmed;});
+    var cancel=rows.filter(function(r){return !r.confirmed;});
+    var cancelRate=rows.length>0?cancel.length/rows.length*100:0;
+    var rev=sum(conf,'total_price'), net=sum(conf,'net_rev'), comm=sum(conf,'comm_amt');
+    var avgCommRate=rev>0?comm/rev*100:0;
+    var nights=sum(conf,'nights');
+    var total=ROOMS[br]||'?';
+    var occ=typeof total==='number'&&nights>0?nights/(total*(conf.length||1))*100:0;
+    var occStr=typeof total==='number'?occ.toFixed(0)+'%':'-';
+    var occColor=occ<30?'var(--a2)':occ<60?'var(--a4)':'var(--green)';
+    html+='<tr>'+
+      '<td><b>'+br+'</b></td>'+
+      '<td class="r">'+total+'</td>'+
+      '<td class="r" style="color:var(--green)">'+conf.length+'건</td>'+
+      '<td class="r" style="color:var(--a2)">'+cancel.length+'건</td>'+
+      '<td class="r" style="color:'+(cancelRate>25?'var(--a2)':cancelRate>15?'var(--a4)':'var(--green)')+'">'+cancelRate.toFixed(0)+'%</td>'+
+      '<td class="r">'+fmt(rev)+'원</td>'+
+      '<td class="r">'+fmt(net)+'원</td>'+
+      '<td class="r">'+avgCommRate.toFixed(1)+'%</td>'+
+      '<td><div style="display:flex;align-items:center;gap:6px"><span style="color:'+occColor+';font-weight:700">'+occStr+'</span>'+
+        '<div style="flex:1;min-width:60px"><div class="occ-bar-bg"><div class="occ-bar'+(occ<30?' danger':occ<60?' warn':'')+'" style="width:'+Math.min(occ,100)+'%"></div></div></div>'+
+      '</div></td>'+
+    '</tr>';
+  });
+  document.getElementById('branchTable').innerHTML=html||'<tr><td colspan="9" style="text-align:center;color:var(--muted);padding:20px">데이터 없음</td></tr>';
+}
+
+/* ── Cashflow ── */
+function renderCashflow() {
+  var conf=filtered.filter(function(r){return r.confirmed;});
+  var byDate={};
+  conf.forEach(function(r){
+    if (!byDate[r.checkin]) byDate[r.checkin]={cnt:0,rev:0,comm:0,net:0,branches:{}};
+    byDate[r.checkin].cnt++;
+    byDate[r.checkin].rev+=r.total_price;
+    byDate[r.checkin].comm+=r.comm_amt;
+    byDate[r.checkin].net+=r.net_rev;
+    byDate[r.checkin].branches[r.branch]=(byDate[r.checkin].branches[r.branch]||0)+1;
+  });
+  var dates=Object.keys(byDate).sort();
+  var html='';
+  var tCnt=0,tRev=0,tComm=0,tNet=0;
+  dates.forEach(function(d){
+    var row=byDate[d];
+    tCnt+=row.cnt;tRev+=row.rev;tComm+=row.comm;tNet+=row.net;
+    var brStr=Object.entries(row.branches).map(function(e){return e[0]+' '+e[1]+'건';}).join(', ');
+    var wd=DAYS[new Date(d).getDay()];
+    var isWknd=wd==='토'||wd==='일';
+    html+='<tr style="'+(isWknd?'background:rgba(91,127,255,0.04)':'')+'">' +
+      '<td><b>'+d+'</b></td>'+
+      '<td style="color:'+(isWknd?'var(--accent)':'var(--muted)')+'">'+wd+'</td>'+
+      '<td class="r">'+row.cnt+'건</td>'+
+      '<td class="r">'+fmt(row.rev)+'원</td>'+
+      '<td class="r" style="color:var(--a2)">'+fmt(row.comm)+'원</td>'+
+      '<td class="r" style="color:var(--green);font-weight:700">'+fmt(row.net)+'원</td>'+
+      '<td style="font-size:11px;color:var(--muted)">'+brStr+'</td>'+
+    '</tr>';
+  });
+  html+='<tr class="totals-row"><td colspan="2">합계</td><td class="r">'+tCnt+'건</td>'+
+    '<td class="r">'+fmt(tRev)+'원</td>'+
+    '<td class="r">'+fmt(tComm)+'원</td>'+
+    '<td class="r">'+fmt(tNet)+'원</td><td></td></tr>';
+  document.getElementById('cashflowTable').innerHTML=html;
+}
+
+/* ── Detail table ── */
+function renderDetail() {
+  var total=filtered.length;
+  var pages=Math.ceil(total/PZ);
+  var start=(page-1)*PZ;
+  var slice=filtered.slice(start,start+PZ);
+  document.getElementById('tInfo').textContent='총 '+total+'건 중 '+(start+1)+'-'+Math.min(start+PZ,total)+'건';
+  var html='';
+  slice.forEach(function(r){
+    var stTag=r.confirmed?'<span class="tag tag-ok">확정</span>':'<span class="tag tag-cancel">'+r.status+'</span>';
+    var btTag=r.btype==='NOL 예약'?'<span class="tag tag-nol">NOL</span>':
+              r.btype==='수기 예약'?'<span class="tag tag-manual">수기</span>':
+              '<span class="tag tag-rt">실시간</span>';
+    var promoTag=r.promo?'<span class="tag tag-promo">프로모</span>':'';
+    var wd=DAYS[new Date(r.checkin).getDay()];
+    html+='<tr>'+
+      '<td>'+r.branch+'</td>'+
+      '<td>'+stTag+'</td>'+
+      '<td>'+r.room+'</td>'+
+      '<td>'+r.checkin+' <span style="color:var(--muted);font-size:11px">'+wd+'</span></td>'+
+      '<td>'+r.checkout+'</td>'+
+      '<td class="r">'+r.nights+'박</td>'+
+      '<td>'+btTag+'</td>'+
+      '<td class="r">'+fmt(r.total_price)+'원</td>'+
+      '<td class="r" style="color:var(--a2)">'+fmt(r.comm_amt)+'원</td>'+
+      '<td class="r" style="color:var(--green)">'+fmt(r.net_rev)+'원</td>'+
+      '<td>'+promoTag+'</td>'+
+    '</tr>';
+  });
+  document.getElementById('detailBody').innerHTML=html||'<tr><td colspan="11" style="text-align:center;padding:30px;color:var(--muted)">데이터 없음</td></tr>';
+  var phtml='';
+  if(pages>1){
+    if(page>1) phtml+='<button class="pg" onclick="goPage('+(page-1)+')">‹</button>';
+    for(var i=1;i<=pages;i++){
+      if(i===1||i===pages||Math.abs(i-page)<=1) phtml+='<button class="pg'+(i===page?' active':'')+'" onclick="goPage('+i+')">'+i+'</button>';
+      else if(Math.abs(i-page)===2) phtml+='<span class="pi">…</span>';
+    }
+    if(page<pages) phtml+='<button class="pg" onclick="goPage('+(page+1)+')">›</button>';
+  }
+  document.getElementById('pagination').innerHTML=phtml;
+}
+
+function goPage(p){page=p;renderDetail();}
+
+/* ── Helpers ── */
+function fmt(n){return Math.round(n).toLocaleString('ko-KR');}
+function shortDate(d){return d?d.slice(5):'';} // MM-DD
+function fmtDate(d){return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
+function sum(arr,key){return arr.reduce(function(s,r){return s+(r[key]||0);},0);}
+function unique(arr,key){return [...new Set(arr.map(function(r){return r[key];}))].filter(Boolean);}
+function sel(id){return document.getElementById(id).value;}
+function cOpts(unit){
+  return {
+    plugins:{legend:{labels:{color:'#8892b0'}},tooltip:{callbacks:{label:function(c){return ' '+c.dataset.label+': '+unit+fmt(c.raw);}}}},
+    scales:{x:{ticks:{color:'#8892b0',maxRotation:45},grid:{color:'rgba(255,255,255,0.05)'}},
+            y:{ticks:{color:'#8892b0',callback:function(v){return unit+fmt(v);}},grid:{color:'rgba(255,255,255,0.05)'}}}
+  };
+}
+</script>
 </body>
 </html>

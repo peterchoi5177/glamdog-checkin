@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>영흥도 가격 시뮬레이션</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:#0f1117;color:#e2e8f0;line-height:1.7;font-size:13px}
+.page{max-width:1100px;margin:0 auto;padding:32px 24px}
+.hero{text-align:center;padding:40px 20px 28px;border-bottom:1px solid #2d3448;margin-bottom:32px}
+.hero h1{font-size:24px;font-weight:800;color:#fff}
+.hero .sub{color:#94a3b8;font-size:13px;margin-top:4px}
+
+h2{font-size:17px;font-weight:700;color:#fff;margin:28px 0 14px}
+h3{font-size:14px;font-weight:700;color:#c8d6f0;margin:20px 0 10px}
+p{color:#cbd5e1;font-size:13px;margin-bottom:10px}
+
+.tbl-wrap{overflow-x:auto;margin:12px 0;border-radius:10px;border:1px solid #2d3448}
+table{width:100%;border-collapse:collapse;font-size:12px}
+th{background:#1e2535;color:#94a3b8;font-weight:600;padding:8px 10px;text-align:center;border-bottom:1px solid #2d3448;white-space:nowrap}
+td{padding:7px 10px;border-bottom:1px solid #1a2030;text-align:center;white-space:nowrap}
+.left{text-align:left}
+.right{text-align:right}
+.hl td{background:#1a2a3e!important}
+.hl2 td{background:#1f1a0f!important}
+
+.callout{background:#1a2535;border-left:4px solid #4f6ef7;padding:12px 16px;border-radius:0 10px 10px 0;margin:12px 0;font-size:13px}
+.callout strong{color:#fff}
+
+.badge{display:inline-block;padding:1px 7px;border-radius:5px;font-size:10px;font-weight:700}
+.b-peak{background:#7f1d1d;color:#fca5a5}
+.b-high{background:#78350f;color:#fcd34d}
+.b-mid{background:#14532d;color:#86efac}
+.b-low{background:#1e3a5f;color:#93c5fd}
+
+.tag{display:inline-block;padding:1px 6px;border-radius:4px;font-size:10px;font-weight:700}
+.tag-cap{background:#7f1d1d;color:#fca5a5}
+.tag-floor{background:#1e3a5f;color:#93c5fd}
+.tag-ok{background:#14532d;color:#86efac}
+.tag-limit{background:#78350f;color:#fcd34d}
+
+hr{border:none;border-top:1px solid #2d3448;margin:28px 0}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+@media(max-width:700px){.grid2{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="page">
+
+<div class="hero">
+  <h1>🐾 영흥도(대부도) 가격 시뮬레이션</h1>
+  <div class="sub">정책서 v2 기준 | 14개 객실 × 4계절 × 3요일 × 다양한 OCC</div>
+</div>
+
+<div class="callout">
+  <p><strong>시뮬레이션 조건:</strong> 최종가 = 기초가 × 계절배율 × 요일배율 × OCC배율(선형보간) → 작년 실거래 최저~최고가로 클램핑 → 절대하한 50,000원. 성수기/극성수기 OCC배율 하한 ×0.95.</p>
+</div>
+
+<script>
+// ── 데이터 ─────────────────────────────────────────────
+const BASE_PRICES = {
+  "101": 159000, "104": 129000, "103": 129000, "102": 109000,
+  "201": 107000, "305": 99000, "204": 99000, "205": 99000, "304": 99000,
+  "203": 89000, "302": 89000, "301": 89000, "202": 84000, "303": 69000
+};
+
+const GUARDS = {
+  "101": {weekday:{min:80100,max:700000},friday:{min:109650,max:309000},saturday:{min:161100,max:349000}},
+  "104": {weekday:{min:70310,max:398000},friday:{min:84150,max:407620},saturday:{min:144000,max:397600}},
+  "103": {weekday:{min:70310,max:478820},friday:{min:88110,max:558000},saturday:{min:125100,max:1095000}},
+  "102": {weekday:{min:59000,max:538000},friday:{min:88110,max:308000},saturday:{min:123710,max:318620}},
+  "201": {weekday:{min:52510,max:430520},friday:{min:50000,max:478000},saturday:{min:109000,max:228000}},
+  "305": {weekday:{min:48950,max:456000},friday:{min:61410,max:518000},saturday:{min:109000,max:259000}},
+  "204": {weekday:{min:48950,max:283100},friday:{min:61410,max:518000},saturday:{min:50000,max:398000}},
+  "205": {weekday:{min:48950,max:407620},friday:{min:52510,max:249000},saturday:{min:109000,max:398000}},
+  "304": {weekday:{min:49500,max:229000},friday:{min:59000,max:246050},saturday:{min:89000,max:266110}},
+  "203": {weekday:{min:50000,max:229000},friday:{min:56050,max:239000},saturday:{min:54000,max:587000}},
+  "302": {weekday:{min:48950,max:238520},friday:{min:61410,max:518000},saturday:{min:84550,max:189050}},
+  "301": {weekday:{min:55250,max:435100},friday:{min:65550,max:228000},saturday:{min:80000,max:397100}},
+  "202": {weekday:{min:49500,max:389820},friday:{min:61410,max:219000},saturday:{min:84550,max:308000}},
+  "303": {weekday:{min:48950,max:436000},friday:{min:64000,max:248000},saturday:{min:84550,max:318000}}
+};
+
+const SEASONS = [
+  {name:"비수기",   mult:1.00, peakFlag:false},
+  {name:"준성수기", mult:1.20, peakFlag:false},
+  {name:"성수기",   mult:1.40, peakFlag:true},
+  {name:"극성수기", mult:1.60, peakFlag:true}
+];
+const DOW = [
+  {name:"평일(월~목,일)", mult:1.00, key:"weekday"},
+  {name:"금요일",          mult:1.25, key:"friday"},
+  {name:"토요일",          mult:1.55, key:"saturday"}
+];
+
+// OCC 선형보간 기준점
+const OCC_ANCHORS = [
+  {occ:0,   mult:0.70},
+  {occ:30,  mult:0.88},
+  {occ:50,  mult:1.00},
+  {occ:70,  mult:1.05},
+  {occ:85,  mult:1.10},
+  {occ:100, mult:1.20}
+];
+
+function occMult(occ, isPeak) {
+  let m;
+  // 선형보간
+  for (let i = 0; i < OCC_ANCHORS.length - 1; i++) {
+    const a = OCC_ANCHORS[i], b = OCC_ANCHORS[i+1];
+    if (occ >= a.occ && occ <= b.occ) {
+      const t = (occ - a.occ) / (b.occ - a.occ);
+      m = a.mult + (b.mult - a.mult) * t;
+      break;
+    }
+  }
+  if (m === undefined) m = occ <= 0 ? 0.70 : 1.20;
+  // 성수기 하한 적용
+  if (isPeak && m < 0.95) m = 0.95;
+  return m;
+}
+
+function calcPrice(room, seasonIdx, dowIdx, occ) {
+  const base = BASE_PRICES[room];
+  const season = SEASONS[seasonIdx];
+  const dow = DOW[dowIdx];
+  const om = occMult(occ, season.peakFlag);
+  const raw = base * season.mult * dow.mult * om;
+
+  const guard = GUARDS[room]?.[dow.key] || {};
+  const floor = Math.max(guard.min || 0, 50000);
+  const ceil = guard.max || 9999999;
+
+  let price = Math.round(raw / 1000) * 1000;
+  let tag = "ok";
+  if (price > ceil) { price = Math.round(ceil / 1000) * 1000; tag = "cap"; }
+  if (price < floor) { price = Math.round(floor / 1000) * 1000; tag = "floor"; }
+
+  return {price, tag, raw: Math.round(raw), om: om.toFixed(3), floor, ceil};
+}
+
+function fmt(n) { return n.toLocaleString(); }
+function tagHtml(tag) {
+  if (tag === "cap") return ' <span class="tag tag-cap">상한</span>';
+  if (tag === "floor") return ' <span class="tag tag-floor">하한</span>';
+  return '';
+}
+
+// ── 렌더 ─────────────────────────────────────────────
+
+// 대표 객실 5개 선정
+const SHOWCASE_ROOMS = ["101","102","201","303","205"];
+const SHOWCASE_LABELS = {
+  "101": "101호 (프리미엄, 기초 159K)",
+  "102": "102호 (상위, 기초 109K)",
+  "201": "201호 (중간, 기초 107K)",
+  "303": "303호 (이코노미, 기초 69K)",
+  "205": "205호 (3층 일반, 기초 99K)"
+};
+
+// 시나리오별 시뮬레이션
+const SCENARIOS = [
+  {label:"비수기 평일, OCC 0% (빈방)", season:0, dow:0, occ:0, desc:"최악의 경우. 손님이 없는 비수기 평일."},
+  {label:"비수기 평일, OCC 25%", season:0, dow:0, occ:25, desc:"비수기 평일인데 약간의 예약이 있는 상태."},
+  {label:"비수기 평일, OCC 50%", season:0, dow:0, occ:50, desc:"비수기 평일 반 정도 찬 상태. 기준가."},
+  {label:"비수기 금요일, OCC 40%", season:0, dow:1, occ:40, desc:"비수기 금요일, 아직 여유 있는 상태."},
+  {label:"비수기 금요일, OCC 70%", season:0, dow:1, occ:70, desc:"비수기 금요일인데 예약이 잘 들어온 상태."},
+  {label:"비수기 토요일, OCC 30%", season:0, dow:2, occ:30, desc:"비수기 토요일인데 예약이 부진."},
+  {label:"비수기 토요일, OCC 60%", season:0, dow:2, occ:60, desc:"비수기 토요일 적당히 찬 상태."},
+  {label:"비수기 토요일, OCC 90%", season:0, dow:2, occ:90, desc:"비수기 토요일 거의 완판."},
+  {label:"준성수기 평일, OCC 20%", season:1, dow:0, occ:20, desc:"5~6월 평일, 예약 부진."},
+  {label:"준성수기 금요일, OCC 50%", season:1, dow:1, occ:50, desc:"5~6월 금요일, 반 정도 찬 상태."},
+  {label:"준성수기 토요일, OCC 75%", season:1, dow:2, occ:75, desc:"5~6월 토요일, 양호."},
+  {label:"성수기 평일, OCC 10% (얼리버드)", season:2, dow:0, occ:10, desc:"7월 평일, 아직 먼 예약. 성수기 얼리버드 -5%."},
+  {label:"성수기 평일, OCC 60%", season:2, dow:0, occ:60, desc:"7월 평일, 잘 채워지는 중."},
+  {label:"성수기 금요일, OCC 50%", season:2, dow:1, occ:50, desc:"7월 금요일, 반 정도."},
+  {label:"성수기 토요일, OCC 85%", season:2, dow:2, occ:85, desc:"7월 토요일, 거의 다 참."},
+  {label:"극성수기 평일, OCC 5% (초기)", season:3, dow:0, occ:5, desc:"8월 초 평일, 아직 초기. 극성수기라 -5%만."},
+  {label:"극성수기 평일, OCC 70%", season:3, dow:0, occ:70, desc:"8월 초 평일, 잘 채워짐."},
+  {label:"극성수기 토요일, OCC 50%", season:3, dow:2, occ:50, desc:"8월 토요일, 절반."},
+  {label:"극성수기 토요일, OCC 95%", season:3, dow:2, occ:95, desc:"8월 토요일, 거의 완판. 최대 프리미엄."},
+  {label:"극성수기 토요일, OCC 20% (부진)", season:3, dow:2, occ:20, desc:"⚠️ 8월 토요일인데 부진. 성수기라 -5%만."},
+];
+
+let html = '';
+
+// ── 1. 시나리오 매트릭스 ─────────────────────────────
+html += '<h2>1. 시나리오별 시뮬레이션 (대표 5개 객실)</h2>';
+html += '<p>20가지 시나리오에서 5개 대표 객실의 최종 판매가입니다.</p>';
+html += '<div class="tbl-wrap"><table>';
+html += '<thead><tr><th class="left" style="min-width:200px">시나리오</th><th>OCC배율</th>';
+SHOWCASE_ROOMS.forEach(r => html += `<th>${r}호<br><span style="font-size:10px;color:#64748b">기초 ${fmt(BASE_PRICES[r])}</span></th>`);
+html += '</tr></thead><tbody>';
+
+SCENARIOS.forEach((sc, idx) => {
+  const om = occMult(sc.occ, SEASONS[sc.season].peakFlag);
+  const seasonBadge = ['b-low','b-mid','b-high','b-peak'][sc.season];
+  const seasonName = SEASONS[sc.season].name;
+  const isHl = sc.occ >= 85 ? ' class="hl"' : sc.occ <= 10 ? ' class="hl2"' : '';
+
+  html += `<tr${isHl}>`;
+  html += `<td class="left"><span class="badge ${seasonBadge}">${seasonName}</span> ${DOW[sc.dow].name}, OCC ${sc.occ}%</td>`;
+  html += `<td style="font-weight:700;color:${om>=1?'#86efac':'#f59e0b'}">${om.toFixed(3)}</td>`;
+
+  SHOWCASE_ROOMS.forEach(r => {
+    const res = calcPrice(r, sc.season, sc.dow, sc.occ);
+    const color = res.tag === 'cap' ? '#f87171' : res.tag === 'floor' ? '#60a5fa' : '#e2e8f0';
+    html += `<td style="font-weight:700;color:${color}">${fmt(res.price)}${tagHtml(res.tag)}</td>`;
+  });
+  html += '</tr>';
+});
+html += '</tbody></table></div>';
+
+// ── 2. 전 객실 비수기 시뮬레이션 ────────────────────
+html += '<hr><h2>2. 비수기: 전 14개 객실 (OCC별 가격 변동)</h2>';
+html += '<p>비수기(×1.00) 기준으로 OCC가 변할 때 각 객실의 가격 범위를 보여줍니다.</p>';
+
+const ALL_ROOMS = Object.keys(BASE_PRICES).sort((a,b) => BASE_PRICES[b] - BASE_PRICES[a]);
+const OCC_LEVELS = [0, 15, 30, 50, 70, 85, 100];
+
+['평일(월~목,일)', '금요일', '토요일'].forEach((dowLabel, dowIdx) => {
+  html += `<h3>${dowLabel}</h3>`;
+  html += '<div class="tbl-wrap"><table><thead><tr><th class="left">객실</th><th>기초가</th>';
+  OCC_LEVELS.forEach(o => html += `<th>OCC ${o}%</th>`);
+  html += '<th>작년 최저</th><th>작년 최고</th></tr></thead><tbody>';
+
+  ALL_ROOMS.forEach(room => {
+    html += `<tr><td class="left" style="font-weight:600">${room}호</td>`;
+    html += `<td style="color:#94a3b8">${fmt(BASE_PRICES[room])}</td>`;
+    OCC_LEVELS.forEach(occ => {
+      const res = calcPrice(room, 0, dowIdx, occ);
+      const color = res.tag === 'cap' ? '#f87171' : res.tag === 'floor' ? '#60a5fa' : occ >= 70 ? '#86efac' : occ <= 20 ? '#f59e0b' : '#e2e8f0';
+      html += `<td style="font-weight:600;color:${color}">${fmt(res.price)}${tagHtml(res.tag)}</td>`;
+    });
+    const g = GUARDS[room]?.[DOW[dowIdx].key] || {};
+    html += `<td style="color:#60a5fa">${fmt(Math.max(g.min||0,50000))}</td>`;
+    html += `<td style="color:#f87171">${fmt(g.max||0)}</td>`;
+    html += '</tr>';
+  });
+  html += '</tbody></table></div>';
+});
+
+// ── 3. 성수기/극성수기 시뮬레이션 ───────────────────
+html += '<hr><h2>3. 성수기·극성수기: 전 14개 객실 (토요일 기준)</h2>';
+html += '<p>성수기/극성수기에는 OCC배율 하한이 ×0.95이므로 할인 폭이 제한됩니다.</p>';
+
+[2,3].forEach(seasonIdx => {
+  const season = SEASONS[seasonIdx];
+  html += `<h3><span class="badge ${seasonIdx===3?'b-peak':'b-high'}">${season.name}</span> 토요일 (×${season.mult})</h3>`;
+  html += '<div class="tbl-wrap"><table><thead><tr><th class="left">객실</th><th>기초가</th>';
+  OCC_LEVELS.forEach(o => html += `<th>OCC ${o}%</th>`);
+  html += '</tr></thead><tbody>';
+
+  ALL_ROOMS.forEach(room => {
+    html += `<tr><td class="left" style="font-weight:600">${room}호</td>`;
+    html += `<td style="color:#94a3b8">${fmt(BASE_PRICES[room])}</td>`;
+    OCC_LEVELS.forEach(occ => {
+      const res = calcPrice(room, seasonIdx, 2, occ); // 토요일
+      const color = res.tag === 'cap' ? '#f87171' : res.tag === 'floor' ? '#60a5fa' : '#e2e8f0';
+      html += `<td style="font-weight:600;color:${color}">${fmt(res.price)}${tagHtml(res.tag)}</td>`;
+    });
+    html += '</tr>';
+  });
+  html += '</tbody></table></div>';
+});
+
+// ── 4. 핵심 인사이트 ────────────────────────────────
+html += '<hr><h2>4. 핵심 인사이트</h2>';
+
+// 각 객실의 최저/최고 계산
+html += '<h3>객실별 가능 판매가 범위 (전 시나리오)</h3>';
+html += '<div class="tbl-wrap"><table><thead><tr><th class="left">객실</th><th>기초가</th><th>전체 최저가</th><th>전체 최고가</th><th>가격 폭</th><th>배수</th></tr></thead><tbody>';
+
+ALL_ROOMS.forEach(room => {
+  let min = 9999999, max = 0;
+  for (let si = 0; si < 4; si++) {
+    for (let di = 0; di < 3; di++) {
+      for (let occ = 0; occ <= 100; occ += 5) {
+        const res = calcPrice(room, si, di, occ);
+        if (res.price < min) min = res.price;
+        if (res.price > max) max = res.price;
+      }
+    }
+  }
+  const ratio = (max/min).toFixed(1);
+  html += `<tr>
+    <td class="left" style="font-weight:600">${room}호</td>
+    <td style="color:#94a3b8">${fmt(BASE_PRICES[room])}</td>
+    <td style="color:#60a5fa;font-weight:700">${fmt(min)}원</td>
+    <td style="color:#f87171;font-weight:700">${fmt(max)}원</td>
+    <td>${fmt(max-min)}원</td>
+    <td style="font-weight:700">${ratio}×</td>
+  </tr>`;
+});
+html += '</tbody></table></div>';
+
+// 평일 vs 토요일 비교
+html += '<h3>평일 vs 토요일 가격 차이 (비수기, OCC 50% 기준)</h3>';
+html += '<div class="tbl-wrap"><table><thead><tr><th class="left">객실</th><th>평일</th><th>금요일</th><th>토요일</th><th>평일→토 차이</th></tr></thead><tbody>';
+
+ALL_ROOMS.forEach(room => {
+  const wk = calcPrice(room, 0, 0, 50);
+  const fr = calcPrice(room, 0, 1, 50);
+  const sat = calcPrice(room, 0, 2, 50);
+  const diff = sat.price - wk.price;
+  const diffPct = ((sat.price/wk.price - 1)*100).toFixed(0);
+  html += `<tr>
+    <td class="left" style="font-weight:600">${room}호</td>
+    <td>${fmt(wk.price)}원</td>
+    <td>${fmt(fr.price)}원</td>
+    <td style="font-weight:700">${fmt(sat.price)}원</td>
+    <td style="color:#f59e0b;font-weight:700">+${fmt(diff)}원 (+${diffPct}%)</td>
+  </tr>`;
+});
+html += '</tbody></table></div>';
+
+document.write(html);
+document.write('<div style="text-align:center;padding:32px 0;color:#4a5568;font-size:11px">🐾 글램독 영흥도 가격 시뮬레이션 | 정책서 v2 기준 | 2026-04-14</div>');
+</script>
+
+</div>
+</body>
+</html>
