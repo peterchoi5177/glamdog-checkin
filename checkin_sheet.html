@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
 <meta http-equiv="refresh" content="1800">
 <title>글램독 체크인 리스트 (본사)</title>
-<!-- v2026-04-16 17:23 -->
+<!-- v2026-04-16 17:28 -->
 <style>
   :root {
     --navy: #1B3A5C;
@@ -371,79 +371,56 @@
   @media print { .col-field { display: none !important; } }
 
   /* ── FM 모달 ── */
-  .fm-overlay {
-    position: fixed; inset: 0; z-index: 8000;
-    background: rgba(0,0,0,0.5);
-    display: flex; align-items: flex-end; justify-content: center;
-  }
-  .fm-sheet {
-    background: white; border-radius: 16px 16px 0 0;
-    padding: 20px 20px 32px; width: 100%; max-width: 520px;
-    max-height: 90vh; overflow-y: auto;
-  }
-  .fm-title {
-    font-size: 17px; font-weight: 800; color: var(--navy);
-    margin-bottom: 16px; display: flex; align-items: center; gap: 10px;
-  }
-  .fm-mode-badge {
-    font-size: 11px; background: #e65100; color: white;
-    border-radius: 4px; padding: 2px 7px; font-weight: 700;
-  }
-  .fm-info { font-size: 13px; color: #555; margin-bottom: 14px; }
-  .fm-info b { color: var(--navy); }
-  /* FM 스테퍼 행 */
-  .fm-item { margin-bottom: 12px; }
-  .fm-item-label {
-    font-size: 12px; color: #666; font-weight: 600; margin-bottom: 5px;
-    display: flex; justify-content: space-between; align-items: center;
-  }
-  .fm-item-price { font-size: 11px; color: #aaa; }
-  .fm-stepper {
-    display: flex; align-items: center; gap: 0;
-    border: 1.5px solid #ccd6e0; border-radius: 8px; overflow: hidden;
-  }
-  .fm-step-btn {
-    width: 44px; height: 44px; border: none; background: #f5f7fa;
-    font-size: 20px; font-weight: 700; color: var(--navy);
-    cursor: pointer; flex-shrink: 0; display: flex; align-items: center; justify-content: center;
-  }
-  .fm-step-btn:active { background: #e0e8f5; }
-  .fm-step-val {
-    flex: 1; text-align: center; font-size: 18px; font-weight: 700;
-    color: var(--navy); border: none; border-left: 1px solid #dde3ea; border-right: 1px solid #dde3ea;
-    padding: 10px 0; background: white; min-width: 50px;
-  }
-  .fm-row { display: flex; gap: 10px; margin-bottom: 10px; align-items: center; }
-  .fm-row label { min-width: 70px; font-size: 12px; color: #666; font-weight: 600; }
-  .fm-row input, .fm-row select {
-    flex: 1; padding: 7px 10px; border: 1.5px solid #ccd6e0;
-    border-radius: 6px; font-size: 13px; outline: none;
-  }
-  .fm-row input:focus, .fm-row select:focus { border-color: var(--blue); }
-  .fm-total {
-    background: var(--light); border-radius: 8px; padding: 10px 14px;
-    margin: 12px 0; font-size: 15px; font-weight: 700; color: var(--navy);
-    display: flex; justify-content: space-between;
-  }
-  .fm-save {
-    width: 100%; padding: 13px; border: none; border-radius: 8px;
-    background: var(--navy); color: white; font-size: 15px; font-weight: 700;
-    cursor: pointer; margin-top: 8px;
-  }
-  .fm-save:disabled { background: #bbb; cursor: not-allowed; }
-  .fm-save:not(:disabled):hover { background: var(--blue); }
-  .fm-delete {
-    width: 100%; padding: 10px; border: 1.5px solid #d32f2f;
-    border-radius: 8px; background: white; color: #d32f2f;
-    font-size: 13px; font-weight: 700; cursor: pointer; margin-top: 8px; display: none;
-  }
-  .fm-delete:hover { background: #fff5f5; }
-  /* 결제방법 버튼 */
-  .fm-pay-btn {
-    flex: 1; padding: 10px 4px; border: 1.5px solid #ccd6e0; border-radius: 8px;
-    background: white; color: #555; font-size: 13px; font-weight: 600; cursor: pointer;
-  }
-  .fm-pay-btn.active { background: var(--navy); color: white; border-color: var(--navy); }
+  .fm-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,.5);
+    z-index:9000; align-items:flex-end; justify-content:center; }
+  .fm-overlay.open { display:flex; }
+  .fm-sheet { background:#fff; border-radius:16px 16px 0 0; width:100%;
+    max-width:560px; padding:20px 18px 32px; box-shadow:0 -6px 30px rgba(0,0,0,.2);
+    max-height:92vh; overflow-y:auto; }
+  .fm-handle { width:44px; height:4px; background:#dde; border-radius:2px;
+    margin:0 auto 18px; }
+  .fm-header { display:flex; justify-content:space-between; align-items:flex-start;
+    margin-bottom:16px; }
+  .fm-title { font-size:16px; font-weight:700; color:#1B3A5C; }
+  .fm-subtitle { font-size:12px; color:#888; margin-top:3px; }
+  .fm-mode-badge { display:inline-block; font-size:10px; font-weight:700;
+    background:#1565c0; color:#fff; border-radius:10px; padding:2px 8px;
+    margin-left:6px; vertical-align:middle; }
+  .fm-close { background:none; border:none; font-size:22px; color:#aaa;
+    cursor:pointer; line-height:1; padding:0; }
+  .fm-sec { margin-bottom:14px; }
+  .fm-sec-label { font-size:11px; font-weight:700; color:#999; margin-bottom:7px;
+    letter-spacing:.5px; }
+  .fm-btns { display:flex; gap:8px; flex-wrap:wrap; }
+  .fm-btn { background:#f5f7fa; border:1.5px solid #dde3ea; border-radius:8px;
+    padding:9px 14px; font-size:13px; font-weight:600; cursor:pointer; color:#444; }
+  .fm-btn:hover { border-color:#1B3A5C; color:#1B3A5C; }
+  .fm-btn.selected { background:#1B3A5C; color:#fff; border-color:#1B3A5C; }
+  .fm-etc-row { display:flex; gap:6px; align-items:center; flex-wrap:wrap; }
+  .fm-etc-input { padding:9px 10px; border:1.5px solid #dde3ea; border-radius:8px;
+    font-size:13px; outline:none; }
+  .fm-items { margin:10px 0 0; }
+  .fm-item { display:flex; justify-content:space-between; align-items:center;
+    padding:8px 0; border-bottom:1px solid #f0f0f0; font-size:13px; }
+  .fm-item-label { color:#333; }
+  .fm-item-amt { font-weight:700; color:#1B3A5C; margin-right:8px; }
+  .fm-item-del { background:none; border:none; color:#e53935; cursor:pointer;
+    font-size:16px; padding:0 2px; line-height:1; }
+  .fm-total { display:flex; justify-content:space-between; align-items:center;
+    padding:12px 0; font-size:18px; font-weight:700; color:#1B3A5C;
+    border-top:2px solid #1B3A5C; margin-top:6px; }
+  .fm-pay-row { display:flex; gap:10px; margin:14px 0 8px; }
+  .fm-pay-btn { flex:1; padding:12px; border:2px solid #dde3ea; border-radius:10px;
+    background:#fff; font-size:15px; font-weight:700; cursor:pointer; color:#555;
+    text-align:center; }
+  .fm-pay-btn.on { border-color:#1B3A5C; background:#1B3A5C; color:#fff; }
+  .fm-save { width:100%; padding:14px; background:#1B3A5C; color:#fff; border:none;
+    border-radius:10px; font-size:16px; font-weight:700; cursor:pointer; margin-top:8px; }
+  .fm-save:disabled { background:#ccc; cursor:not-allowed; }
+  .fm-delete { width:100%; padding:11px; background:#fff; color:#e53935;
+    border:2px solid #e53935; border-radius:10px; font-size:14px; font-weight:700;
+    cursor:pointer; margin-top:8px; display:none; }
+  .fm-delete:hover { background:#ffeaea; }
 
   /* ── 현장기록 탭 ── */
   .fr-controls { display: flex; gap: 10px; align-items: center; padding: 12px 0 8px; flex-wrap: wrap; }
@@ -520,7 +497,7 @@
     <option value="">🏠 예약현황 (지점 선택)</option>
     <option value="cl_6a85a13087.html">가평(가평점)</option><option value="cl_806a86626b.html">가평(청평점)</option><option value="cl_8eacf6d6c1.html">경주</option><option value="cl_a88bfd0a7f.html">영흥도</option><option value="cl_9edad9ddd2.html">양양</option><option value="cl_d3039f7a59.html">통영</option>
   </select>
-  <span class="update-time">갱신: 2026-04-16 17:23</span>
+  <span class="update-time">갱신: 2026-04-16 17:28</span>
 </div>
 <div class="tabs" id="tabs"></div>
 <div class="content" id="content">
@@ -620,7 +597,7 @@ function renderTable() {
     const bno = r.booking_no || '';
     const hasRec = (typeof _fieldEntries !== 'undefined' && _fieldEntries[bno]);
     const fldBtn = (typeof _fieldEntries !== 'undefined')
-      ? `<td class="col-field"><button class="field-btn${hasRec?' has-record':''}" data-bno="${bno}" onclick="openFM(this)">${hasRec ? '✏️ '+Number(_fieldEntries[bno].total).toLocaleString()+'원' : '+ 현장기록'}</button></td>`
+      ? `<td class="col-field"><button class="field-btn${hasRec?' has-record':''}" data-bno="${bno}" data-room="${r.room}" data-guest="${r.guest}" onclick="openFM(this)">${hasRec ? '✏️ '+Number(_fieldEntries[bno].total).toLocaleString()+'원 (수정)' : '+ 현장기록'}</button></td>`
       : '';
     rows += `
     <tr>

@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
 <meta http-equiv="refresh" content="1800">
 <title>글램독 영흥도 체크인 리스트</title>
-<!-- v2026-04-16 17:23 -->
+<!-- v2026-04-16 17:28 -->
 <style>
   :root {
     --navy: #1B3A5C;
@@ -371,79 +371,56 @@
   @media print { .col-field { display: none !important; } }
 
   /* ── FM 모달 ── */
-  .fm-overlay {
-    position: fixed; inset: 0; z-index: 8000;
-    background: rgba(0,0,0,0.5);
-    display: flex; align-items: flex-end; justify-content: center;
-  }
-  .fm-sheet {
-    background: white; border-radius: 16px 16px 0 0;
-    padding: 20px 20px 32px; width: 100%; max-width: 520px;
-    max-height: 90vh; overflow-y: auto;
-  }
-  .fm-title {
-    font-size: 17px; font-weight: 800; color: var(--navy);
-    margin-bottom: 16px; display: flex; align-items: center; gap: 10px;
-  }
-  .fm-mode-badge {
-    font-size: 11px; background: #e65100; color: white;
-    border-radius: 4px; padding: 2px 7px; font-weight: 700;
-  }
-  .fm-info { font-size: 13px; color: #555; margin-bottom: 14px; }
-  .fm-info b { color: var(--navy); }
-  /* FM 스테퍼 행 */
-  .fm-item { margin-bottom: 12px; }
-  .fm-item-label {
-    font-size: 12px; color: #666; font-weight: 600; margin-bottom: 5px;
-    display: flex; justify-content: space-between; align-items: center;
-  }
-  .fm-item-price { font-size: 11px; color: #aaa; }
-  .fm-stepper {
-    display: flex; align-items: center; gap: 0;
-    border: 1.5px solid #ccd6e0; border-radius: 8px; overflow: hidden;
-  }
-  .fm-step-btn {
-    width: 44px; height: 44px; border: none; background: #f5f7fa;
-    font-size: 20px; font-weight: 700; color: var(--navy);
-    cursor: pointer; flex-shrink: 0; display: flex; align-items: center; justify-content: center;
-  }
-  .fm-step-btn:active { background: #e0e8f5; }
-  .fm-step-val {
-    flex: 1; text-align: center; font-size: 18px; font-weight: 700;
-    color: var(--navy); border: none; border-left: 1px solid #dde3ea; border-right: 1px solid #dde3ea;
-    padding: 10px 0; background: white; min-width: 50px;
-  }
-  .fm-row { display: flex; gap: 10px; margin-bottom: 10px; align-items: center; }
-  .fm-row label { min-width: 70px; font-size: 12px; color: #666; font-weight: 600; }
-  .fm-row input, .fm-row select {
-    flex: 1; padding: 7px 10px; border: 1.5px solid #ccd6e0;
-    border-radius: 6px; font-size: 13px; outline: none;
-  }
-  .fm-row input:focus, .fm-row select:focus { border-color: var(--blue); }
-  .fm-total {
-    background: var(--light); border-radius: 8px; padding: 10px 14px;
-    margin: 12px 0; font-size: 15px; font-weight: 700; color: var(--navy);
-    display: flex; justify-content: space-between;
-  }
-  .fm-save {
-    width: 100%; padding: 13px; border: none; border-radius: 8px;
-    background: var(--navy); color: white; font-size: 15px; font-weight: 700;
-    cursor: pointer; margin-top: 8px;
-  }
-  .fm-save:disabled { background: #bbb; cursor: not-allowed; }
-  .fm-save:not(:disabled):hover { background: var(--blue); }
-  .fm-delete {
-    width: 100%; padding: 10px; border: 1.5px solid #d32f2f;
-    border-radius: 8px; background: white; color: #d32f2f;
-    font-size: 13px; font-weight: 700; cursor: pointer; margin-top: 8px; display: none;
-  }
-  .fm-delete:hover { background: #fff5f5; }
-  /* 결제방법 버튼 */
-  .fm-pay-btn {
-    flex: 1; padding: 10px 4px; border: 1.5px solid #ccd6e0; border-radius: 8px;
-    background: white; color: #555; font-size: 13px; font-weight: 600; cursor: pointer;
-  }
-  .fm-pay-btn.active { background: var(--navy); color: white; border-color: var(--navy); }
+  .fm-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,.5);
+    z-index:9000; align-items:flex-end; justify-content:center; }
+  .fm-overlay.open { display:flex; }
+  .fm-sheet { background:#fff; border-radius:16px 16px 0 0; width:100%;
+    max-width:560px; padding:20px 18px 32px; box-shadow:0 -6px 30px rgba(0,0,0,.2);
+    max-height:92vh; overflow-y:auto; }
+  .fm-handle { width:44px; height:4px; background:#dde; border-radius:2px;
+    margin:0 auto 18px; }
+  .fm-header { display:flex; justify-content:space-between; align-items:flex-start;
+    margin-bottom:16px; }
+  .fm-title { font-size:16px; font-weight:700; color:#1B3A5C; }
+  .fm-subtitle { font-size:12px; color:#888; margin-top:3px; }
+  .fm-mode-badge { display:inline-block; font-size:10px; font-weight:700;
+    background:#1565c0; color:#fff; border-radius:10px; padding:2px 8px;
+    margin-left:6px; vertical-align:middle; }
+  .fm-close { background:none; border:none; font-size:22px; color:#aaa;
+    cursor:pointer; line-height:1; padding:0; }
+  .fm-sec { margin-bottom:14px; }
+  .fm-sec-label { font-size:11px; font-weight:700; color:#999; margin-bottom:7px;
+    letter-spacing:.5px; }
+  .fm-btns { display:flex; gap:8px; flex-wrap:wrap; }
+  .fm-btn { background:#f5f7fa; border:1.5px solid #dde3ea; border-radius:8px;
+    padding:9px 14px; font-size:13px; font-weight:600; cursor:pointer; color:#444; }
+  .fm-btn:hover { border-color:#1B3A5C; color:#1B3A5C; }
+  .fm-btn.selected { background:#1B3A5C; color:#fff; border-color:#1B3A5C; }
+  .fm-etc-row { display:flex; gap:6px; align-items:center; flex-wrap:wrap; }
+  .fm-etc-input { padding:9px 10px; border:1.5px solid #dde3ea; border-radius:8px;
+    font-size:13px; outline:none; }
+  .fm-items { margin:10px 0 0; }
+  .fm-item { display:flex; justify-content:space-between; align-items:center;
+    padding:8px 0; border-bottom:1px solid #f0f0f0; font-size:13px; }
+  .fm-item-label { color:#333; }
+  .fm-item-amt { font-weight:700; color:#1B3A5C; margin-right:8px; }
+  .fm-item-del { background:none; border:none; color:#e53935; cursor:pointer;
+    font-size:16px; padding:0 2px; line-height:1; }
+  .fm-total { display:flex; justify-content:space-between; align-items:center;
+    padding:12px 0; font-size:18px; font-weight:700; color:#1B3A5C;
+    border-top:2px solid #1B3A5C; margin-top:6px; }
+  .fm-pay-row { display:flex; gap:10px; margin:14px 0 8px; }
+  .fm-pay-btn { flex:1; padding:12px; border:2px solid #dde3ea; border-radius:10px;
+    background:#fff; font-size:15px; font-weight:700; cursor:pointer; color:#555;
+    text-align:center; }
+  .fm-pay-btn.on { border-color:#1B3A5C; background:#1B3A5C; color:#fff; }
+  .fm-save { width:100%; padding:14px; background:#1B3A5C; color:#fff; border:none;
+    border-radius:10px; font-size:16px; font-weight:700; cursor:pointer; margin-top:8px; }
+  .fm-save:disabled { background:#ccc; cursor:not-allowed; }
+  .fm-delete { width:100%; padding:11px; background:#fff; color:#e53935;
+    border:2px solid #e53935; border-radius:10px; font-size:14px; font-weight:700;
+    cursor:pointer; margin-top:8px; display:none; }
+  .fm-delete:hover { background:#ffeaea; }
 
   /* ── 현장기록 탭 ── */
   .fr-controls { display: flex; gap: 10px; align-items: center; padding: 12px 0 8px; flex-wrap: wrap; }
@@ -486,72 +463,57 @@
 
 
 <!-- ── FM 모달 ── -->
-<div id="fmOverlay" class="fm-overlay" style="display:none" onclick="if(event.target===this)closeFM()">
-  <div class="fm-sheet" onclick="event.stopPropagation()">
-    <div class="fm-title">💰 현장 추가 기록 <span class="fm-mode-badge" id="fmModeBadge" style="display:none">수정</span></div>
-    <div class="fm-info" id="fmInfo"></div>
-
-    <div class="fm-item">
-      <div class="fm-item-label"><span>🔥 BBQ 세트</span><span class="fm-item-price">단가 별도</span></div>
-      <div class="fm-stepper">
-        <button class="fm-step-btn" onclick="fmStep('fmBbq',-1)">−</button>
-        <div class="fm-step-val" id="fmBbq">0</div>
-        <button class="fm-step-btn" onclick="fmStep('fmBbq',1)">+</button>
+<div id="fmOverlay" class="fm-overlay" onclick="if(event.target===this)closeFM()">
+  <div class="fm-sheet">
+    <div class="fm-handle"></div>
+    <div class="fm-header">
+      <div>
+        <div class="fm-title">현장 추가 기록 <span class="fm-mode-badge" id="fmModeBadge" style="display:none">수정</span></div>
+        <div class="fm-subtitle" id="fmSub"></div>
+      </div>
+      <button class="fm-close" onclick="closeFM()">&#215;</button>
+    </div>
+    <div class="fm-sec">
+      <div class="fm-sec-label">BBQ (1세트 20,000원)</div>
+      <div class="fm-btns">
+        <button class="fm-btn" onclick="fmAdd('bbq')">BBQ +20,000원</button>
       </div>
     </div>
-
-    <div class="fm-item">
-      <div class="fm-item-label"><span>👤 인원 추가</span><span class="fm-item-price">× 20,000원</span></div>
-      <div class="fm-stepper">
-        <button class="fm-step-btn" onclick="fmStep('fmPerson',-1)">−</button>
-        <div class="fm-step-val" id="fmPerson">0</div>
-        <button class="fm-step-btn" onclick="fmStep('fmPerson',1)">+</button>
+    <div class="fm-sec">
+      <div class="fm-sec-label">인원추가 (1인당 20,000원)</div>
+      <div class="fm-btns">
+        <button class="fm-btn" id="fmP1" onclick="fmPerson(1)">+1인</button>
+        <button class="fm-btn" id="fmP2" onclick="fmPerson(2)">+2인</button>
+        <button class="fm-btn" id="fmP3" onclick="fmPerson(3)">+3인</button>
+        <button class="fm-btn" id="fmP4" onclick="fmPerson(4)">+4인</button>
+        <button class="fm-btn" id="fmP5" onclick="fmPerson(5)">+5인</button>
       </div>
     </div>
-
-    <div class="fm-item">
-      <div class="fm-item-label"><span>🐶 강아지 추가</span><span class="fm-item-price">× 10,000원</span></div>
-      <div class="fm-stepper">
-        <button class="fm-step-btn" onclick="fmStep('fmDog',-1)">−</button>
-        <div class="fm-step-val" id="fmDog">0</div>
-        <button class="fm-step-btn" onclick="fmStep('fmDog',1)">+</button>
+    <div class="fm-sec">
+      <div class="fm-sec-label">애견추가 (마리당 10,000원)</div>
+      <div class="fm-btns">
+        <button class="fm-btn" onclick="fmAdd('dog')">추가 마리 +10,000원</button>
+        <button class="fm-btn" onclick="fmAdd('bigdog')">무게 초과 +10,000원</button>
       </div>
     </div>
-
-    <div class="fm-item">
-      <div class="fm-item-label"><span>🐾 대형견 추가</span><span class="fm-item-price">× 10,000원</span></div>
-      <div class="fm-stepper">
-        <button class="fm-step-btn" onclick="fmStep('fmBigdog',-1)">−</button>
-        <div class="fm-step-val" id="fmBigdog">0</div>
-        <button class="fm-step-btn" onclick="fmStep('fmBigdog',1)">+</button>
+    <div class="fm-sec">
+      <div class="fm-sec-label">기타</div>
+      <div class="fm-etc-row">
+        <input id="fmEtcNote" class="fm-etc-input" type="text" placeholder="내용" style="flex:1;min-width:100px;">
+        <input id="fmEtcAmt"  class="fm-etc-input" type="number" placeholder="금액(원)" style="width:100px;">
+        <button class="fm-btn" onclick="fmAddEtc()">추가</button>
       </div>
     </div>
-
-    <div class="fm-item">
-      <div class="fm-item-label"><span>📝 기타</span></div>
-      <div style="display:flex;gap:8px;align-items:center">
-        <input type="text" id="fmEtcNote" placeholder="내용 (선택)" oninput="fmUpdate()"
-          style="flex:1;padding:10px;border:1.5px solid #ccd6e0;border-radius:8px;font-size:13px;outline:none">
-        <input type="number" id="fmEtcAmt" placeholder="금액" min="0" value="0" oninput="fmUpdate()"
-          style="width:90px;padding:10px;border:1.5px solid #ccd6e0;border-radius:8px;font-size:13px;outline:none;text-align:right">
-        <span style="font-size:12px;color:#888;white-space:nowrap">원</span>
-      </div>
+    <div id="fmItems" class="fm-items"></div>
+    <div class="fm-total"><span>합계</span><span id="fmTotalAmt">0원</span></div>
+    <div class="fm-sec-label" style="margin-top:14px">결제 방식</div>
+    <div class="fm-pay-row">
+      <button class="fm-pay-btn" id="fmPay0" onclick="fmPay('현금')">현금</button>
+      <button class="fm-pay-btn" id="fmPay1" onclick="fmPay('계좌')">계좌</button>
+      <button class="fm-pay-btn" id="fmPay2" onclick="fmPay('카드')">카드</button>
     </div>
-
-    <div class="fm-item">
-      <div class="fm-item-label"><span>💳 결제 방법</span></div>
-      <div style="display:flex;gap:8px">
-        <button class="fm-pay-btn active" onclick="fmSetPay(this,'현금')">현금</button>
-        <button class="fm-pay-btn" onclick="fmSetPay(this,'카드')">카드</button>
-        <button class="fm-pay-btn" onclick="fmSetPay(this,'계좌이체')">계좌이체</button>
-        <button class="fm-pay-btn" onclick="fmSetPay(this,'기타')">기타</button>
-      </div>
-      <input type="hidden" id="fmPay" value="현금">
-    </div>
-
-    <div class="fm-total"><span>합계</span><span id="fmTotalDisp">0원</span></div>
     <button class="fm-save" id="fmSaveBtn" onclick="fmSave()" disabled>기록하기</button>
-    <button class="fm-delete" id="fmDeleteBtn" onclick="fmDelete()">🗑 이 현장기록 삭제</button>
+    <button class="fm-delete" id="fmDeleteBtn" onclick="fmDelete()">이 현장기록 삭제</button>
   </div>
 </div>
 <!-- ── 토스트 ── -->
@@ -567,7 +529,7 @@
     <button class="btn-view"        id="btnRes"   onclick="setView('rescal')">🏠 예약현황</button>
     <button class="btn-view"        id="btnField" onclick="setView('field')">💰 현장기록</button>
   </div>
-  <span class="update-time">갱신: 2026-04-16 17:23</span>
+  <span class="update-time">갱신: 2026-04-16 17:28</span>
 </div>
 <div class="content" id="content">
   <div class="print-header" id="printHeader"></div>
@@ -619,8 +581,8 @@ const currentBranch = "영흥도";
 const GAS_ENDPOINT  = "https://script.google.com/macros/s/AKfycbzgA5z1GICaqgstqht-gwY-pNFCLnoGijGjbVGI5tGSs-3A5mcoex7bl6x9BIDLgUeXgQ/exec";
 
 // ─── 현장기록 상태 ───────────────────────────────────────
-var _fieldEntries = {};  // bookingNo → entry 객체
-var _fm = {};            // FM 모달 컨텍스트
+var _fieldEntries = {};
+var _fm = { bno:"", room:"", guest:"", bbq:0, person:0, dog:0, bigdog:0, etc:[], pay:"", entryId:"", editMode:false };
 
 // ─── 테이블 / 달력 JS ────────────────────────────────────
 
@@ -668,7 +630,7 @@ function renderTable() {
     const bno = r.booking_no || '';
     const hasRec = (typeof _fieldEntries !== 'undefined' && _fieldEntries[bno]);
     const fldBtn = (typeof _fieldEntries !== 'undefined')
-      ? `<td class="col-field"><button class="field-btn${hasRec?' has-record':''}" data-bno="${bno}" onclick="openFM(this)">${hasRec ? '✏️ '+Number(_fieldEntries[bno].total).toLocaleString()+'원' : '+ 현장기록'}</button></td>`
+      ? `<td class="col-field"><button class="field-btn${hasRec?' has-record':''}" data-bno="${bno}" data-room="${r.room}" data-guest="${r.guest}" onclick="openFM(this)">${hasRec ? '✏️ '+Number(_fieldEntries[bno].total).toLocaleString()+'원 (수정)' : '+ 현장기록'}</button></td>`
       : '';
     rows += `
     <tr>
@@ -992,206 +954,183 @@ function initFieldDash() {
   loadFieldRecords();
 }
 
-// ─── FM 모달 열기 ────────────────────────────────────────
+// ─── FM 모달 열기/닫기 ───────────────────────────────────
 function openFM(btn) {
-  var bno  = btn.getAttribute('data-bno');
-  var row  = btn.closest('tr');
-  var room = row ? row.querySelector('.room-name') : null;
-  var guest= row ? row.querySelector('.guest-name') : null;
-  _fm = {
-    bno:     bno,
-    room:    room  ? room.textContent  : '',
-    guest:   guest ? guest.textContent : '',
-    editMode: false,
-    entryId:  null
-  };
-  // 수정 모드?
-  var existing = _fieldEntries[bno];
-  if (existing) {
-    _fm.editMode = true;
-    _fm.entryId  = existing.entryId;
-    fmSetVal('fmBbq',    existing.bbq         || 0);
-    fmSetVal('fmPerson', existing.personCount || 0);
-    fmSetVal('fmDog',    existing.dogCount    || 0);
-    fmSetVal('fmBigdog', existing.bigDogCount || 0);
-    document.getElementById('fmEtcNote').value = existing.etcNote   || '';
-    document.getElementById('fmEtcAmt').value  = existing.etcAmount || 0;
-    var payVal = existing.payMethod || '현금';
-    document.getElementById('fmPay').value = payVal;
-    document.querySelectorAll('.fm-pay-btn').forEach(function(b) {
-      b.classList.toggle('active', b.textContent === payVal);
-    });
-    document.getElementById('fmModeBadge').style.display = '';
-    document.getElementById('fmDeleteBtn').style.display = '';
+  var bno   = btn.dataset.bno   || "";
+  var room  = btn.dataset.room  || "";
+  var guest = btn.dataset.guest || "";
+  var existing = bno ? _fieldEntries[bno] : null;
+  if(existing) {
+    _fm = { bno:bno, room:room||existing.room, guest:guest||existing.guest,
+      bbq:existing.bbq||0, person:existing.person||0,
+      dog:existing.dog||0, bigdog:existing.bigdog||0,
+      etc:existing.etc ? JSON.parse(JSON.stringify(existing.etc)) : [],
+      pay:existing.payMethod||"", entryId:existing.entryId||"", editMode:true };
+    document.getElementById("fmModeBadge").style.display="";
+    document.getElementById("fmSaveBtn").textContent="수정 저장";
+    document.getElementById("fmDeleteBtn").style.display="";
   } else {
-    fmSetVal('fmBbq', 0); fmSetVal('fmPerson', 0);
-    fmSetVal('fmDog', 0); fmSetVal('fmBigdog', 0);
-    document.getElementById('fmEtcNote').value = '';
-    document.getElementById('fmEtcAmt').value  = 0;
-    document.getElementById('fmPay').value = '현금';
-    document.querySelectorAll('.fm-pay-btn').forEach(function(b) {
-      b.classList.toggle('active', b.textContent === '현금');
-    });
-    document.getElementById('fmModeBadge').style.display = 'none';
-    document.getElementById('fmDeleteBtn').style.display = 'none';
+    _fm = { bno:bno, room:room, guest:guest, bbq:0, person:0, dog:0, bigdog:0, etc:[], pay:"", entryId:"", editMode:false };
+    document.getElementById("fmModeBadge").style.display="none";
+    document.getElementById("fmSaveBtn").textContent="기록하기";
+    document.getElementById("fmDeleteBtn").style.display="none";
   }
-  document.getElementById('fmInfo').innerHTML =
-    '<b>' + _fm.room + '</b> &nbsp;·&nbsp; ' + _fm.guest + (bno ? ' &nbsp;(' + bno + ')' : '');
-  fmUpdate();
-  document.getElementById('fmOverlay').style.display = '';
+  document.getElementById("fmSub").textContent=(guest||"수기예약")+(room?" · "+room:"");
+  [1,2,3,4,5].forEach(function(n){ var el=document.getElementById("fmP"+n); if(el) el.classList.toggle("selected",_fm.person===n); });
+  ["현금","계좌","카드"].forEach(function(l,i){ document.getElementById("fmPay"+i).classList.toggle("on",l===_fm.pay); });
+  document.getElementById("fmEtcNote").value="";
+  document.getElementById("fmEtcAmt").value="";
+  fmRender();
+  document.getElementById("fmOverlay").classList.add("open");
+  document.body.style.overflow="hidden";
 }
-
 function closeFM() {
-  document.getElementById('fmOverlay').style.display = 'none';
+  document.getElementById("fmOverlay").classList.remove("open");
+  document.body.style.overflow="";
 }
 
-// ─── 스테퍼 함수 ─────────────────────────────────────────
-function fmStep(id, delta) {
-  var el  = document.getElementById(id);
-  var val = Math.max(0, (parseInt(el.textContent) || 0) + delta);
-  el.textContent = val;
-  fmUpdate();
+// ─── FM 모달 함수 (원본) ─────────────────────────────────
+function fmAdd(type) {
+  if(type==="bbq")    _fm.bbq++;
+  if(type==="dog")    _fm.dog++;
+  if(type==="bigdog") _fm.bigdog++;
+  fmRender();
 }
-
-function fmGetVal(id) {
-  return parseInt(document.getElementById(id).textContent) || 0;
+function fmPerson(n) {
+  _fm.person = (_fm.person === n) ? 0 : n;
+  [1,2,3,4,5].forEach(function(x){ var el=document.getElementById("fmP"+x); if(el) el.classList.toggle("selected",_fm.person===x); });
+  fmRender();
 }
-
-function fmSetVal(id, v) {
-  document.getElementById(id).textContent = v || 0;
+function fmAddEtc() {
+  var note = document.getElementById("fmEtcNote").value.trim();
+  var amt  = parseInt(document.getElementById("fmEtcAmt").value) || 0;
+  if(!note || !amt) { alert("내용과 금액을 모두 입력하세요."); return; }
+  _fm.etc.push({note:note, amount:amt});
+  document.getElementById("fmEtcNote").value = "";
+  document.getElementById("fmEtcAmt").value  = "";
+  fmRender();
 }
-
-function fmSetPay(btn, val) {
-  document.querySelectorAll('.fm-pay-btn').forEach(function(b) { b.classList.remove('active'); });
-  btn.classList.add('active');
-  document.getElementById('fmPay').value = val;
-  fmUpdate();
+function fmRemove(type, idx) {
+  if(type==="bbq")    _fm.bbq    = Math.max(0, _fm.bbq-1);
+  if(type==="person") { _fm.person=0; [1,2,3,4,5].forEach(function(n){var el=document.getElementById("fmP"+n);if(el)el.classList.remove("selected");}); }
+  if(type==="dog")    _fm.dog    = Math.max(0, _fm.dog-1);
+  if(type==="bigdog") _fm.bigdog = Math.max(0, _fm.bigdog-1);
+  if(type==="etc")    _fm.etc.splice(idx,1);
+  fmRender();
 }
-
+function fmPay(method) {
+  _fm.pay = method;
+  ["현금","계좌","카드"].forEach(function(l,i){ document.getElementById("fmPay"+i).classList.toggle("on",l===method); });
+  fmRender();
+}
 function fmCalcTotal() {
-  var person = fmGetVal('fmPerson');
-  var dog    = fmGetVal('fmDog');
-  var bigdog = fmGetVal('fmBigdog');
-  var etcAmt = Number(document.getElementById('fmEtcAmt').value) || 0;
-  return person * 20000 + dog * 10000 + bigdog * 10000 + etcAmt;
+  return _fm.bbq*20000 + _fm.person*20000 + _fm.dog*10000 + _fm.bigdog*10000
+    + _fm.etc.reduce(function(s,x){return s+x.amount;},0);
 }
-
-function fmUpdate() {
-  var total  = fmCalcTotal();
-  var bbq    = fmGetVal('fmBbq');
-  document.getElementById('fmTotalDisp').textContent = total.toLocaleString() + '원' + (bbq > 0 ? ' + BBQ' : '');
-  var hasValue = total > 0 || bbq > 0
-    || (document.getElementById('fmEtcNote').value || '').trim().length > 0;
-  document.getElementById('fmSaveBtn').disabled = !hasValue;
+function fmRender() {
+  var items="";
+  if(_fm.bbq>0)    items+='<div class="fm-item"><span class="fm-item-label">BBQ '+_fm.bbq+'세트</span><span><span class="fm-item-amt">'+(_fm.bbq*20000).toLocaleString()+'원</span> <button class="fm-item-del" onclick="fmRemove('bbq')">&#215;</button></span></div>';
+  if(_fm.person>0) items+='<div class="fm-item"><span class="fm-item-label">인원추가 '+_fm.person+'명</span><span><span class="fm-item-amt">'+(_fm.person*20000).toLocaleString()+'원</span> <button class="fm-item-del" onclick="fmRemove('person')">&#215;</button></span></div>';
+  if(_fm.dog>0)    items+='<div class="fm-item"><span class="fm-item-label">애견 추가 '+_fm.dog+'마리</span><span><span class="fm-item-amt">'+(_fm.dog*10000).toLocaleString()+'원</span> <button class="fm-item-del" onclick="fmRemove('dog')">&#215;</button></span></div>';
+  if(_fm.bigdog>0) items+='<div class="fm-item"><span class="fm-item-label">무게 초과 '+_fm.bigdog+'마리</span><span><span class="fm-item-amt">'+(_fm.bigdog*10000).toLocaleString()+'원</span> <button class="fm-item-del" onclick="fmRemove('bigdog')">&#215;</button></span></div>';
+  _fm.etc.forEach(function(it,i){ items+='<div class="fm-item"><span class="fm-item-label">'+it.note+'</span><span><span class="fm-item-amt">'+it.amount.toLocaleString()+'원</span> <button class="fm-item-del" onclick="fmRemove('etc','+i+')">&#215;</button></span></div>'; });
+  document.getElementById("fmItems").innerHTML = items;
+  var total = fmCalcTotal();
+  document.getElementById("fmTotalAmt").textContent = total.toLocaleString()+"원";
+  document.getElementById("fmSaveBtn").disabled = (total===0 || !_fm.pay);
 }
 
 function fmSave() {
-  var bbq    = fmGetVal('fmBbq');
-  var person = fmGetVal('fmPerson');
-  var dog    = fmGetVal('fmDog');
-  var bigdog = fmGetVal('fmBigdog');
-  var etcNote= document.getElementById('fmEtcNote').value.trim();
-  var etcAmt = Number(document.getElementById('fmEtcAmt').value) || 0;
-  var pay    = document.getElementById('fmPay').value;
-  var total  = person * 20000 + dog * 10000 + bigdog * 10000 + etcAmt;
+  var total   = fmCalcTotal();
+  var etcNote = _fm.etc.map(function(x){return x.note;}).join(", ");
+  var etcAmt  = _fm.etc.reduce(function(s,x){return s+x.amount;},0);
+  var bbq=_fm.bbq, person=_fm.person, dog=_fm.dog, bigdog=_fm.bigdog, pay=_fm.pay;
 
   var payload = JSON.stringify({
-    action:       _fm.editMode ? "editFieldEntry" : "fieldEntry",
-    entryId:      _fm.entryId || "",
-    date:         currentDate,
-    branch:       currentBranch,
-    room:         _fm.room,
-    guest:        _fm.guest,
-    bookingNo:    _fm.bno || "",
-    bbq:          bbq,
-    personCount:  person,  personAmount: person * 20000,
-    dogCount:     dog,     dogAmount:    dog    * 10000,
-    bigDogCount:  bigdog,  bigDogAmount: bigdog * 10000,
-    etcNote:      etcNote, etcAmount:    etcAmt,
-    total:        total,
-    payMethod:    pay
+    action: _fm.editMode ? "editFieldEntry" : "fieldEntry",
+    entryId: _fm.entryId,
+    date: currentDate, branch: currentBranch,
+    room: _fm.room, guest: _fm.guest, bookingNo: _fm.bno,
+    bbq: bbq*20000, personCount: person, personAmount: person*20000,
+    dogCount: dog, dogAmount: dog*10000,
+    bigDogCount: bigdog, bigDogAmount: bigdog*10000,
+    etcNote: etcNote, etcAmount: etcAmt,
+    total: total, payMethod: pay
   });
-
-  document.getElementById('fmSaveBtn').disabled = true;
-  document.getElementById('fmSaveBtn').textContent = '저장 중...';
-
-  fetch(GAS_ENDPOINT, {method: "POST", body: payload})
-    .then(function(r) { return r.text(); })
-    .then(function(text) {
-      var res;
-      try { res = JSON.parse(text); } catch(e) { throw new Error("응답 오류: " + text.slice(0,200)); }
-      if (!res.ok) throw new Error(res.error || "저장 실패");
-      var entry = {
-        entryId: res.entryId || (_fm.entryId || ""),
-        bbq: bbq, personCount: person, personAmount: person*20000,
-        dogCount: dog, dogAmount: dog*10000,
-        bigDogCount: bigdog, bigDogAmount: bigdog*10000,
-        etcNote: etcNote, etcAmount: etcAmt,
-        total: total, payMethod: pay
-      };
-      if (_fm.bno) _fieldEntries[_fm.bno] = entry;
-      updateFieldBtns();
-      closeFM();
+  var btn = document.getElementById("fmSaveBtn");
+  btn.disabled=true; btn.textContent="저장 중...";
+  fetch(GAS_ENDPOINT, {method:"POST", body:payload})
+    .then(function(r){ return r.text(); })
+    .then(function(text){
+      var res; try{res=JSON.parse(text);}catch(e){throw new Error("응답 오류: "+text.slice(0,200));}
+      if(!res.ok) throw new Error(res.error||"저장 실패");
+      var entry = { entryId:res.entryId||_fm.entryId, total:total, payMethod:pay,
+        bbq:bbq, person:person, dog:dog, bigdog:bigdog,
+        etc:JSON.parse(JSON.stringify(_fm.etc)), room:_fm.room, guest:_fm.guest };
+      if(_fm.bno) _fieldEntries[_fm.bno] = entry;
+      updateFieldBtns(); closeFM();
       showToast("💾 저장 완료! " + total.toLocaleString() + "원 (" + pay + ")");
       loadTodayFieldEntries();
     })
-    .catch(function(err) {
-      document.getElementById('fmSaveBtn').disabled = false;
-      document.getElementById('fmSaveBtn').textContent = '기록하기';
-      alert("저장 오류: " + err.message);
+    .catch(function(err){
+      alert("저장 오류: "+err.message);
+      btn.disabled=false; btn.textContent=_fm.editMode?"수정 저장":"기록하기";
     });
 }
 
 function fmDelete() {
-  if (!_fm.entryId) { alert("삭제할 기록이 없습니다."); return; }
-  if (!confirm("이 현장기록을 삭제하시겠습니까?")) return;
-  var payload = JSON.stringify({action: "deleteFieldEntry", entryId: _fm.entryId});
-  fetch(GAS_ENDPOINT, {method: "POST", body: payload})
-    .then(function(r) { return r.text(); })
-    .then(function(text) {
-      var res;
-      try { res = JSON.parse(text); } catch(e) { throw new Error("응답 오류"); }
-      if (!res.ok) throw new Error(res.error || "삭제 실패");
-      if (_fm.bno) delete _fieldEntries[_fm.bno];
-      updateFieldBtns();
-      closeFM();
+  if(!_fm.entryId){ alert("삭제할 기록이 없습니다."); return; }
+  if(!confirm("이 현장기록을 삭제하시겠습니까?")) return;
+  var btn=document.getElementById("fmDeleteBtn");
+  btn.disabled=true; btn.textContent="삭제 중...";
+  fetch(GAS_ENDPOINT, {method:"POST", body:JSON.stringify({action:"deleteFieldEntry",entryId:_fm.entryId})})
+    .then(function(r){ return r.text(); })
+    .then(function(text){
+      var res; try{res=JSON.parse(text);}catch(e){throw new Error("응답 오류");}
+      if(!res.ok) throw new Error(res.error||"삭제 실패");
+      if(_fm.bno) delete _fieldEntries[_fm.bno];
+      updateFieldBtns(); closeFM();
       showToast("🗑 삭제 완료");
       loadTodayFieldEntries();
     })
-    .catch(function(err) { alert("삭제 오류: " + err.message); });
+    .catch(function(err){ alert("삭제 오류: "+err.message); btn.disabled=false; btn.textContent="이 현장기록 삭제"; });
 }
 
 // ─── 버튼 상태 업데이트 ──────────────────────────────────
 function updateFieldBtns() {
-  document.querySelectorAll('.field-btn').forEach(function(btn) {
-    var bno = btn.getAttribute('data-bno');
-    var entry = _fieldEntries[bno];
-    if (entry) {
-      btn.textContent = '✏️ ' + Number(entry.total).toLocaleString() + '원';
-      btn.classList.add('has-record');
+  document.querySelectorAll(".field-btn").forEach(function(btn){
+    var bno = btn.dataset.bno;
+    if(bno && _fieldEntries[bno]){
+      var e=_fieldEntries[bno];
+      btn.textContent="✏️ "+Number(e.total).toLocaleString()+"원 (수정)";
+      btn.classList.add("has-record");
     } else {
-      btn.textContent = '+ 현장기록';
-      btn.classList.remove('has-record');
+      btn.textContent="+ 현장기록";
+      btn.classList.remove("has-record");
     }
   });
 }
 
 // ─── 오늘 현장기록 로드 ──────────────────────────────────
 function loadTodayFieldEntries() {
-  var url = GAS_ENDPOINT + "?action=getDayEntries&date=" + currentDate + "&branch=" + encodeURIComponent(currentBranch);
-  fetch(url)
-    .then(function(r) { return r.text(); })
-    .then(function(text) {
-      var res;
-      try { res = JSON.parse(text); } catch(e) { return; }
-      if (!res.ok || !res.data) return;
-      _fieldEntries = {};
-      res.data.forEach(function(e) {
-        if (e.bookingNo) _fieldEntries[e.bookingNo] = e;
-      });
+  fetch(GAS_ENDPOINT+"?action=getDayEntries&date="+currentDate+"&branch="+encodeURIComponent(currentBranch))
+    .then(function(r){ return r.text(); })
+    .then(function(text){
+      var res; try{res=JSON.parse(text);}catch(e){return;}
+      _fieldEntries={};
+      if(res.ok && res.data && res.data.length>0){
+        res.data.forEach(function(e){
+          if(e.bookingNo) _fieldEntries[e.bookingNo]={
+            entryId:e.entryId, total:e.total, payMethod:e.payMethod,
+            bbq:e.bbq||0, person:e.personCount||0, dog:e.dogCount||0, bigdog:e.bigDogCount||0,
+            etc:e.etcNote?[{note:e.etcNote,amount:e.etcAmount||0}]:[],
+            room:e.room, guest:e.guest
+          };
+        });
+      }
       updateFieldBtns();
     })
-    .catch(function() {});
+    .catch(function(){});
 }
 
 // ─── 현장기록 탭 조회 ────────────────────────────────────
