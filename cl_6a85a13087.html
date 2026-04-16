@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
 <meta http-equiv="refresh" content="1800">
 <title>글램독 가평(가평점) 체크인 리스트</title>
-<!-- v2026-04-16 17:07 -->
+<!-- v2026-04-16 17:12 -->
 <style>
   :root {
     --navy: #1B3A5C;
@@ -491,7 +491,7 @@
     <button class="btn-view"        id="btnRes"   onclick="setView('rescal')">🏠 예약현황</button>
     <button class="btn-view"        id="btnField" onclick="setView('field')">💰 현장기록</button>
   </div>
-  <span class="update-time">갱신: 2026-04-16 17:07</span>
+  <span class="update-time">갱신: 2026-04-16 17:12</span>
 </div>
 <div class="content" id="content">
   <div class="print-header" id="printHeader"></div>
@@ -541,7 +541,6 @@ const ALL_RECORDS   = [{"branch": "가평(가평점)", "booking_no": "2603281942
 let currentDate     = document.getElementById('datePicker').value;
 const currentBranch = "가평(가평점)";
 const GAS_ENDPOINT  = "https://script.google.com/macros/s/AKfycbzgA5z1GICaqgstqht-gwY-pNFCLnoGijGjbVGI5tGSs-3A5mcoex7bl6x9BIDLgUeXgQ/exec";
-var resCalDays      = 30;
 
 // ─── 현장기록 상태 ───────────────────────────────────────
 var _fieldEntries = {};  // bookingNo → entry 객체
@@ -767,7 +766,7 @@ function todayLocal() {
   return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
 }
 let resCalStart = todayLocal();
-let resCalDays  = 7;
+let resCalDays  = 30;
 
 function resCalGetRecords() {
   return ALL_RECORDS.filter(r => true);
@@ -910,24 +909,12 @@ function setupResCalDrag() {
 }
 
 
-// setView override: 'field' 처리 추가
-(function() {
-  var _origSetView = setView;
-  setView = function(v) {
-    _origSetView(v);
-    var fieldEl = document.getElementById('fieldDashSection');
-    var btnField = document.getElementById('btnField');
-    ['btnList','btnCal','btnRes','btnField'].forEach(function(id) {
-      var el = document.getElementById(id);
-      if (el) el.classList.remove('active');
-    });
-    var activeMap = {list:'btnList', calendar:'btnCal', rescal:'btnRes', field:'btnField'};
-    var active = activeMap[v];
-    if (active && document.getElementById(active)) document.getElementById(active).classList.add('active');
-    if (fieldEl) fieldEl.style.display = (v === 'field') ? '' : 'none';
-    if (v === 'field') { document.getElementById('frFrom').value = currentDate; document.getElementById('frTo').value = currentDate; loadFieldRecords(); }
-  };
-})();
+// ─── 현장기록 탭 초기화 (setView('field')에서 호출됨) ─────
+function initFieldDash() {
+  document.getElementById('frFrom').value = currentDate;
+  document.getElementById('frTo').value   = currentDate;
+  loadFieldRecords();
+}
 
 // ─── FM 모달 열기 ────────────────────────────────────────
 function openFM(btn) {
