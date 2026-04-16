@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
 <meta http-equiv="refresh" content="1800">
 <title>글램독 가평(가평점) 체크인 리스트</title>
-<!-- v2026-04-16 17:12 -->
+<!-- v2026-04-16 17:23 -->
 <style>
   :root {
     --navy: #1B3A5C;
@@ -391,6 +391,28 @@
   }
   .fm-info { font-size: 13px; color: #555; margin-bottom: 14px; }
   .fm-info b { color: var(--navy); }
+  /* FM 스테퍼 행 */
+  .fm-item { margin-bottom: 12px; }
+  .fm-item-label {
+    font-size: 12px; color: #666; font-weight: 600; margin-bottom: 5px;
+    display: flex; justify-content: space-between; align-items: center;
+  }
+  .fm-item-price { font-size: 11px; color: #aaa; }
+  .fm-stepper {
+    display: flex; align-items: center; gap: 0;
+    border: 1.5px solid #ccd6e0; border-radius: 8px; overflow: hidden;
+  }
+  .fm-step-btn {
+    width: 44px; height: 44px; border: none; background: #f5f7fa;
+    font-size: 20px; font-weight: 700; color: var(--navy);
+    cursor: pointer; flex-shrink: 0; display: flex; align-items: center; justify-content: center;
+  }
+  .fm-step-btn:active { background: #e0e8f5; }
+  .fm-step-val {
+    flex: 1; text-align: center; font-size: 18px; font-weight: 700;
+    color: var(--navy); border: none; border-left: 1px solid #dde3ea; border-right: 1px solid #dde3ea;
+    padding: 10px 0; background: white; min-width: 50px;
+  }
   .fm-row { display: flex; gap: 10px; margin-bottom: 10px; align-items: center; }
   .fm-row label { min-width: 70px; font-size: 12px; color: #666; font-weight: 600; }
   .fm-row input, .fm-row select {
@@ -416,6 +438,12 @@
     font-size: 13px; font-weight: 700; cursor: pointer; margin-top: 8px; display: none;
   }
   .fm-delete:hover { background: #fff5f5; }
+  /* 결제방법 버튼 */
+  .fm-pay-btn {
+    flex: 1; padding: 10px 4px; border: 1.5px solid #ccd6e0; border-radius: 8px;
+    background: white; color: #555; font-size: 13px; font-weight: 600; cursor: pointer;
+  }
+  .fm-pay-btn.active { background: var(--navy); color: white; border-color: var(--navy); }
 
   /* ── 현장기록 탭 ── */
   .fr-controls { display: flex; gap: 10px; align-items: center; padding: 12px 0 8px; flex-wrap: wrap; }
@@ -462,17 +490,65 @@
   <div class="fm-sheet" onclick="event.stopPropagation()">
     <div class="fm-title">💰 현장 추가 기록 <span class="fm-mode-badge" id="fmModeBadge" style="display:none">수정</span></div>
     <div class="fm-info" id="fmInfo"></div>
-    <div class="fm-row"><label>BBQ 세트</label><input type="number" id="fmBbq" min="0" value="0" oninput="fmUpdate()"> 개</div>
-    <div class="fm-row"><label>인원 추가</label><input type="number" id="fmPerson" min="0" value="0" oninput="fmUpdate()"> 명 × 20,000원</div>
-    <div class="fm-row"><label>강아지 추가</label><input type="number" id="fmDog" min="0" value="0" oninput="fmUpdate()"> 마리 × 10,000원</div>
-    <div class="fm-row"><label>대형견 추가</label><input type="number" id="fmBigdog" min="0" value="0" oninput="fmUpdate()"> 마리 × 10,000원</div>
-    <div class="fm-row"><label>기타 내용</label><input type="text" id="fmEtcNote" placeholder="내용 입력" oninput="fmUpdate()"></div>
-    <div class="fm-row"><label>기타 금액</label><input type="number" id="fmEtcAmt" min="0" value="0" oninput="fmUpdate()"> 원</div>
-    <div class="fm-row"><label>결제 방법</label>
-      <select id="fmPay" onchange="fmUpdate()">
-        <option>현금</option><option>카드</option><option>계좌이체</option><option>기타</option>
-      </select>
+
+    <div class="fm-item">
+      <div class="fm-item-label"><span>🔥 BBQ 세트</span><span class="fm-item-price">단가 별도</span></div>
+      <div class="fm-stepper">
+        <button class="fm-step-btn" onclick="fmStep('fmBbq',-1)">−</button>
+        <div class="fm-step-val" id="fmBbq">0</div>
+        <button class="fm-step-btn" onclick="fmStep('fmBbq',1)">+</button>
+      </div>
     </div>
+
+    <div class="fm-item">
+      <div class="fm-item-label"><span>👤 인원 추가</span><span class="fm-item-price">× 20,000원</span></div>
+      <div class="fm-stepper">
+        <button class="fm-step-btn" onclick="fmStep('fmPerson',-1)">−</button>
+        <div class="fm-step-val" id="fmPerson">0</div>
+        <button class="fm-step-btn" onclick="fmStep('fmPerson',1)">+</button>
+      </div>
+    </div>
+
+    <div class="fm-item">
+      <div class="fm-item-label"><span>🐶 강아지 추가</span><span class="fm-item-price">× 10,000원</span></div>
+      <div class="fm-stepper">
+        <button class="fm-step-btn" onclick="fmStep('fmDog',-1)">−</button>
+        <div class="fm-step-val" id="fmDog">0</div>
+        <button class="fm-step-btn" onclick="fmStep('fmDog',1)">+</button>
+      </div>
+    </div>
+
+    <div class="fm-item">
+      <div class="fm-item-label"><span>🐾 대형견 추가</span><span class="fm-item-price">× 10,000원</span></div>
+      <div class="fm-stepper">
+        <button class="fm-step-btn" onclick="fmStep('fmBigdog',-1)">−</button>
+        <div class="fm-step-val" id="fmBigdog">0</div>
+        <button class="fm-step-btn" onclick="fmStep('fmBigdog',1)">+</button>
+      </div>
+    </div>
+
+    <div class="fm-item">
+      <div class="fm-item-label"><span>📝 기타</span></div>
+      <div style="display:flex;gap:8px;align-items:center">
+        <input type="text" id="fmEtcNote" placeholder="내용 (선택)" oninput="fmUpdate()"
+          style="flex:1;padding:10px;border:1.5px solid #ccd6e0;border-radius:8px;font-size:13px;outline:none">
+        <input type="number" id="fmEtcAmt" placeholder="금액" min="0" value="0" oninput="fmUpdate()"
+          style="width:90px;padding:10px;border:1.5px solid #ccd6e0;border-radius:8px;font-size:13px;outline:none;text-align:right">
+        <span style="font-size:12px;color:#888;white-space:nowrap">원</span>
+      </div>
+    </div>
+
+    <div class="fm-item">
+      <div class="fm-item-label"><span>💳 결제 방법</span></div>
+      <div style="display:flex;gap:8px">
+        <button class="fm-pay-btn active" onclick="fmSetPay(this,'현금')">현금</button>
+        <button class="fm-pay-btn" onclick="fmSetPay(this,'카드')">카드</button>
+        <button class="fm-pay-btn" onclick="fmSetPay(this,'계좌이체')">계좌이체</button>
+        <button class="fm-pay-btn" onclick="fmSetPay(this,'기타')">기타</button>
+      </div>
+      <input type="hidden" id="fmPay" value="현금">
+    </div>
+
     <div class="fm-total"><span>합계</span><span id="fmTotalDisp">0원</span></div>
     <button class="fm-save" id="fmSaveBtn" onclick="fmSave()" disabled>기록하기</button>
     <button class="fm-delete" id="fmDeleteBtn" onclick="fmDelete()">🗑 이 현장기록 삭제</button>
@@ -491,7 +567,7 @@
     <button class="btn-view"        id="btnRes"   onclick="setView('rescal')">🏠 예약현황</button>
     <button class="btn-view"        id="btnField" onclick="setView('field')">💰 현장기록</button>
   </div>
-  <span class="update-time">갱신: 2026-04-16 17:12</span>
+  <span class="update-time">갱신: 2026-04-16 17:23</span>
 </div>
 <div class="content" id="content">
   <div class="print-header" id="printHeader"></div>
@@ -934,23 +1010,28 @@ function openFM(btn) {
   if (existing) {
     _fm.editMode = true;
     _fm.entryId  = existing.entryId;
-    document.getElementById('fmBbq').value     = existing.bbq          || 0;
-    document.getElementById('fmPerson').value  = existing.personCount  || 0;
-    document.getElementById('fmDog').value     = existing.dogCount     || 0;
-    document.getElementById('fmBigdog').value  = existing.bigDogCount  || 0;
-    document.getElementById('fmEtcNote').value = existing.etcNote      || '';
-    document.getElementById('fmEtcAmt').value  = existing.etcAmount    || 0;
-    document.getElementById('fmPay').value     = existing.payMethod    || '현금';
+    fmSetVal('fmBbq',    existing.bbq         || 0);
+    fmSetVal('fmPerson', existing.personCount || 0);
+    fmSetVal('fmDog',    existing.dogCount    || 0);
+    fmSetVal('fmBigdog', existing.bigDogCount || 0);
+    document.getElementById('fmEtcNote').value = existing.etcNote   || '';
+    document.getElementById('fmEtcAmt').value  = existing.etcAmount || 0;
+    var payVal = existing.payMethod || '현금';
+    document.getElementById('fmPay').value = payVal;
+    document.querySelectorAll('.fm-pay-btn').forEach(function(b) {
+      b.classList.toggle('active', b.textContent === payVal);
+    });
     document.getElementById('fmModeBadge').style.display = '';
     document.getElementById('fmDeleteBtn').style.display = '';
   } else {
-    document.getElementById('fmBbq').value     = 0;
-    document.getElementById('fmPerson').value  = 0;
-    document.getElementById('fmDog').value     = 0;
-    document.getElementById('fmBigdog').value  = 0;
+    fmSetVal('fmBbq', 0); fmSetVal('fmPerson', 0);
+    fmSetVal('fmDog', 0); fmSetVal('fmBigdog', 0);
     document.getElementById('fmEtcNote').value = '';
     document.getElementById('fmEtcAmt').value  = 0;
-    document.getElementById('fmPay').value     = '현금';
+    document.getElementById('fmPay').value = '현금';
+    document.querySelectorAll('.fm-pay-btn').forEach(function(b) {
+      b.classList.toggle('active', b.textContent === '현금');
+    });
     document.getElementById('fmModeBadge').style.display = 'none';
     document.getElementById('fmDeleteBtn').style.display = 'none';
   }
@@ -964,31 +1045,51 @@ function closeFM() {
   document.getElementById('fmOverlay').style.display = 'none';
 }
 
+// ─── 스테퍼 함수 ─────────────────────────────────────────
+function fmStep(id, delta) {
+  var el  = document.getElementById(id);
+  var val = Math.max(0, (parseInt(el.textContent) || 0) + delta);
+  el.textContent = val;
+  fmUpdate();
+}
+
+function fmGetVal(id) {
+  return parseInt(document.getElementById(id).textContent) || 0;
+}
+
+function fmSetVal(id, v) {
+  document.getElementById(id).textContent = v || 0;
+}
+
+function fmSetPay(btn, val) {
+  document.querySelectorAll('.fm-pay-btn').forEach(function(b) { b.classList.remove('active'); });
+  btn.classList.add('active');
+  document.getElementById('fmPay').value = val;
+  fmUpdate();
+}
+
 function fmCalcTotal() {
-  var bbq    = Number(document.getElementById('fmBbq').value)    || 0;
-  var person = Number(document.getElementById('fmPerson').value) || 0;
-  var dog    = Number(document.getElementById('fmDog').value)    || 0;
-  var bigdog = Number(document.getElementById('fmBigdog').value) || 0;
+  var person = fmGetVal('fmPerson');
+  var dog    = fmGetVal('fmDog');
+  var bigdog = fmGetVal('fmBigdog');
   var etcAmt = Number(document.getElementById('fmEtcAmt').value) || 0;
-  // BBQ는 단가 없이 count만 전달 (GAS가 계산)
-  return bbq * 0 + person * 20000 + dog * 10000 + bigdog * 10000 + etcAmt;
+  return person * 20000 + dog * 10000 + bigdog * 10000 + etcAmt;
 }
 
 function fmUpdate() {
-  var total = fmCalcTotal();
-  // BBQ 금액은 별도 정책이므로 표시 시 0 대신 "확인필요"
-  var bbq = Number(document.getElementById('fmBbq').value) || 0;
-  document.getElementById('fmTotalDisp').textContent = (total + (bbq > 0 ? 0 : 0)).toLocaleString() + '원';
+  var total  = fmCalcTotal();
+  var bbq    = fmGetVal('fmBbq');
+  document.getElementById('fmTotalDisp').textContent = total.toLocaleString() + '원' + (bbq > 0 ? ' + BBQ' : '');
   var hasValue = total > 0 || bbq > 0
     || (document.getElementById('fmEtcNote').value || '').trim().length > 0;
   document.getElementById('fmSaveBtn').disabled = !hasValue;
 }
 
 function fmSave() {
-  var bbq    = Number(document.getElementById('fmBbq').value)    || 0;
-  var person = Number(document.getElementById('fmPerson').value) || 0;
-  var dog    = Number(document.getElementById('fmDog').value)    || 0;
-  var bigdog = Number(document.getElementById('fmBigdog').value) || 0;
+  var bbq    = fmGetVal('fmBbq');
+  var person = fmGetVal('fmPerson');
+  var dog    = fmGetVal('fmDog');
+  var bigdog = fmGetVal('fmBigdog');
   var etcNote= document.getElementById('fmEtcNote').value.trim();
   var etcAmt = Number(document.getElementById('fmEtcAmt').value) || 0;
   var pay    = document.getElementById('fmPay').value;
