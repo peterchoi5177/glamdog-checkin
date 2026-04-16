@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
 <meta http-equiv="refresh" content="1800">
 <title>글램독 영흥도 체크인 리스트</title>
-<!-- v2026-04-16 17:35 -->
+<!-- v2026-04-16 17:45 -->
 <style>
   :root {
     --navy: #1B3A5C;
@@ -529,7 +529,7 @@
     <button class="btn-view"        id="btnRes"   onclick="setView('rescal')">🏠 예약현황</button>
     <button class="btn-view"        id="btnField" onclick="setView('field')">💰 현장기록</button>
   </div>
-  <span class="update-time">갱신: 2026-04-16 17:35</span>
+  <span class="update-time">갱신: 2026-04-16 17:45</span>
 </div>
 <div class="content" id="content">
   <div class="print-header" id="printHeader"></div>
@@ -1029,11 +1029,11 @@ function fmCalcTotal() {
 }
 function fmRender() {
   var items="";
-  if(_fm.bbq>0)    items+='<div class="fm-item"><span class="fm-item-label">BBQ '+_fm.bbq+'세트</span><span><span class="fm-item-amt">'+(_fm.bbq*20000).toLocaleString()+'원</span> <button class="fm-item-del" onclick="fmRemove('bbq')">&#215;</button></span></div>';
-  if(_fm.person>0) items+='<div class="fm-item"><span class="fm-item-label">인원추가 '+_fm.person+'명</span><span><span class="fm-item-amt">'+(_fm.person*20000).toLocaleString()+'원</span> <button class="fm-item-del" onclick="fmRemove('person')">&#215;</button></span></div>';
-  if(_fm.dog>0)    items+='<div class="fm-item"><span class="fm-item-label">애견 추가 '+_fm.dog+'마리</span><span><span class="fm-item-amt">'+(_fm.dog*10000).toLocaleString()+'원</span> <button class="fm-item-del" onclick="fmRemove('dog')">&#215;</button></span></div>';
-  if(_fm.bigdog>0) items+='<div class="fm-item"><span class="fm-item-label">무게 초과 '+_fm.bigdog+'마리</span><span><span class="fm-item-amt">'+(_fm.bigdog*10000).toLocaleString()+'원</span> <button class="fm-item-del" onclick="fmRemove('bigdog')">&#215;</button></span></div>';
-  _fm.etc.forEach(function(it,i){ items+='<div class="fm-item"><span class="fm-item-label">'+it.note+'</span><span><span class="fm-item-amt">'+it.amount.toLocaleString()+'원</span> <button class="fm-item-del" onclick="fmRemove('etc','+i+')">&#215;</button></span></div>'; });
+  if(_fm.bbq>0)    items+='<div class="fm-item"><span class="fm-item-label">BBQ '+_fm.bbq+'세트</span><span><span class="fm-item-amt">'+(_fm.bbq*20000).toLocaleString()+'원</span> <button class="fm-item-del" onclick="fmRemove(&apos;bbq&apos;)">&#215;</button></span></div>';
+  if(_fm.person>0) items+='<div class="fm-item"><span class="fm-item-label">인원추가 '+_fm.person+'명</span><span><span class="fm-item-amt">'+(_fm.person*20000).toLocaleString()+'원</span> <button class="fm-item-del" onclick="fmRemove(&apos;person&apos;)">&#215;</button></span></div>';
+  if(_fm.dog>0)    items+='<div class="fm-item"><span class="fm-item-label">애견 추가 '+_fm.dog+'마리</span><span><span class="fm-item-amt">'+(_fm.dog*10000).toLocaleString()+'원</span> <button class="fm-item-del" onclick="fmRemove(&apos;dog&apos;)">&#215;</button></span></div>';
+  if(_fm.bigdog>0) items+='<div class="fm-item"><span class="fm-item-label">무게 초과 '+_fm.bigdog+'마리</span><span><span class="fm-item-amt">'+(_fm.bigdog*10000).toLocaleString()+'원</span> <button class="fm-item-del" onclick="fmRemove(&apos;bigdog&apos;)">&#215;</button></span></div>';
+  _fm.etc.forEach(function(it,i){ items+='<div class="fm-item"><span class="fm-item-label">'+it.note+'</span><span><span class="fm-item-amt">'+it.amount.toLocaleString()+'원</span> <button class="fm-item-del" onclick="fmRemove(&apos;etc&apos;,'+i+')">&#215;</button></span></div>'; });
   document.getElementById("fmItems").innerHTML = items;
   var total = fmCalcTotal();
   document.getElementById("fmTotalAmt").textContent = total.toLocaleString()+"원";
