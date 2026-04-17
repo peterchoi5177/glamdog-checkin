@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
 <meta http-equiv="refresh" content="1800">
 <title>글램독 양양 체크인 리스트</title>
-<!-- v2026-04-17 09:36 -->
+<!-- v2026-04-17 09:48 -->
 <style>
   :root {
     --navy: #1B3A5C;
@@ -529,7 +529,7 @@
     <button class="btn-view"        id="btnRes"   onclick="setView('rescal')">🏠 예약현황</button>
     <button class="btn-view"        id="btnField" onclick="setView('field')">💰 현장기록</button>
   </div>
-  <span class="update-time">갱신: 2026-04-17 09:36</span>
+  <span class="update-time">갱신: 2026-04-17 09:48</span>
 </div>
 <div class="content" id="content">
   <div class="print-header" id="printHeader"></div>
@@ -664,7 +664,32 @@ function renderTable() {
     </tr>`;
   });
 
-  const fieldTh = (typeof _fieldEntries !== 'undefined') ? '<th class="col-field">현장기록</th>' : '';
+  // ── 수기 추가 빈칸 ──────────────────────────────────────
+  const BLANK_COUNT = Math.max(15 - records.length, 3);
+  const hasField = (typeof _fieldEntries !== 'undefined');
+  const fieldTh  = hasField ? '<th class="col-field">현장기록</th>' : '';
+  const colSpan  = hasField ? 11 : 10;
+  let blankRows = `<tr>
+    <td colspan="${colSpan}" style="background:#f0f0eb;padding:5px 10px;font-size:11px;
+      color:#888;border-top:2px dashed #ccc;border-bottom:1px solid #ddd;">
+      ✏️&nbsp; 당일 수기 추가란 (현장 추가 예약 직접 기입)
+    </td></tr>`;
+  for (let i = 0; i < BLANK_COUNT; i++) {
+    blankRows += `<tr style="height:38px;background:#fafaf8;">
+      <td class="col-no" style="color:#bbb;font-size:12px;">${records.length + i + 1}</td>
+      <td class="col-room"><div class="write-lines">${writeLine()}</div></td>
+      <td class="col-guest"><div class="write-lines">${writeLine()}${writeLine()}</div></td>
+      <td class="col-bookdt"></td>
+      <td class="col-payment"></td>
+      <td class="col-nights"></td>
+      <td class="col-dog"><div class="write-lines">${writeLine()}${writeLine()}</div></td>
+      <td class="col-bbq"><div class="bbq-box">□</div></td>
+      <td class="col-arrive"><div class="write-lines">${writeLine()}</div></td>
+      <td class="col-memo"><div class="write-lines">${writeLine()}</div></td>
+      ${hasField ? '<td class="col-field"></td>' : ''}
+    </tr>`;
+  }
+
   area.innerHTML = `
   <div class="date-header">
     ${dateKo} — ${brLabel}
@@ -686,7 +711,7 @@ function renderTable() {
         ${fieldTh}
       </tr>
     </thead>
-    <tbody>${rows}</tbody>
+    <tbody>${rows}${blankRows}</tbody>
   </table>`;
 }
 
