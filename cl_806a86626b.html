@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
 <meta http-equiv="refresh" content="1800">
 <title>글램독 가평(청평점) 체크인 리스트</title>
-<!-- v2026-04-17 09:48 -->
+<!-- v2026-04-17 09:50 -->
 <style>
   :root {
     --navy: #1B3A5C;
@@ -529,7 +529,7 @@
     <button class="btn-view"        id="btnRes"   onclick="setView('rescal')">🏠 예약현황</button>
     <button class="btn-view"        id="btnField" onclick="setView('field')">💰 현장기록</button>
   </div>
-  <span class="update-time">갱신: 2026-04-17 09:48</span>
+  <span class="update-time">갱신: 2026-04-17 09:50</span>
 </div>
 <div class="content" id="content">
   <div class="print-header" id="printHeader"></div>
@@ -669,11 +669,7 @@ function renderTable() {
   const hasField = (typeof _fieldEntries !== 'undefined');
   const fieldTh  = hasField ? '<th class="col-field">현장기록</th>' : '';
   const colSpan  = hasField ? 11 : 10;
-  let blankRows = `<tr>
-    <td colspan="${colSpan}" style="background:#f0f0eb;padding:5px 10px;font-size:11px;
-      color:#888;border-top:2px dashed #ccc;border-bottom:1px solid #ddd;">
-      ✏️&nbsp; 당일 수기 추가란 (현장 추가 예약 직접 기입)
-    </td></tr>`;
+  let blankRows = '';
   for (let i = 0; i < BLANK_COUNT; i++) {
     blankRows += `<tr style="height:38px;background:#fafaf8;">
       <td class="col-no" style="color:#bbb;font-size:12px;">${records.length + i + 1}</td>
