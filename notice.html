@@ -1,0 +1,1054 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="theme-color" content="#4A7C59">
+  <title>글램독 이용안내</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --green:       #4A7C59;
+      --green-dark:  #345A40;
+      --green-light: #EBF4EE;
+      --amber:       #C8793A;
+      --amber-light: #FDF0E6;
+      --text:        #1E1E1E;
+      --text-mid:    #555555;
+      --text-light:  #888888;
+      --bg:          #F7F7F4;
+      --white:       #FFFFFF;
+      --border:      #D8D8D0;
+      --error:       #D94F4F;
+      --shadow:      0 2px 12px rgba(0,0,0,0.10);
+      --radius:      14px;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+    body {
+      font-family: 'Noto Sans KR', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      overscroll-behavior: none;
+    }
+
+    .header {
+      background: var(--green);
+      color: var(--white);
+      padding: 20px 20px 18px;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    .header-top { display: flex; align-items: center; gap: 10px; }
+    .header-logo { font-size: 22px; font-weight: 900; letter-spacing: -0.5px; }
+    .header-logo span { color: #A8D5B5; }
+    .header-subtitle { font-size: 12px; opacity: 0.8; margin-top: 1px; }
+
+    .branch-tabs {
+      display: flex;
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: none;
+      gap: 6px;
+      padding: 12px 16px;
+      background: var(--white);
+      border-bottom: 1px solid var(--border);
+      position: sticky;
+      top: 68px;
+      z-index: 99;
+    }
+    .branch-tabs::-webkit-scrollbar { display: none; }
+    .branch-tab {
+      flex-shrink: 0;
+      padding: 8px 16px;
+      border: 1.5px solid var(--border);
+      border-radius: 99px;
+      font-size: 13px;
+      font-family: inherit;
+      font-weight: 500;
+      background: var(--white);
+      color: var(--text-mid);
+      cursor: pointer;
+      transition: all 0.15s;
+      white-space: nowrap;
+    }
+    .branch-tab.active {
+      border-color: var(--green);
+      background: var(--green);
+      color: var(--white);
+    }
+
+    .container {
+      max-width: 480px;
+      margin: 0 auto;
+      padding: 16px 16px 40px;
+    }
+
+    .branch-content { display: none; }
+    .branch-content.active { display: block; animation: fadeIn 0.3s ease; }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(8px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .card {
+      background: var(--white);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 18px;
+      margin-bottom: 14px;
+    }
+    .card-title {
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 14px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .card-title-icon { font-size: 18px; }
+
+    .info-row {
+      display: flex;
+      align-items: flex-start;
+      padding: 10px 0;
+      border-bottom: 1px solid var(--border);
+      font-size: 14px;
+      gap: 10px;
+    }
+    .info-row:last-child { border-bottom: none; }
+    .info-icon { font-size: 16px; width: 22px; text-align: center; flex-shrink: 0; margin-top: 1px; }
+    .info-label { color: var(--text-light); min-width: 72px; font-size: 13px; flex-shrink: 0; }
+    .info-value { color: var(--text); font-weight: 500; flex: 1; line-height: 1.5; }
+
+    .notice-box {
+      background: var(--amber-light);
+      border: 1px solid #F0C89A;
+      border-radius: 10px;
+      padding: 12px 14px;
+      font-size: 13px;
+      color: var(--amber);
+      line-height: 1.5;
+      margin-bottom: 14px;
+    }
+    .notice-box strong { display: block; margin-bottom: 4px; font-size: 14px; }
+
+    .notice-box.green {
+      background: var(--green-light);
+      border-color: #B5D8C0;
+      color: var(--green-dark);
+    }
+
+    .notice-box.red {
+      background: #FDE8E8;
+      border-color: #F5A3A3;
+      color: #B91C1C;
+    }
+
+    .rule-list {
+      list-style: none;
+      padding: 0;
+    }
+    .rule-list li {
+      position: relative;
+      padding: 8px 0 8px 24px;
+      font-size: 14px;
+      color: var(--text-mid);
+      line-height: 1.5;
+      border-bottom: 1px solid var(--border);
+    }
+    .rule-list li:last-child { border-bottom: none; }
+    .rule-list li::before {
+      content: "•";
+      position: absolute;
+      left: 8px;
+      color: var(--green);
+      font-weight: 700;
+    }
+    .rule-list li.warn::before {
+      content: "!";
+      color: var(--error);
+      font-size: 12px;
+      font-weight: 900;
+    }
+
+    .call-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      width: 100%;
+      padding: 14px;
+      background: var(--green);
+      color: var(--white);
+      border: none;
+      border-radius: 12px;
+      font-size: 16px;
+      font-weight: 700;
+      font-family: inherit;
+      cursor: pointer;
+      text-decoration: none;
+      margin-top: 10px;
+    }
+
+    .time-table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+    .time-table td {
+      padding: 10px;
+      font-size: 14px;
+      color: var(--text);
+      border-bottom: 1px solid var(--border);
+    }
+    .time-table tr:last-child td { border-bottom: none; }
+    .time-table .time-label {
+      font-weight: 700;
+      color: var(--green);
+      white-space: nowrap;
+      width: 80px;
+    }
+
+    /* 요금 테이블 */
+    .price-table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+    .price-table td {
+      padding: 9px 10px;
+      font-size: 13px;
+      color: var(--text);
+      border-bottom: 1px solid var(--border);
+      vertical-align: top;
+      line-height: 1.5;
+    }
+    .price-table tr:last-child td { border-bottom: none; }
+    .price-table .price-label {
+      font-weight: 600;
+      color: var(--text-mid);
+      white-space: nowrap;
+      width: 90px;
+    }
+    .price-table .price-value {
+      font-weight: 700;
+      color: var(--green-dark);
+      text-align: right;
+      white-space: nowrap;
+    }
+    .price-table .price-note {
+      font-size: 12px;
+      color: var(--text-light);
+      font-weight: 400;
+    }
+
+    /* 비치 아이템 그리드 */
+    .amenity-grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 12px;
+      padding-top: 12px;
+      border-top: 1px solid var(--border);
+    }
+    .amenity-item {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      padding: 6px 12px;
+      background: var(--green-light);
+      border-radius: 99px;
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--green-dark);
+    }
+
+    /* 지점 특이사항 박스 */
+    .branch-note {
+      margin-top: 12px;
+      padding: 10px 14px;
+      background: #FFF8E1;
+      border: 1px solid #FFE082;
+      border-radius: 8px;
+      font-size: 13px;
+      color: #795548;
+      line-height: 1.5;
+    }
+    .branch-note strong {
+      display: block;
+      margin-bottom: 2px;
+      color: #5D4037;
+      font-size: 12px;
+    }
+
+    /* 객실 타입 */
+    .room-type-list {
+      list-style: none;
+      padding: 0;
+    }
+    .room-type-list li {
+      padding: 8px 0;
+      border-bottom: 1px solid var(--border);
+      font-size: 13px;
+      color: var(--text-mid);
+      line-height: 1.5;
+    }
+    .room-type-list li:last-child { border-bottom: none; }
+    .room-type-list .room-label {
+      font-weight: 700;
+      color: var(--text);
+      display: inline;
+    }
+  </style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-top">
+    <div>
+      <div class="header-logo">&#x1F43E; 글램독<span>.</span></div>
+      <div class="header-subtitle">이용안내</div>
+    </div>
+  </div>
+</div>
+
+<div class="branch-tabs" id="branchTabs">
+  <button class="branch-tab active" data-branch="가평(가평점)" onclick="switchBranch(this)">가평점</button>
+  <button class="branch-tab" data-branch="가평(청평점)" onclick="switchBranch(this)">청평점</button>
+  <button class="branch-tab" data-branch="경주" onclick="switchBranch(this)">경주</button>
+  <button class="branch-tab" data-branch="영흥도" onclick="switchBranch(this)">영흥도</button>
+  <button class="branch-tab" data-branch="양양" onclick="switchBranch(this)">양양</button>
+  <button class="branch-tab" data-branch="통영" onclick="switchBranch(this)">통영</button>
+</div>
+
+<div class="container">
+
+  <!-- ══════════════════════════════════════════ -->
+  <!-- 가평(가평점)                                -->
+  <!-- ══════════════════════════════════════════ -->
+  <div class="branch-content active" id="branch-가평(가평점)">
+
+    <div class="notice-box green">
+      <strong>&#x1F3D5;&#xFE0F; 글램독 가평점에 오신 것을 환영합니다!</strong>
+      아래 이용안내를 꼼꼼히 확인하시고, 편안한 스테이 되세요.
+    </div>
+
+    <!-- 입퇴실 -->
+    <div class="card">
+      <div class="card-title"><span class="card-title-icon">&#x1F556;</span> 입퇴실 안내</div>
+      <table class="time-table">
+        <tr><td class="time-label">입실(체크인)</td><td>오후 3:00 (15:00)</td></tr>
+        <tr><td class="time-label">퇴실(체크아웃)</td><td>오전 11:00</td></tr>
+        <tr><td class="time-label">늦은 체크아웃</td><td>사전 문의 필요 (추가 요금 발생)</td></tr>
+      </table>
+    </div>
+
+    <!-- 반려동물 안내 -->
+    <div class="card">
+      <div class="card-title"><span class="card-title-icon">&#x1F436;</span> 반려동물 안내</div>
+      <ul class="rule-list">
+        <li><strong>15kg 이하</strong>만 입실 가능 / 객실당 <strong>최대 2마리</strong></li>
+        <li>마킹하는 강아지는 <strong>매너밴드 필수</strong> 착용</li>
+        <li class="warn">입질이 있거나 사나운 강아지는 입실이 제한될 수 있습니다</li>
+        <li class="warn">반려견을 객실에 혼자 두고 외출 불가 (방치 사고 시 책임 없음)</li>
+        <li>애견 드라이룸은 제조사 권장 <strong>10kg 미만</strong> 사용</li>
+        <li>별도 세탁이 필요한 경우 세탁비가 청구될 수 있습니다</li>
+      </ul>
+      <div class="amenity-grid">
+        <div class="amenity-item">&#x1F4A8; 드라이룸</div>
+        <div class="amenity-item">&#x1F9F4; 샴푸</div>
+        <div class="amenity-item">&#x1F963; 밥그릇</div>
+        <div class="amenity-item">&#x1F9F9; 배변패드</div>
+        <div class="amenity-item">&#x1F9FA; 수건</div>
+      </div>
+    </div>
+
+    <!-- 추가 요금 -->
+    <div class="card">
+      <div class="card-title"><span class="card-title-icon">&#x1F4B0;</span> 추가 요금</div>
+      <table class="price-table">
+        <tr>
+          <td class="price-label">인원 추가</td>
+          <td>전 객실 2인 기준, 초과 시 1인당<br><span class="price-note">24개월 이상 / 현장 결제</span></td>
+          <td class="price-value">20,000원</td>
+        </tr>
+        <tr>
+          <td class="price-label">반려견</td>
+          <td>10kg 이하 1마리 무료<br>초과 시 / 1마리 초과 시<br><span class="price-note">10kg 초과 시</span></td>
+          <td class="price-value"><br>10,000원<br>20,000원</td>
+        </tr>
+        <tr>
+          <td class="price-label">바베큐</td>
+          <td>숯 + 그릴<br>숯 추가</td>
+          <td class="price-value">20,000원<br>5,000원</td>
+        </tr>
+        <tr>
+          <td class="price-label">카드키 분실</td>
+          <td></td>
+          <td class="price-value">10,000원</td>
+        </tr>
+      </table>
+    </div>
+
+    <!-- 바베큐 -->
+    <div class="card">
+      <div class="card-title"><span class="card-title-icon">&#x1F525;</span> 바베큐 이용안내</div>
+      <ul class="rule-list">
+        <li>실내 3곳 + 실외 3곳 (105, 106호는 객실 앞 테라스)</li>
+        <li><strong>숯 바베큐, 야외에서만 가능</strong> — 객실 내 바베큐 불가</li>
+        <li>2층 객실은 <strong>야외바베큐장</strong> 이용</li>
+        <li>비용: 숯+그릴 <strong>20,000원</strong> / 숯 추가 <strong>5,000원</strong></li>
+        <li>실외 자리는 입실 시 <strong>선착순</strong> (전화 예약 불가)</li>
+        <li>기본 양념(간장, 식용유, 소금, 설탕, 후추) 요청 시 제공</li>
+        <li class="warn">개인 화기(부르스타 등) 반입 금지 — 적발 시 <strong>강제 퇴실</strong></li>
+        <li class="warn">사재 숯, 전기그릴(자이글 등) 사용 불가 (화재 위험)</li>
+      </ul>
+    </div>
+
+    <!-- 이용주의사항 -->
+    <div class="card">
+      <div class="card-title"><span class="card-title-icon">&#x26A0;&#xFE0F;</span> 이용주의사항</div>
+      <ul class="rule-list">
+        <li>이동 시 반드시 <strong>목줄 착용</strong> (인근 차도 위험)</li>
+        <li>복층형 객실 이용 시 유아·아동 안전에 각별히 주의해 주세요</li>
+        <li>건물 내외부 CCTV 녹화 중</li>
+        <li>음주 및 고성방가를 자제해 주세요</li>
+        <li class="warn">객실 내 고기·생선·청국장 등 조리 금지 (지정 바베큐장 이용)</li>
+        <li>시설 파손·침구 오염 시 비용이 청구됩니다</li>
+        <li>흡연은 펜스 밖 지정 장소에서만 가능</li>
+        <li>미성년자는 보호자 동행 필수</li>
+        <li>귀중품 분실 책임은 투숙객 본인에게 있습니다</li>
+      </ul>
+    </div>
+
+    <!-- 객실 안내 -->
+    <div class="card">
+      <div class="card-title"><span class="card-title-icon">&#x1F3E0;</span> 객실 안내</div>
+      <ul class="room-type-list">
+        <li><span class="room-label">복층형</span> — 202호, 205호</li>
+        <li><span class="room-label">2층 객실</span> — 바베큐 불가 (야외바베큐장 이용)</li>
+      </ul>
+    </div>
+
+    <!-- 연락처 -->
+    <div class="card">
+      <div class="card-title"><span class="card-title-icon">&#x1F4DE;</span> 지점 연락처</div>
+      <div class="info-row">
+        <div class="info-icon">&#x1F4CD;</div>
+        <div class="info-label">주소</div>
+        <div class="info-value">경기도 가평군 (상세 주소 추가 필요)</div>
+      </div>
+      <div class="info-row">
+        <div class="info-icon">&#x1F4F1;</div>
+        <div class="info-label">전화</div>
+        <div class="info-value">010-9196-2597</div>
+      </div>
+      <a class="call-btn" href="tel:01091962597">&#x1F4DE; 가평점 전화하기</a>
+    </div>
+  </div>
+
+
+  <!-- ══════════════════════════════════════════ -->
+  <!-- 가평(청평점)                                -->
+  <!-- ══════════════════════════════════════════ -->
+  <div class="branch-content" id="branch-가평(청평점)">
+
+    <div class="notice-box green">
+      <strong>&#x1F3D5;&#xFE0F; 글램독 청평점에 오신 것을 환영합니다!</strong>
+      아래 이용안내를 꼼꼼히 확인하시고, 편안한 스테이 되세요.
+    </div>
+
+    <div class="card">
+      <div class="card-title"><span class="card-title-icon">&#x1F556;</span> 입퇴실 안내</div>
+      <table class="time-table">
+        <tr><td class="time-label">입실(체크인)</td><td>오후 3:00 (15:00)</td></tr>
+        <tr><td class="time-label">퇴실(체크아웃)</td><td>오전 11:00</td></tr>
+        <tr><td class="time-label">늦은 체크아웃</td><td>사전 문의 필요 (추가 요금 발생)</td></tr>
+      </table>
+    </div>
+
+    <div class="card">
+      <div class="card-title"><span class="card-title-icon">&#x1F436;</span> 반려동물 안내</div>
+      <ul class="rule-list">
+        <li><strong>15kg 이하</strong>만 입실 가능 / 객실당 <strong>최대 2마리</strong></li>
+        <li>마킹하는 강아지는 <strong>매너밴드 필수</strong> 착용</li>
+        <li class="warn">입질이 있거나 사나운 강아지는 입실이 제한될 수 있습니다</li>
+        <li class="warn">반려견을 객실에 혼자 두고 외출 불가 (방치 사고 시 책임 없음)</li>
+        <li>애견 드라이룸은 제조사 권장 <strong>10kg 미만</strong> 사용</li>
+        <li>별도 세탁이 필요한 경우 세탁비가 청구될 수 있습니다</li>
+      </ul>
+      <div class="amenity-grid">
+        <div class="amenity-item">&#x1F4A8; 드라이룸</div>
+        <div class="amenity-item">&#x1F9F4; 샴푸</div>
+        <div class="amenity-item">&#x1F963; 밥그릇</div>
+        <div class="amenity-item">&#x1F9F9; 배변패드</div>
+        <div class="amenity-item">&#x1F9FA; 수건</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title"><span class="card-title-icon">&#x1F4B0;</span> 추가 요금</div>
+      <table class="price-table">
+        <tr>
+          <td class="price-label">인원 추가</td>
+          <td>전 객실 2인 기준, 초과 시 1인당<br><span class="price-note">24개월 이상 / 현장 결제</span></td>
+          <td class="price-value">20,000원</td>
+        </tr>
+        <tr>
+          <td class="price-label">반려견</td>
+          <td>10kg 이하 1마리 무료<br>초과 시 / 1마리 초과 시<br><span class="price-note">10kg 초과 시</span></td>
+          <td class="price-value"><br>10,000원<br>20,000원</td>
+        </tr>
+        <tr>
+          <td class="price-label">바베큐</td>
+          <td>숯 + 그릴<br>숯 추가</td>
+          <td class="price-value">20,000원<br>5,000원</td>
+        </tr>
+        <tr>
+          <td class="price-label">카드키 분실</td>
+          <td></td>
+          <td class="price-value">10,000원</td>
+        </tr>
+      </table>
+    </div>
+
+    <div class="card">
+      <div class="card-title"><span class="card-title-icon">&#x1F525;</span> 바베큐 이용안내</div>
+      <ul class="rule-list">
+        <li>이용시간: <strong>16:00 ~ 21:00</strong></li>
+        <li>실내 4곳 + 실외 10곳</li>
+        <li>1층 객실 앞 4곳은 <strong>1층 고객 전용</strong> / 나머지는 중앙 바베큐장 이용</li>
+        <li><strong>숯 바베큐, 야외에서만 가능</strong> — 객실 내 바베큐 불가</li>
+        <li>우천 시 실내바베큐장 <strong>선착순 5팀</strong>만 가능</li>
+        <li class="warn">B103호 바베큐 이용 제한</li>
+        <li>실외 자리는 입실 시 <strong>선착순</strong> (전화 예약 불가)</li>
+        <li>기본 양념(간장, 식용유, 소금, 설탕, 후추) 요청 시 제공</li>
+        <li class="warn">개인 화기(부르스타 등) 반입 금지 — 적발 시 <strong>강제 퇴실</strong></li>
+        <li class="warn">사재 숯, 전기그릴(자이글 등) 사용 불가 (화재 위험)</li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <div class="card-title"><span class="card-title-icon">&#x26A0;&#xFE0F;</span> 이용주의사항</div>
+      <ul class="rule-list">
+        <li>이동 시 반드시 <strong>목줄 착용</strong> (인근 차도 위험)</li>
+        <li>건물 내외부 CCTV 녹화 중</li>
+        <li>음주 및 고성방가를 자제해 주세요</li>
+        <li class="warn">객실 내 고기·생선·청국장 등 조리 금지 (지정 바베큐장 이용)</li>
+        <li>시설 파손·침구 오염 시 비용이 청구됩니다</li>
+        <li>흡연은 펜스 밖 지정 장소에서만 가능</li>
+        <li>미성년자는 보호자 동행 필수</li>
+        <li>귀중품 분실 책임은 투숙객 본인에게 있습니다</li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <div class="card-title"><span class="card-title-icon">&#x1F3E0;</span> 객실 안내</div>
+      <ul class="room-type-list">
+        <li><span class="room-label">원룸형</span> — A201~203, B101~103, B202~203</li>
+        <li><span class="room-label">투룸형</span> — A101~102, B201</li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <div class="card-title"><span class="card-title-icon">&#x1F4DE;</span> 지점 연락처</div>
+      <div class="info-row">
+        <div class="info-icon">&#x1F4CD;</div>
+        <div class="info-label">주소</div>
+        <div class="info-value">경기도 가평군 (상세 주소 추가 필요)</div>
+      </div>
+      <div class="info-row">
+        <div class="info-icon">&#x1F4F1;</div>
+        <div class="info-label">전화</div>
+        <div class="info-value">010-3590-2597</div>
+      </div>
+      <a class="call-btn" href="tel:01035902597">&#x1F4DE; 청평점 전화하기</a>
+    </div>
+  </div>
+
+
+  <!-- ══════════════════════════════════════════ -->
+  <!-- 경주                                        -->
+  <!-- ══════════════════════════════════════════ -->
+  <div class="branch-content" id="branch-경주">
+
+    <div class="notice-box green">
+      <strong>&#x1F3D5;&#xFE0F; 글램독 경주점에 오신 것을 환영합니다!</strong>
+      아래 이용안내를 꼼꼼히 확인하시고, 편안한 스테이 되세요.
+    </div>
+
+    <div class="card">
+      <div class="card-title"><span class="card-title-icon">&#x1F556;</span> 입퇴실 안내</div>
+      <table class="time-table">
+        <tr><td class="time-label">입실(체크인)</td><td>오후 3:00 (15:00)</td></tr>
+        <tr><td class="time-label">퇴실(체크아웃)</td><td>오전 11:00</td></tr>
+        <tr><td class="time-label">늦은 체크아웃</td><td>사전 문의 필요 (추가 요금 발생)</td></tr>
+      </table>
+    </div>
+
+    <div class="card">
+      <div class="card-title"><span class="card-title-icon">&#x1F436;</span> 반려동물 안내</div>
+      <ul class="rule-list">
+        <li><strong>15kg 이하</strong>만 입실 가능 / 객실당 <strong>최대 2마리</strong></li>
+        <li>마킹하는 강아지는 <strong>매너밴드 필수</strong> 착용</li>
+        <li class="warn">입질이 있거나 사나운 강아지는 입실이 제한될 수 있습니다</li>
+        <li class="warn">반려견을 객실에 혼자 두고 외출 불가 (방치 사고 시 책임 없음)</li>
+        <li>애견 드라이룸은 제조사 권장 <strong>10kg 미만</strong> 사용</li>
+        <li>별도 세탁이 필요한 경우 세탁비가 청구될 수 있습니다</li>
+      </ul>
+      <div class="amenity-grid">
+        <div class="amenity-item">&#x1F4A8; 드라이룸</div>
+        <div class="amenity-item">&#x1F9F4; 샴푸</div>
+        <div class="amenity-item">&#x1F963; 밥그릇</div>
+        <div class="amenity-item">&#x1F9F9; 배변패드</div>
+        <div class="amenity-item">&#x1F9FA; 수건</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title"><span class="card-title-icon">&#x1F4B0;</span> 추가 요금</div>
+      <table class="price-table">
+        <tr>
+          <td class="price-label">인원 추가</td>
+          <td>전 객실 2인 기준, 초과 시 1인당<br><span class="price-note">24개월 이상 / 현장 결제</span></td>
+          <td class="price-value">20,000원</td>
+        </tr>
+        <tr>
+          <td class="price-label">반려견</td>
+          <td>10kg 이하 1마리 무료<br>초과 시 / 1마리 초과 시<br><span class="price-note">10kg 초과 시</span></td>
+          <td class="price-value"><br>10,000원<br>20,000원</td>
+        </tr>
+        <tr>
+          <td class="price-label">바베큐</td>
+          <td>숯 + 그릴<br>숯 추가</td>
+          <td class="price-value">20,000원<br>5,000원</td>
+        </tr>
+        <tr>
+          <td class="price-label">카드키 분실</td>
+          <td></td>
+          <td class="price-value">10,000원</td>
+        </tr>
+      </table>
+    </div>
+
+    <div class="card">
+      <div class="card-title"><span class="card-title-icon">&#x1F525;</span> 바베큐 이용안내</div>
+      <ul class="rule-list">
+        <li><strong>숯 BBQ:</strong> 야외 전용 (총 10곳)</li>
+        <li><strong>가스(구이바다):</strong> 객실 내 테라스에서 가능</li>
+        <li class="warn">단, 각 동 203호는 테라스 BBQ 불가</li>
+        <li>야외 천막 자리는 입실 시 <strong>선착순</strong> (전화 예약 불가)</li>
+        <li>기본 양념(간장, 식용유, 소금, 설탕, 후추) 요청 시 제공</li>
+        <li class="warn">개인 화기(부르스타 등) 반입 금지 — 적발 시 <strong>강제 퇴실</strong></li>
+        <li class="warn">사재 숯, 전기그릴(자이글 등) 사용 불가 (화재 위험)</li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <div class="card-title"><span class="card-title-icon">&#x26A0;&#xFE0F;</span> 이용주의사항</div>
+      <ul class="rule-list">
+        <li>이동 시 반드시 <strong>목줄 착용</strong> (인근 차도 위험)</li>
+        <li>복층형 객실 이용 시 유아·아동 안전에 각별히 주의해 주세요</li>
+        <li>건물 내외부 CCTV 녹화 중</li>
+        <li>음주 및 고성방가를 자제해 주세요</li>
+        <li class="warn">객실 내 고기·생선·청국장 등 조리 금지 (지정 바베큐장 이용)</li>
+        <li>시설 파손·침구 오염 시 비용이 청구됩니다</li>
+        <li>흡연은 펜스 밖 지정 장소에서만 가능</li>
+        <li>미성년자는 보호자 동행 필수</li>
+        <li>귀중품 분실 책임은 투숙객 본인에게 있습니다</li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <div class="card-title"><span class="card-title-icon">&#x1F3E0;</span> 객실 안내</div>
+      <ul class="room-type-list">
+        <li><span class="room-label">복층형</span> — 각 동 202호</li>
+        <li><span class="room-label">투룸형</span> — 각 동 1층</li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <div class="card-title"><span class="card-title-icon">&#x1F4DE;</span> 지점 연락처</div>
+      <div class="info-row">
+        <div class="info-icon">&#x1F4CD;</div>
+        <div class="info-label">주소</div>
+        <div class="info-value">경북 경주시 (상세 주소 추가 필요)</div>
+      </div>
+      <div class="info-row">
+        <div class="info-icon">&#x1F4F1;</div>
+        <div class="info-label">전화</div>
+        <div class="info-value">010-2006-2597</div>
+      </div>
+      <a class="call-btn" href="tel:01020062597">&#x1F4DE; 경주점 전화하기</a>
+    </div>
+  </div>
+
+
+  <!-- ══════════════════════════════════════════ -->
+  <!-- 영흥도                                      -->
+  <!-- ══════════════════════════════════════════ -->
+  <div class="branch-content" id="branch-영흥도">
+
+    <div class="notice-box green">
+      <strong>&#x1F3D6;&#xFE0F; 글램독 영흥도점에 오신 것을 환영합니다!</strong>
+      아래 이용안내를 꼼꼼히 확인하시고, 편안한 스테이 되세요.
+    </div>
+
+    <div class="card">
+      <div class="card-title"><span class="card-title-icon">&#x1F556;</span> 입퇴실 안내</div>
+      <table class="time-table">
+        <tr><td class="time-label">입실(체크인)</td><td>오후 3:00 (15:00)</td></tr>
+        <tr><td class="time-label">퇴실(체크아웃)</td><td>오전 11:00</td></tr>
+        <tr><td class="time-label">늦은 체크아웃</td><td>사전 문의 필요 (추가 요금 발생)</td></tr>
+      </table>
+    </div>
+
+    <div class="card">
+      <div class="card-title"><span class="card-title-icon">&#x1F436;</span> 반려동물 안내</div>
+      <ul class="rule-list">
+        <li><strong>15kg 이하</strong>만 입실 가능 / 객실당 <strong>최대 2마리</strong></li>
+        <li>마킹하는 강아지는 <strong>매너밴드 필수</strong> 착용</li>
+        <li class="warn">입질이 있거나 사나운 강아지는 입실이 제한될 수 있습니다</li>
+        <li class="warn">반려견을 객실에 혼자 두고 외출 불가 (방치 사고 시 책임 없음)</li>
+        <li>애견 드라이룸은 제조사 권장 <strong>10kg 미만</strong> 사용</li>
+        <li>별도 세탁이 필요한 경우 세탁비가 청구될 수 있습니다</li>
+      </ul>
+      <div class="amenity-grid">
+        <div class="amenity-item">&#x1F4A8; 드라이룸</div>
+        <div class="amenity-item">&#x1F9F4; 샴푸</div>
+        <div class="amenity-item">&#x1F963; 밥그릇</div>
+        <div class="amenity-item">&#x1F9F9; 배변패드</div>
+        <div class="amenity-item">&#x1F9FA; 수건</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title"><span class="card-title-icon">&#x1F4B0;</span> 추가 요금</div>
+      <table class="price-table">
+        <tr>
+          <td class="price-label">인원 추가</td>
+          <td>전 객실 2인 기준, 초과 시 1인당<br><span class="price-note">24개월 이상 / 현장 결제</span></td>
+          <td class="price-value">20,000원</td>
+        </tr>
+        <tr>
+          <td class="price-label">반려견</td>
+          <td>10kg 이하 1마리 무료<br>초과 시 / 1마리 초과 시<br><span class="price-note">10kg 초과 시</span></td>
+          <td class="price-value"><br>10,000원<br>20,000원</td>
+        </tr>
+        <tr>
+          <td class="price-label">바베큐</td>
+          <td>숯 + 그릴<br>숯 추가</td>
+          <td class="price-value">20,000원<br>5,000원</td>
+        </tr>
+      </table>
+    </div>
+
+    <div class="card">
+      <div class="card-title"><span class="card-title-icon">&#x1F525;</span> 바베큐 이용안내</div>
+      <ul class="rule-list">
+        <li>강아지 안전을 위해 <strong>숯 미사용, 가스그릴 사용</strong></li>
+        <li><strong>1층:</strong> 객실 앞 테라스 / <strong>2층:</strong> 객실 내 테라스 (옥상 불가)</li>
+        <li>대여료: <strong>20,000원</strong></li>
+        <li>기본 양념(간장, 식용유, 소금, 설탕, 후추) 요청 시 제공</li>
+        <li class="warn">개인 화기(부르스타 등) 반입 금지 — 적발 시 <strong>강제 퇴실</strong></li>
+        <li class="warn">사재 숯, 전기그릴(자이글 등) 사용 불가 (화재 위험)</li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <div class="card-title"><span class="card-title-icon">&#x26A0;&#xFE0F;</span> 이용주의사항</div>
+      <ul class="rule-list">
+        <li>이동 시 반드시 <strong>목줄 착용</strong> (인근 차도 위험)</li>
+        <li>복층형 객실 이용 시 유아·아동 안전에 각별히 주의해 주세요</li>
+        <li>건물 내외부 CCTV 녹화 중</li>
+        <li>음주 및 고성방가를 자제해 주세요</li>
+        <li class="warn">객실 내 고기·생선·청국장 등 조리 금지 (지정 바베큐장 이용)</li>
+        <li>시설 파손·침구 오염 시 비용이 청구됩니다</li>
+        <li>흡연은 펜스 밖 지정 장소에서만 가능</li>
+        <li>미성년자는 보호자 동행 필수</li>
+        <li>귀중품 분실 책임은 투숙객 본인에게 있습니다</li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <div class="card-title"><span class="card-title-icon">&#x1F3E0;</span> 객실 안내</div>
+      <ul class="room-type-list">
+        <li><span class="room-label">복층형</span> — 101~104호</li>
+        <li><span class="room-label">투룸형</span> — 201호, 301호</li>
+      </ul>
+      <div class="branch-note">
+        <strong>&#x1F511; 영흥도점 안내</strong>
+        키링(열쇠고리)은 퇴실 시 반드시 객실에 두고 나가주세요. 가져가지 마세요!
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title"><span class="card-title-icon">&#x1F4DE;</span> 지점 연락처</div>
+      <div class="info-row">
+        <div class="info-icon">&#x1F4CD;</div>
+        <div class="info-label">주소</div>
+        <div class="info-value">인천 옹진군 영흥면 (상세 주소 추가 필요)</div>
+      </div>
+      <div class="info-row">
+        <div class="info-icon">&#x1F4F1;</div>
+        <div class="info-label">전화</div>
+        <div class="info-value">010-8650-2597</div>
+      </div>
+      <a class="call-btn" href="tel:01086502597">&#x1F4DE; 영흥도점 전화하기</a>
+    </div>
+  </div>
+
+
+  <!-- ══════════════════════════════════════════ -->
+  <!-- 양양                                        -->
+  <!-- ══════════════════════════════════════════ -->
+  <div class="branch-content" id="branch-양양">
+
+    <div class="notice-box green">
+      <strong>&#x1F3D6;&#xFE0F; 글램독 양양점에 오신 것을 환영합니다!</strong>
+      아래 이용안내를 꼼꼼히 확인하시고, 편안한 스테이 되세요.
+    </div>
+
+    <div class="card">
+      <div class="card-title"><span class="card-title-icon">&#x1F556;</span> 입퇴실 안내</div>
+      <table class="time-table">
+        <tr><td class="time-label">입실(체크인)</td><td>오후 3:00 (15:00)</td></tr>
+        <tr><td class="time-label">퇴실(체크아웃)</td><td>오전 11:00</td></tr>
+        <tr><td class="time-label">늦은 체크아웃</td><td>사전 문의 필요 (추가 요금 발생)</td></tr>
+      </table>
+    </div>
+
+    <div class="card">
+      <div class="card-title"><span class="card-title-icon">&#x1F436;</span> 반려동물 안내</div>
+      <ul class="rule-list">
+        <li><strong>15kg 이하</strong>만 입실 가능 / 객실당 <strong>최대 2마리</strong></li>
+        <li>마킹하는 강아지는 <strong>매너밴드 필수</strong> 착용</li>
+        <li class="warn">입질이 있거나 사나운 강아지는 입실이 제한될 수 있습니다</li>
+        <li class="warn">반려견을 객실에 혼자 두고 외출 불가 (방치 사고 시 책임 없음)</li>
+        <li>애견 드라이룸은 제조사 권장 <strong>10kg 미만</strong> 사용</li>
+        <li>별도 세탁이 필요한 경우 세탁비가 청구될 수 있습니다</li>
+      </ul>
+      <div class="amenity-grid">
+        <div class="amenity-item">&#x1F4A8; 드라이룸</div>
+        <div class="amenity-item">&#x1F9F4; 샴푸</div>
+        <div class="amenity-item">&#x1F963; 밥그릇</div>
+        <div class="amenity-item">&#x1F9F9; 배변패드</div>
+        <div class="amenity-item">&#x1F9FA; 수건</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title"><span class="card-title-icon">&#x1F4B0;</span> 추가 요금</div>
+      <table class="price-table">
+        <tr>
+          <td class="price-label">인원 추가</td>
+          <td>전 객실 2인 기준, 초과 시 1인당<br><span class="price-note">24개월 이상 / 현장 결제</span></td>
+          <td class="price-value">20,000원</td>
+        </tr>
+        <tr>
+          <td class="price-label">반려견</td>
+          <td>10kg 이하 1마리 무료<br>초과 시 / 1마리 초과 시<br><span class="price-note">10kg 초과 시</span></td>
+          <td class="price-value"><br>10,000원<br>20,000원</td>
+        </tr>
+        <tr>
+          <td class="price-label">바베큐</td>
+          <td>숯 + 그릴<br>숯 추가</td>
+          <td class="price-value">20,000원<br>5,000원</td>
+        </tr>
+        <tr>
+          <td class="price-label">카드키 분실</td>
+          <td></td>
+          <td class="price-value">20,000원</td>
+        </tr>
+      </table>
+    </div>
+
+    <div class="card">
+      <div class="card-title"><span class="card-title-icon">&#x1F525;</span> 바베큐 이용안내</div>
+      <ul class="rule-list">
+        <li><strong>실내:</strong> 솥뚜껑 바베큐 (공용식당 이용, 강아지 안전을 위해 가스그릴 사용, 객실 내 불가)</li>
+        <li><strong>실외:</strong> 숯 바베큐</li>
+        <li>비용: 숯+그릴 <strong>20,000원</strong> / 숯 추가 <strong>5,000원</strong> / 솥뚜껑 객실당 <strong>20,000원</strong></li>
+        <li>공용식당 물품 사용 후 <strong>설거지 및 지정 장소 반납</strong> 필수</li>
+        <li>야외 자리는 입실 시 <strong>선착순</strong> (전화 예약 불가)</li>
+        <li>기본 양념(간장, 식용유, 소금, 설탕, 후추) 요청 시 제공</li>
+        <li class="warn">개인 화기(부르스타 등) 반입 금지 — 적발 시 <strong>강제 퇴실</strong></li>
+        <li class="warn">사재 숯, 전기그릴(자이글 등) 사용 불가 (화재 위험)</li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <div class="card-title"><span class="card-title-icon">&#x26A0;&#xFE0F;</span> 이용주의사항</div>
+      <ul class="rule-list">
+        <li>이동 시 반드시 <strong>목줄 착용</strong> (인근 차도 위험)</li>
+        <li>건물 내외부 CCTV 녹화 중</li>
+        <li>음주 및 고성방가를 자제해 주세요</li>
+        <li class="warn">객실 내 고기·생선·청국장 등 조리 금지 (지정 바베큐장 이용)</li>
+        <li>시설 파손·침구 오염 시 비용이 청구됩니다</li>
+        <li>흡연은 펜스 밖 지정 장소에서만 가능</li>
+        <li>미성년자는 보호자 동행 필수</li>
+        <li>귀중품 분실 책임은 투숙객 본인에게 있습니다</li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <div class="card-title"><span class="card-title-icon">&#x1F3E0;</span> 객실 안내</div>
+      <ul class="room-type-list">
+        <li><span class="room-label">펜션형</span> — 취사 가능 (단, 냄새나는 음식 조리 불가)</li>
+        <li><span class="room-label">일반형 A·B / 테라스형</span> — 취사 불가, 공용주방 21시까지 이용 가능</li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <div class="card-title"><span class="card-title-icon">&#x1F4DE;</span> 지점 연락처</div>
+      <div class="info-row">
+        <div class="info-icon">&#x1F4CD;</div>
+        <div class="info-label">주소</div>
+        <div class="info-value">강원도 양양군 (상세 주소 추가 필요)</div>
+      </div>
+      <div class="info-row">
+        <div class="info-icon">&#x1F4F1;</div>
+        <div class="info-label">전화</div>
+        <div class="info-value">010-9397-2597</div>
+      </div>
+      <a class="call-btn" href="tel:01093972597">&#x1F4DE; 양양점 전화하기</a>
+    </div>
+  </div>
+
+
+  <!-- ══════════════════════════════════════════ -->
+  <!-- 통영                                        -->
+  <!-- ══════════════════════════════════════════ -->
+  <div class="branch-content" id="branch-통영">
+
+    <div class="notice-box green">
+      <strong>&#x1F30A; 글램독 통영점에 오신 것을 환영합니다!</strong>
+      아래 이용안내를 꼼꼼히 확인하시고, 편안한 스테이 되세요.
+    </div>
+
+    <div class="card">
+      <div class="card-title"><span class="card-title-icon">&#x1F556;</span> 입퇴실 안내</div>
+      <table class="time-table">
+        <tr><td class="time-label">입실(체크인)</td><td>오후 3:00 (15:00)</td></tr>
+        <tr><td class="time-label">퇴실(체크아웃)</td><td>오전 11:00</td></tr>
+        <tr><td class="time-label">늦은 체크아웃</td><td>사전 문의 필요 (추가 요금 발생)</td></tr>
+      </table>
+    </div>
+
+    <div class="card">
+      <div class="card-title"><span class="card-title-icon">&#x1F436;</span> 반려동물 안내</div>
+      <ul class="rule-list">
+        <li><strong>15kg 이하</strong>만 입실 가능 / 객실당 <strong>최대 2마리</strong></li>
+        <li>마킹하는 강아지는 <strong>매너밴드 필수</strong> 착용</li>
+        <li class="warn">입질이 있거나 사나운 강아지는 입실이 제한될 수 있습니다</li>
+        <li class="warn">반려견을 객실에 혼자 두고 외출 불가 (방치 사고 시 책임 없음)</li>
+        <li>애견 드라이룸은 제조사 권장 <strong>10kg 미만</strong> 사용</li>
+        <li>별도 세탁이 필요한 경우 세탁비가 청구될 수 있습니다</li>
+      </ul>
+      <div class="amenity-grid">
+        <div class="amenity-item">&#x1F4A8; 드라이룸</div>
+        <div class="amenity-item">&#x1F9F4; 샴푸</div>
+        <div class="amenity-item">&#x1F963; 밥그릇</div>
+        <div class="amenity-item">&#x1F9F9; 배변패드</div>
+        <div class="amenity-item">&#x1F9FA; 수건</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title"><span class="card-title-icon">&#x1F4B0;</span> 추가 요금</div>
+      <table class="price-table">
+        <tr>
+          <td class="price-label">인원 추가</td>
+          <td>전 객실 2인 기준, 초과 시 1인당<br><span class="price-note">24개월 이상 / 현장 결제</span></td>
+          <td class="price-value">20,000원</td>
+        </tr>
+        <tr>
+          <td class="price-label">반려견</td>
+          <td>10kg 이하 1마리 무료<br>초과 시 / 1마리 초과 시<br><span class="price-note">10kg 초과 시</span></td>
+          <td class="price-value"><br>10,000원<br>20,000원</td>
+        </tr>
+        <tr>
+          <td class="price-label">바베큐</td>
+          <td>숯 + 그릴<br>숯 추가</td>
+          <td class="price-value">20,000원<br>5,000원</td>
+        </tr>
+        <tr>
+          <td class="price-label">카드키 분실</td>
+          <td></td>
+          <td class="price-value">10,000원</td>
+        </tr>
+      </table>
+    </div>
+
+    <div class="card">
+      <div class="card-title"><span class="card-title-icon">&#x1F525;</span> 바베큐 이용안내</div>
+      <ul class="rule-list">
+        <li>강아지 안전을 위해 <strong>숯 미사용, 가스그릴 사용</strong></li>
+        <li>객실 내 테라스에서 가능</li>
+        <li class="warn">단, 209호·309호는 테라스 BBQ 불가</li>
+        <li class="warn">객실 내 고기·생선·청국장 조리 금지</li>
+        <li>기본 양념(간장, 식용유, 소금, 설탕, 후추) 요청 시 제공</li>
+        <li class="warn">개인 화기(부르스타 등) 반입 금지 — 적발 시 <strong>강제 퇴실</strong></li>
+        <li class="warn">사재 숯, 전기그릴(자이글 등) 사용 불가 (화재 위험)</li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <div class="card-title"><span class="card-title-icon">&#x26A0;&#xFE0F;</span> 이용주의사항</div>
+      <ul class="rule-list">
+        <li>이동 시 반드시 <strong>목줄 착용</strong> (인근 차도 위험)</li>
+        <li>건물 내외부 CCTV 녹화 중</li>
+        <li>음주 및 고성방가를 자제해 주세요</li>
+        <li>시설 파손·침구 오염 시 비용이 청구됩니다</li>
+        <li>흡연은 펜스 밖 지정 장소에서만 가능</li>
+        <li>미성년자는 보호자 동행 필수</li>
+        <li>귀중품 분실 책임은 투숙객 본인에게 있습니다</li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <div class="card-title"><span class="card-title-icon">&#x1F4DE;</span> 지점 연락처</div>
+      <div class="info-row">
+        <div class="info-icon">&#x1F4CD;</div>
+        <div class="info-label">주소</div>
+        <div class="info-value">경남 통영시 (상세 주소 추가 필요)</div>
+      </div>
+      <div class="info-row">
+        <div class="info-icon">&#x1F4F1;</div>
+        <div class="info-label">전화</div>
+        <div class="info-value">010-3516-2597</div>
+      </div>
+      <a class="call-btn" href="tel:01035162597">&#x1F4DE; 통영점 전화하기</a>
+    </div>
+  </div>
+
+</div><!-- /container -->
+
+<script>
+const params = new URLSearchParams(window.location.search);
+const branchParam = decodeURIComponent(params.get("branch") || "");
+
+function switchBranch(tabEl) {
+  document.querySelectorAll(".branch-tab").forEach(t => t.classList.remove("active"));
+  tabEl.classList.add("active");
+  const branch = tabEl.dataset.branch;
+  document.querySelectorAll(".branch-content").forEach(c => c.classList.remove("active"));
+  const target = document.getElementById("branch-" + branch);
+  if (target) target.classList.add("active");
+  window.scrollTo({ top: 0, behavior: "smooth" });
+}
+
+window.addEventListener("DOMContentLoaded", () => {
+  if (branchParam) {
+    const tab = document.querySelector(`.branch-tab[data-branch="${branchParam}"]`);
+    if (tab) switchBranch(tab);
+  }
+});
+</script>
+</body>
+</html>
