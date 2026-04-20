@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
 <meta http-equiv="refresh" content="1800">
 <title>글램독 통영 체크인 리스트</title>
-<!-- v2026-04-20 12:42 -->
+<!-- v2026-04-20 13:03 -->
 <style>
   :root {
     --navy: #1B3A5C;
@@ -546,7 +546,7 @@
     <button class="btn-view"        id="btnRes"   onclick="setView('rescal')">🏠 예약현황</button>
     <button class="btn-view"        id="btnField" onclick="setView('field')">💰 현장기록</button>
   </div>
-  <span class="update-time">갱신: 2026-04-20 12:42</span>
+  <span class="update-time">갱신: 2026-04-20 13:03</span>
 </div>
 <div class="content" id="content">
   <div class="print-header" id="printHeader"></div>
@@ -792,11 +792,15 @@ function loadWelcomeData(dateStr) {
     renderTable();
     return;
   }
+  // 1) 먼저 현재 빈 데이터로 즉시 렌더 (현장기록 버튼 포함)
+  _welcomeData = {};
+  renderTable();
+  // 2) 비동기로 웰컴 데이터 가져와 재렌더
   fetch(GAS_ENDPOINT + '?action=getDayWelcomeData&date=' + dateStr + '&branch=' + encodeURIComponent(currentBranch))
     .then(function(r) { return r.json(); })
     .then(function(res) {
       var dayData = {};
-      if (res.ok && res.data) {
+      if (res && res.ok && res.data) {
         res.data.forEach(function(e) {
           if (e.room) dayData[e.room] = e;
         });
@@ -804,10 +808,12 @@ function loadWelcomeData(dateStr) {
       var map = {}; map[dateStr] = dayData;
       _welcomeData = map;
       _welcomeCache[dateStr] = map;
-    }, function() {
-      _welcomeData = {};
+      renderTable();  // 웰컴 데이터 반영해 재렌더
     })
-    .then(function() { renderTable(); });
+    .catch(function(err) {
+      // 오류 시 이미 위에서 renderTable() 호출됨 — 웰컴 없이 표시
+      console.warn('웰컴 데이터 fetch 실패:', err);
+    });
 }
 
 loadWelcomeData(currentDate);  // 페이지 로드 시 웰컴 + 렌더
