@@ -718,19 +718,23 @@
     <div class="card">
       <div class="card-title"><span class="card-title-icon">🕐</span> 예상 도착 시간</div>
       <div class="field">
-        <label>입실은 오후 2시부터 가능합니다<span class="req">*</span></label>
+        <label>입실은 오후 3시부터 가능합니다 (펜션 기준)<span class="req">*</span></label>
         <div class="time-grid">
-          <button class="time-btn" data-time="14:00" onclick="selectTime(this)">14:00</button>
           <button class="time-btn" data-time="15:00" onclick="selectTime(this)">15:00</button>
           <button class="time-btn" data-time="16:00" onclick="selectTime(this)">16:00</button>
           <button class="time-btn" data-time="17:00" onclick="selectTime(this)">17:00</button>
           <button class="time-btn" data-time="18:00" onclick="selectTime(this)">18:00</button>
+          <button class="time-btn" data-time="19:00" onclick="selectTime(this)">19:00</button>
           <button class="time-btn" data-time="direct" onclick="selectTime(this)">직접 입력</button>
         </div>
         <div class="time-direct" id="timeDirect">
-          <input type="time" id="timeInput" min="14:00" max="23:59">
+          <input type="time" id="timeInput" min="15:00" max="23:59">
         </div>
         <div class="err-msg" id="err-time">도착 예정 시간을 선택해 주세요.</div>
+      </div>
+      <div style="margin-top:12px; padding:12px 14px; background:#fff8e1; border-left:3px solid #f59e0b; border-radius:8px; font-size:13px; color:#78350f; line-height:1.7;">
+        ⏰ <strong>얼리 체크인</strong>이 필요하신 경우, <strong>사전 전화 상담</strong> 후 가능하며 <strong>추가 요금</strong>이 발생합니다.<br>
+        🌙 <strong>19시 이후 도착</strong> 예정이신 경우, <strong>반드시 사전에 지점으로 연락</strong> 주세요.
       </div>
     </div>
   </div>
