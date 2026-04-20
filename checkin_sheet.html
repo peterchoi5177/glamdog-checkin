@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
 <meta http-equiv="refresh" content="1800">
 <title>글램독 체크인 리스트 (본사)</title>
-<!-- v2026-04-20 14:04 -->
+<!-- v2026-04-20 14:12 -->
 <style>
   :root {
     --navy: #1B3A5C;
@@ -529,7 +529,7 @@
     <option value="">🏠 예약현황 (지점 선택)</option>
     <option value="cl_6a85a13087.html">가평(가평점)</option><option value="cl_806a86626b.html">가평(청평점)</option><option value="cl_8eacf6d6c1.html">경주</option><option value="cl_a88bfd0a7f.html">영흥도</option><option value="cl_9edad9ddd2.html">양양</option><option value="cl_d3039f7a59.html">통영</option>
   </select>
-  <span class="update-time">갱신: 2026-04-20 14:04</span>
+  <span class="update-time">갱신: 2026-04-20 14:12</span>
 </div>
 <div class="tabs" id="tabs"></div>
 <div class="content" id="content">
@@ -1011,12 +1011,20 @@ function fdShowBranch(branch) {
   var rows="",subtotal=0;
   filtered.forEach(function(e){
     subtotal+=Number(e.total)||0;
+    var parts=[];
+    var bbqCnt=Math.round((e.bbq||0)/20000); if(bbqCnt>0) parts.push('BBQ '+bbqCnt+'세트');
+    var pCnt=e.personCount||0; if(pCnt>0) parts.push('인원 +'+pCnt+'명');
+    var dCnt=e.dogCount||0; if(dCnt>0) parts.push('강아지 +'+dCnt+'마리');
+    var bdCnt=e.bigDogCount||0; if(bdCnt>0) parts.push('무게초과 '+bdCnt+'마리');
+    if(e.etcNote) parts.push(e.etcNote);
+    var breakdown=parts.length?parts.join('<br>'):'<span style="color:#bbb">—</span>';
     rows+='<tr>'+(branch?'':'<td><span class="fd-branch-label">'+e.branch+'</span></td>')
       +'<td>'+e.date+'</td><td>'+e.room+'</td><td>'+e.guest+'</td>'
+      +'<td style="font-size:12px;line-height:1.7">'+breakdown+'</td>'
       +'<td><span class="fd-pay-badge">'+e.payMethod+'</span></td>'
       +'<td style="text-align:right;font-weight:700">'+Number(e.total).toLocaleString()+'원</td></tr>';
   });
-  var thead='<thead><tr>'+(branch?'':'<th>지점</th>')+'<th>날짜</th><th>객실</th><th>예약자</th><th>결제</th><th>금액</th></tr></thead>';
+  var thead='<thead><tr>'+(branch?'':'<th>지점</th>')+'<th>날짜</th><th>객실</th><th>예약자</th><th>내역</th><th>결제</th><th>금액</th></tr></thead>';
   document.getElementById("fdDetailArea").innerHTML='<table class="fd-table">'+thead+'<tbody>'+rows+'</tbody></table>'
     +'<div style="text-align:right;font-size:14px;font-weight:700;color:#1B3A5C;padding:10px 0">소계: '+subtotal.toLocaleString()+'원</div>';
 }
