@@ -754,8 +754,8 @@
         <label>동반 반려견 수<span class="req">*</span></label>
         <div style="display:flex; align-items:center; gap:12px;">
           <div class="counter">
-            <button class="counter-btn" id="dogMinus" onclick="changeCount('dog', -1)">−</button>
-            <div class="counter-value" id="dogVal">1</div>
+            <button class="counter-btn" id="dogMinus" onclick="changeCount('dog', -1)" disabled>−</button>
+            <div class="counter-value" id="dogVal">0</div>
             <button class="counter-btn" id="dogPlus" onclick="changeCount('dog', 1)">+</button>
           </div>
           <span style="font-size:15px; color:var(--text-mid);">마리 (최대 3마리)</span>
@@ -1031,7 +1031,7 @@ let currentStep = 1;
 const TOTAL_STEPS = 5;
 
 let personCount = 1;
-let dogCount    = 1;
+let dogCount    = 0;
 let selectedTime = "";
 let bbqChoice    = "";
 let bbqTime      = "";
@@ -1082,6 +1082,9 @@ function showStep(n) {
   }
 
   window.scrollTo({ top: 0, behavior: "smooth" });
+
+  // 스텝 4 진입 시 추가요금 즉시 계산
+  if (n === 4) updateExtraCharges();
 }
 
 function nextStep() {
@@ -1115,6 +1118,9 @@ function validateStep(n) {
   }
 
   if (n === 3) {
+    // 0마리 선택 시 바로 통과
+    if (dogCount === 0) return true;
+
     let ok = true;
     for (let i = 0; i < dogCount; i++) {
       const nameEl = document.getElementById("dog-name-" + i);
@@ -1184,9 +1190,9 @@ function changeCount(type, delta) {
     document.getElementById("personPlus").disabled  = personCount >= 20;
   } else if (type === "dog") {
     const prev = dogCount;
-    dogCount = Math.max(1, Math.min(3, dogCount + delta));
+    dogCount = Math.max(0, Math.min(3, dogCount + delta));
     document.getElementById("dogVal").textContent = dogCount;
-    document.getElementById("dogMinus").disabled = dogCount <= 1;
+    document.getElementById("dogMinus").disabled = dogCount <= 0;
     document.getElementById("dogPlus").disabled  = dogCount >= 3;
     if (dogCount !== prev) renderDogFields();
   }
@@ -1199,22 +1205,35 @@ const WEIGHTS = ["5kg 미만", "5-10kg", "10-15kg"];
 
 function renderDogFields() {
   const wrap = document.getElementById("dogFields");
-  // 기존 값 저장
-  const savedNames  = [];
-  const savedBreeds = [];
+
+  // 기존 입력값 저장 (최대 3마리)
+  const savedNames   = [];
+  const savedBreeds  = [];
   const savedWeights = [];
-  for (let i = 0; i < 5; i++) {
+  for (let i = 0; i < 3; i++) {
     savedNames[i]   = document.getElementById("dog-name-"  + i)?.value || "";
     savedBreeds[i]  = document.getElementById("dog-breed-" + i)?.value || "";
     savedWeights[i] = document.querySelector(`[data-dog="${i}"].weight-btn.selected`)?.dataset.weight || "";
   }
 
   wrap.innerHTML = "";
+
+  // 0마리 선택 시 안내 메시지
+  if (dogCount === 0) {
+    wrap.innerHTML = `
+      <div style="padding:16px; background:#f0fdf4; border-radius:10px; text-align:center; font-size:14px; color:#166534;">
+        🐾 반려견 없이 방문하시는군요!<br>
+        <span style="font-size:13px; color:#4ade80;">다음 단계로 진행해 주세요.</span>
+      </div>`;
+    return;
+  }
+
+  // 선택한 마리수만큼 카드 렌더링
   for (let i = 0; i < dogCount; i++) {
     const card = document.createElement("div");
     card.className = "dog-card";
     card.innerHTML = `
-      <div class="dog-card-title">🐾 반려견 ${dogCount > 1 ? (i + 1) + "번째" : ""}</div>
+      <div class="dog-card-title">🐾 반려견${dogCount > 1 ? " " + (i + 1) + "번째" : ""}</div>
       <div class="dog-row">
         <div class="field">
           <label>이름<span class="req">*</span></label>
@@ -1272,6 +1291,7 @@ function selectBBQ(val) {
   const timeField = document.getElementById("bbqTimeField");
   if (timeField) timeField.style.display = (val === "yes") ? "" : "none";
   if (val === "no") { bbqTime = ""; }
+  updateExtraCharges();
 }
 
 function selectBBQTime(btn) {
@@ -1280,6 +1300,7 @@ function selectBBQTime(btn) {
   bbqTime = btn.dataset.bbqtime;
   const err = document.getElementById("err-bbq-time");
   if (err) err.classList.remove("show");
+  updateExtraCharges();
 }
 
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
