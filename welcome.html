@@ -1368,26 +1368,26 @@ function updateExtraCharges() {
       + `<div style="margin-top:8px; font-size:16px; font-weight:700; color:#1e293b;">합계: ${total.toLocaleString()}원</div>`;
   }
 
-  // 계좌 정보 — 해당 지점 강조 + 전 지점 목록 표시
+  // 계좌 정보 — 해당 지점 계좌 1개만 표시
   const acctEl = document.getElementById("accountInfo");
+  const acct   = BRANCH_ACCOUNTS[BRANCH];
   if (acctEl) {
-    const entries = Object.entries(BRANCH_ACCOUNTS);
-    acctEl.innerHTML = entries.map(([branch, acct], idx) => {
-      const isMatch = BRANCH && branch === BRANCH;
-      const bg      = isMatch ? "background:#fef9c3; border:1.5px solid #f59e0b;" : "background:#fff; border:1px solid #f3e8c0;";
-      return `
-        <div style="${bg} border-radius:8px; padding:10px 12px; margin-bottom:8px; display:flex; align-items:center; justify-content:space-between; gap:8px;">
-          <div style="flex:1; min-width:0;">
-            ${isMatch ? '<div style="font-size:11px; font-weight:700; color:#b45309; margin-bottom:2px;">✅ 예약 지점</div>' : ''}
-            <div style="font-size:12px; color:#92400e; font-weight:600;">${branch}</div>
-            <div style="font-size:15px; font-weight:800; color:#1e293b; letter-spacing:0.06em; margin-top:2px;">${acct.number}</div>
+    if (acct) {
+      acctEl.innerHTML = `
+        <div style="display:flex; align-items:center; justify-content:space-between; gap:10px;">
+          <div style="flex:1;">
+            <div style="font-size:12px; color:#92400e; margin-bottom:2px;">은행 <strong style="color:#1e293b;">${acct.bank}</strong></div>
+            <div style="font-size:12px; color:#92400e; margin-bottom:4px;">예금주 <strong style="color:#1e293b;">${acct.holder}</strong></div>
+            <div style="font-size:19px; font-weight:800; color:#1e293b; letter-spacing:0.07em;">${acct.number}</div>
           </div>
           <button onclick="copyAccountNum('${acct.number}', this)"
-            style="flex-shrink:0; padding:8px 14px; background:#f59e0b; color:#fff; border:none; border-radius:8px; font-size:13px; font-weight:700; cursor:pointer; white-space:nowrap;">
+            style="flex-shrink:0; padding:10px 18px; background:#f59e0b; color:#fff; border:none; border-radius:8px; font-size:14px; font-weight:700; cursor:pointer;">
             📋 복사
           </button>
         </div>`;
-    }).join("");
+    } else {
+      acctEl.innerHTML = `<div style="color:#94a3b8; font-size:13px;">지점 계좌는 예약 링크를 통해 접속하시면 표시됩니다.</div>`;
+    }
   }
 
   // 결제 안내 섹션 항상 표시
