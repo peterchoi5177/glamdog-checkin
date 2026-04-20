@@ -829,10 +829,12 @@
 
         <!-- 지점 계좌 -->
         <div id="branchAccountBox" style="padding:14px; background:#fffbeb; border:1px solid #fde68a; border-radius:10px; margin-bottom:14px;">
-          <div style="font-size:12px; font-weight:700; color:#92400e; margin-bottom:8px;">🏦 지점 공식 계좌</div>
-          <div id="accountInfo" style="font-size:15px; font-weight:700; color:#1e293b; letter-spacing:0.03em; line-height:1.9;"></div>
-          <button id="copyAccountBtn" onclick="copyAccount()" style="margin-top:10px; width:100%; padding:11px; background:#f59e0b; color:#fff; border:none; border-radius:8px; font-size:14px; font-weight:700; cursor:pointer;">📋 계좌번호 복사</button>
-          <div id="copyDone" style="display:none; text-align:center; margin-top:6px; font-size:12px; color:#059669; font-weight:600;">✅ 클립보드에 복사됐습니다!</div>
+          <div style="font-size:12px; font-weight:700; color:#92400e; margin-bottom:10px;">🏦 지점 공식 계좌 (계좌이체 시)</div>
+          <div style="display:flex; align-items:center; justify-content:space-between; gap:10px; flex-wrap:wrap;">
+            <div id="accountInfo" style="font-size:15px; font-weight:700; color:#1e293b; letter-spacing:0.03em; line-height:1.8; flex:1;"></div>
+            <button id="copyAccountBtn" onclick="copyAccount()" style="flex-shrink:0; padding:10px 16px; background:#f59e0b; color:#fff; border:none; border-radius:8px; font-size:13px; font-weight:700; cursor:pointer; white-space:nowrap;">📋 복사</button>
+          </div>
+          <div id="copyDone" style="display:none; text-align:center; margin-top:8px; font-size:12px; color:#059669; font-weight:700;">✅ 계좌번호가 복사됐습니다!</div>
         </div>
 
         <!-- 사기 경고 -->
@@ -840,7 +842,7 @@
           <div style="font-size:13px; font-weight:700; color:#881337; margin-bottom:4px;">⚠️ 금융 사기 주의</div>
           <div style="font-size:12px; color:#881337; line-height:1.8;">
             위 계좌 이외의 <strong>차명계좌·개인계좌 입금을 요청받으신 경우</strong>,<br>
-            즉시 본사(<a href="tel:01091962597" style="color:#be123c; font-weight:700;">010-9196-2597</a>)로 연락 주시면 <strong>사례하겠습니다.</strong>
+            즉시 <a href="tel:01030968679" style="color:#be123c; font-weight:700; text-decoration:underline;">📞 본사에 연락</a> 주시면 <strong>사례하겠습니다.</strong>
           </div>
         </div>
 
@@ -1322,16 +1324,33 @@ function updateExtraCharges() {
     total += extra;
   }
 
-  // 반려견 추가요금 (1마리 기준: 10kg 이하 무료 / 10kg 초과 10,000원)
+  // 반려견 추가요금
+  // · 1마리 + 10kg 이하 → 무료
+  // · 2마리부터 1마리당 → +10,000원
+  // · 10kg 초과 마리당  → +10,000원
   let dogFee = 0;
+  const dogFeeLines = [];
+
   for (let i = 0; i < dogCount; i++) {
     const wt = document.querySelector(`[data-dog="${i}"].weight-btn.selected`)?.dataset.weight || "";
-    if (wt === "10-15kg") dogFee += DOG_OVER_10_FEE;
+    const label = dogCount > 1 ? `${i + 1}번째 ` : "";
+
+    // 2마리째부터 마리당 1만원
+    if (i >= 1) {
+      dogFee += DOG_OVER_10_FEE;
+      dogFeeLines.push(`반려견 ${label}추가 +10,000원`);
+    }
+
+    // 10kg 초과 시 마리당 1만원 추가
+    if (wt === "10-15kg") {
+      dogFee += DOG_OVER_10_FEE;
+      dogFeeLines.push(`반려견 ${label}10kg 초과 +10,000원`);
+    }
   }
-  // 2마리째부터 추가 (1마리 무료 기준)
-  if (dogCount >= 2) dogFee += (dogCount - 1) * DOG_OVER_10_FEE;
+
   if (dogFee > 0) {
-    rows.push(`🐾 반려견 추가 요금 → <strong>${dogFee.toLocaleString()}원</strong>`);
+    const detail = dogFeeLines.length ? ` <span style="font-size:12px;color:#64748b;">(${dogFeeLines.join(' · ')})</span>` : "";
+    rows.push(`🐾 반려견 추가 요금${detail} → <strong>${dogFee.toLocaleString()}원</strong>`);
     total += dogFee;
   }
 
@@ -1345,38 +1364,64 @@ function updateExtraCharges() {
   const totalEl = document.getElementById("extraChargeTotal");
   if (!listEl) return;
 
+  // 추가요금 내역 표시
   if (rows.length === 0) {
-    listEl.innerHTML = '<div style="color:#22c55e; font-size:14px; font-weight:600;">✅ 추가 요금 없음</div>';
-    totalEl.style.display = "none";
+    listEl.innerHTML = '<div style="color:#22c55e; font-size:14px; font-weight:600;">✅ 현재 입력 기준 추가 요금 없음</div>';
   } else {
     listEl.innerHTML = rows.map(r => `<div style="border-bottom:1px solid #f1f5f9; padding:6px 0;">${r}</div>`).join("")
       + `<div style="margin-top:8px; font-size:16px; font-weight:700; color:#1e293b;">합계: ${total.toLocaleString()}원</div>`;
-    totalEl.style.display = "";
-
-    // 지점 계좌 표시
-    const acct = BRANCH_ACCOUNTS[BRANCH];
-    const acctEl = document.getElementById("accountInfo");
-    if (acct && acctEl) {
-      acctEl.innerHTML =
-        `<span style="font-size:12px; color:#78350f; font-weight:400;">예금주</span> <strong>${acct.holder}</strong><br>` +
-        `<span style="font-size:12px; color:#78350f; font-weight:400;">${acct.bank}</span> <strong style="font-size:17px; letter-spacing:0.05em;">${acct.number}</strong>`;
-    }
   }
+
+  // 계좌 정보 항상 표시
+  const acct = BRANCH_ACCOUNTS[BRANCH];
+  const acctEl = document.getElementById("accountInfo");
+  if (acct && acctEl) {
+    acctEl.innerHTML =
+      `<div style="font-size:12px; color:#78350f; margin-bottom:2px;">예금주 <strong style="color:#1e293b;">${acct.holder}</strong></div>` +
+      `<div style="font-size:12px; color:#78350f; margin-bottom:2px;">${acct.bank}</div>` +
+      `<div style="font-size:18px; font-weight:800; color:#1e293b; letter-spacing:0.08em;">${acct.number}</div>`;
+  } else if (acctEl) {
+    acctEl.innerHTML = `<div style="color:#94a3b8; font-size:13px;">예약 링크를 통해 접속하시면 지점 계좌가 표시됩니다.</div>`;
+  }
+
+  // 결제 안내 섹션 항상 표시
+  totalEl.style.display = "";
 }
 
 function copyAccount() {
   const acct = BRANCH_ACCOUNTS[BRANCH];
-  if (!acct) return;
+  if (!acct) { alert("계좌 정보를 불러올 수 없습니다."); return; }
   const text = acct.number;
-  if (navigator.clipboard) {
-    navigator.clipboard.writeText(text).then(() => showCopyDone());
+
+  // 방법 1: 최신 Clipboard API
+  if (navigator.clipboard && window.isSecureContext) {
+    navigator.clipboard.writeText(text)
+      .then(() => showCopyDone())
+      .catch(() => fallbackCopy(text));
   } else {
-    const el = document.createElement("textarea");
-    el.value = text; document.body.appendChild(el);
-    el.select(); document.execCommand("copy");
-    document.body.removeChild(el);
-    showCopyDone();
+    fallbackCopy(text);
   }
+}
+
+function fallbackCopy(text) {
+  // 방법 2: 숨겨진 input (iOS 포함 모바일 호환)
+  const input = document.createElement("input");
+  input.setAttribute("type", "text");
+  input.setAttribute("value", text);
+  input.style.position = "fixed";
+  input.style.left = "-9999px";
+  input.style.top  = "-9999px";
+  document.body.appendChild(input);
+  input.focus();
+  input.select();
+  input.setSelectionRange(0, 99999); // iOS 대응
+  try {
+    document.execCommand("copy");
+    showCopyDone();
+  } catch (e) {
+    alert("계좌번호: " + text + "\n\n위 번호를 직접 복사해 주세요.");
+  }
+  document.body.removeChild(input);
 }
 
 function showCopyDone() {
