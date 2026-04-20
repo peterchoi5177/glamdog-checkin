@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
 <meta http-equiv="refresh" content="1800">
 <title>글램독 가평(가평점) 체크인 리스트</title>
-<!-- v2026-04-20 13:03 -->
+<!-- v2026-04-20 13:31 -->
 <style>
   :root {
     --navy: #1B3A5C;
@@ -453,6 +453,16 @@
   .fr-subtotal { text-align: right; font-size: 14px; font-weight: 700; color: var(--navy); padding: 10px 0; }
   .fr-empty { text-align: center; color: #aaa; padding: 50px; font-size: 14px; }
 
+  /* ── 새로고침 버튼 ── */
+  .btn-refresh {
+    padding: 5px 12px; border-radius: 4px; font-size: 12px; font-weight: 600;
+    border: 1.5px solid rgba(255,255,255,0.4); cursor: pointer;
+    background: rgba(255,255,255,0.12); color: white;
+    transition: all .15s; margin-left: 4px; white-space: nowrap;
+  }
+  .btn-refresh:hover { background: rgba(255,255,255,0.28); }
+  .btn-refresh.spin  { opacity: 0.6; cursor: wait; }
+
   /* ── 토스트 알림 ── */
   .toast {
     position: fixed; bottom: 80px; left: 50%; transform: translateX(-50%);
@@ -546,7 +556,8 @@
     <button class="btn-view"        id="btnRes"   onclick="setView('rescal')">🏠 예약현황</button>
     <button class="btn-view"        id="btnField" onclick="setView('field')">💰 현장기록</button>
   </div>
-  <span class="update-time">갱신: 2026-04-20 13:03</span>
+  <button class="btn-refresh" id="btnRefresh" onclick="refreshData()">🔄 새로고침</button>
+  <span class="update-time">갱신: 2026-04-20 13:31</span>
 </div>
 <div class="content" id="content">
   <div class="print-header" id="printHeader"></div>
@@ -814,6 +825,18 @@ function loadWelcomeData(dateStr) {
       // 오류 시 이미 위에서 renderTable() 호출됨 — 웰컴 없이 표시
       console.warn('웰컴 데이터 fetch 실패:', err);
     });
+}
+
+// ─── 새로고침 ────────────────────────────────────────────
+function refreshData() {
+  var btn = document.getElementById('btnRefresh');
+  if (btn) { btn.textContent = '⏳ 로딩 중...'; btn.classList.add('spin'); }
+  delete _welcomeCache[currentDate];
+  loadWelcomeData(currentDate);
+  loadTodayFieldEntries();
+  setTimeout(function() {
+    if (btn) { btn.textContent = '🔄 새로고침'; btn.classList.remove('spin'); }
+  }, 1500);
 }
 
 loadWelcomeData(currentDate);  // 페이지 로드 시 웰컴 + 렌더
