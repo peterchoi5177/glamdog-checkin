@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
 <meta http-equiv="refresh" content="1800">
 <title>글램독 경주 체크인 리스트</title>
-<!-- v2026-04-20 13:49 -->
+<!-- v2026-04-20 14:04 -->
 <style>
   :root {
     --navy: #1B3A5C;
@@ -137,18 +137,17 @@
 
   /* 열 너비 */
   .col-no      { width: 3%;  text-align: center; color: #999; font-size: 12px; }
-  .col-room    { width: 7%;  }
-  .col-guest   { width: 12%; }
-  .col-stays   { width: 9%;  text-align: center; }
-  .col-arrive  { width: 7%;  text-align: center; }
-  .col-bookdt  { width: 8%;  text-align: center; }
-  .col-payment { width: 9%;  text-align: right;  }
-  .col-persons { width: 5%;  text-align: center; }
-  .col-dog     { width: 13%; }
-  .col-bbq     { width: 7%;  text-align: center; }
-  .col-memo    { width: 15%; }
-  .stays-box   { font-size: 12px; line-height: 1.8; text-align: center; }
-  .stays-box b { font-size: 13px; color: var(--navy); }
+  .col-room    { width: 5%;  text-align: center; }
+  .col-guest   { width: 10%; }
+  .col-stays   { width: 8%;  text-align: center; white-space: nowrap; }
+  .col-arrive  { width: 5%;  text-align: center; }
+  .col-bookdt  { width: 6%;  text-align: center; }
+  .col-persons { width: 4%;  text-align: center; }
+  .col-dog     { width: 9%;  }
+  .col-bbq     { width: 6%;  text-align: center; }
+  .col-extra   { width: 8%;  text-align: center; }
+  .col-payment { width: 7%;  text-align: center; }
+  .col-memo    { width: 22%; }
 
   .room-name { font-size: 15px; font-weight: 800; color: var(--navy); }
 
@@ -324,14 +323,15 @@
     .col-bookdt, .col-payment { display: none !important; }
     /* 인쇄용 열 너비 재조정 (bookdt+payment 빠진 20% 재분배) */
     .col-no      { width: 3%; }
-    .col-room    { width: 7%; }
-    .col-guest   { width: 13%; }
+    .col-room    { width: 5%; }
+    .col-guest   { width: 11%; }
     .col-stays   { width: 9%; }
-    .col-arrive  { width: 7%; }
-    .col-persons { width: 5%; }
-    .col-dog     { width: 12%; }
-    .col-bbq     { width: 9%; }
-    .col-memo    { width: 18%; }
+    .col-arrive  { width: 5%; }
+    .col-persons { width: 4%; }
+    .col-dog     { width: 9%; }
+    .col-bbq     { width: 6%; }
+    .col-extra   { width: 8%; }
+    .col-memo    { width: 22%; }
     /* 글꼴 크기 축소 */
     .room-name   { font-size: 11px; }
     .guest-name  { font-size: 11px; }
@@ -561,7 +561,7 @@
     <button class="btn-view"        id="btnField" onclick="setView('field')">💰 현장기록</button>
   </div>
   <button class="btn-refresh" id="btnRefresh" onclick="refreshData()">🔄 새로고침</button>
-  <span class="update-time">갱신: 2026-04-20 13:49</span>
+  <span class="update-time">갱신: 2026-04-20 14:04</span>
 </div>
 <div class="content" id="content">
   <div class="print-header" id="printHeader"></div>
@@ -633,11 +633,12 @@ function staysLabel(r) {
   const co = new Date(r.checkout + 'T00:00:00');
   const ciStr = (ci.getMonth()+1) + '/' + ci.getDate();
   const coStr = (co.getMonth()+1) + '/' + co.getDate();
-  return `<div class="stays-box">
-    <div><b>${ciStr}</b> <span style="font-size:10px;color:#888">입실</span></div>
-    <div><b>${coStr}</b> <span style="font-size:10px;color:#888">퇴실</span></div>
-    ${r.nights > 1 ? `<div style="font-size:10px;color:#bbb">${r.nights}박</div>` : ''}
-  </div>`;
+  return '<div style="font-size:12px;text-align:center;white-space:nowrap">'
+    + '<b style="color:var(--navy)">' + ciStr + '</b>'
+    + '<span style="color:#aaa">~</span>'
+    + '<b style="color:var(--navy)">' + coStr + '</b>'
+    + ' <span style="color:#bbb;font-size:10px">(' + r.nights + '박)</span>'
+    + '</div>';
 }
 
 function channelBadge(ch) {
@@ -705,6 +706,22 @@ function personsHtml(wd) {
   return '<div style="text-align:center;font-size:15px;font-weight:700;color:#1B3A5C">' + wd.persons + '명</div>';
 }
 
+function extraHtml(bno, wd) {
+  // 현장기록 있으면 실제 금액 표시
+  if (typeof _fieldEntries !== 'undefined' && bno && _fieldEntries[bno]) {
+    var e = _fieldEntries[bno];
+    return '<div style="text-align:center;font-size:13px;font-weight:700;color:#e65100">'
+      + Number(e.total).toLocaleString() + '원</div>';
+  }
+  if (!wd) return '<div style="color:#ddd;text-align:center;font-size:11px">—</div>';
+  var lines = [];
+  if (wd.persons && wd.persons > 2) lines.push((wd.persons-2) + '명 추가');
+  if (wd.dogCount && wd.dogCount > 1) lines.push('강아지 ' + (wd.dogCount-1) + '마리 추가');
+  if (wd.bbq === 'yes') lines.push('BBQ');
+  if (!lines.length) return '<div style="color:#ddd;text-align:center;font-size:11px">—</div>';
+  return '<div style="font-size:11px;line-height:1.7;text-align:center;color:#888">' + lines.join('<br>') + '</div>';
+}
+
 function renderTable() {
   const records = ALL_RECORDS
     .filter(r => !r.is_block && r.stay_dates.includes(currentDate) && true)
@@ -741,19 +758,19 @@ function renderTable() {
       <td class="col-no">${idx + 1}</td>
       <td class="col-room"><span class="room-name">${r.room}</span></td>
       <td class="col-guest">
-        <div class="guest-name">${r.guest}${welcomeCheck}</div>
-        <div class="guest-phone">${r.phone}</div>
+        <div class="guest-name" style="white-space:nowrap">${r.guest}${welcomeCheck} <span style="font-weight:400;font-size:12px;color:#555">${r.phone}</span></div>
         ${channelBadge(r.channel)}
       </td>
       <td class="col-stays">${staysLabel(r)}</td>
       <td class="col-arrive">${arriveHtml(wd)}</td>
       <td class="col-bookdt">${r.book_date || ''}</td>
-      <td class="col-payment">
-        <div class="payment-box">${r.total.toLocaleString()}원${onsite}</div>
-      </td>
       <td class="col-persons">${personsHtml(wd)}</td>
       <td class="col-dog">${dogInfoHtml(wd)}</td>
       <td class="col-bbq">${bbqHtml(wd)}</td>
+      <td class="col-extra">${extraHtml(bno, wd)}</td>
+      <td class="col-payment">
+        <div class="payment-box">${r.total.toLocaleString()}원${onsite}</div>
+      </td>
       <td class="col-memo">${memoHtml(wd)}</td>
       ${fldBtn}
     </tr>`;
@@ -763,20 +780,21 @@ function renderTable() {
   const BLANK_COUNT = Math.max(15 - records.length, 3);
   const hasField = (typeof _fieldEntries !== 'undefined');
   const fieldTh  = hasField ? '<th class="col-field">현장기록</th>' : '';
-  const colSpan  = hasField ? 11 : 10;
+  const colSpan  = hasField ? 12 : 11;
   let blankRows = '';
   for (let i = 0; i < BLANK_COUNT; i++) {
     blankRows += `<tr style="height:38px;background:#fafaf8;">
       <td class="col-no" style="color:#bbb">${records.length + i + 1}</td>
       <td class="col-room"><div class="write-lines">${writeLine()}</div></td>
-      <td class="col-guest"><div class="write-lines">${writeLine()}${writeLine()}</div></td>
+      <td class="col-guest"><div class="write-lines">${writeLine()}</div></td>
       <td class="col-stays"></td>
       <td class="col-arrive"></td>
       <td class="col-bookdt"></td>
-      <td class="col-payment"></td>
       <td class="col-persons"></td>
       <td class="col-dog"><div class="write-lines">${writeLine()}${writeLine()}</div></td>
       <td class="col-bbq"><div class="bbq-box">□</div></td>
+      <td class="col-extra"></td>
+      <td class="col-payment"></td>
       <td class="col-memo"><div class="write-lines">${writeLine()}</div></td>
       ${hasField ? '<td class="col-field"></td>' : ''}
     </tr>`;
@@ -796,10 +814,11 @@ function renderTable() {
         <th class="col-stays">투숙일</th>
         <th class="col-arrive">도착예정</th>
         <th class="col-bookdt">예약일시</th>
-        <th class="col-payment">결제액</th>
         <th class="col-persons">인원</th>
         <th class="col-dog">강아지 정보</th>
         <th class="col-bbq">BBQ</th>
+        <th class="col-extra">예상추가요금</th>
+        <th class="col-payment">결제액</th>
         <th class="col-memo">기타요청</th>
         ${fieldTh}
       </tr>
