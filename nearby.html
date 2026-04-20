@@ -282,14 +282,14 @@
 </div>
 <!-- 카테고리 필터 -->
 <div class="category-tabs" id="categoryTabs">
-<button class="cat-tab active" data-cat="all" onclick="filterCategory(this)">전체</button>
-<button class="cat-tab" data-cat="food" onclick="filterCategory(this)">맛집</button>
-<button class="cat-tab" data-cat="cafe" onclick="filterCategory(this)">카페</button>
-<button class="cat-tab" data-cat="mart" onclick="filterCategory(this)">마트/편의점</button>
-<button class="cat-tab" data-cat="play" onclick="filterCategory(this)">반려견 놀이</button>
-<button class="cat-tab" data-cat="hospital" onclick="filterCategory(this)">동물병원</button>
-<button class="cat-tab" data-cat="attraction" onclick="filterCategory(this)">관광지</button>
-</div>
+
+
+
+
+
+
+
+<button class="cat-tab active" data-cat="all" onclick="filterCategory(this)">전체</button><button class="cat-tab" data-cat="mart" onclick="filterCategory(this)">마트/편의점</button><button class="cat-tab" data-cat="hospital" onclick="filterCategory(this)">동물병원</button><button class="cat-tab" data-cat="attraction" onclick="filterCategory(this)">관광지</button><button class="cat-tab" data-cat="food" onclick="filterCategory(this)">맛집</button><button class="cat-tab" data-cat="cafe" onclick="filterCategory(this)">카페</button><button class="cat-tab" data-cat="play" onclick="filterCategory(this)">반려견 놀이터</button></div>
 <!-- 컨테이너 -->
 <div class="container"><div style="
   margin: 12px 16px 0;
@@ -2585,6 +2585,29 @@ function applyFilter() {
 
 // 초기화
 window.addEventListener("DOMContentLoaded", () => {
+  // 카드 랜덤 셔플 (지점·섹션 단위 유지, 카드만 섞기)
+  document.querySelectorAll(".branch-content").forEach(branch => {
+    // 섹션별로 카드 셔플
+    const sections = branch.querySelectorAll(".section-title");
+    sections.forEach(section => {
+      const cards = [];
+      let next = section.nextElementSibling;
+      while (next && !next.classList.contains("section-title")) {
+        if (next.classList.contains("place-card")) cards.push(next);
+        next = next.nextElementSibling;
+      }
+      // Fisher-Yates 셔플
+      for (let i = cards.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        const parent = cards[i].parentNode;
+        const ref = cards[i].nextSibling;
+        parent.insertBefore(cards[j], cards[i]);
+        if (ref) parent.insertBefore(cards[i], ref);
+        else parent.appendChild(cards[i]);
+      }
+    });
+  });
+
   if (branchParam) {
     const tab = document.querySelector(`.branch-tab[data-branch="${branchParam}"]`);
     if (tab) switchBranch(tab);
