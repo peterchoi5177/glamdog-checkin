@@ -1561,6 +1561,7 @@ async function submitForm() {
   const sigData = canvas.toDataURL("image/png");
 
   const payload = {
+    action:      "welcomeSubmit",
     token:       TOKEN,
     name:        NAME,
     branch:      BRANCH,
