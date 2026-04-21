@@ -331,6 +331,43 @@
       color: var(--text);
       display: inline;
     }
+  
+    /* ── 섹션 필터 탭 ── */
+    .section-tabs {
+      display: flex;
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: none;
+      gap: 6px;
+      padding: 10px 16px;
+      background: #EEF3EF;
+      border-bottom: 1px solid var(--border);
+      position: sticky;
+      top: 120px;
+      z-index: 98;
+    }
+    .section-tabs::-webkit-scrollbar { display: none; }
+    .section-tab {
+      flex-shrink: 0;
+      padding: 6px 14px;
+      border: 1.5px solid var(--border);
+      border-radius: 99px;
+      font-size: 12px;
+      font-family: inherit;
+      font-weight: 600;
+      background: var(--white);
+      color: var(--text-mid);
+      cursor: pointer;
+      transition: all 0.15s;
+      white-space: nowrap;
+    }
+    .section-tab.active {
+      border-color: var(--green);
+      background: var(--green);
+      color: var(--white);
+    }
+    .card { transition: none; }
+
   </style>
 </head>
 <body>
@@ -352,6 +389,16 @@
   <button class="branch-tab" data-branch="양양" onclick="switchBranch(this)">양양</button>
   <button class="branch-tab" data-branch="통영" onclick="switchBranch(this)">통영</button>
 </div>
+<div class="section-tabs" id="sectionTabs">
+  <button class="section-tab active" onclick="filterSection('all',this)">전체</button>
+  <button class="section-tab" onclick="filterSection('checkin',this)">🕖 입퇴실</button>
+  <button class="section-tab" onclick="filterSection('pet',this)">🐶 반려동물</button>
+  <button class="section-tab" onclick="filterSection('fee',this)">💰 추가요금</button>
+  <button class="section-tab" onclick="filterSection('bbq',this)">🔥 바베큐</button>
+  <button class="section-tab" onclick="filterSection('rules',this)">⚠️ 주의사항</button>
+  <button class="section-tab" onclick="filterSection('room',this)">🏠 객실안내</button>
+  <button class="section-tab" onclick="filterSection('contact',this)">📞 연락처</button>
+</div>
 
 <div class="container">
 
@@ -366,7 +413,7 @@
     </div>
 
     <!-- 입퇴실 -->
-    <div class="card">
+    <div class="card" data-section="checkin">
       <div class="card-title"><span class="card-title-icon">&#x1F556;</span> 입퇴실 안내</div>
       <table class="time-table">
         <tr><td class="time-label">입실(체크인)</td><td>오후 3:00 (15:00)</td></tr>
@@ -376,7 +423,7 @@
     </div>
 
     <!-- 반려동물 안내 -->
-    <div class="card">
+    <div class="card" data-section="pet">
       <div class="card-title"><span class="card-title-icon">&#x1F436;</span> 반려동물 안내</div>
       <ul class="rule-list">
         <li><strong>15kg 이하</strong>만 입실 가능 / 객실당 <strong>최대 3마리</strong></li>
@@ -396,7 +443,7 @@
     </div>
 
     <!-- 추가 요금 -->
-    <div class="card">
+    <div class="card" data-section="fee">
       <div class="card-title"><span class="card-title-icon">&#x1F4B0;</span> 추가 요금</div>
       <table class="price-table">
         <tr>
@@ -423,7 +470,7 @@
     </div>
 
     <!-- 바베큐 -->
-    <div class="card">
+    <div class="card" data-section="bbq">
       <div class="card-title"><span class="card-title-icon">&#x1F525;</span> 바베큐 이용안내</div>
       <ul class="rule-list">
         <li>실내 3곳 + 실외 3곳 (105, 106호는 객실 앞 테라스)</li>
@@ -438,7 +485,7 @@
     </div>
 
     <!-- 이용주의사항 -->
-    <div class="card">
+    <div class="card" data-section="rules">
       <div class="card-title"><span class="card-title-icon">&#x26A0;&#xFE0F;</span> 이용주의사항</div>
       <ul class="rule-list">
         <li>이동 시 반드시 <strong>목줄 착용</strong> (인근 차도 위험)</li>
@@ -454,7 +501,7 @@
     </div>
 
     <!-- 객실 안내 -->
-    <div class="card">
+    <div class="card" data-section="room">
       <div class="card-title"><span class="card-title-icon">&#x1F3E0;</span> 객실 안내</div>
       <ul class="room-type-list">
         <li><span class="room-label">복층형</span> — 202호, 205호</li>
@@ -463,7 +510,7 @@
     </div>
 
     <!-- 연락처 -->
-    <div class="card">
+    <div class="card" data-section="contact">
       <div class="card-title"><span class="card-title-icon">&#x1F4DE;</span> 지점 연락처</div>
       <div class="info-row">
         <div class="info-icon">&#x1F4CD;</div>
@@ -493,7 +540,7 @@
       아래 이용안내를 꼼꼼히 확인하시고, 편안한 스테이 되세요.
     </div>
 
-    <div class="card">
+    <div class="card" data-section="checkin">
       <div class="card-title"><span class="card-title-icon">&#x1F556;</span> 입퇴실 안내</div>
       <table class="time-table">
         <tr><td class="time-label">입실(체크인)</td><td>오후 3:00 (15:00)</td></tr>
@@ -502,7 +549,7 @@
       </table>
     </div>
 
-    <div class="card">
+    <div class="card" data-section="pet">
       <div class="card-title"><span class="card-title-icon">&#x1F436;</span> 반려동물 안내</div>
       <ul class="rule-list">
         <li><strong>15kg 이하</strong>만 입실 가능 / 객실당 <strong>최대 3마리</strong></li>
@@ -521,7 +568,7 @@
       </div>
     </div>
 
-    <div class="card">
+    <div class="card" data-section="fee">
       <div class="card-title"><span class="card-title-icon">&#x1F4B0;</span> 추가 요금</div>
       <table class="price-table">
         <tr>
@@ -547,7 +594,7 @@
       </table>
     </div>
 
-    <div class="card">
+    <div class="card" data-section="bbq">
       <div class="card-title"><span class="card-title-icon">&#x1F525;</span> 바베큐 이용안내</div>
       <ul class="rule-list">
         <li>이용시간: <strong>16:00 ~ 21:00</strong></li>
@@ -563,7 +610,7 @@
       </ul>
     </div>
 
-    <div class="card">
+    <div class="card" data-section="rules">
       <div class="card-title"><span class="card-title-icon">&#x26A0;&#xFE0F;</span> 이용주의사항</div>
       <ul class="rule-list">
         <li>이동 시 반드시 <strong>목줄 착용</strong> (인근 차도 위험)</li>
@@ -577,7 +624,7 @@
       </ul>
     </div>
 
-    <div class="card">
+    <div class="card" data-section="room">
       <div class="card-title"><span class="card-title-icon">&#x1F3E0;</span> 객실 안내</div>
       <ul class="room-type-list">
         <li><span class="room-label">원룸형</span> — A201~203, B101~103, B202~203</li>
@@ -585,7 +632,7 @@
       </ul>
     </div>
 
-    <div class="card">
+    <div class="card" data-section="contact">
       <div class="card-title"><span class="card-title-icon">&#x1F4DE;</span> 지점 연락처</div>
       <div class="info-row">
         <div class="info-icon">&#x1F4CD;</div>
@@ -615,7 +662,7 @@
       아래 이용안내를 꼼꼼히 확인하시고, 편안한 스테이 되세요.
     </div>
 
-    <div class="card">
+    <div class="card" data-section="checkin">
       <div class="card-title"><span class="card-title-icon">&#x1F556;</span> 입퇴실 안내</div>
       <table class="time-table">
         <tr><td class="time-label">입실(체크인)</td><td>오후 3:00 (15:00)</td></tr>
@@ -624,7 +671,7 @@
       </table>
     </div>
 
-    <div class="card">
+    <div class="card" data-section="pet">
       <div class="card-title"><span class="card-title-icon">&#x1F436;</span> 반려동물 안내</div>
       <ul class="rule-list">
         <li><strong>15kg 이하</strong>만 입실 가능 / 객실당 <strong>최대 3마리</strong></li>
@@ -643,7 +690,7 @@
       </div>
     </div>
 
-    <div class="card">
+    <div class="card" data-section="fee">
       <div class="card-title"><span class="card-title-icon">&#x1F4B0;</span> 추가 요금</div>
       <table class="price-table">
         <tr>
@@ -669,7 +716,7 @@
       </table>
     </div>
 
-    <div class="card">
+    <div class="card" data-section="bbq">
       <div class="card-title"><span class="card-title-icon">&#x1F525;</span> 바베큐 이용안내</div>
       <ul class="rule-list">
         <li><strong>숯 BBQ:</strong> 야외 전용 (총 10곳)</li>
@@ -682,7 +729,7 @@
       </ul>
     </div>
 
-    <div class="card">
+    <div class="card" data-section="rules">
       <div class="card-title"><span class="card-title-icon">&#x26A0;&#xFE0F;</span> 이용주의사항</div>
       <ul class="rule-list">
         <li>이동 시 반드시 <strong>목줄 착용</strong> (인근 차도 위험)</li>
@@ -697,7 +744,7 @@
       </ul>
     </div>
 
-    <div class="card">
+    <div class="card" data-section="room">
       <div class="card-title"><span class="card-title-icon">&#x1F3E0;</span> 객실 안내</div>
       <ul class="room-type-list">
         <li><span class="room-label">복층형</span> — 각 동 202호</li>
@@ -705,7 +752,7 @@
       </ul>
     </div>
 
-    <div class="card">
+    <div class="card" data-section="contact">
       <div class="card-title"><span class="card-title-icon">&#x1F4DE;</span> 지점 연락처</div>
       <div class="info-row">
         <div class="info-icon">&#x1F4CD;</div>
@@ -735,7 +782,7 @@
       아래 이용안내를 꼼꼼히 확인하시고, 편안한 스테이 되세요.
     </div>
 
-    <div class="card">
+    <div class="card" data-section="checkin">
       <div class="card-title"><span class="card-title-icon">&#x1F556;</span> 입퇴실 안내</div>
       <table class="time-table">
         <tr><td class="time-label">입실(체크인)</td><td>오후 3:00 (15:00)</td></tr>
@@ -744,7 +791,7 @@
       </table>
     </div>
 
-    <div class="card">
+    <div class="card" data-section="pet">
       <div class="card-title"><span class="card-title-icon">&#x1F436;</span> 반려동물 안내</div>
       <ul class="rule-list">
         <li><strong>15kg 이하</strong>만 입실 가능 / 객실당 <strong>최대 3마리</strong></li>
@@ -763,7 +810,7 @@
       </div>
     </div>
 
-    <div class="card">
+    <div class="card" data-section="fee">
       <div class="card-title"><span class="card-title-icon">&#x1F4B0;</span> 추가 요금</div>
       <table class="price-table">
         <tr>
@@ -784,7 +831,7 @@
       </table>
     </div>
 
-    <div class="card">
+    <div class="card" data-section="bbq">
       <div class="card-title"><span class="card-title-icon">&#x1F525;</span> 바베큐 이용안내</div>
       <ul class="rule-list">
         <li>강아지 안전을 위해 <strong>숯 미사용, 가스그릴 사용</strong></li>
@@ -796,7 +843,7 @@
       </ul>
     </div>
 
-    <div class="card">
+    <div class="card" data-section="rules">
       <div class="card-title"><span class="card-title-icon">&#x26A0;&#xFE0F;</span> 이용주의사항</div>
       <ul class="rule-list">
         <li>이동 시 반드시 <strong>목줄 착용</strong> (인근 차도 위험)</li>
@@ -811,7 +858,7 @@
       </ul>
     </div>
 
-    <div class="card">
+    <div class="card" data-section="room">
       <div class="card-title"><span class="card-title-icon">&#x1F3E0;</span> 객실 안내</div>
       <ul class="room-type-list">
         <li><span class="room-label">복층형</span> — 101~104호</li>
@@ -823,7 +870,7 @@
       </div>
     </div>
 
-    <div class="card">
+    <div class="card" data-section="contact">
       <div class="card-title"><span class="card-title-icon">&#x1F4DE;</span> 지점 연락처</div>
       <div class="info-row">
         <div class="info-icon">&#x1F4CD;</div>
@@ -853,7 +900,7 @@
       아래 이용안내를 꼼꼼히 확인하시고, 편안한 스테이 되세요.
     </div>
 
-    <div class="card">
+    <div class="card" data-section="checkin">
       <div class="card-title"><span class="card-title-icon">&#x1F556;</span> 입퇴실 안내</div>
       <table class="time-table">
         <tr><td class="time-label">입실(체크인)</td><td>오후 3:00 (15:00)</td></tr>
@@ -862,7 +909,7 @@
       </table>
     </div>
 
-    <div class="card">
+    <div class="card" data-section="pet">
       <div class="card-title"><span class="card-title-icon">&#x1F436;</span> 반려동물 안내</div>
       <ul class="rule-list">
         <li><strong>15kg 이하</strong>만 입실 가능 / 객실당 최대 <strong>펜션형 3마리</strong> · <strong>일반형·테라스형 2마리</strong></li>
@@ -881,7 +928,7 @@
       </div>
     </div>
 
-    <div class="card">
+    <div class="card" data-section="fee">
       <div class="card-title"><span class="card-title-icon">&#x1F4B0;</span> 추가 요금</div>
       <table class="price-table">
         <tr>
@@ -907,7 +954,7 @@
       </table>
     </div>
 
-    <div class="card">
+    <div class="card" data-section="bbq">
       <div class="card-title"><span class="card-title-icon">&#x1F525;</span> 바베큐 이용안내</div>
       <ul class="rule-list">
         <li><strong>실내:</strong> 솥뚜껑 바베큐 (공용식당 이용, 강아지 안전을 위해 가스그릴 사용, 객실 내 불가)</li>
@@ -921,7 +968,7 @@
       </ul>
     </div>
 
-    <div class="card">
+    <div class="card" data-section="rules">
       <div class="card-title"><span class="card-title-icon">&#x26A0;&#xFE0F;</span> 이용주의사항</div>
       <ul class="rule-list">
         <li>이동 시 반드시 <strong>목줄 착용</strong> (인근 차도 위험)</li>
@@ -935,7 +982,7 @@
       </ul>
     </div>
 
-    <div class="card">
+    <div class="card" data-section="room">
       <div class="card-title"><span class="card-title-icon">&#x1F3E0;</span> 객실 안내</div>
       <ul class="room-type-list">
         <li><span class="room-label">펜션형</span> — 취사 가능 (단, 냄새나는 음식 조리 불가)</li>
@@ -943,7 +990,7 @@
       </ul>
     </div>
 
-    <div class="card">
+    <div class="card" data-section="contact">
       <div class="card-title"><span class="card-title-icon">&#x1F4DE;</span> 지점 연락처</div>
       <div class="info-row">
         <div class="info-icon">&#x1F4CD;</div>
@@ -973,7 +1020,7 @@
       아래 이용안내를 꼼꼼히 확인하시고, 편안한 스테이 되세요.
     </div>
 
-    <div class="card">
+    <div class="card" data-section="checkin">
       <div class="card-title"><span class="card-title-icon">&#x1F556;</span> 입퇴실 안내</div>
       <table class="time-table">
         <tr><td class="time-label">입실(체크인)</td><td>오후 3:00 (15:00)</td></tr>
@@ -982,7 +1029,7 @@
       </table>
     </div>
 
-    <div class="card">
+    <div class="card" data-section="pet">
       <div class="card-title"><span class="card-title-icon">&#x1F436;</span> 반려동물 안내</div>
       <ul class="rule-list">
         <li><strong>15kg 이하</strong>만 입실 가능 / 객실당 <strong>최대 3마리</strong></li>
@@ -1001,7 +1048,7 @@
       </div>
     </div>
 
-    <div class="card">
+    <div class="card" data-section="fee">
       <div class="card-title"><span class="card-title-icon">&#x1F4B0;</span> 추가 요금</div>
       <table class="price-table">
         <tr>
@@ -1027,7 +1074,7 @@
       </table>
     </div>
 
-    <div class="card">
+    <div class="card" data-section="bbq">
       <div class="card-title"><span class="card-title-icon">&#x1F525;</span> 바베큐 이용안내</div>
       <ul class="rule-list">
         <li>강아지 안전을 위해 <strong>숯 미사용, 가스그릴 사용</strong></li>
@@ -1040,7 +1087,7 @@
       </ul>
     </div>
 
-    <div class="card">
+    <div class="card" data-section="rules">
       <div class="card-title"><span class="card-title-icon">&#x26A0;&#xFE0F;</span> 이용주의사항</div>
       <ul class="rule-list">
         <li>이동 시 반드시 <strong>목줄 착용</strong> (인근 차도 위험)</li>
@@ -1053,7 +1100,7 @@
       </ul>
     </div>
 
-    <div class="card">
+    <div class="card" data-section="contact">
       <div class="card-title"><span class="card-title-icon">&#x1F4DE;</span> 지점 연락처</div>
       <div class="info-row">
         <div class="info-icon">&#x1F4CD;</div>
@@ -1094,6 +1141,27 @@ window.addEventListener("DOMContentLoaded", () => {
     if (tab) switchBranch(tab);
   }
 });
+
+  function filterSection(key, btn) {
+    document.querySelectorAll('.section-tab').forEach(t => t.classList.remove('active'));
+    if (btn) btn.classList.add('active');
+    const activeContent = document.querySelector('.branch-content.active');
+    if (!activeContent) return;
+    activeContent.querySelectorAll('.card').forEach(card => {
+      card.style.display = (key === 'all' || card.dataset.section === key) ? '' : 'none';
+    });
+    if (key !== 'all') {
+      // 해당 섹션 첫 카드로 스크롤
+      const first = activeContent.querySelector('.card[data-section="' + key + '"]');
+      if (first) first.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    } else {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  }
+
+  // 지점 탭 전환 시 섹션 필터 '전체'로 초기화
+  const _origSwitchBranch = window.switchBranch;
+
 </script>
 </body>
 </html>
