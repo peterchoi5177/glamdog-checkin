@@ -1360,7 +1360,7 @@ function updateExtraCharges() {
 
   // 바베큐
   if (bbqChoice === "yes") {
-    rows.push(`🔥 바베큐 (숯+그릴 기본) → <strong>${BBQ_FEE.toLocaleString()}원</strong>`);
+    rows.push(BRANCH && BRANCH.includes('영흥도') ? `🔥 바베큐 (가스그릴 기본) → <strong>${BBQ_FEE.toLocaleString()}원</strong>` : `🔥 바베큐 (숯+그릴 기본) → <strong>${BBQ_FEE.toLocaleString()}원</strong>`);
     total += BBQ_FEE;
   }
 
