@@ -713,24 +713,32 @@
           <span style="font-size:15px; color:var(--text-mid);">명</span>
         </div>
       </div>
+      <div style="margin-top:12px; padding:12px 14px; background:#f0f9ff; border-left:3px solid #38bdf8; border-radius:8px; font-size:13px; color:#0c4a6e; line-height:1.7;">
+        👥 객실 기준 인원(2인) 초과 시 <strong>1인당 20,000원</strong> 추가 요금이 발생합니다.<br>
+        🚫 객실 최대 수용 인원 초과 시 <strong>입실이 거부</strong>될 수 있습니다.
+      </div>
     </div>
 
     <div class="card">
       <div class="card-title"><span class="card-title-icon">🕐</span> 예상 도착 시간</div>
       <div class="field">
-        <label>입실은 오후 2시부터 가능합니다<span class="req">*</span></label>
+        <label>입실은 오후 3시부터 가능합니다 (펜션 기준)<span class="req">*</span></label>
         <div class="time-grid">
-          <button class="time-btn" data-time="14:00" onclick="selectTime(this)">14:00</button>
           <button class="time-btn" data-time="15:00" onclick="selectTime(this)">15:00</button>
           <button class="time-btn" data-time="16:00" onclick="selectTime(this)">16:00</button>
           <button class="time-btn" data-time="17:00" onclick="selectTime(this)">17:00</button>
           <button class="time-btn" data-time="18:00" onclick="selectTime(this)">18:00</button>
+          <button class="time-btn" data-time="19:00" onclick="selectTime(this)">19:00</button>
           <button class="time-btn" data-time="direct" onclick="selectTime(this)">직접 입력</button>
         </div>
         <div class="time-direct" id="timeDirect">
-          <input type="time" id="timeInput" min="14:00" max="23:59">
+          <input type="time" id="timeInput" min="15:00" max="23:59">
         </div>
         <div class="err-msg" id="err-time">도착 예정 시간을 선택해 주세요.</div>
+      </div>
+      <div style="margin-top:12px; padding:12px 14px; background:#fff8e1; border-left:3px solid #f59e0b; border-radius:8px; font-size:13px; color:#78350f; line-height:1.7;">
+        ⏰ <strong>얼리 체크인</strong>이 필요하신 경우, <strong>사전 전화 상담</strong> 후 가능하며 <strong>추가 요금</strong>이 발생합니다.<br>
+        🌙 <strong>19시 이후 도착</strong> 예정이신 경우, <strong>반드시 사전에 지점으로 연락</strong> 주세요.
       </div>
     </div>
   </div>
@@ -746,12 +754,20 @@
         <label>동반 반려견 수<span class="req">*</span></label>
         <div style="display:flex; align-items:center; gap:12px;">
           <div class="counter">
-            <button class="counter-btn" id="dogMinus" onclick="changeCount('dog', -1)">−</button>
-            <div class="counter-value" id="dogVal">1</div>
+            <button class="counter-btn" id="dogMinus" onclick="changeCount('dog', -1)" disabled>−</button>
+            <div class="counter-value" id="dogVal">0</div>
             <button class="counter-btn" id="dogPlus" onclick="changeCount('dog', 1)">+</button>
           </div>
-          <span style="font-size:15px; color:var(--text-mid);">마리</span>
+          <span style="font-size:15px; color:var(--text-mid);">마리 (최대 3마리)</span>
         </div>
+      </div>
+      <div style="margin-top:12px; padding:12px 14px; background:#fff1f2; border-left:3px solid #f43f5e; border-radius:8px; font-size:13px; color:#881337; line-height:1.8;">
+        🚫 <strong>입실 불가 기준 — 반드시 확인해 주세요</strong><br>
+        · 객실 허용 마리수 초과 시 <strong>현장 입실 거부</strong>됩니다.<br>
+        · <strong>15kg 초과</strong> 반려견은 입실이 불가합니다.<br>
+        · <strong>맹견류</strong>(도사견, 아메리칸 핏불테리어, 로트와일러 등) 입실 불가.<br>
+        · <strong>예방접종 미실시</strong> 반려견은 입실이 제한될 수 있습니다.<br>
+        · 입질이 심하거나 공격성이 있는 강아지는 입실이 거부될 수 있습니다.
       </div>
     </div>
 
@@ -776,6 +792,58 @@
         </div>
         <div class="err-msg" id="err-bbq">바베큐 이용 여부를 선택해 주세요.</div>
       </div>
+      <!-- 바베큐 시간 선택 (이용 시에만 표시) -->
+      <div class="field" id="bbqTimeField" style="display:none; margin-top:12px;">
+        <label>예상 이용 시간<span class="req">*</span></label>
+        <div class="time-grid">
+          <button class="time-btn" data-bbqtime="16:00" onclick="selectBBQTime(this)">16:00</button>
+          <button class="time-btn" data-bbqtime="17:00" onclick="selectBBQTime(this)">17:00</button>
+          <button class="time-btn" data-bbqtime="18:00" onclick="selectBBQTime(this)">18:00</button>
+          <button class="time-btn" data-bbqtime="19:00" onclick="selectBBQTime(this)">19:00</button>
+          <button class="time-btn" data-bbqtime="20:00" onclick="selectBBQTime(this)">20:00</button>
+          <button class="time-btn" data-bbqtime="미정" onclick="selectBBQTime(this)">미정</button>
+        </div>
+        <div class="err-msg" id="err-bbq-time">바베큐 예상 이용 시간을 선택해 주세요.</div>
+        <div style="margin-top:10px; padding:10px 12px; background:#fff8e1; border-left:3px solid #f59e0b; border-radius:8px; font-size:12px; color:#78350f; line-height:1.6;">
+          ⚠️ 지점별로 바베큐장 <strong>마감 시간이 다릅니다.</strong> 현장 도착 후 반드시 지점 확인 후 이용해 주세요.
+        </div>
+      </div>
+    </div>
+
+    <!-- 추가요금 합산 카드 -->
+    <div class="card" id="extraChargeCard">
+      <div class="card-title"><span class="card-title-icon">💳</span> 예상 추가 요금</div>
+      <div id="extraChargeList" style="font-size:14px; color:var(--text-mid); line-height:2;">
+        <div style="color:var(--text-light); font-size:13px;">인원·반려견·바베큐 정보를 모두 입력하면 자동 계산됩니다.</div>
+      </div>
+      <div id="extraChargeTotal" style="display:none; margin-top:16px;">
+
+        <!-- 결제 방법 안내 -->
+        <div style="padding:14px; background:#f0fdf4; border-left:3px solid #22c55e; border-radius:8px; margin-bottom:14px;">
+          <div style="font-size:13px; font-weight:700; color:#166534; margin-bottom:6px;">💳 결제 방법</div>
+          <div style="font-size:13px; color:#166534; line-height:1.8;">
+            · <strong>현장 카드 결제</strong> 또는 <strong>계좌이체</strong>만 가능합니다.<br>
+            · 계좌이체 시 반드시 아래 <strong>지점 공식 계좌</strong>로만 입금해 주세요.
+          </div>
+        </div>
+
+        <!-- 지점 계좌 -->
+        <div id="branchAccountBox" style="padding:14px; background:#fffbeb; border:1px solid #fde68a; border-radius:10px; margin-bottom:14px;">
+          <div style="font-size:12px; font-weight:700; color:#92400e; margin-bottom:12px;">🏦 지점 공식 계좌 (예금주: 인장매니지먼트)</div>
+          <div id="accountInfo"></div>
+        </div>
+
+        <!-- 사기 경고 -->
+        <div style="padding:12px 14px; background:#fff1f2; border-left:3px solid #f43f5e; border-radius:8px;">
+          <div style="font-size:13px; font-weight:700; color:#881337; margin-bottom:4px;">⚠️ 금융 사기 주의</div>
+          <div style="font-size:12px; color:#881337; line-height:1.8;">
+            위 계좌 이외의 <strong>차명계좌·개인계좌 입금을 요청받으신 경우</strong>,<br>
+            즉시 <a href="tel:01030968679" style="color:#be123c; font-weight:700; text-decoration:underline;">📞 본사에 연락</a> 주시면 <strong>사례하겠습니다.</strong>
+          </div>
+        </div>
+
+        <div style="margin-top:10px; font-size:12px; color:#94a3b8; text-align:center;">* 추후 온라인 사전 결제 기능이 추가될 예정입니다.</div>
+      </div>
     </div>
 
     <div class="card">
@@ -795,37 +863,73 @@
     <div class="card">
       <div class="all-agree-row" onclick="toggleAllAgree()">
         <div class="all-agree-check" id="allAgreeCheck"></div>
-        <div class="all-agree-text">전체 약관에 동의합니다</div>
+        <div class="all-agree-text">전체 약관에 동의합니다 (필수 + 선택 포함)</div>
       </div>
+
+      <!-- ─ 개인정보 / 마케팅 동의 ─ -->
+      <div style="margin:12px 0 6px; font-size:12px; font-weight:700; color:var(--text-light); letter-spacing:0.05em;">개인정보 · 마케팅</div>
 
       <div class="term-item" onclick="toggleTerm(0)">
         <div class="term-check" id="term0"></div>
-        <div class="term-text"><strong>[필수]</strong> 반려견은 공용 구역에서 리드줄을 반드시 착용해야 합니다.</div>
+        <div class="term-text"><strong>[필수]</strong> <a href="privacy.html" target="_blank" onclick="event.stopPropagation()" style="color:var(--primary);text-decoration:underline;">개인정보 수집·이용 동의</a> — 예약 확인 및 서비스 제공 목적으로 수집합니다.</div>
       </div>
       <div class="term-item" onclick="toggleTerm(1)">
         <div class="term-check" id="term1"></div>
-        <div class="term-text"><strong>[필수]</strong> 반려견의 배변은 즉시 처리하고, 지정 구역에 폐기해 주세요.</div>
+        <div class="term-text"><strong>[선택]</strong> <a href="marketing.html" target="_blank" onclick="event.stopPropagation()" style="color:var(--primary);text-decoration:underline;">마케팅 정보 수신 동의</a> — 할인 혜택·이벤트 안내를 위해 활용됩니다.</div>
       </div>
+
+      <!-- ─ 이용 규칙 ─ -->
+      <div style="margin:14px 0 6px; font-size:12px; font-weight:700; color:var(--text-light); letter-spacing:0.05em;">이용 규칙</div>
+
       <div class="term-item" onclick="toggleTerm(2)">
         <div class="term-check" id="term2"></div>
-        <div class="term-text"><strong>[필수]</strong> 퇴실 시간은 오전 11:00이며, 초과 시 추가 요금이 부과됩니다.</div>
+        <div class="term-text"><strong>[필수]</strong> 반려견은 <strong>오프리쉬 지정 구역 외</strong> 모든 공용 구역에서 반드시 <strong>리드줄을 착용</strong>합니다.</div>
       </div>
       <div class="term-item" onclick="toggleTerm(3)">
         <div class="term-check" id="term3"></div>
-        <div class="term-text"><strong>[필수]</strong> 오후 10시 이후 소음(짖음, 음악, 대화)을 자제해 주세요.</div>
+        <div class="term-text"><strong>[필수]</strong> 반려견의 배변은 즉시 처리하고, 지정 폐기함에 버려 주세요.</div>
       </div>
       <div class="term-item" onclick="toggleTerm(4)">
         <div class="term-check" id="term4"></div>
-        <div class="term-text"><strong>[필수]</strong> 흡연은 지정 흡연 구역에서만 가능합니다. 시설 내 흡연 시 추가 청소비가 부과됩니다.</div>
+        <div class="term-text"><strong>[필수]</strong> 퇴실 시간은 오전 11:00이며, 초과 시 추가 요금이 부과됩니다.</div>
       </div>
       <div class="term-item" onclick="toggleTerm(5)">
         <div class="term-check" id="term5"></div>
-        <div class="term-text"><strong>[필수]</strong> 시설 파손 시 원상복구 비용을 부담하셔야 합니다.</div>
+        <div class="term-text"><strong>[필수]</strong> 오후 10시 이후 소음(짖음, 음악, 대화)을 자제해 주세요.</div>
       </div>
+
+      <!-- ─ 책임 및 면책 ─ -->
+      <div style="margin:14px 0 6px; font-size:12px; font-weight:700; color:var(--text-light); letter-spacing:0.05em;">책임 및 면책</div>
+
       <div class="term-item" onclick="toggleTerm(6)">
         <div class="term-check" id="term6"></div>
-        <div class="term-text"><strong>[선택]</strong> 마케팅 목적의 사진·영상 활용에 동의합니다.</div>
+        <div class="term-text"><strong>[필수]</strong> 반려견 간의 다툼·부상 등 사고는 <strong>해당 보호자들 간에 해결</strong>하며, 시설은 책임을 지지 않습니다.</div>
       </div>
+      <div class="term-item" onclick="toggleTerm(7)">
+        <div class="term-check" id="term7"></div>
+        <div class="term-text"><strong>[필수]</strong> 보호자의 부주의로 인한 반려견 사고(미끄러짐, 낙상 등)에 대해 시설은 책임을 지지 않습니다.</div>
+      </div>
+      <div class="term-item" onclick="toggleTerm(8)">
+        <div class="term-check" id="term8"></div>
+        <div class="term-text"><strong>[필수]</strong> 저의 반려견이 타인·타 반려견에게 피해를 입혔을 경우 <strong>전적으로 책임</strong>지겠습니다.</div>
+      </div>
+
+      <!-- ─ 제재 조항 ─ -->
+      <div style="margin:14px 0 6px; font-size:12px; font-weight:700; color:var(--text-light); letter-spacing:0.05em;">제재 조항</div>
+
+      <div class="term-item" onclick="toggleTerm(9)">
+        <div class="term-check" id="term9"></div>
+        <div class="term-text"><strong>[필수]</strong> 폭언·폭행·주취 소란 등 형사 처벌 대상 행위 시 <strong>경찰 신고, 강제 퇴실, 환불 불가, 손해배상 청구</strong>가 진행됩니다.</div>
+      </div>
+      <div class="term-item" onclick="toggleTerm(10)">
+        <div class="term-check" id="term10"></div>
+        <div class="term-text"><strong>[필수]</strong> 지정 구역 외 <strong>실내·객실 흡연</strong> 적발 시 딥클리닝 비용 및 해당 기간 <strong>객실 판매 손실분까지 배상</strong>이 청구됩니다.</div>
+      </div>
+      <div class="term-item" onclick="toggleTerm(11)">
+        <div class="term-check" id="term11"></div>
+        <div class="term-text"><strong>[필수]</strong> 시설 파손 시 <strong>원상복구 비용 전액</strong>을 부담하셔야 합니다.</div>
+      </div>
+
       <div class="err-msg show" id="err-terms" style="display:none; margin-top:10px;"></div>
     </div>
 
@@ -899,6 +1003,15 @@ const BRANCH_PHONES = {
   "통영":          "010-3516-2597",
 };
 
+const BRANCH_ACCOUNTS = {
+  "가평(가평점)":  { bank: "기업은행", number: "348-076822-04-061", holder: "인장매니지먼트" },
+  "가평(청평점)":  { bank: "기업은행", number: "348-076822-04-054", holder: "인장매니지먼트" },
+  "경주":          { bank: "기업은행", number: "477-077955-04-065", holder: "인장매니지먼트" },
+  "영흥도":        { bank: "기업은행", number: "477-077955-04-041", holder: "인장매니지먼트" },
+  "양양":          { bank: "기업은행", number: "348-076822-01-033", holder: "인장매니지먼트" },
+  "통영":          { bank: "기업은행", number: "477-077955-04-072", holder: "인장매니지먼트" },
+};
+
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 // URL 파라미터 파싱
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -916,10 +1029,12 @@ let currentStep = 1;
 const TOTAL_STEPS = 5;
 
 let personCount = 1;
-let dogCount    = 1;
+let dogCount    = 0;
 let selectedTime = "";
 let bbqChoice    = "";
-let terms        = [false, false, false, false, false, false, false];
+let bbqTime      = "";
+// terms[0]=개인정보(필수) [1]=마케팅(선택) [2~5]=이용규칙(필수) [6~8]=책임(필수) [9~11]=제재(필수)
+let terms        = new Array(12).fill(false);
 let sigDrawn     = false;
 
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -965,6 +1080,9 @@ function showStep(n) {
   }
 
   window.scrollTo({ top: 0, behavior: "smooth" });
+
+  // 스텝 4 진입 시 추가요금 즉시 계산
+  if (n === 4) updateExtraCharges();
 }
 
 function nextStep() {
@@ -998,6 +1116,9 @@ function validateStep(n) {
   }
 
   if (n === 3) {
+    // 0마리 선택 시 바로 통과
+    if (dogCount === 0) return true;
+
     let ok = true;
     for (let i = 0; i < dogCount; i++) {
       const nameEl = document.getElementById("dog-name-" + i);
@@ -1025,10 +1146,19 @@ function validateStep(n) {
       return false;
     }
     document.getElementById("err-bbq").classList.remove("show");
+    if (bbqChoice === "yes" && !bbqTime) {
+      document.getElementById("err-bbq-time").classList.add("show");
+      return false;
+    }
+    const btErr = document.getElementById("err-bbq-time");
+    if (btErr) btErr.classList.remove("show");
+    // 추가요금 합산 업데이트
+    updateExtraCharges();
   }
 
   if (n === 5) {
-    const required = [0, 1, 2, 3, 4, 5];
+    // 필수 항목: 0, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11 (1번=마케팅은 선택)
+    const required = [0, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11];
     const missing  = required.filter(i => !terms[i]);
     if (missing.length > 0) {
       const errEl = document.getElementById("err-terms");
@@ -1058,10 +1188,10 @@ function changeCount(type, delta) {
     document.getElementById("personPlus").disabled  = personCount >= 20;
   } else if (type === "dog") {
     const prev = dogCount;
-    dogCount = Math.max(1, Math.min(5, dogCount + delta));
+    dogCount = Math.max(0, Math.min(3, dogCount + delta));
     document.getElementById("dogVal").textContent = dogCount;
-    document.getElementById("dogMinus").disabled = dogCount <= 1;
-    document.getElementById("dogPlus").disabled  = dogCount >= 5;
+    document.getElementById("dogMinus").disabled = dogCount <= 0;
+    document.getElementById("dogPlus").disabled  = dogCount >= 3;
     if (dogCount !== prev) renderDogFields();
   }
 }
@@ -1069,26 +1199,39 @@ function changeCount(type, delta) {
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 // 반려견 필드 렌더링
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-const WEIGHTS = ["5kg 미만", "5-10kg", "10-15kg", "15-20kg", "20-25kg", "25kg 이상"];
+const WEIGHTS = ["5kg 미만", "5-10kg", "10-15kg"];
 
 function renderDogFields() {
   const wrap = document.getElementById("dogFields");
-  // 기존 값 저장
-  const savedNames  = [];
-  const savedBreeds = [];
+
+  // 기존 입력값 저장 (최대 3마리)
+  const savedNames   = [];
+  const savedBreeds  = [];
   const savedWeights = [];
-  for (let i = 0; i < 5; i++) {
+  for (let i = 0; i < 3; i++) {
     savedNames[i]   = document.getElementById("dog-name-"  + i)?.value || "";
     savedBreeds[i]  = document.getElementById("dog-breed-" + i)?.value || "";
     savedWeights[i] = document.querySelector(`[data-dog="${i}"].weight-btn.selected`)?.dataset.weight || "";
   }
 
   wrap.innerHTML = "";
+
+  // 0마리 선택 시 안내 메시지
+  if (dogCount === 0) {
+    wrap.innerHTML = `
+      <div style="padding:16px; background:#f0fdf4; border-radius:10px; text-align:center; font-size:14px; color:#166534;">
+        🐾 반려견 없이 방문하시는군요!<br>
+        <span style="font-size:13px; color:#4ade80;">다음 단계로 진행해 주세요.</span>
+      </div>`;
+    return;
+  }
+
+  // 선택한 마리수만큼 카드 렌더링
   for (let i = 0; i < dogCount; i++) {
     const card = document.createElement("div");
     card.className = "dog-card";
     card.innerHTML = `
-      <div class="dog-card-title">🐾 반려견 ${dogCount > 1 ? (i + 1) + "번째" : ""}</div>
+      <div class="dog-card-title">🐾 반려견${dogCount > 1 ? " " + (i + 1) + "번째" : ""}</div>
       <div class="dog-row">
         <div class="field">
           <label>이름<span class="req">*</span></label>
@@ -1143,6 +1286,149 @@ function selectBBQ(val) {
   document.getElementById("bbqYes").classList.toggle("selected", val === "yes");
   document.getElementById("bbqNo").classList.toggle("selected",  val === "no");
   document.getElementById("err-bbq").classList.remove("show");
+  const timeField = document.getElementById("bbqTimeField");
+  if (timeField) timeField.style.display = (val === "yes") ? "" : "none";
+  if (val === "no") { bbqTime = ""; }
+  updateExtraCharges();
+}
+
+function selectBBQTime(btn) {
+  document.querySelectorAll("[data-bbqtime]").forEach(b => b.classList.remove("selected"));
+  btn.classList.add("selected");
+  bbqTime = btn.dataset.bbqtime;
+  const err = document.getElementById("err-bbq-time");
+  if (err) err.classList.remove("show");
+  updateExtraCharges();
+}
+
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// 추가요금 계산
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+function updateExtraCharges() {
+  const BASE_PERSON = 2;
+  const EXTRA_PERSON_FEE = 20000;
+  const DOG_OVER_10_FEE  = 10000;  // 10kg 초과 반려견 1마리당
+  const BBQ_FEE          = 20000;  // 바베큐 기본 숯+그릴
+
+  const rows = [];
+  let total  = 0;
+
+  // 인원 추가요금
+  if (personCount > BASE_PERSON) {
+    const extra = (personCount - BASE_PERSON) * EXTRA_PERSON_FEE;
+    rows.push(`👥 인원 추가 (${personCount - BASE_PERSON}명 × 20,000원) → <strong>${extra.toLocaleString()}원</strong>`);
+    total += extra;
+  }
+
+  // 반려견 추가요금
+  // · 1마리 + 10kg 이하 → 무료
+  // · 2마리부터 1마리당 → +10,000원
+  // · 10kg 초과 마리당  → +10,000원
+  let dogFee = 0;
+  const dogFeeLines = [];
+
+  for (let i = 0; i < dogCount; i++) {
+    const wt = document.querySelector(`[data-dog="${i}"].weight-btn.selected`)?.dataset.weight || "";
+    const label = dogCount > 1 ? `${i + 1}번째 ` : "";
+
+    // 2마리째부터 마리당 1만원
+    if (i >= 1) {
+      dogFee += DOG_OVER_10_FEE;
+      dogFeeLines.push(`반려견 ${label}추가 +10,000원`);
+    }
+
+    // 10kg 초과 시 마리당 1만원 추가
+    if (wt === "10-15kg") {
+      dogFee += DOG_OVER_10_FEE;
+      dogFeeLines.push(`반려견 ${label}10kg 초과 +10,000원`);
+    }
+  }
+
+  if (dogFee > 0) {
+    const detail = dogFeeLines.length ? ` <span style="font-size:12px;color:#64748b;">(${dogFeeLines.join(' · ')})</span>` : "";
+    rows.push(`🐾 반려견 추가 요금${detail} → <strong>${dogFee.toLocaleString()}원</strong>`);
+    total += dogFee;
+  }
+
+  // 바베큐
+  if (bbqChoice === "yes") {
+    rows.push(`🔥 바베큐 (숯+그릴 기본) → <strong>${BBQ_FEE.toLocaleString()}원</strong>`);
+    total += BBQ_FEE;
+  }
+
+  const listEl  = document.getElementById("extraChargeList");
+  const totalEl = document.getElementById("extraChargeTotal");
+  if (!listEl) return;
+
+  // 추가요금 내역 표시
+  if (rows.length === 0) {
+    listEl.innerHTML = '<div style="color:#22c55e; font-size:14px; font-weight:600;">✅ 현재 입력 기준 추가 요금 없음</div>';
+  } else {
+    listEl.innerHTML = rows.map(r => `<div style="border-bottom:1px solid #f1f5f9; padding:6px 0;">${r}</div>`).join("")
+      + `<div style="margin-top:8px; font-size:16px; font-weight:700; color:#1e293b;">합계: ${total.toLocaleString()}원</div>`;
+  }
+
+  // 계좌 정보 — 해당 지점 계좌 1개만 표시
+  const acctEl = document.getElementById("accountInfo");
+  const acct   = BRANCH_ACCOUNTS[BRANCH];
+  if (acctEl) {
+    if (acct) {
+      acctEl.innerHTML = `
+        <div style="display:flex; align-items:center; justify-content:space-between; gap:10px;">
+          <div style="flex:1;">
+            <div style="font-size:12px; color:#92400e; margin-bottom:2px;">은행 <strong style="color:#1e293b;">${acct.bank}</strong></div>
+            <div style="font-size:12px; color:#92400e; margin-bottom:4px;">예금주 <strong style="color:#1e293b;">${acct.holder}</strong></div>
+            <div style="font-size:19px; font-weight:800; color:#1e293b; letter-spacing:0.07em;">${acct.number}</div>
+          </div>
+          <button onclick="copyAccountNum('${acct.number}', this)"
+            style="flex-shrink:0; padding:10px 18px; background:#f59e0b; color:#fff; border:none; border-radius:8px; font-size:14px; font-weight:700; cursor:pointer;">
+            📋 복사
+          </button>
+        </div>`;
+    } else {
+      acctEl.innerHTML = `<div style="color:#94a3b8; font-size:13px;">지점 계좌는 예약 링크를 통해 접속하시면 표시됩니다.</div>`;
+    }
+  }
+
+  // 결제 안내 섹션 항상 표시
+  totalEl.style.display = "";
+}
+
+function copyAccountNum(number, btn) {
+  const doFallback = () => {
+    const input = document.createElement("input");
+    input.setAttribute("type", "text");
+    input.setAttribute("value", number);
+    input.style.position = "fixed";
+    input.style.left = "-9999px";
+    input.style.top  = "0";
+    document.body.appendChild(input);
+    input.focus();
+    input.select();
+    input.setSelectionRange(0, 99999);
+    try { document.execCommand("copy"); flashBtn(btn); }
+    catch (e) { alert("계좌번호: " + number); }
+    document.body.removeChild(input);
+  };
+
+  if (navigator.clipboard && window.isSecureContext) {
+    navigator.clipboard.writeText(number)
+      .then(() => flashBtn(btn))
+      .catch(doFallback);
+  } else {
+    doFallback();
+  }
+}
+
+function flashBtn(btn) {
+  if (!btn) return;
+  const orig = btn.textContent;
+  btn.textContent = "✅ 복사됨";
+  btn.style.background = "#059669";
+  setTimeout(() => {
+    btn.textContent = "📋 복사";
+    btn.style.background = "#f59e0b";
+  }, 2000);
 }
 
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -1156,18 +1442,20 @@ function toggleTerm(idx) {
 }
 
 function updateAllAgree() {
-  const required = [0, 1, 2, 3, 4, 5];
-  const allDone  = required.every(i => terms[i]);
-  document.getElementById("allAgreeCheck").classList.toggle("checked", allDone && terms[6]);
+  const required = [0, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11];
+  const allRequired = required.every(i => terms[i]);
+  const allIncOpt   = allRequired && terms[1];
+  document.getElementById("allAgreeCheck").classList.toggle("checked", allIncOpt);
 }
 
 function toggleAllAgree() {
-  const required = [0, 1, 2, 3, 4, 5];
-  const allDone  = required.every(i => terms[i]) && terms[6];
+  const required = [0, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11];
+  const allDone  = required.every(i => terms[i]) && terms[1];
   const newVal   = !allDone;
   terms = terms.map(() => newVal);
-  for (let i = 0; i < 7; i++) {
-    document.getElementById("term" + i).classList.toggle("checked", newVal);
+  for (let i = 0; i < 12; i++) {
+    const el = document.getElementById("term" + i);
+    if (el) el.classList.toggle("checked", newVal);
   }
   document.getElementById("allAgreeCheck").classList.toggle("checked", newVal);
 }
@@ -1273,6 +1561,7 @@ async function submitForm() {
   const sigData = canvas.toDataURL("image/png");
 
   const payload = {
+    action:      "welcomeSubmit",
     token:       TOKEN,
     name:        NAME,
     branch:      BRANCH,
@@ -1283,8 +1572,9 @@ async function submitForm() {
     dogs:        JSON.stringify(dogs),
     dogCount:    dogCount,
     bbq:         bbqChoice,
+    bbqTime:     bbqChoice === "yes" ? bbqTime : "",
     request:     document.getElementById("request").value.trim(),
-    marketing:   terms[6] ? "동의" : "미동의",
+    marketing:   terms[1] ? "동의" : "미동의",
     signature:   sigData,
     submittedAt: new Date().toLocaleString("ko-KR", { timeZone: "Asia/Seoul" }),
   };
@@ -1311,7 +1601,9 @@ async function submitForm() {
   document.getElementById("done-persons").textContent  = `방문 인원 ${personCount}명`;
   document.getElementById("done-dogs").textContent     = `${dogCount}마리 — ${dogsDesc}`;
   document.getElementById("done-time").textContent     = arrivalTime;
-  document.getElementById("done-bbq").textContent      = bbqChoice === "yes" ? "이용 예정" : "미이용";
+  document.getElementById("done-bbq").textContent      = bbqChoice === "yes"
+    ? `이용 예정 (${bbqTime || "시간 미정"})`
+    : "미이용";
 
   const phone = BRANCH_PHONES[BRANCH] || "";
   const callBtn = document.getElementById("done-call-btn");

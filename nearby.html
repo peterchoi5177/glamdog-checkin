@@ -1,13 +1,13 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <meta name="theme-color" content="#4A7C59">
-  <title>글램독 주변정보</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&display=swap" rel="stylesheet">
-  <style>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" name="viewport"/>
+<meta content="#4A7C59" name="theme-color"/>
+<title>글램독 주변정보</title>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&amp;display=swap" rel="stylesheet"/>
+<style>
     :root {
       --green:       #4A7C59;
       --green-dark:  #345A40;
@@ -262,708 +262,2264 @@
   </style>
 </head>
 <body>
-
 <!-- 헤더 -->
 <div class="header">
-  <div class="header-top">
-    <div>
-      <div class="header-logo">&#x1F43E; 글램독<span>.</span></div>
-      <div class="header-subtitle">주변정보 &mdash; 지점별 추천 장소</div>
-    </div>
-  </div>
+<div class="header-top">
+<div>
+<div class="header-logo">🐾 글램독<span>.</span></div>
+<div class="header-subtitle">주변정보 — 지점별 추천 장소</div>
 </div>
-
+</div>
+</div>
 <!-- 지점 탭 -->
 <div class="branch-tabs" id="branchTabs">
-  <button class="branch-tab active" data-branch="가평(가평점)" onclick="switchBranch(this)">가평점</button>
-  <button class="branch-tab" data-branch="가평(청평점)" onclick="switchBranch(this)">청평점</button>
-  <button class="branch-tab" data-branch="경주" onclick="switchBranch(this)">경주</button>
-  <button class="branch-tab" data-branch="영흥도" onclick="switchBranch(this)">영흥도</button>
-  <button class="branch-tab" data-branch="양양" onclick="switchBranch(this)">양양</button>
-  <button class="branch-tab" data-branch="통영" onclick="switchBranch(this)">통영</button>
+<button class="branch-tab active" data-branch="가평(가평점)" onclick="switchBranch(this)">가평점</button>
+<button class="branch-tab" data-branch="가평(청평점)" onclick="switchBranch(this)">청평점</button>
+<button class="branch-tab" data-branch="경주" onclick="switchBranch(this)">경주</button>
+<button class="branch-tab" data-branch="영흥도" onclick="switchBranch(this)">영흥도</button>
+<button class="branch-tab" data-branch="양양" onclick="switchBranch(this)">양양</button>
+<button class="branch-tab" data-branch="통영" onclick="switchBranch(this)">통영</button>
 </div>
-
 <!-- 카테고리 필터 -->
 <div class="category-tabs" id="categoryTabs">
-  <button class="cat-tab active" data-cat="all" onclick="filterCategory(this)">전체</button>
-  <button class="cat-tab" data-cat="food" onclick="filterCategory(this)">맛집</button>
-  <button class="cat-tab" data-cat="cafe" onclick="filterCategory(this)">카페</button>
-  <button class="cat-tab" data-cat="mart" onclick="filterCategory(this)">마트/편의점</button>
-  <button class="cat-tab" data-cat="play" onclick="filterCategory(this)">반려견 놀이</button>
-  <button class="cat-tab" data-cat="hospital" onclick="filterCategory(this)">동물병원</button>
-  <button class="cat-tab" data-cat="attraction" onclick="filterCategory(this)">관광지</button>
-</div>
 
+
+
+
+
+
+
+<button class="cat-tab active" data-cat="all" onclick="filterCategory(this)">전체</button><button class="cat-tab" data-cat="mart" onclick="filterCategory(this)">마트/편의점</button><button class="cat-tab" data-cat="hospital" onclick="filterCategory(this)">동물병원</button><button class="cat-tab" data-cat="attraction" onclick="filterCategory(this)">관광지</button><button class="cat-tab" data-cat="food" onclick="filterCategory(this)">맛집</button><button class="cat-tab" data-cat="cafe" onclick="filterCategory(this)">카페</button><button class="cat-tab" data-cat="play" onclick="filterCategory(this)">반려견 놀이터</button></div>
 <!-- 컨테이너 -->
-<div class="container">
-
-  <!-- ══════ 가평(가평점) ══════ -->
-  <div class="branch-content active" id="branch-가평(가평점)">
-
-    <div class="tip-box">
-      <strong>&#x1F4A1; 가평점 주변 팁</strong>
-      펜션에서 차로 5~10분 거리에 마트와 맛집이 모여 있어요. 식재료는 미리 준비하시는 걸 추천드려요!
-    </div>
-
-    <div class="section-title">&#x1F372; 맛집</div>
-
-    <div class="place-card" data-cat="food">
-      <div class="place-header">
-        <div class="place-emoji">&#x1F356;</div>
-        <div class="place-info">
-          <span class="place-category food">맛집</span>
-          <div class="place-name">(맛집 이름 추가 예정)</div>
-        </div>
-      </div>
-      <div class="place-desc">가평점 근처 추천 맛집 — 메뉴 및 설명 추가 예정</div>
-      <div class="place-meta">
-        <div class="place-meta-item">&#x1F697; 차량 약 _분</div>
-        <div class="place-meta-item">&#x1F4B0; 인당 약 _원</div>
-      </div>
-      <div class="place-actions">
-        <a class="place-action-btn" href="#" onclick="return false;">&#x1F4CD; 지도보기</a>
-        <a class="place-action-btn" href="#" onclick="return false;">&#x1F4DE; 전화</a>
-      </div>
-    </div>
-
-    <div class="section-title">&#x2615; 카페</div>
-
-    <div class="place-card" data-cat="cafe">
-      <div class="place-header">
-        <div class="place-emoji">&#x2615;</div>
-        <div class="place-info">
-          <span class="place-category cafe">카페</span>
-          <div class="place-name">(카페 이름 추가 예정)</div>
-        </div>
-      </div>
-      <div class="place-desc">반려견 동반 가능한 카페 — 설명 추가 예정</div>
-      <div class="place-meta">
-        <div class="place-meta-item">&#x1F697; 차량 약 _분</div>
-        <div class="place-meta-item">&#x1F436; 반려견 동반 가능</div>
-      </div>
-      <div class="place-actions">
-        <a class="place-action-btn" href="#" onclick="return false;">&#x1F4CD; 지도보기</a>
-        <a class="place-action-btn" href="#" onclick="return false;">&#x1F4DE; 전화</a>
-      </div>
-    </div>
-
-    <div class="section-title">&#x1F6D2; 마트 / 편의점</div>
-
-    <div class="place-card" data-cat="mart">
-      <div class="place-header">
-        <div class="place-emoji">&#x1F6D2;</div>
-        <div class="place-info">
-          <span class="place-category mart">마트</span>
-          <div class="place-name">(마트 이름 추가 예정)</div>
-        </div>
-      </div>
-      <div class="place-desc">바베큐 식재료, 간식 등 구매 가능 — 설명 추가 예정</div>
-      <div class="place-meta">
-        <div class="place-meta-item">&#x1F697; 차량 약 _분</div>
-        <div class="place-meta-item">&#x1F552; 영업시간: _시 ~ _시</div>
-      </div>
-      <div class="place-actions">
-        <a class="place-action-btn" href="#" onclick="return false;">&#x1F4CD; 지도보기</a>
-      </div>
-    </div>
-
-    <div class="section-title">&#x1F43E; 반려견 놀이</div>
-
-    <div class="place-card" data-cat="play">
-      <div class="place-header">
-        <div class="place-emoji">&#x1F3DE;&#xFE0F;</div>
-        <div class="place-info">
-          <span class="place-category play">반려견 놀이</span>
-          <div class="place-name">(산책로/공원 이름 추가 예정)</div>
-        </div>
-      </div>
-      <div class="place-desc">반려견과 함께 산책할 수 있는 코스 — 설명 추가 예정</div>
-      <div class="place-meta">
-        <div class="place-meta-item">&#x1F697; 차량 약 _분</div>
-      </div>
-      <div class="place-actions">
-        <a class="place-action-btn" href="#" onclick="return false;">&#x1F4CD; 지도보기</a>
-      </div>
-    </div>
-
-    <div class="section-title">&#x1FA7A; 동물병원 (응급)</div>
-
-    <div class="place-card" data-cat="hospital">
-      <div class="place-header">
-        <div class="place-emoji">&#x1F3E5;</div>
-        <div class="place-info">
-          <span class="place-category hospital">동물병원</span>
-          <div class="place-name">(동물병원 이름 추가 예정)</div>
-        </div>
-      </div>
-      <div class="place-desc">응급 시 이용 가능한 가장 가까운 동물병원 — 설명 추가 예정</div>
-      <div class="place-meta">
-        <div class="place-meta-item">&#x1F697; 차량 약 _분</div>
-        <div class="place-meta-item">&#x1F552; 진료시간: _시 ~ _시</div>
-      </div>
-      <div class="place-actions">
-        <a class="place-action-btn" href="#" onclick="return false;">&#x1F4CD; 지도보기</a>
-        <a class="place-action-btn" href="#" onclick="return false;">&#x1F4DE; 전화</a>
-      </div>
-    </div>
-
-    <div class="section-title">&#x1F3D4;&#xFE0F; 관광지</div>
-
-    <div class="place-card" data-cat="attraction">
-      <div class="place-header">
-        <div class="place-emoji">&#x1F3D4;&#xFE0F;</div>
-        <div class="place-info">
-          <span class="place-category attraction">관광지</span>
-          <div class="place-name">(관광지 이름 추가 예정)</div>
-        </div>
-      </div>
-      <div class="place-desc">가평 대표 관광지 — 설명 추가 예정</div>
-      <div class="place-meta">
-        <div class="place-meta-item">&#x1F697; 차량 약 _분</div>
-      </div>
-      <div class="place-actions">
-        <a class="place-action-btn" href="#" onclick="return false;">&#x1F4CD; 지도보기</a>
-      </div>
-    </div>
-  </div>
-
-  <!-- ══════ 가평(청평점) ══════ -->
-  <div class="branch-content" id="branch-가평(청평점)">
-
-    <div class="tip-box">
-      <strong>&#x1F4A1; 청평점 주변 팁</strong>
-      청평호 주변으로 카페와 식당이 있어요. 주말에는 혼잡할 수 있으니 일찍 방문하세요!
-    </div>
-
-    <div class="section-title">&#x1F372; 맛집</div>
-    <div class="place-card" data-cat="food">
-      <div class="place-header">
-        <div class="place-emoji">&#x1F356;</div>
-        <div class="place-info">
-          <span class="place-category food">맛집</span>
-          <div class="place-name">(맛집 이름 추가 예정)</div>
-        </div>
-      </div>
-      <div class="place-desc">청평점 근처 추천 맛집 — 설명 추가 예정</div>
-      <div class="place-meta"><div class="place-meta-item">&#x1F697; 차량 약 _분</div></div>
-      <div class="place-actions">
-        <a class="place-action-btn" href="#" onclick="return false;">&#x1F4CD; 지도보기</a>
-        <a class="place-action-btn" href="#" onclick="return false;">&#x1F4DE; 전화</a>
-      </div>
-    </div>
-
-    <div class="section-title">&#x2615; 카페</div>
-    <div class="place-card" data-cat="cafe">
-      <div class="place-header">
-        <div class="place-emoji">&#x2615;</div>
-        <div class="place-info">
-          <span class="place-category cafe">카페</span>
-          <div class="place-name">(카페 이름 추가 예정)</div>
-        </div>
-      </div>
-      <div class="place-desc">반려견 동반 가능한 카페 — 설명 추가 예정</div>
-      <div class="place-meta"><div class="place-meta-item">&#x1F697; 차량 약 _분</div></div>
-      <div class="place-actions">
-        <a class="place-action-btn" href="#" onclick="return false;">&#x1F4CD; 지도보기</a>
-      </div>
-    </div>
-
-    <div class="section-title">&#x1F6D2; 마트 / 편의점</div>
-    <div class="place-card" data-cat="mart">
-      <div class="place-header">
-        <div class="place-emoji">&#x1F6D2;</div>
-        <div class="place-info">
-          <span class="place-category mart">마트</span>
-          <div class="place-name">(마트 이름 추가 예정)</div>
-        </div>
-      </div>
-      <div class="place-desc">식재료 구매 — 설명 추가 예정</div>
-      <div class="place-meta"><div class="place-meta-item">&#x1F697; 차량 약 _분</div></div>
-      <div class="place-actions">
-        <a class="place-action-btn" href="#" onclick="return false;">&#x1F4CD; 지도보기</a>
-      </div>
-    </div>
-
-    <div class="section-title">&#x1F43E; 반려견 놀이</div>
-    <div class="place-card" data-cat="play">
-      <div class="place-header">
-        <div class="place-emoji">&#x1F3DE;&#xFE0F;</div>
-        <div class="place-info">
-          <span class="place-category play">반려견 놀이</span>
-          <div class="place-name">(산책로/공원 이름 추가 예정)</div>
-        </div>
-      </div>
-      <div class="place-desc">반려견 산책 코스 — 설명 추가 예정</div>
-      <div class="place-meta"><div class="place-meta-item">&#x1F697; 차량 약 _분</div></div>
-      <div class="place-actions">
-        <a class="place-action-btn" href="#" onclick="return false;">&#x1F4CD; 지도보기</a>
-      </div>
-    </div>
-
-    <div class="section-title">&#x1FA7A; 동물병원 (응급)</div>
-    <div class="place-card" data-cat="hospital">
-      <div class="place-header">
-        <div class="place-emoji">&#x1F3E5;</div>
-        <div class="place-info">
-          <span class="place-category hospital">동물병원</span>
-          <div class="place-name">(동물병원 이름 추가 예정)</div>
-        </div>
-      </div>
-      <div class="place-desc">응급 동물병원 — 설명 추가 예정</div>
-      <div class="place-meta"><div class="place-meta-item">&#x1F697; 차량 약 _분</div></div>
-      <div class="place-actions">
-        <a class="place-action-btn" href="#" onclick="return false;">&#x1F4CD; 지도보기</a>
-        <a class="place-action-btn" href="#" onclick="return false;">&#x1F4DE; 전화</a>
-      </div>
-    </div>
-
-    <div class="section-title">&#x1F3D4;&#xFE0F; 관광지</div>
-    <div class="place-card" data-cat="attraction">
-      <div class="place-header">
-        <div class="place-emoji">&#x1F3D4;&#xFE0F;</div>
-        <div class="place-info">
-          <span class="place-category attraction">관광지</span>
-          <div class="place-name">(관광지 이름 추가 예정)</div>
-        </div>
-      </div>
-      <div class="place-desc">청평 주변 관광지 — 설명 추가 예정</div>
-      <div class="place-meta"><div class="place-meta-item">&#x1F697; 차량 약 _분</div></div>
-      <div class="place-actions">
-        <a class="place-action-btn" href="#" onclick="return false;">&#x1F4CD; 지도보기</a>
-      </div>
-    </div>
-  </div>
-
-  <!-- ══════ 경주 ══════ -->
-  <div class="branch-content" id="branch-경주">
-
-    <div class="tip-box">
-      <strong>&#x1F4A1; 경주점 주변 팁</strong>
-      경주는 관광 명소가 풍부해요. 반려견 동반 가능한 유적지도 있으니 확인해 보세요!
-    </div>
-
-    <div class="section-title">&#x1F372; 맛집</div>
-    <div class="place-card" data-cat="food">
-      <div class="place-header">
-        <div class="place-emoji">&#x1F356;</div>
-        <div class="place-info">
-          <span class="place-category food">맛집</span>
-          <div class="place-name">(맛집 이름 추가 예정)</div>
-        </div>
-      </div>
-      <div class="place-desc">경주점 근처 추천 맛집 — 설명 추가 예정</div>
-      <div class="place-meta"><div class="place-meta-item">&#x1F697; 차량 약 _분</div></div>
-      <div class="place-actions">
-        <a class="place-action-btn" href="#" onclick="return false;">&#x1F4CD; 지도보기</a>
-        <a class="place-action-btn" href="#" onclick="return false;">&#x1F4DE; 전화</a>
-      </div>
-    </div>
-
-    <div class="section-title">&#x2615; 카페</div>
-    <div class="place-card" data-cat="cafe">
-      <div class="place-header">
-        <div class="place-emoji">&#x2615;</div>
-        <div class="place-info">
-          <span class="place-category cafe">카페</span>
-          <div class="place-name">(카페 이름 추가 예정)</div>
-        </div>
-      </div>
-      <div class="place-desc">반려견 동반 가능한 카페 — 설명 추가 예정</div>
-      <div class="place-meta"><div class="place-meta-item">&#x1F697; 차량 약 _분</div></div>
-      <div class="place-actions">
-        <a class="place-action-btn" href="#" onclick="return false;">&#x1F4CD; 지도보기</a>
-      </div>
-    </div>
-
-    <div class="section-title">&#x1F6D2; 마트 / 편의점</div>
-    <div class="place-card" data-cat="mart">
-      <div class="place-header">
-        <div class="place-emoji">&#x1F6D2;</div>
-        <div class="place-info">
-          <span class="place-category mart">마트</span>
-          <div class="place-name">(마트 이름 추가 예정)</div>
-        </div>
-      </div>
-      <div class="place-desc">식재료 구매 — 설명 추가 예정</div>
-      <div class="place-meta"><div class="place-meta-item">&#x1F697; 차량 약 _분</div></div>
-      <div class="place-actions">
-        <a class="place-action-btn" href="#" onclick="return false;">&#x1F4CD; 지도보기</a>
-      </div>
-    </div>
-
-    <div class="section-title">&#x1F43E; 반려견 놀이</div>
-    <div class="place-card" data-cat="play">
-      <div class="place-header">
-        <div class="place-emoji">&#x1F3DE;&#xFE0F;</div>
-        <div class="place-info">
-          <span class="place-category play">반려견 놀이</span>
-          <div class="place-name">(산책로/공원 이름 추가 예정)</div>
-        </div>
-      </div>
-      <div class="place-desc">반려견 산책 코스 — 설명 추가 예정</div>
-      <div class="place-meta"><div class="place-meta-item">&#x1F697; 차량 약 _분</div></div>
-      <div class="place-actions">
-        <a class="place-action-btn" href="#" onclick="return false;">&#x1F4CD; 지도보기</a>
-      </div>
-    </div>
-
-    <div class="section-title">&#x1FA7A; 동물병원 (응급)</div>
-    <div class="place-card" data-cat="hospital">
-      <div class="place-header">
-        <div class="place-emoji">&#x1F3E5;</div>
-        <div class="place-info">
-          <span class="place-category hospital">동물병원</span>
-          <div class="place-name">(동물병원 이름 추가 예정)</div>
-        </div>
-      </div>
-      <div class="place-desc">응급 동물병원 — 설명 추가 예정</div>
-      <div class="place-meta"><div class="place-meta-item">&#x1F697; 차량 약 _분</div></div>
-      <div class="place-actions">
-        <a class="place-action-btn" href="#" onclick="return false;">&#x1F4CD; 지도보기</a>
-        <a class="place-action-btn" href="#" onclick="return false;">&#x1F4DE; 전화</a>
-      </div>
-    </div>
-
-    <div class="section-title">&#x1F3EF; 관광지</div>
-    <div class="place-card" data-cat="attraction">
-      <div class="place-header">
-        <div class="place-emoji">&#x1F3EF;</div>
-        <div class="place-info">
-          <span class="place-category attraction">관광지</span>
-          <div class="place-name">(관광지 이름 추가 예정)</div>
-        </div>
-      </div>
-      <div class="place-desc">경주 대표 관광지 — 설명 추가 예정</div>
-      <div class="place-meta"><div class="place-meta-item">&#x1F697; 차량 약 _분</div></div>
-      <div class="place-actions">
-        <a class="place-action-btn" href="#" onclick="return false;">&#x1F4CD; 지도보기</a>
-      </div>
-    </div>
-  </div>
-
-  <!-- ══════ 영흥도 ══════ -->
-  <div class="branch-content" id="branch-영흥도">
-
-    <div class="tip-box">
-      <strong>&#x1F4A1; 영흥도점 주변 팁</strong>
-      섬 지역이라 마트가 제한적이에요. 식재료는 영흥대교 건너기 전에 준비하세요!
-    </div>
-
-    <div class="section-title">&#x1F372; 맛집</div>
-    <div class="place-card" data-cat="food">
-      <div class="place-header">
-        <div class="place-emoji">&#x1F99E;</div>
-        <div class="place-info">
-          <span class="place-category food">맛집</span>
-          <div class="place-name">(해산물 맛집 이름 추가 예정)</div>
-        </div>
-      </div>
-      <div class="place-desc">영흥도 신선한 해산물 맛집 — 설명 추가 예정</div>
-      <div class="place-meta"><div class="place-meta-item">&#x1F697; 차량 약 _분</div></div>
-      <div class="place-actions">
-        <a class="place-action-btn" href="#" onclick="return false;">&#x1F4CD; 지도보기</a>
-        <a class="place-action-btn" href="#" onclick="return false;">&#x1F4DE; 전화</a>
-      </div>
-    </div>
-
-    <div class="section-title">&#x2615; 카페</div>
-    <div class="place-card" data-cat="cafe">
-      <div class="place-header">
-        <div class="place-emoji">&#x2615;</div>
-        <div class="place-info">
-          <span class="place-category cafe">카페</span>
-          <div class="place-name">(카페 이름 추가 예정)</div>
-        </div>
-      </div>
-      <div class="place-desc">오션뷰 카페 — 설명 추가 예정</div>
-      <div class="place-meta"><div class="place-meta-item">&#x1F697; 차량 약 _분</div></div>
-      <div class="place-actions">
-        <a class="place-action-btn" href="#" onclick="return false;">&#x1F4CD; 지도보기</a>
-      </div>
-    </div>
-
-    <div class="section-title">&#x1F6D2; 마트 / 편의점</div>
-    <div class="place-card" data-cat="mart">
-      <div class="place-header">
-        <div class="place-emoji">&#x1F6D2;</div>
-        <div class="place-info">
-          <span class="place-category mart">마트</span>
-          <div class="place-name">(마트 이름 추가 예정)</div>
-        </div>
-      </div>
-      <div class="place-desc">가장 가까운 마트 — 설명 추가 예정</div>
-      <div class="place-meta"><div class="place-meta-item">&#x1F697; 차량 약 _분</div></div>
-      <div class="place-actions">
-        <a class="place-action-btn" href="#" onclick="return false;">&#x1F4CD; 지도보기</a>
-      </div>
-    </div>
-
-    <div class="section-title">&#x1F43E; 반려견 놀이</div>
-    <div class="place-card" data-cat="play">
-      <div class="place-header">
-        <div class="place-emoji">&#x1F3D6;&#xFE0F;</div>
-        <div class="place-info">
-          <span class="place-category play">반려견 놀이</span>
-          <div class="place-name">(해변/산책로 이름 추가 예정)</div>
-        </div>
-      </div>
-      <div class="place-desc">반려견과 해변 산책 — 설명 추가 예정</div>
-      <div class="place-meta"><div class="place-meta-item">&#x1F697; 차량 약 _분</div></div>
-      <div class="place-actions">
-        <a class="place-action-btn" href="#" onclick="return false;">&#x1F4CD; 지도보기</a>
-      </div>
-    </div>
-
-    <div class="section-title">&#x1FA7A; 동물병원 (응급)</div>
-    <div class="place-card" data-cat="hospital">
-      <div class="place-header">
-        <div class="place-emoji">&#x1F3E5;</div>
-        <div class="place-info">
-          <span class="place-category hospital">동물병원</span>
-          <div class="place-name">(동물병원 이름 추가 예정)</div>
-        </div>
-      </div>
-      <div class="place-desc">응급 동물병원 — 설명 추가 예정</div>
-      <div class="place-meta"><div class="place-meta-item">&#x1F697; 차량 약 _분</div></div>
-      <div class="place-actions">
-        <a class="place-action-btn" href="#" onclick="return false;">&#x1F4CD; 지도보기</a>
-        <a class="place-action-btn" href="#" onclick="return false;">&#x1F4DE; 전화</a>
-      </div>
-    </div>
-
-    <div class="section-title">&#x1F30A; 관광지</div>
-    <div class="place-card" data-cat="attraction">
-      <div class="place-header">
-        <div class="place-emoji">&#x1F30A;</div>
-        <div class="place-info">
-          <span class="place-category attraction">관광지</span>
-          <div class="place-name">(관광지 이름 추가 예정)</div>
-        </div>
-      </div>
-      <div class="place-desc">영흥도 관광 명소 — 설명 추가 예정</div>
-      <div class="place-meta"><div class="place-meta-item">&#x1F697; 차량 약 _분</div></div>
-      <div class="place-actions">
-        <a class="place-action-btn" href="#" onclick="return false;">&#x1F4CD; 지도보기</a>
-      </div>
-    </div>
-  </div>
-
-  <!-- ══════ 양양 ══════ -->
-  <div class="branch-content" id="branch-양양">
-
-    <div class="tip-box">
-      <strong>&#x1F4A1; 양양점 주변 팁</strong>
-      서핑 해변과 카페 거리가 가까워요. 반려견과 해변 산책도 가능합니다!
-    </div>
-
-    <div class="section-title">&#x1F372; 맛집</div>
-    <div class="place-card" data-cat="food">
-      <div class="place-header">
-        <div class="place-emoji">&#x1F356;</div>
-        <div class="place-info">
-          <span class="place-category food">맛집</span>
-          <div class="place-name">(맛집 이름 추가 예정)</div>
-        </div>
-      </div>
-      <div class="place-desc">양양점 근처 추천 맛집 — 설명 추가 예정</div>
-      <div class="place-meta"><div class="place-meta-item">&#x1F697; 차량 약 _분</div></div>
-      <div class="place-actions">
-        <a class="place-action-btn" href="#" onclick="return false;">&#x1F4CD; 지도보기</a>
-        <a class="place-action-btn" href="#" onclick="return false;">&#x1F4DE; 전화</a>
-      </div>
-    </div>
-
-    <div class="section-title">&#x2615; 카페</div>
-    <div class="place-card" data-cat="cafe">
-      <div class="place-header">
-        <div class="place-emoji">&#x2615;</div>
-        <div class="place-info">
-          <span class="place-category cafe">카페</span>
-          <div class="place-name">(카페 이름 추가 예정)</div>
-        </div>
-      </div>
-      <div class="place-desc">서핑 비치 근처 카페 — 설명 추가 예정</div>
-      <div class="place-meta"><div class="place-meta-item">&#x1F697; 차량 약 _분</div></div>
-      <div class="place-actions">
-        <a class="place-action-btn" href="#" onclick="return false;">&#x1F4CD; 지도보기</a>
-      </div>
-    </div>
-
-    <div class="section-title">&#x1F6D2; 마트 / 편의점</div>
-    <div class="place-card" data-cat="mart">
-      <div class="place-header">
-        <div class="place-emoji">&#x1F6D2;</div>
-        <div class="place-info">
-          <span class="place-category mart">마트</span>
-          <div class="place-name">(마트 이름 추가 예정)</div>
-        </div>
-      </div>
-      <div class="place-desc">식재료 구매 — 설명 추가 예정</div>
-      <div class="place-meta"><div class="place-meta-item">&#x1F697; 차량 약 _분</div></div>
-      <div class="place-actions">
-        <a class="place-action-btn" href="#" onclick="return false;">&#x1F4CD; 지도보기</a>
-      </div>
-    </div>
-
-    <div class="section-title">&#x1F43E; 반려견 놀이</div>
-    <div class="place-card" data-cat="play">
-      <div class="place-header">
-        <div class="place-emoji">&#x1F3D6;&#xFE0F;</div>
-        <div class="place-info">
-          <span class="place-category play">반려견 놀이</span>
-          <div class="place-name">(해변/산책로 이름 추가 예정)</div>
-        </div>
-      </div>
-      <div class="place-desc">반려견 해변 산책 — 설명 추가 예정</div>
-      <div class="place-meta"><div class="place-meta-item">&#x1F697; 차량 약 _분</div></div>
-      <div class="place-actions">
-        <a class="place-action-btn" href="#" onclick="return false;">&#x1F4CD; 지도보기</a>
-      </div>
-    </div>
-
-    <div class="section-title">&#x1FA7A; 동물병원 (응급)</div>
-    <div class="place-card" data-cat="hospital">
-      <div class="place-header">
-        <div class="place-emoji">&#x1F3E5;</div>
-        <div class="place-info">
-          <span class="place-category hospital">동물병원</span>
-          <div class="place-name">(동물병원 이름 추가 예정)</div>
-        </div>
-      </div>
-      <div class="place-desc">응급 동물병원 — 설명 추가 예정</div>
-      <div class="place-meta"><div class="place-meta-item">&#x1F697; 차량 약 _분</div></div>
-      <div class="place-actions">
-        <a class="place-action-btn" href="#" onclick="return false;">&#x1F4CD; 지도보기</a>
-        <a class="place-action-btn" href="#" onclick="return false;">&#x1F4DE; 전화</a>
-      </div>
-    </div>
-
-    <div class="section-title">&#x1F3D6;&#xFE0F; 관광지</div>
-    <div class="place-card" data-cat="attraction">
-      <div class="place-header">
-        <div class="place-emoji">&#x1F3D6;&#xFE0F;</div>
-        <div class="place-info">
-          <span class="place-category attraction">관광지</span>
-          <div class="place-name">(관광지 이름 추가 예정)</div>
-        </div>
-      </div>
-      <div class="place-desc">양양 관광 명소 — 설명 추가 예정</div>
-      <div class="place-meta"><div class="place-meta-item">&#x1F697; 차량 약 _분</div></div>
-      <div class="place-actions">
-        <a class="place-action-btn" href="#" onclick="return false;">&#x1F4CD; 지도보기</a>
-      </div>
-    </div>
-  </div>
-
-  <!-- ══════ 통영 ══════ -->
-  <div class="branch-content" id="branch-통영">
-
-    <div class="tip-box">
-      <strong>&#x1F4A1; 통영점 주변 팁</strong>
-      통영 중앙시장에서 신선한 해산물을 저렴하게 구매할 수 있어요. 바베큐 재료 추천!
-    </div>
-
-    <div class="section-title">&#x1F372; 맛집</div>
-    <div class="place-card" data-cat="food">
-      <div class="place-header">
-        <div class="place-emoji">&#x1F363;</div>
-        <div class="place-info">
-          <span class="place-category food">맛집</span>
-          <div class="place-name">(맛집 이름 추가 예정)</div>
-        </div>
-      </div>
-      <div class="place-desc">통영 대표 먹거리 — 설명 추가 예정</div>
-      <div class="place-meta"><div class="place-meta-item">&#x1F697; 차량 약 _분</div></div>
-      <div class="place-actions">
-        <a class="place-action-btn" href="#" onclick="return false;">&#x1F4CD; 지도보기</a>
-        <a class="place-action-btn" href="#" onclick="return false;">&#x1F4DE; 전화</a>
-      </div>
-    </div>
-
-    <div class="section-title">&#x2615; 카페</div>
-    <div class="place-card" data-cat="cafe">
-      <div class="place-header">
-        <div class="place-emoji">&#x2615;</div>
-        <div class="place-info">
-          <span class="place-category cafe">카페</span>
-          <div class="place-name">(카페 이름 추가 예정)</div>
-        </div>
-      </div>
-      <div class="place-desc">바다뷰 카페 — 설명 추가 예정</div>
-      <div class="place-meta"><div class="place-meta-item">&#x1F697; 차량 약 _분</div></div>
-      <div class="place-actions">
-        <a class="place-action-btn" href="#" onclick="return false;">&#x1F4CD; 지도보기</a>
-      </div>
-    </div>
-
-    <div class="section-title">&#x1F6D2; 마트 / 편의점</div>
-    <div class="place-card" data-cat="mart">
-      <div class="place-header">
-        <div class="place-emoji">&#x1F6D2;</div>
-        <div class="place-info">
-          <span class="place-category mart">마트</span>
-          <div class="place-name">(마트 이름 추가 예정)</div>
-        </div>
-      </div>
-      <div class="place-desc">식재료 구매 — 설명 추가 예정</div>
-      <div class="place-meta"><div class="place-meta-item">&#x1F697; 차량 약 _분</div></div>
-      <div class="place-actions">
-        <a class="place-action-btn" href="#" onclick="return false;">&#x1F4CD; 지도보기</a>
-      </div>
-    </div>
-
-    <div class="section-title">&#x1F43E; 반려견 놀이</div>
-    <div class="place-card" data-cat="play">
-      <div class="place-header">
-        <div class="place-emoji">&#x1F3D6;&#xFE0F;</div>
-        <div class="place-info">
-          <span class="place-category play">반려견 놀이</span>
-          <div class="place-name">(해변/산책로 이름 추가 예정)</div>
-        </div>
-      </div>
-      <div class="place-desc">반려견 산책 코스 — 설명 추가 예정</div>
-      <div class="place-meta"><div class="place-meta-item">&#x1F697; 차량 약 _분</div></div>
-      <div class="place-actions">
-        <a class="place-action-btn" href="#" onclick="return false;">&#x1F4CD; 지도보기</a>
-      </div>
-    </div>
-
-    <div class="section-title">&#x1FA7A; 동물병원 (응급)</div>
-    <div class="place-card" data-cat="hospital">
-      <div class="place-header">
-        <div class="place-emoji">&#x1F3E5;</div>
-        <div class="place-info">
-          <span class="place-category hospital">동물병원</span>
-          <div class="place-name">(동물병원 이름 추가 예정)</div>
-        </div>
-      </div>
-      <div class="place-desc">응급 동물병원 — 설명 추가 예정</div>
-      <div class="place-meta"><div class="place-meta-item">&#x1F697; 차량 약 _분</div></div>
-      <div class="place-actions">
-        <a class="place-action-btn" href="#" onclick="return false;">&#x1F4CD; 지도보기</a>
-        <a class="place-action-btn" href="#" onclick="return false;">&#x1F4DE; 전화</a>
-      </div>
-    </div>
-
-    <div class="section-title">&#x1F30A; 관광지</div>
-    <div class="place-card" data-cat="attraction">
-      <div class="place-header">
-        <div class="place-emoji">&#x1F30A;</div>
-        <div class="place-info">
-          <span class="place-category attraction">관광지</span>
-          <div class="place-name">(관광지 이름 추가 예정)</div>
-        </div>
-      </div>
-      <div class="place-desc">통영 관광 명소 — 설명 추가 예정</div>
-      <div class="place-meta"><div class="place-meta-item">&#x1F697; 차량 약 _분</div></div>
-      <div class="place-actions">
-        <a class="place-action-btn" href="#" onclick="return false;">&#x1F4CD; 지도보기</a>
-      </div>
-    </div>
-  </div>
-
+<div class="container"><div style="
+  margin: 12px 16px 0;
+  padding: 12px 16px;
+  background: #FFF8EC;
+  border: 1.5px solid #E8C06A;
+  border-radius: 12px;
+  font-size: 13px;
+  color: #6B4C00;
+  line-height: 1.6;
+">
+<strong>⚠️ 방문 전 꼭 확인하세요</strong><br/>
+  아래 정보는 네이버 플레이스 기준으로 정리되었으나, 업체 이전·폐업·운영시간 변경 등으로 실제와 다를 수 있습니다.<br/>
+  방문 전 <strong>네이버에서 업체명을 한 번 검색</strong>해 영업 여부와 반려견 동반 가능 여부를 꼭 확인해 주세요. 🐾
+</div>
+<!-- ══════ 가평(가평점) ══════ -->
+<div class="branch-content active" id="branch-가평(가평점)">
+<div class="tip-box"><strong>💡 가평점 주변 팁</strong><br/>펜션에서 차로 5~10분 거리에 마트와 맛집이 모여 있어요. 주말에는 자라섬·레일바이크 줄이 길 수 있으니 일찍 출발하세요!</div>
+<div class="section-title">🍽️ 맛집</div>
+<div class="place-card" data-cat="food">
+<div class="place-header">
+<div class="place-emoji">🍽️</div>
+<div class="place-info">
+<span class="place-category food">맛집</span>
+<div class="place-name">동기간</div>
+</div>
+</div>
+<div class="place-desc">닭볶음탕·백숙 / 애견동반 전용 방갈로 있음 / 수요미식회 방영</div>
+<div class="place-meta">
+<div class="place-meta-item">🚗 차로 약 10분</div>
+<div class="place-meta-item">📍 경기도 가평군 가평읍 보납로 459-158 동기간</div>
+<div class="place-meta-item">🐶 반려견 동반 가능</div>
+</div>
+<div class="place-actions">
+<a class="place-action-btn" href="https://map.naver.com/v5/search/%EA%B2%BD%EA%B8%B0%EB%8F%84%20%EA%B0%80%ED%8F%89%EA%B5%B0%20%EA%B0%80%ED%8F%89%EC%9D%8D%20%EB%B3%B4%EB%82%A9%EB%A1%9C%20459-158%20%EB%8F%99%EA%B8%B0%EA%B0%84" target="_blank">📍 지도보기</a>
+</div>
+</div>
+<div class="place-card" data-cat="food">
+<div class="place-header">
+<div class="place-emoji">🍽️</div>
+<div class="place-info">
+<span class="place-category food">맛집</span>
+<div class="place-name">산골농원</div>
+</div>
+</div>
+<div class="place-desc">야외 테이블 반려견 동반 가능</div>
+<div class="place-meta">
+<div class="place-meta-item">🚗 차로 약 20분</div>
+<div class="place-meta-item">🐶 반려견 동반 가능</div>
+<div class="place-meta-item">📍 경기도 가평군 설악면 어비산길99번길 75-7 산골농원</div></div>
+<div class="place-actions">
+<a class="place-action-btn" href="https://map.naver.com/v5/search/%EA%B2%BD%EA%B8%B0%EB%8F%84%20%EA%B0%80%ED%8F%89%EA%B5%B0%20%EC%84%A4%EC%95%85%EB%A9%B4%20%EC%96%B4%EB%B9%84%EC%82%B0%EA%B8%B899%EB%B2%88%EA%B8%B8%2075-7%20%EC%82%B0%EA%B3%A8%EB%86%8D%EC%9B%90" target="_blank">📍 지도보기</a>
+</div>
+</div>
+<div class="place-card" data-cat="food">
+<div class="place-header">
+<div class="place-emoji">🍽️</div>
+<div class="place-info">
+<span class="place-category food">맛집</span>
+<div class="place-name">귀곡산장</div>
+</div>
+</div>
+<div class="place-desc">이색 귀신컨셉 / 닭볶음탕·산채비빔밥 / 야외 동반 가능</div>
+<div class="place-meta">
+<div class="place-meta-item">🚗 차로 약 20분</div>
+<div class="place-meta-item">🐶 반려견 동반 가능</div>
+<div class="place-meta-item">📍 경기도 가평군 가평읍 분자골로 234</div></div>
+<div class="place-actions">
+<a class="place-action-btn" href="https://map.naver.com/v5/search/%EA%B2%BD%EA%B8%B0%EB%8F%84%20%EA%B0%80%ED%8F%89%EA%B5%B0%20%EA%B0%80%ED%8F%89%EC%9D%8D%20%EB%B6%84%EC%9E%90%EA%B3%A8%EB%A1%9C%20234" target="_blank">📍 지도보기</a>
+</div>
+</div>
+<div class="place-card" data-cat="food">
+<div class="place-header">
+<div class="place-emoji">🍽️</div>
+<div class="place-info">
+<span class="place-category food">맛집</span>
+<div class="place-name">크래머리</div>
+</div>
+</div>
+<div class="place-desc">애견 케이지 무료 대여, 반려견 동반 식당</div>
+<div class="place-meta">
+<div class="place-meta-item">🚗 차 10분</div>
+<div class="place-meta-item">📍 경기도 가평군 상면 청군로 429</div>
+<div class="place-meta-item">🐶 반려견 동반 가능</div>
+</div>
+<div class="place-actions">
+<a class="place-action-btn" href="https://map.naver.com/v5/search/%EA%B2%BD%EA%B8%B0%EB%8F%84%20%EA%B0%80%ED%8F%89%EA%B5%B0%20%EC%83%81%EB%A9%B4%20%EC%B2%AD%EA%B5%B0%EB%A1%9C%20429" target="_blank">📍 지도보기</a>
+</div>
+</div>
+<div class="section-title">☕ 카페</div>
+<div class="place-card" data-cat="cafe">
+<div class="place-header">
+<div class="place-emoji">☕</div>
+<div class="place-info">
+<span class="place-category cafe">카페</span>
+<div class="place-name">카페 임초리</div>
+</div>
+</div>
+<div class="place-desc">디저트·생크림케이크 맛집 / 실내 반려견 동반 / 11:00~18:00</div>
+<div class="place-meta">
+<div class="place-meta-item">🚗 차로 약 15분</div>
+<div class="place-meta-item">📍 경기도 가평군 상면 청군로 701 1층</div>
+<div class="place-meta-item">🐶 반려견 동반 가능</div>
+</div>
+<div class="place-actions">
+<a class="place-action-btn" href="https://map.naver.com/v5/search/%EA%B2%BD%EA%B8%B0%EB%8F%84%20%EA%B0%80%ED%8F%89%EA%B5%B0%20%EC%83%81%EB%A9%B4%20%EC%B2%AD%EA%B5%B0%EB%A1%9C%20701%201%EC%B8%B5" target="_blank">📍 지도보기</a>
+</div>
+</div>
+<div class="place-card" data-cat="cafe">
+<div class="place-header">
+<div class="place-emoji">☕</div>
+<div class="place-info">
+<span class="place-category cafe">카페</span>
+<div class="place-name">나무아래오후N 2호점</div>
+</div>
+</div>
+<div class="place-desc">가평 대표 애견동반 카페 / 뷰 좋음</div>
+<div class="place-meta">
+<div class="place-meta-item">🚗 차로 약 10분</div>
+<div class="place-meta-item">🐶 반려견 동반 가능</div>
+<div class="place-meta-item">📍 경기도 가평군 상면 수목원로 204</div></div>
+<div class="place-actions">
+<a class="place-action-btn" href="https://map.naver.com/v5/search/%EA%B2%BD%EA%B8%B0%EB%8F%84%20%EA%B0%80%ED%8F%89%EA%B5%B0%20%EC%83%81%EB%A9%B4%20%EC%88%98%EB%AA%A9%EC%9B%90%EB%A1%9C%20204" target="_blank">📍 지도보기</a>
+</div>
+</div>
+<div class="place-card" data-cat="cafe">
+<div class="place-header">
+<div class="place-emoji">☕</div>
+<div class="place-info">
+<span class="place-category cafe">카페</span>
+<div class="place-name">카페 아워포레스트</div>
+</div>
+</div>
+<div class="place-desc">숲속 감성 카페 / 반려견 동반 가능</div>
+<div class="place-meta">
+<div class="place-meta-item">🚗 차로 약 15분</div>
+<div class="place-meta-item">📍 경기도 가평군 가평읍 가화로 440-117</div>
+<div class="place-meta-item">🐶 반려견 동반 가능</div>
+</div>
+<div class="place-actions">
+<a class="place-action-btn" href="https://map.naver.com/v5/search/%EA%B2%BD%EA%B8%B0%EB%8F%84%20%EA%B0%80%ED%8F%89%EA%B5%B0%20%EA%B0%80%ED%8F%89%EC%9D%8D%20%EA%B0%80%ED%99%94%EB%A1%9C%20440-117" target="_blank">📍 지도보기</a>
+</div>
+</div>
+<div class="place-card" data-cat="cafe">
+<div class="place-header">
+<div class="place-emoji">☕</div>
+<div class="place-info">
+<span class="place-category cafe">카페</span>
+<div class="place-name">카페 고요재</div>
+</div>
+</div>
+<div class="place-desc">1층 반려견 동반 가능</div>
+<div class="place-meta">
+<div class="place-meta-item">🚗 차로 약 20분</div>
+<div class="place-meta-item">🐶 반려견 동반 가능</div>
+<div class="place-meta-item">📍 경기도 가평군 상면 수목원로 174 고요재</div></div>
+<div class="place-actions">
+<a class="place-action-btn" href="https://map.naver.com/v5/search/%EA%B2%BD%EA%B8%B0%EB%8F%84%20%EA%B0%80%ED%8F%89%EA%B5%B0%20%EC%83%81%EB%A9%B4%20%EC%88%98%EB%AA%A9%EC%9B%90%EB%A1%9C%20174%20%EA%B3%A0%EC%9A%94%EC%9E%AC" target="_blank">📍 지도보기</a>
+</div>
+</div>
+<div class="section-title">🛒 마트 / 편의점</div>
+<div class="place-card" data-cat="mart">
+<div class="place-header">
+<div class="place-emoji">🛒</div>
+<div class="place-info">
+<span class="place-category mart">마트/편의점</span>
+<div class="place-name">플러스마트</div>
+</div>
+</div>
+<div class="place-desc">가평읍 로컬 마트 / 08:00~22:00</div>
+<div class="place-meta">
+<div class="place-meta-item">🚗 차로 약 5분</div>
+<div class="place-meta-item">📍 경기도 가평군 가평읍 가화로 37 플러스마트 가평점</div>
+</div>
+<div class="place-actions">
+<a class="place-action-btn" href="https://map.naver.com/v5/search/%EA%B2%BD%EA%B8%B0%EB%8F%84%20%EA%B0%80%ED%8F%89%EA%B5%B0%20%EA%B0%80%ED%8F%89%EC%9D%8D%20%EA%B0%80%ED%99%94%EB%A1%9C%2037%20%ED%94%8C%EB%9F%AC%EC%8A%A4%EB%A7%88%ED%8A%B8%20%EA%B0%80%ED%8F%89%EC%A0%90" target="_blank">📍 지도보기</a>
+<a class="place-action-btn" href="tel:031-582-1900">📞 전화</a>
+</div>
+</div>
+<div class="place-card" data-cat="mart">
+<div class="place-header">
+<div class="place-emoji">🛒</div>
+<div class="place-info">
+<span class="place-category mart">마트/편의점</span>
+<div class="place-name">GS25·CU (가평읍)</div>
+</div>
+</div>
+<div class="place-meta">
+<div class="place-meta-item">🚗 차로 약 5~10분</div>
+<div class="place-meta-item">📍 경기도 가평군 가평읍 석봉로 163 (읍내리 495-32)</div></div>
+<div class="place-actions">
+<a class="place-action-btn" href="https://map.naver.com/v5/search/%EA%B2%BD%EA%B8%B0%EB%8F%84%20%EA%B0%80%ED%8F%89%EA%B5%B0%20%EA%B0%80%ED%8F%89%EC%9D%8D%20%EC%84%9D%EB%B4%89%EB%A1%9C%20163%20%28%EC%9D%8D%EB%82%B4%EB%A6%AC%20495-32%29" target="_blank">📍 지도보기</a></div>
+</div>
+<div class="place-card" data-cat="mart">
+<div class="place-header">
+<div class="place-emoji">🛒</div>
+<div class="place-info">
+<span class="place-category mart">마트/편의점</span>
+<div class="place-name">하나로마트 가평점</div>
+</div>
+</div>
+<div class="place-meta">
+<div class="place-meta-item">🚗 차로 약 12분</div>
+<div class="place-meta-item">📍 경기도 가평군 가평읍 가화로 120</div>
+</div>
+<div class="place-actions">
+<a class="place-action-btn" href="https://map.naver.com/v5/search/%EA%B2%BD%EA%B8%B0%EB%8F%84%20%EA%B0%80%ED%8F%89%EA%B5%B0%20%EA%B0%80%ED%8F%89%EC%9D%8D%20%EA%B0%80%ED%99%94%EB%A1%9C%20120" target="_blank">📍 지도보기</a>
+</div>
+</div>
+<div class="place-card" data-cat="mart">
+<div class="place-header">
+<div class="place-emoji">🛒</div>
+<div class="place-info">
+<span class="place-category mart">마트/편의점</span>
+<div class="place-name">노브랜드 가평잣고을시장점</div>
+</div>
+</div>
+<div class="place-meta">
+<div class="place-meta-item">🚗 차로 약 12분</div>
+<div class="place-meta-item">📍 경기도 가평군 가평읍 장터2길 12 창업경제타운 2층</div>
+</div>
+<div class="place-actions">
+<a class="place-action-btn" href="https://map.naver.com/v5/search/%EA%B2%BD%EA%B8%B0%EB%8F%84%20%EA%B0%80%ED%8F%89%EA%B5%B0%20%EA%B0%80%ED%8F%89%EC%9D%8D%20%EC%9E%A5%ED%84%B02%EA%B8%B8%2012%20%EC%B0%BD%EC%97%85%EA%B2%BD%EC%A0%9C%ED%83%80%EC%9A%B4%202%EC%B8%B5" target="_blank">📍 지도보기</a>
+</div>
+</div>
+<div class="section-title">🐾 반려견 놀이터</div>
+<div class="place-card" data-cat="play">
+<div class="place-header">
+<div class="place-emoji">🐾</div>
+<div class="place-info">
+<span class="place-category play">반려견놀이터</span>
+<div class="place-name">디그르르</div>
+</div>
+</div>
+<div class="place-desc">평일 반려견입장료 8,000평일 다견할인 6,000</div>
+<div class="place-meta">
+<div class="place-meta-item">🚗 차로 약 35분</div>
+<div class="place-meta-item">📍 경기도 가평군 청평면 경춘로 89-2 디그르르</div>
+<div class="place-meta-item">🐶 반려견 동반 가능</div>
+</div>
+<div class="place-actions">
+<a class="place-action-btn" href="https://map.naver.com/v5/search/%EA%B2%BD%EA%B8%B0%EB%8F%84%20%EA%B0%80%ED%8F%89%EA%B5%B0%20%EC%B2%AD%ED%8F%89%EB%A9%B4%20%EA%B2%BD%EC%B6%98%EB%A1%9C%2089-2%20%EB%94%94%EA%B7%B8%EB%A5%B4%EB%A5%B4" target="_blank">📍 지도보기</a>
+</div>
+</div>
+<div class="section-title">🏥 동물병원</div>
+<div class="place-card" data-cat="hospital">
+<div class="place-header">
+<div class="place-emoji">🏥</div>
+<div class="place-info">
+<span class="place-category hospital">동물병원</span>
+<div class="place-name">24시 더케어 동물의료센터</div>
+</div>
+</div>
+<div class="place-desc">🚨 경춘선 인접 / 24시간 응급 / 가평에서 가장 가까운 24시 응급병원</div>
+<div class="place-meta">
+<div class="place-meta-item">🚗 차로 약 40분</div>
+<div class="place-meta-item">📍 경기도 구리시 경춘로 294 1-3층 (수택동,대신타워)</div>
+<div class="place-meta-item">🐶 반려견 동반 가능</div>
+</div>
+<div class="place-actions">
+<a class="place-action-btn" href="https://map.naver.com/v5/search/%EA%B2%BD%EA%B8%B0%EB%8F%84%20%EA%B5%AC%EB%A6%AC%EC%8B%9C%20%EA%B2%BD%EC%B6%98%EB%A1%9C%20294%201-3%EC%B8%B5%20%28%EC%88%98%ED%83%9D%EB%8F%99%2C%EB%8C%80%EC%8B%A0%ED%83%80%EC%9B%8C%29" target="_blank">📍 지도보기</a>
+<a class="place-action-btn" href="tel:031-516-8585">📞 전화</a>
+</div>
+</div>
+<div class="place-card" data-cat="hospital">
+<div class="place-header">
+<div class="place-emoji">🏥</div>
+<div class="place-info">
+<span class="place-category hospital">동물병원</span>
+<div class="place-name">현대동물병원</div>
+</div>
+</div>
+<div class="place-desc">가평읍 동물병원 / 매주 화요일 휴무</div>
+<div class="place-meta">
+<div class="place-meta-item">🚗 차로 약 9분</div>
+<div class="place-meta-item">🐶 반려견 동반 가능</div>
+<div class="place-meta-item">📍 경기도 가평군 가평읍 연인2길 19</div><div class="place-meta-item"><a href="tel:031-582-2752" style="color:inherit;text-decoration:none;">📞 031-582-2752</a></div></div>
+<div class="place-actions">
+<a class="place-action-btn" href="https://map.naver.com/v5/search/%EA%B2%BD%EA%B8%B0%EB%8F%84%20%EA%B0%80%ED%8F%89%EA%B5%B0%20%EA%B0%80%ED%8F%89%EC%9D%8D%20%EC%97%B0%EC%9D%B82%EA%B8%B8%2019" target="_blank">📍 지도보기</a><a class="place-action-btn" href="tel:031-582-2752">📞 전화</a></div>
+</div>
+<div class="section-title">🗺️ 관광지</div>
+<div class="place-card" data-cat="attraction">
+<div class="place-header">
+<div class="place-emoji">🗺️</div>
+<div class="place-info">
+<span class="place-category attraction">관광지</span>
+<div class="place-name">자라섬</div>
+</div>
+</div>
+<div class="place-desc">캠핑·산책 / 반려견 동반 가능 / 국제재즈페스티벌 개최지</div>
+<div class="place-meta">
+<div class="place-meta-item">🚗 차로 약 10분</div>
+<div class="place-meta-item">📍 경기도 가평군 가평읍 자라섬로 60</div>
+<div class="place-meta-item">🐶 반려견 동반 가능</div>
+</div>
+<div class="place-actions">
+<a class="place-action-btn" href="https://map.naver.com/v5/search/%EA%B2%BD%EA%B8%B0%EB%8F%84%20%EA%B0%80%ED%8F%89%EA%B5%B0%20%EA%B0%80%ED%8F%89%EC%9D%8D%20%EC%9E%90%EB%9D%BC%EC%84%AC%EB%A1%9C%2060" target="_blank">📍 지도보기</a>
+</div>
+</div>
+<div class="place-card" data-cat="attraction">
+<div class="place-header">
+<div class="place-emoji">🗺️</div>
+<div class="place-info">
+<span class="place-category attraction">관광지</span>
+<div class="place-name">가평 레일바이크</div>
+</div>
+</div>
+<div class="place-desc">반려견 동반 가능 여부 사전 확인 권장</div>
+<div class="place-meta">
+<div class="place-meta-item">🚗 차로 약 10분</div>
+<div class="place-meta-item">🐶 반려견 동반 가능</div>
+<div class="place-meta-item">📍 경기도 가평군 가평읍 장터길 14</div></div>
+<div class="place-actions">
+<a class="place-action-btn" href="https://map.naver.com/v5/search/%EA%B2%BD%EA%B8%B0%EB%8F%84%20%EA%B0%80%ED%8F%89%EA%B5%B0%20%EA%B0%80%ED%8F%89%EC%9D%8D%20%EC%9E%A5%ED%84%B0%EA%B8%B8%2014" target="_blank">📍 지도보기</a>
+</div>
+</div>
+<div class="place-card" data-cat="attraction">
+<div class="place-header">
+<div class="place-emoji">🗺️</div>
+<div class="place-info">
+<span class="place-category attraction">관광지</span>
+<div class="place-name">호명호수</div>
+</div>
+</div>
+<div class="place-desc">산책 코스 / 반려견 동반 가능</div>
+<div class="place-meta">
+<div class="place-meta-item">🚗 차로 약 20분</div>
+<div class="place-meta-item">📍 경기도 가평군 청평면 호명리 5</div>
+<div class="place-meta-item">🐶 반려견 동반 가능</div>
+</div>
+<div class="place-actions">
+<a class="place-action-btn" href="https://map.naver.com/v5/search/%EA%B2%BD%EA%B8%B0%EB%8F%84%20%EA%B0%80%ED%8F%89%EA%B5%B0%20%EC%B2%AD%ED%8F%89%EB%A9%B4%20%ED%98%B8%EB%AA%85%EB%A6%AC%205" target="_blank">📍 지도보기</a>
+</div>
+</div>
+<div class="place-card" data-cat="attraction">
+<div class="place-header">
+<div class="place-emoji">🗺️</div>
+<div class="place-info">
+<span class="place-category attraction">관광지</span>
+<div class="place-name">아침고요수목원</div>
+</div>
+</div>
+<div class="place-meta">
+<div class="place-meta-item">🚗 차로 약 15분</div>
+<div class="place-meta-item">📍 경기도 가평군 상면 수목원로 432</div>
+</div>
+<div class="place-actions">
+<a class="place-action-btn" href="https://map.naver.com/v5/search/%EA%B2%BD%EA%B8%B0%EB%8F%84%20%EA%B0%80%ED%8F%89%EA%B5%B0%20%EC%83%81%EB%A9%B4%20%EC%88%98%EB%AA%A9%EC%9B%90%EB%A1%9C%20432" target="_blank">📍 지도보기</a>
+</div>
+</div>
+<div class="place-card" data-cat="attraction">
+<div class="place-header">
+<div class="place-emoji">🗺️</div>
+<div class="place-info">
+<span class="place-category attraction">관광지</span>
+<div class="place-name">남이섬</div>
+</div>
+</div>
+<div class="place-meta">
+<div class="place-meta-item">🚗 차로 약 18분</div>
+<div class="place-meta-item">📍 강원특별자치도 춘천시 남산면 남이섬길 1</div>
+<div class="place-meta-item">🐶 반려견 동반 가능</div>
+</div>
+<div class="place-actions">
+<a class="place-action-btn" href="https://map.naver.com/v5/search/%EA%B0%95%EC%9B%90%ED%8A%B9%EB%B3%84%EC%9E%90%EC%B9%98%EB%8F%84%20%EC%B6%98%EC%B2%9C%EC%8B%9C%20%EB%82%A8%EC%82%B0%EB%A9%B4%20%EB%82%A8%EC%9D%B4%EC%84%AC%EA%B8%B8%201" target="_blank">📍 지도보기</a>
+</div>
+</div>
+</div>
+<!-- ══════ 가평(청평점) ══════ -->
+<div class="branch-content" id="branch-가평(청평점)">
+<div class="tip-box"><strong>💡 청평점 주변 팁</strong><br/>청평호 주변으로 카페와 식당이 있어요. 주말에는 혼잡할 수 있으니 일찍 방문하세요! 남이섬도 반려견과 함께 입장 가능해요.</div>
+<div class="section-title">🍽️ 맛집</div>
+<div class="place-card" data-cat="food">
+<div class="place-header">
+<div class="place-emoji">🍽️</div>
+<div class="place-info">
+<span class="place-category food">맛집</span>
+<div class="place-name">동기간</div>
+</div>
+</div>
+<div class="place-desc">닭볶음탕·백숙 / 애견동반 전용 방갈로</div>
+<div class="place-meta">
+<div class="place-meta-item">🚗 차로 약 20분</div>
+<div class="place-meta-item">📍 경기도 가평군 가평읍 보납로 459-158 동기간</div>
+<div class="place-meta-item">🐶 반려견 동반 가능</div>
+</div>
+<div class="place-actions">
+<a class="place-action-btn" href="https://map.naver.com/v5/search/%EA%B2%BD%EA%B8%B0%EB%8F%84%20%EA%B0%80%ED%8F%89%EA%B5%B0%20%EA%B0%80%ED%8F%89%EC%9D%8D%20%EB%B3%B4%EB%82%A9%EB%A1%9C%20459-158%20%EB%8F%99%EA%B8%B0%EA%B0%84" target="_blank">📍 지도보기</a>
+</div>
+</div>
+<div class="place-card" data-cat="food">
+<div class="place-header">
+<div class="place-emoji">🍽️</div>
+<div class="place-info">
+<span class="place-category food">맛집</span>
+<div class="place-name">산골농원</div>
+</div>
+</div>
+<div class="place-desc">야외 테이블 반려견 동반 가능</div>
+<div class="place-meta">
+<div class="place-meta-item">🚗 차로 약 20분</div>
+<div class="place-meta-item">🐶 반려견 동반 가능</div>
+<div class="place-meta-item">📍 경기도 가평군 설악면 어비산길99번길 75-7 산골농원</div></div>
+<div class="place-actions">
+<a class="place-action-btn" href="https://map.naver.com/v5/search/%EA%B2%BD%EA%B8%B0%EB%8F%84%20%EA%B0%80%ED%8F%89%EA%B5%B0%20%EC%84%A4%EC%95%85%EB%A9%B4%20%EC%96%B4%EB%B9%84%EC%82%B0%EA%B8%B899%EB%B2%88%EA%B8%B8%2075-7%20%EC%82%B0%EA%B3%A8%EB%86%8D%EC%9B%90" target="_blank">📍 지도보기</a>
+</div>
+</div>
+<div class="place-card" data-cat="food">
+<div class="place-header">
+<div class="place-emoji">🍽️</div>
+<div class="place-info">
+<span class="place-category food">맛집</span>
+<div class="place-name">아띠춘천닭갈비</div>
+</div>
+</div>
+<div class="place-desc">춘천식 닭갈비 / 야외 반려견 동반 가능</div>
+<div class="place-meta">
+<div class="place-meta-item">🚗 차로 약 10분</div>
+<div class="place-meta-item">🐶 반려견 동반 가능</div>
+<div class="place-meta-item">📍 경기도 가평군 가평읍 북한강변로 1080</div></div>
+<div class="place-actions">
+<a class="place-action-btn" href="https://map.naver.com/v5/search/%EA%B2%BD%EA%B8%B0%EB%8F%84%20%EA%B0%80%ED%8F%89%EA%B5%B0%20%EA%B0%80%ED%8F%89%EC%9D%8D%20%EB%B6%81%ED%95%9C%EA%B0%95%EB%B3%80%EB%A1%9C%201080" target="_blank">📍 지도보기</a>
+</div>
+</div>
+<div class="place-card" data-cat="food">
+<div class="place-header">
+<div class="place-emoji">🍽️</div>
+<div class="place-info">
+<span class="place-category food">맛집</span>
+<div class="place-name">명가식당 닭갈비</div>
+</div>
+</div>
+<div class="place-desc">애견 동반 가능 문의 확인 필요</div>
+<div class="place-meta">
+<div class="place-meta-item">🚗 차로 약 2분</div>
+<div class="place-meta-item">📍 경기도 가평군 청평면 고재길 241-16 명가식당</div>
+<div class="place-meta-item">🐶 반려견 동반 가능</div>
+</div>
+<div class="place-actions">
+<a class="place-action-btn" href="https://map.naver.com/v5/search/%EA%B2%BD%EA%B8%B0%EB%8F%84%20%EA%B0%80%ED%8F%89%EA%B5%B0%20%EC%B2%AD%ED%8F%89%EB%A9%B4%20%EA%B3%A0%EC%9E%AC%EA%B8%B8%20241-16%20%EB%AA%85%EA%B0%80%EC%8B%9D%EB%8B%B9" target="_blank">📍 지도보기</a>
+</div>
+</div>
+<div class="section-title">☕ 카페</div>
+<div class="place-card" data-cat="cafe">
+<div class="place-header">
+<div class="place-emoji">☕</div>
+<div class="place-info">
+<span class="place-category cafe">카페</span>
+<div class="place-name">카페 임초리</div>
+</div>
+</div>
+<div class="place-desc">디저트 맛집 / 실내 반려견 동반</div>
+<div class="place-meta">
+<div class="place-meta-item">🚗 차로 약 20분</div>
+<div class="place-meta-item">📍 경기도 가평군 상면 청군로 701 1층</div>
+<div class="place-meta-item">🐶 반려견 동반 가능</div>
+</div>
+<div class="place-actions">
+<a class="place-action-btn" href="https://map.naver.com/v5/search/%EA%B2%BD%EA%B8%B0%EB%8F%84%20%EA%B0%80%ED%8F%89%EA%B5%B0%20%EC%83%81%EB%A9%B4%20%EC%B2%AD%EA%B5%B0%EB%A1%9C%20701%201%EC%B8%B5" target="_blank">📍 지도보기</a>
+</div>
+</div>
+<div class="place-card" data-cat="cafe">
+<div class="place-header">
+<div class="place-emoji">☕</div>
+<div class="place-info">
+<span class="place-category cafe">카페</span>
+<div class="place-name">나무아래오후N 2호점</div>
+</div>
+</div>
+<div class="place-desc">가평 대표 애견동반 카페</div>
+<div class="place-meta">
+<div class="place-meta-item">🚗 차로 약 20분</div>
+<div class="place-meta-item">🐶 반려견 동반 가능</div>
+<div class="place-meta-item">📍 경기도 가평군 상면 수목원로 204</div></div>
+<div class="place-actions">
+<a class="place-action-btn" href="https://map.naver.com/v5/search/%EA%B2%BD%EA%B8%B0%EB%8F%84%20%EA%B0%80%ED%8F%89%EA%B5%B0%20%EC%83%81%EB%A9%B4%20%EC%88%98%EB%AA%A9%EC%9B%90%EB%A1%9C%20204" target="_blank">📍 지도보기</a>
+</div>
+</div>
+<div class="place-card" data-cat="cafe">
+<div class="place-header">
+<div class="place-emoji">☕</div>
+<div class="place-info">
+<span class="place-category cafe">카페</span>
+<div class="place-name">카페 아워포레스트</div>
+</div>
+</div>
+<div class="place-desc">숲속 감성 / 반려견 동반 가능</div>
+<div class="place-meta">
+<div class="place-meta-item">🚗 차로 약 15분</div>
+<div class="place-meta-item">🐶 반려견 동반 가능</div>
+<div class="place-meta-item">📍 경기도 가평군 가평읍 가화로 440-117</div></div>
+<div class="place-actions">
+<a class="place-action-btn" href="https://map.naver.com/v5/search/%EA%B2%BD%EA%B8%B0%EB%8F%84%20%EA%B0%80%ED%8F%89%EA%B5%B0%20%EA%B0%80%ED%8F%89%EC%9D%8D%20%EA%B0%80%ED%99%94%EB%A1%9C%20440-117" target="_blank">📍 지도보기</a>
+</div>
+</div>
+<div class="place-card" data-cat="cafe">
+<div class="place-header">
+<div class="place-emoji">☕</div>
+<div class="place-info">
+<span class="place-category cafe">카페</span>
+<div class="place-name">카페 더강</div>
+</div>
+</div>
+<div class="place-desc">보트 예약 가능 / 리버뷰</div>
+<div class="place-meta">
+<div class="place-meta-item">🚗 차로 약 10분</div>
+<div class="place-meta-item">📍 경기도 가평군 가평읍 굴바우길 86</div>
+<div class="place-meta-item">🐶 반려견 동반 가능</div>
+</div>
+<div class="place-actions">
+<a class="place-action-btn" href="https://map.naver.com/v5/search/%EA%B2%BD%EA%B8%B0%EB%8F%84%20%EA%B0%80%ED%8F%89%EA%B5%B0%20%EA%B0%80%ED%8F%89%EC%9D%8D%20%EA%B5%B4%EB%B0%94%EC%9A%B0%EA%B8%B8%2086" target="_blank">📍 지도보기</a>
+</div>
+</div>
+<div class="place-card" data-cat="cafe">
+<div class="place-header">
+<div class="place-emoji">☕</div>
+<div class="place-info">
+<span class="place-category cafe">카페</span>
+<div class="place-name">골든트리</div>
+</div>
+</div>
+<div class="place-desc">야외 반려견 동반 / 수제 베이커리</div>
+<div class="place-meta">
+<div class="place-meta-item">🚗 차로 약 20분</div>
+<div class="place-meta-item">📍 경기도 가평군 가평읍 북한강변로 326-124</div>
+<div class="place-meta-item">🐶 반려견 동반 가능</div>
+</div>
+<div class="place-actions">
+<a class="place-action-btn" href="https://map.naver.com/v5/search/%EA%B2%BD%EA%B8%B0%EB%8F%84%20%EA%B0%80%ED%8F%89%EA%B5%B0%20%EA%B0%80%ED%8F%89%EC%9D%8D%20%EB%B6%81%ED%95%9C%EA%B0%95%EB%B3%80%EB%A1%9C%20326-124" target="_blank">📍 지도보기</a>
+</div>
+</div>
+<div class="section-title">🛒 마트 / 편의점</div>
+<div class="place-card" data-cat="mart">
+<div class="place-header">
+<div class="place-emoji">🛒</div>
+<div class="place-info">
+<span class="place-category mart">마트/편의점</span>
+<div class="place-name">플러스마트</div>
+</div>
+</div>
+<div class="place-desc">08:00~22:00</div>
+<div class="place-meta">
+<div class="place-meta-item">🚗 차로 약 20분</div>
+<div class="place-meta-item">📍 경기도 가평군 가평읍 가화로 37 플러스마트 가평점</div>
+</div>
+<div class="place-actions">
+<a class="place-action-btn" href="https://map.naver.com/v5/search/%EA%B2%BD%EA%B8%B0%EB%8F%84%20%EA%B0%80%ED%8F%89%EA%B5%B0%20%EA%B0%80%ED%8F%89%EC%9D%8D%20%EA%B0%80%ED%99%94%EB%A1%9C%2037%20%ED%94%8C%EB%9F%AC%EC%8A%A4%EB%A7%88%ED%8A%B8%20%EA%B0%80%ED%8F%89%EC%A0%90" target="_blank">📍 지도보기</a>
+<a class="place-action-btn" href="tel:031-582-1900">📞 전화</a>
+</div>
+</div>
+<div class="place-card" data-cat="mart">
+<div class="place-header">
+<div class="place-emoji">🛒</div>
+<div class="place-info">
+<span class="place-category mart">마트/편의점</span>
+<div class="place-name">GS25·CU (청평면)</div>
+</div>
+</div>
+<div class="place-meta">
+<div class="place-meta-item">🚗 차로 약 5~10분</div>
+<div class="place-meta-item">📍 경기도 가평군 청평면 청평중앙로 24</div><div class="place-meta-item"><a href="tel:031-585-6552" style="color:inherit;text-decoration:none;">📞 031-585-6552</a></div></div>
+<div class="place-actions">
+<a class="place-action-btn" href="https://map.naver.com/v5/search/%EA%B2%BD%EA%B8%B0%EB%8F%84%20%EA%B0%80%ED%8F%89%EA%B5%B0%20%EC%B2%AD%ED%8F%89%EB%A9%B4%20%EC%B2%AD%ED%8F%89%EC%A4%91%EC%95%99%EB%A1%9C%2024" target="_blank">📍 지도보기</a></div>
+</div>
+<div class="section-title">🐾 반려견 놀이터</div>
+<div class="place-card" data-cat="play">
+<div class="place-header">
+<div class="place-emoji">🐾</div>
+<div class="place-info">
+<span class="place-category play">반려견놀이터</span>
+<div class="place-name">디그르르</div>
+</div>
+</div>
+<div class="place-meta">
+<div class="place-meta-item">🚗 차로 약 32분</div>
+<div class="place-meta-item">📍 경기도 가평군 청평면 경춘로 89-2 디그르르</div>
+<div class="place-meta-item">🐶 반려견 동반 가능</div>
+</div>
+<div class="place-actions">
+<a class="place-action-btn" href="https://map.naver.com/v5/search/%EA%B2%BD%EA%B8%B0%EB%8F%84%20%EA%B0%80%ED%8F%89%EA%B5%B0%20%EC%B2%AD%ED%8F%89%EB%A9%B4%20%EA%B2%BD%EC%B6%98%EB%A1%9C%2089-2%20%EB%94%94%EA%B7%B8%EB%A5%B4%EB%A5%B4" target="_blank">📍 지도보기</a>
+</div>
+</div>
+<div class="section-title">🏥 동물병원</div>
+<div class="place-card" data-cat="hospital">
+<div class="place-header">
+<div class="place-emoji">🏥</div>
+<div class="place-info">
+<span class="place-category hospital">동물병원</span>
+<div class="place-name">청평동물병원</div>
+</div>
+</div>
+<div class="place-desc">청평면 동물병원 / 매주 일요일 휴무</div>
+<div class="place-meta">
+<div class="place-meta-item">🚗 차로 약 28분</div>
+<div class="place-meta-item">🐶 반려견 동반 가능</div>
+<div class="place-meta-item">📍 경기도 가평군 청평면 청평중앙로 55-1</div><div class="place-meta-item"><a href="tel:0507-1401-7573" style="color:inherit;text-decoration:none;">📞 0507-1401-7573</a></div></div>
+<div class="place-actions">
+<a class="place-action-btn" href="https://map.naver.com/v5/search/%EA%B2%BD%EA%B8%B0%EB%8F%84%20%EA%B0%80%ED%8F%89%EA%B5%B0%20%EC%B2%AD%ED%8F%89%EB%A9%B4%20%EC%B2%AD%ED%8F%89%EC%A4%91%EC%95%99%EB%A1%9C%2055-1" target="_blank">📍 지도보기</a><a class="place-action-btn" href="tel:0507-1401-7573">📞 전화</a></div>
+</div>
+<div class="place-card" data-cat="hospital">
+<div class="place-header">
+<div class="place-emoji">🏥</div>
+<div class="place-info">
+<span class="place-category hospital">동물병원</span>
+<div class="place-name">24시 더케어 동물의료센터</div>
+</div>
+</div>
+<div class="place-desc">🚨 24시간 응급 / 가평권 가장 가까운 24시 응급병원</div>
+<div class="place-meta">
+<div class="place-meta-item">🚗 차로 약 35분</div>
+<div class="place-meta-item">📍 경기도 구리시 경춘로 294 1-3층 (수택동,대신타워)</div>
+<div class="place-meta-item">🐶 반려견 동반 가능</div>
+</div>
+<div class="place-actions">
+<a class="place-action-btn" href="https://map.naver.com/v5/search/%EA%B2%BD%EA%B8%B0%EB%8F%84%20%EA%B5%AC%EB%A6%AC%EC%8B%9C%20%EA%B2%BD%EC%B6%98%EB%A1%9C%20294%201-3%EC%B8%B5%20%28%EC%88%98%ED%83%9D%EB%8F%99%2C%EB%8C%80%EC%8B%A0%ED%83%80%EC%9B%8C%29" target="_blank">📍 지도보기</a>
+<a class="place-action-btn" href="tel:031-516-8585">📞 전화</a>
+</div>
+</div>
+<div class="section-title">🗺️ 관광지</div>
+<div class="place-card" data-cat="attraction">
+<div class="place-header">
+<div class="place-emoji">🗺️</div>
+<div class="place-info">
+<span class="place-category attraction">관광지</span>
+<div class="place-name">자라섬</div>
+</div>
+</div>
+<div class="place-desc">반려견 동반 산책 가능</div>
+<div class="place-meta">
+<div class="place-meta-item">🚗 차로 약 20분</div>
+<div class="place-meta-item">📍 경기도 가평군 가평읍 자라섬로 60</div>
+<div class="place-meta-item">🐶 반려견 동반 가능</div>
+</div>
+<div class="place-actions">
+<a class="place-action-btn" href="https://map.naver.com/v5/search/%EA%B2%BD%EA%B8%B0%EB%8F%84%20%EA%B0%80%ED%8F%89%EA%B5%B0%20%EA%B0%80%ED%8F%89%EC%9D%8D%20%EC%9E%90%EB%9D%BC%EC%84%AC%EB%A1%9C%2060" target="_blank">📍 지도보기</a>
+</div>
+</div>
+<div class="place-card" data-cat="attraction">
+<div class="place-header">
+<div class="place-emoji">🗺️</div>
+<div class="place-info">
+<span class="place-category attraction">관광지</span>
+<div class="place-name">청평 호반</div>
+</div>
+</div>
+<div class="place-desc">북한강 호수 산책 / 반려견 동반 가능</div>
+<div class="place-meta">
+<div class="place-meta-item">🚗 차로 약 10분</div>
+<div class="place-meta-item">🐶 반려견 동반 가능</div>
+<div class="place-meta-item">📍 경기도 가평군 청평면 강변로 45-7 청평호반닭갈비막국수</div></div>
+<div class="place-actions">
+<a class="place-action-btn" href="https://map.naver.com/v5/search/%EA%B2%BD%EA%B8%B0%EB%8F%84%20%EA%B0%80%ED%8F%89%EA%B5%B0%20%EC%B2%AD%ED%8F%89%EB%A9%B4%20%EA%B0%95%EB%B3%80%EB%A1%9C%2045-7%20%EC%B2%AD%ED%8F%89%ED%98%B8%EB%B0%98%EB%8B%AD%EA%B0%88%EB%B9%84%EB%A7%89%EA%B5%AD%EC%88%98" target="_blank">📍 지도보기</a>
+</div>
+</div>
+<div class="place-card" data-cat="attraction">
+<div class="place-header">
+<div class="place-emoji">🗺️</div>
+<div class="place-info">
+<span class="place-category attraction">관광지</span>
+<div class="place-name">호명호수</div>
+</div>
+</div>
+<div class="place-desc">산책 코스 / 반려견 동반 가능</div>
+<div class="place-meta">
+<div class="place-meta-item">🚗 차로 약 15분</div>
+<div class="place-meta-item">📍 경기도 가평군 청평면 호명리 5</div>
+<div class="place-meta-item">🐶 반려견 동반 가능</div>
+</div>
+<div class="place-actions">
+<a class="place-action-btn" href="https://map.naver.com/v5/search/%EA%B2%BD%EA%B8%B0%EB%8F%84%20%EA%B0%80%ED%8F%89%EA%B5%B0%20%EC%B2%AD%ED%8F%89%EB%A9%B4%20%ED%98%B8%EB%AA%85%EB%A6%AC%205" target="_blank">📍 지도보기</a>
+</div>
+</div>
+<div class="place-card" data-cat="attraction">
+<div class="place-header">
+<div class="place-emoji">🗺️</div>
+<div class="place-info">
+<span class="place-category attraction">관광지</span>
+<div class="place-name">남이섬</div>
+</div>
+</div>
+<div class="place-meta">
+<div class="place-meta-item">🚗 차로 약 20분</div>
+<div class="place-meta-item">📍 강원특별자치도 춘천시 남산면 남이섬길 1</div>
+<div class="place-meta-item">🐶 반려견 동반 가능</div>
+</div>
+<div class="place-actions">
+<a class="place-action-btn" href="https://map.naver.com/v5/search/%EA%B0%95%EC%9B%90%ED%8A%B9%EB%B3%84%EC%9E%90%EC%B9%98%EB%8F%84%20%EC%B6%98%EC%B2%9C%EC%8B%9C%20%EB%82%A8%EC%82%B0%EB%A9%B4%20%EB%82%A8%EC%9D%B4%EC%84%AC%EA%B8%B8%201" target="_blank">📍 지도보기</a>
+</div>
+</div>
+<div class="place-card" data-cat="attraction">
+<div class="place-header">
+<div class="place-emoji">🗺️</div>
+<div class="place-info">
+<span class="place-category attraction">관광지</span>
+<div class="place-name">청평페리</div>
+</div>
+</div>
+<div class="place-meta">
+<div class="place-meta-item">🚗 차로 약 12분</div>
+<div class="place-meta-item">📍 경기도 가평군 청평면 호반로 982 청평페리</div>
+<div class="place-meta-item">🐶 반려견 동반 가능</div>
+</div>
+<div class="place-actions">
+<a class="place-action-btn" href="https://map.naver.com/v5/search/%EA%B2%BD%EA%B8%B0%EB%8F%84%20%EA%B0%80%ED%8F%89%EA%B5%B0%20%EC%B2%AD%ED%8F%89%EB%A9%B4%20%ED%98%B8%EB%B0%98%EB%A1%9C%20982%20%EC%B2%AD%ED%8F%89%ED%8E%98%EB%A6%AC" target="_blank">📍 지도보기</a>
+</div>
+</div>
+</div>
+<!-- ══════ 경주 ══════ -->
+<div class="branch-content" id="branch-경주">
+<div class="tip-box"><strong>💡 경주점 주변 팁</strong><br/>경주는 반려견 동반 가능한 유적지가 많아요. 황리단길·월정교 야경 코스 추천드려요!</div>
+<div class="section-title">🍽️ 맛집</div>
+<div class="place-card" data-cat="food">
+<div class="place-header">
+<div class="place-emoji">🍽️</div>
+<div class="place-info">
+<span class="place-category food">맛집</span>
+<div class="place-name">궁상각치우</div>
+</div>
+</div>
+<div class="place-desc">토종닭백숙 전문 / 개별룸 있어 반려견 동반 가능 / 블로그 후기 다수</div>
+<div class="place-meta">
+<div class="place-meta-item">🚗 차로 약 25분</div>
+<div class="place-meta-item">📍 경상북도 경주시 용황구획4길 20-16 1층</div>
+<div class="place-meta-item">🐶 반려견 동반 가능</div>
+</div>
+<div class="place-actions">
+<a class="place-action-btn" href="https://map.naver.com/v5/search/%EA%B2%BD%EC%83%81%EB%B6%81%EB%8F%84%20%EA%B2%BD%EC%A3%BC%EC%8B%9C%20%EC%9A%A9%ED%99%A9%EA%B5%AC%ED%9A%8D4%EA%B8%B8%2020-16%201%EC%B8%B5" target="_blank">📍 지도보기</a>
+</div>
+</div>
+<div class="place-card" data-cat="food">
+<div class="place-header">
+<div class="place-emoji">🍽️</div>
+<div class="place-info">
+<span class="place-category food">맛집</span>
+<div class="place-name">987피자</div>
+</div>
+</div>
+<div class="place-desc">야외 좌석 반려견 동반 / 반려견 전용 피자 제공 / 왕릉뷰</div>
+<div class="place-meta">
+<div class="place-meta-item">🚗 차로 약 25분</div>
+<div class="place-meta-item">📍 경상북도 경주시 포석로1092번길 26 황남동</div>
+<div class="place-meta-item">🐶 반려견 동반 가능</div>
+</div>
+<div class="place-actions">
+<a class="place-action-btn" href="https://map.naver.com/v5/search/%EA%B2%BD%EC%83%81%EB%B6%81%EB%8F%84%20%EA%B2%BD%EC%A3%BC%EC%8B%9C%20%ED%8F%AC%EC%84%9D%EB%A1%9C1092%EB%B2%88%EA%B8%B8%2026%20%ED%99%A9%EB%82%A8%EB%8F%99" target="_blank">📍 지도보기</a>
+</div>
+</div>
+<div class="place-card" data-cat="food">
+<div class="place-header">
+<div class="place-emoji">🍽️</div>
+<div class="place-info">
+<span class="place-category food">맛집</span>
+<div class="place-name">료미</div>
+</div>
+</div>
+<div class="place-desc">퓨전 일식(소바·덮밥) / 야외 4테이블 반려견 동반 / 전통 한옥</div>
+<div class="place-meta">
+<div class="place-meta-item">🚗 차로 약 25분</div>
+<div class="place-meta-item">📍 경상북도 경주시 포석로 1058-1 료미</div>
+<div class="place-meta-item">🐶 반려견 동반 가능</div>
+</div>
+<div class="place-actions">
+<a class="place-action-btn" href="https://map.naver.com/v5/search/%EA%B2%BD%EC%83%81%EB%B6%81%EB%8F%84%20%EA%B2%BD%EC%A3%BC%EC%8B%9C%20%ED%8F%AC%EC%84%9D%EB%A1%9C%201058-1%20%EB%A3%8C%EB%AF%B8" target="_blank">📍 지도보기</a>
+</div>
+</div>
+<div class="place-card" data-cat="food">
+<div class="place-header">
+<div class="place-emoji">🍽️</div>
+<div class="place-info">
+<span class="place-category food">맛집</span>
+<div class="place-name">암행어사농원</div>
+</div>
+</div>
+<div class="place-desc">140평 야외 식당 / 반려견 동반 가능</div>
+<div class="place-meta">
+<div class="place-meta-item">🚗 차로 약 30분</div>
+<div class="place-meta-item">🐶 반려견 동반 가능</div>
+<div class="place-meta-item">📍 경상북도 경주시 천북면 천강로 455-8 암행어사농원</div></div>
+<div class="place-actions">
+<a class="place-action-btn" href="https://map.naver.com/v5/search/%EA%B2%BD%EC%83%81%EB%B6%81%EB%8F%84%20%EA%B2%BD%EC%A3%BC%EC%8B%9C%20%EC%B2%9C%EB%B6%81%EB%A9%B4%20%EC%B2%9C%EA%B0%95%EB%A1%9C%20455-8%20%EC%95%94%ED%96%89%EC%96%B4%EC%82%AC%EB%86%8D%EC%9B%90" target="_blank">📍 지도보기</a>
+</div>
+</div>
+<div class="place-card" data-cat="food">
+<div class="place-header">
+<div class="place-emoji">🍽️</div>
+<div class="place-info">
+<span class="place-category food">맛집</span>
+<div class="place-name">원조떡갈비</div>
+</div>
+</div>
+<div class="place-desc">야외석 있음 / 반려견 동반 가능</div>
+<div class="place-meta">
+<div class="place-meta-item">🚗 차로 약 20분</div>
+<div class="place-meta-item">📍 경상북도 경주시 보불로 69 1층</div>
+<div class="place-meta-item">🐶 반려견 동반 가능</div>
+</div>
+<div class="place-actions">
+<a class="place-action-btn" href="https://map.naver.com/v5/search/%EA%B2%BD%EC%83%81%EB%B6%81%EB%8F%84%20%EA%B2%BD%EC%A3%BC%EC%8B%9C%20%EB%B3%B4%EB%B6%88%EB%A1%9C%2069%201%EC%B8%B5" target="_blank">📍 지도보기</a>
+</div>
+</div>
+<div class="section-title">☕ 카페</div>
+<div class="place-card" data-cat="cafe">
+<div class="place-header">
+<div class="place-emoji">☕</div>
+<div class="place-info">
+<span class="place-category cafe">카페</span>
+<div class="place-name">아나타 카페</div>
+</div>
+</div>
+<div class="place-desc">지브리 감성 / 실내 소형견 동반 가능 / 토토로 포토존</div>
+<div class="place-meta">
+<div class="place-meta-item">🚗 차로 약 20분</div>
+<div class="place-meta-item">📍 경상북도 경주시 포석로1050번길 12-8 1층</div>
+<div class="place-meta-item">🐶 반려견 동반 가능</div>
+</div>
+<div class="place-actions">
+<a class="place-action-btn" href="https://map.naver.com/v5/search/%EA%B2%BD%EC%83%81%EB%B6%81%EB%8F%84%20%EA%B2%BD%EC%A3%BC%EC%8B%9C%20%ED%8F%AC%EC%84%9D%EB%A1%9C1050%EB%B2%88%EA%B8%B8%2012-8%201%EC%B8%B5" target="_blank">📍 지도보기</a>
+</div>
+</div>
+<div class="place-card" data-cat="cafe">
+<div class="place-header">
+<div class="place-emoji">☕</div>
+<div class="place-info">
+<span class="place-category cafe">카페</span>
+<div class="place-name">포워드-남산</div>
+</div>
+</div>
+<div class="place-desc">대형 카페 / 넓은 정원 / 반려견 동반 가능</div>
+<div class="place-meta">
+<div class="place-meta-item">🚗 차로 약 25분</div>
+<div class="place-meta-item">📍 경상북도 경주시 통일로 109-4</div>
+<div class="place-meta-item">🐶 반려견 동반 가능</div>
+</div>
+<div class="place-actions">
+<a class="place-action-btn" href="https://map.naver.com/v5/search/%EA%B2%BD%EC%83%81%EB%B6%81%EB%8F%84%20%EA%B2%BD%EC%A3%BC%EC%8B%9C%20%ED%86%B5%EC%9D%BC%EB%A1%9C%20109-4" target="_blank">📍 지도보기</a>
+</div>
+</div>
+<div class="place-card" data-cat="cafe">
+<div class="place-header">
+<div class="place-emoji">☕</div>
+<div class="place-info">
+<span class="place-category cafe">카페</span>
+<div class="place-name">카페 괘릉</div>
+</div>
+</div>
+<div class="place-desc">한옥 카페 / 별관에서 반려견 동반 가능 / 분위기 좋음</div>
+<div class="place-meta">
+<div class="place-meta-item">🚗 차로 약 30분</div>
+<div class="place-meta-item">📍 경상북도 경주시 외동읍 괘릉길 12</div>
+<div class="place-meta-item">🐶 반려견 동반 가능</div>
+</div>
+<div class="place-actions">
+<a class="place-action-btn" href="https://map.naver.com/v5/search/%EA%B2%BD%EC%83%81%EB%B6%81%EB%8F%84%20%EA%B2%BD%EC%A3%BC%EC%8B%9C%20%EC%99%B8%EB%8F%99%EC%9D%8D%20%EA%B4%98%EB%A6%89%EA%B8%B8%2012" target="_blank">📍 지도보기</a>
+</div>
+</div>
+<div class="place-card" data-cat="cafe">
+<div class="place-header">
+<div class="place-emoji">☕</div>
+<div class="place-info">
+<span class="place-category cafe">카페</span>
+<div class="place-name">카페 푸릇</div>
+</div>
+</div>
+<div class="place-desc">2000평 정원 / 애견 동반 가능 / 대형베이커리카페</div>
+<div class="place-meta">
+<div class="place-meta-item">🚗 차로 약 21분</div>
+<div class="place-meta-item">📍 경상북도 경주시 도지3길 45</div>
+<div class="place-meta-item">🐶 반려견 동반 가능</div>
+</div>
+<div class="place-actions">
+<a class="place-action-btn" href="https://map.naver.com/v5/search/%EA%B2%BD%EC%83%81%EB%B6%81%EB%8F%84%20%EA%B2%BD%EC%A3%BC%EC%8B%9C%20%EB%8F%84%EC%A7%803%EA%B8%B8%2045" target="_blank">📍 지도보기</a>
+</div>
+</div>
+<div class="place-card" data-cat="cafe">
+<div class="place-header">
+<div class="place-emoji">☕</div>
+<div class="place-info">
+<span class="place-category cafe">카페</span>
+<div class="place-name">OVERLAP</div>
+</div>
+</div>
+<div class="place-desc">늦은 밤까지 오픈 / 애견 동반 가능</div>
+<div class="place-meta">
+<div class="place-meta-item">🚗 차로 약 21분</div>
+<div class="place-meta-item">📍 경상북도 경주시 금성로247번길 8 1층 오버랩</div>
+<div class="place-meta-item">🐶 반려견 동반 가능</div>
+</div>
+<div class="place-actions">
+<a class="place-action-btn" href="https://map.naver.com/v5/search/%EA%B2%BD%EC%83%81%EB%B6%81%EB%8F%84%20%EA%B2%BD%EC%A3%BC%EC%8B%9C%20%EA%B8%88%EC%84%B1%EB%A1%9C247%EB%B2%88%EA%B8%B8%208%201%EC%B8%B5%20%EC%98%A4%EB%B2%84%EB%9E%A9" target="_blank">📍 지도보기</a>
+</div>
+</div>
+<div class="section-title">🛒 마트 / 편의점</div>
+<div class="place-card" data-cat="mart">
+<div class="place-header">
+<div class="place-emoji">🛒</div>
+<div class="place-info">
+<span class="place-category mart">마트/편의점</span>
+<div class="place-name">하나로마트 천북농협본점</div>
+</div>
+</div>
+<div class="place-desc">가장 가까운 마트 / 농산물·생필품</div>
+<div class="place-meta">
+<div class="place-meta-item">🚗 차로 약 10분</div>
+<div class="place-meta-item">📍 경상북도 경주시 천북면 천북로 350</div>
+</div>
+<div class="place-actions">
+<a class="place-action-btn" href="https://map.naver.com/v5/search/%EA%B2%BD%EC%83%81%EB%B6%81%EB%8F%84%20%EA%B2%BD%EC%A3%BC%EC%8B%9C%20%EC%B2%9C%EB%B6%81%EB%A9%B4%20%EC%B2%9C%EB%B6%81%EB%A1%9C%20350" target="_blank">📍 지도보기</a>
+</div>
+</div>
+<div class="place-card" data-cat="mart">
+<div class="place-header">
+<div class="place-emoji">🛒</div>
+<div class="place-info">
+<span class="place-category mart">마트/편의점</span>
+<div class="place-name">홈플러스 경주점</div>
+</div>
+</div>
+<div class="place-desc">경주 유일 대형마트 / 09:00~22:00 / 경주 시내 위치</div>
+<div class="place-meta">
+<div class="place-meta-item">🚗 차로 약 25분</div>
+<div class="place-meta-item">📍 경상북도 경주시 공단로 97 홈플러스</div>
+</div>
+<div class="place-actions">
+<a class="place-action-btn" href="https://map.naver.com/v5/search/%EA%B2%BD%EC%83%81%EB%B6%81%EB%8F%84%20%EA%B2%BD%EC%A3%BC%EC%8B%9C%20%EA%B3%B5%EB%8B%A8%EB%A1%9C%2097%20%ED%99%88%ED%94%8C%EB%9F%AC%EC%8A%A4" target="_blank">📍 지도보기</a>
+<a class="place-action-btn" href="tel:054-770-8000">📞 전화</a>
+</div>
+</div>
+<div class="place-card" data-cat="mart">
+<div class="place-header">
+<div class="place-emoji">🛒</div>
+<div class="place-info">
+<span class="place-category mart">마트/편의점</span>
+<div class="place-name">탑마트 안강점</div>
+</div>
+</div>
+<div class="place-desc">대형마트 / 09:00~22:00 / 천북면에서 가장 가까운 마트</div>
+<div class="place-meta">
+<div class="place-meta-item">🚗 차로 약 15분</div>
+<div class="place-meta-item">📍 경상북도 경주시 안강읍 비화동길 41</div>
+</div>
+<div class="place-actions">
+<a class="place-action-btn" href="https://map.naver.com/v5/search/%EA%B2%BD%EC%83%81%EB%B6%81%EB%8F%84%20%EA%B2%BD%EC%A3%BC%EC%8B%9C%20%EC%95%88%EA%B0%95%EC%9D%8D%20%EB%B9%84%ED%99%94%EB%8F%99%EA%B8%B8%2041" target="_blank">📍 지도보기</a>
+<a class="place-action-btn" href="tel:054-761-3113">📞 전화</a>
+</div>
+</div>
+<div class="place-card" data-cat="mart">
+<div class="place-header">
+<div class="place-emoji">🛒</div>
+<div class="place-info">
+<span class="place-category mart">마트/편의점</span>
+<div class="place-name">GS25 경주천북남로점</div>
+</div>
+</div>
+<div class="place-desc">천북면 내 편의점 / 글램독에서 가장 가까운 편의점</div>
+<div class="place-meta">
+<div class="place-meta-item">🚗 차로 약 5분</div>
+<div class="place-meta-item">📍 경상북도 경주시 천북면 천북남로 495</div>
+</div>
+<div class="place-actions">
+<a class="place-action-btn" href="https://map.naver.com/v5/search/%EA%B2%BD%EC%83%81%EB%B6%81%EB%8F%84%20%EA%B2%BD%EC%A3%BC%EC%8B%9C%20%EC%B2%9C%EB%B6%81%EB%A9%B4%20%EC%B2%9C%EB%B6%81%EB%82%A8%EB%A1%9C%20495" target="_blank">📍 지도보기</a>
+</div>
+</div>
+<div class="place-card" data-cat="mart">
+<div class="place-header">
+<div class="place-emoji">🛒</div>
+<div class="place-info">
+<span class="place-category mart">마트/편의점</span>
+<div class="place-name">이마트24 천북물천점</div>
+</div>
+</div>
+<div class="place-desc">천북면 내 편의점 / GS25 바로 옆</div>
+<div class="place-meta">
+<div class="place-meta-item">🚗 차로 약 5분</div>
+<div class="place-meta-item">📍 경상북도 경주시 천북면 천북남로 513</div>
+</div>
+<div class="place-actions">
+<a class="place-action-btn" href="https://map.naver.com/v5/search/%EA%B2%BD%EC%83%81%EB%B6%81%EB%8F%84%20%EA%B2%BD%EC%A3%BC%EC%8B%9C%20%EC%B2%9C%EB%B6%81%EB%A9%B4%20%EC%B2%9C%EB%B6%81%EB%82%A8%EB%A1%9C%20513" target="_blank">📍 지도보기</a>
+</div>
+</div>
+<div class="section-title">🐾 반려견 놀이터</div>
+<div class="place-card" data-cat="play">
+<div class="place-header">
+<div class="place-emoji">🐾</div>
+<div class="place-info">
+<span class="place-category play">반려견놀이터</span>
+<div class="place-name">키녹 카페 스니프</div>
+</div>
+</div>
+<div class="place-desc">오프리쉬 운동장</div>
+<div class="place-meta">
+<div class="place-meta-item">🚗 차로 약 6분</div>
+<div class="place-meta-item">📍 경상북도 경주시 보문로 280-12 키녹 1층 카페 스니프</div>
+<div class="place-meta-item">🐶 반려견 동반 가능</div>
+</div>
+<div class="place-actions">
+<a class="place-action-btn" href="https://map.naver.com/v5/search/%EA%B2%BD%EC%83%81%EB%B6%81%EB%8F%84%20%EA%B2%BD%EC%A3%BC%EC%8B%9C%20%EB%B3%B4%EB%AC%B8%EB%A1%9C%20280-12%20%ED%82%A4%EB%85%B9%201%EC%B8%B5%20%EC%B9%B4%ED%8E%98%20%EC%8A%A4%EB%8B%88%ED%94%84" target="_blank">📍 지도보기</a>
+</div>
+</div>
+<div class="place-card" data-cat="play">
+<div class="place-header">
+<div class="place-emoji">🐾</div>
+<div class="place-info">
+<span class="place-category play">반려견놀이터</span>
+<div class="place-name">케렌시아</div>
+</div>
+</div>
+<div class="place-desc">오프리쉬 운동장</div>
+<div class="place-meta">
+<div class="place-meta-item">🚗 차로 약 15분</div>
+<div class="place-meta-item">📍 경상북도 경주시 엑스포로 45</div>
+<div class="place-meta-item">🐶 반려견 동반 가능</div>
+</div>
+<div class="place-actions">
+<a class="place-action-btn" href="https://map.naver.com/v5/search/%EA%B2%BD%EC%83%81%EB%B6%81%EB%8F%84%20%EA%B2%BD%EC%A3%BC%EC%8B%9C%20%EC%97%91%EC%8A%A4%ED%8F%AC%EB%A1%9C%2045" target="_blank">📍 지도보기</a>
+</div>
+</div>
+<div class="section-title">🏥 동물병원</div>
+<div class="place-card" data-cat="hospital">
+<div class="place-header">
+<div class="place-emoji">🏥</div>
+<div class="place-info">
+<span class="place-category hospital">동물병원</span>
+<div class="place-name">경주동물병원</div>
+</div>
+</div>
+<div class="place-desc">일반 진료 / 경주 시내 위치</div>
+<div class="place-meta">
+<div class="place-meta-item">🚗 차로 약 25분</div>
+<div class="place-meta-item">📍 경상북도 경주시 알천남로 236 1층 경주동물병원</div>
+<div class="place-meta-item">🐶 반려견 동반 가능</div>
+</div>
+<div class="place-actions">
+<a class="place-action-btn" href="https://map.naver.com/v5/search/%EA%B2%BD%EC%83%81%EB%B6%81%EB%8F%84%20%EA%B2%BD%EC%A3%BC%EC%8B%9C%20%EC%95%8C%EC%B2%9C%EB%82%A8%EB%A1%9C%20236%201%EC%B8%B5%20%EA%B2%BD%EC%A3%BC%EB%8F%99%EB%AC%BC%EB%B3%91%EC%9B%90" target="_blank">📍 지도보기</a>
+<a class="place-action-btn" href="tel:054-772-4712">📞 전화</a>
+</div>
+</div>
+<div class="place-card" data-cat="hospital">
+<div class="place-header">
+<div class="place-emoji">🏥</div>
+<div class="place-info">
+<span class="place-category hospital">동물병원</span>
+<div class="place-name">삼성동물병원 (안강)</div>
+</div>
+</div><div class="place-desc">안강읍 소재 / 글램독에서 가장 가까운 동물병원</div>
+<div class="place-meta">
+<div class="place-meta-item">🚗 차 15분</div>
+<div class="place-meta-item">🐶 반려견 동반 가능</div>
+<div class="place-meta-item">📍 경북 경주시 안강읍 안현로 1559</div><div class="place-meta-item"><a href="tel:054-763-0164" style="color:inherit;text-decoration:none;">📞 054-763-0164</a></div></div>
+<div class="place-actions">
+<a class="place-action-btn" href="https://map.naver.com/v5/search/%EA%B2%BD%EB%B6%81%20%EA%B2%BD%EC%A3%BC%EC%8B%9C%20%EC%95%88%EA%B0%95%EC%9D%8D%20%EC%95%88%ED%98%84%EB%A1%9C%201559" target="_blank">📍 지도보기</a><a class="place-action-btn" href="tel:054-763-0164">📞 전화</a></div>
+</div>
+<div class="place-card" data-cat="hospital">
+<div class="place-header">
+<div class="place-emoji">🏥</div>
+<div class="place-info">
+<span class="place-category hospital">동물병원</span>
+<div class="place-name">경주동물메디컬센터</div>
+</div>
+</div>
+<div class="place-desc">🚨 경주 최대 규모 응급동물병원 / 09:30~24:00 / 365일 운영</div>
+<div class="place-meta">
+<div class="place-meta-item">🚗 차로 약 25분</div>
+<div class="place-meta-item">📍 경상북도 경주시 알천남로 130</div>
+<div class="place-meta-item">🐶 반려견 동반 가능</div>
+</div>
+<div class="place-actions">
+<a class="place-action-btn" href="https://map.naver.com/v5/search/%EA%B2%BD%EC%83%81%EB%B6%81%EB%8F%84%20%EA%B2%BD%EC%A3%BC%EC%8B%9C%20%EC%95%8C%EC%B2%9C%EB%82%A8%EB%A1%9C%20130" target="_blank">📍 지도보기</a>
+<a class="place-action-btn" href="tel:054-727-2475">📞 전화</a>
+</div>
+</div>
+<div class="section-title">🗺️ 관광지</div>
+<div class="place-card" data-cat="attraction">
+<div class="place-header">
+<div class="place-emoji">🗺️</div>
+<div class="place-info">
+<span class="place-category attraction">관광지</span>
+<div class="place-name">첨성대 · 인왕동 고분군</div>
+</div>
+</div>
+<div class="place-desc">야외 산책 무료 / 반려견 입장 가능(외부) / 역사유적 산책</div>
+<div class="place-meta">
+<div class="place-meta-item">🚗 차로 약 20분</div>
+<div class="place-meta-item">📍 경상북도 경주시 인왕동 839-1</div>
+<div class="place-meta-item">🐶 반려견 동반 가능</div>
+</div>
+<div class="place-actions">
+<a class="place-action-btn" href="https://map.naver.com/v5/search/%EA%B2%BD%EC%83%81%EB%B6%81%EB%8F%84%20%EA%B2%BD%EC%A3%BC%EC%8B%9C%20%EC%9D%B8%EC%99%95%EB%8F%99%20839-1" target="_blank">📍 지도보기</a>
+</div>
+</div>
+<div class="place-card" data-cat="attraction">
+<div class="place-header">
+<div class="place-emoji">🗺️</div>
+<div class="place-info">
+<span class="place-category attraction">관광지</span>
+<div class="place-name">화랑의언덕</div>
+</div>
+</div>
+<div class="place-desc">입장료 2,000원 / 견종 제한 없음 / 탁 트인 뷰 포토존</div>
+<div class="place-meta">
+<div class="place-meta-item">🚗 차로 약 30분</div>
+<div class="place-meta-item">📍 경상북도 경주시 산내면 내일리 산261-2 화랑의 언덕</div>
+<div class="place-meta-item">🐶 반려견 동반 가능</div>
+</div>
+<div class="place-actions">
+<a class="place-action-btn" href="https://map.naver.com/v5/search/%EA%B2%BD%EC%83%81%EB%B6%81%EB%8F%84%20%EA%B2%BD%EC%A3%BC%EC%8B%9C%20%EC%82%B0%EB%82%B4%EB%A9%B4%20%EB%82%B4%EC%9D%BC%EB%A6%AC%20%EC%82%B0261-2%20%ED%99%94%EB%9E%91%EC%9D%98%20%EC%96%B8%EB%8D%95" target="_blank">📍 지도보기</a>
+</div>
+</div>
+<div class="place-card" data-cat="attraction">
+<div class="place-header">
+<div class="place-emoji">🗺️</div>
+<div class="place-info">
+<span class="place-category attraction">관광지</span>
+<div class="place-name">월정교</div>
+</div>
+</div>
+<div class="place-desc">야경 명소 / 반려견 산책 가능 / 무료 / 황리단길 연계</div>
+<div class="place-meta">
+<div class="place-meta-item">🚗 차로 약 20분</div>
+<div class="place-meta-item">📍 경상북도 경주시 교동 274</div>
+<div class="place-meta-item">🐶 반려견 동반 가능</div>
+</div>
+<div class="place-actions">
+<a class="place-action-btn" href="https://map.naver.com/v5/search/%EA%B2%BD%EC%83%81%EB%B6%81%EB%8F%84%20%EA%B2%BD%EC%A3%BC%EC%8B%9C%20%EA%B5%90%EB%8F%99%20274" target="_blank">📍 지도보기</a>
+</div>
+</div>
+<div class="place-card" data-cat="attraction">
+<div class="place-header">
+<div class="place-emoji">🗺️</div>
+<div class="place-info">
+<span class="place-category attraction">관광지</span>
+<div class="place-name">황성공원</div>
+</div>
+</div>
+<div class="place-desc">시민 산책공원 / 넓은 잔디밭 · 소나무 숲 / 반려견 동반 가능</div>
+<div class="place-meta">
+<div class="place-meta-item">🚗 차로 약 20분</div>
+<div class="place-meta-item">📍 경상북도 경주시 용담로 79-41 씨름장</div>
+<div class="place-meta-item">🐶 반려견 동반 가능</div>
+</div>
+<div class="place-actions">
+<a class="place-action-btn" href="https://map.naver.com/v5/search/%EA%B2%BD%EC%83%81%EB%B6%81%EB%8F%84%20%EA%B2%BD%EC%A3%BC%EC%8B%9C%20%EC%9A%A9%EB%8B%B4%EB%A1%9C%2079-41%20%EC%94%A8%EB%A6%84%EC%9E%A5" target="_blank">📍 지도보기</a>
+</div>
+</div>
+<div class="place-card" data-cat="attraction">
+<div class="place-header">
+<div class="place-emoji">🗺️</div>
+<div class="place-info">
+<span class="place-category attraction">관광지</span>
+<div class="place-name">황리단길</div>
+</div>
+</div>
+<div class="place-desc">경주 최고 핫플 감성 골목 / 애견동반 카페.식당 다수</div>
+<div class="place-meta">
+<div class="place-meta-item">🚗 차로 약 15분</div>
+<div class="place-meta-item">📍 경상북도 경주시 포석로 1080</div>
+<div class="place-meta-item">🐶 반려견 동반 가능</div>
+</div>
+<div class="place-actions">
+<a class="place-action-btn" href="https://map.naver.com/v5/search/%EA%B2%BD%EC%83%81%EB%B6%81%EB%8F%84%20%EA%B2%BD%EC%A3%BC%EC%8B%9C%20%ED%8F%AC%EC%84%9D%EB%A1%9C%201080" target="_blank">📍 지도보기</a>
+</div>
+</div>
+</div>
+<!-- ══════ 영흥도 ══════ -->
+<div class="branch-content" id="branch-영흥도">
+<div class="tip-box"><strong>💡 영흥도점 주변 팁</strong><br/>섬 지역이라 마트가 제한적이에요. 식재료는 영흥대교 건너기 전에 준비하시거나 세븐일레븐(차 1분)을 이용하세요!</div>
+<div class="section-title">🍽️ 맛집</div>
+<div class="place-card" data-cat="food">
+<div class="place-header">
+<div class="place-emoji">🍽️</div>
+<div class="place-info">
+<span class="place-category food">맛집</span>
+<div class="place-name">꼬니네 회 조개구이</div>
+</div>
+</div>
+<div class="place-desc">평일 야외 대형견 동반 가능 / 실내는 캐리어 필요</div>
+<div class="place-meta">
+<div class="place-meta-item">🚗 차로 약 10분</div>
+<div class="place-meta-item">🐶 반려견 동반 가능</div>
+<div class="place-meta-item">📍 인천광역시 중구 용유서로423번길 14 꼬니네회조개</div><div class="place-meta-item"><a href="tel:0507-1351-2462" style="color:inherit;text-decoration:none;">📞 0507-1351-2462</a></div></div>
+<div class="place-actions">
+<a class="place-action-btn" href="https://map.naver.com/v5/search/%EC%9D%B8%EC%B2%9C%EA%B4%91%EC%97%AD%EC%8B%9C%20%EC%A4%91%EA%B5%AC%20%EC%9A%A9%EC%9C%A0%EC%84%9C%EB%A1%9C423%EB%B2%88%EA%B8%B8%2014%20%EA%BC%AC%EB%8B%88%EB%84%A4%ED%9A%8C%EC%A1%B0%EA%B0%9C" target="_blank">📍 지도보기</a>
+</div>
+</div>
+<div class="place-card" data-cat="food">
+<div class="place-header">
+<div class="place-emoji">🍽️</div>
+<div class="place-info">
+<span class="place-category food">맛집</span>
+<div class="place-name">미진상회 조개구이</div>
+</div>
+</div>
+<div class="place-desc">매주 월요일 휴무 / 반려견 동반 가능</div>
+<div class="place-meta">
+<div class="place-meta-item">🚗 차로 약 7분</div>
+<div class="place-meta-item">📍 인천광역시 옹진군 영흥면 영흥로 109-10 109-12, 수협회센타 12호 미진상회조개구이</div>
+<div class="place-meta-item">🐶 반려견 동반 가능</div>
+</div>
+<div class="place-actions">
+<a class="place-action-btn" href="https://map.naver.com/v5/search/%EC%9D%B8%EC%B2%9C%EA%B4%91%EC%97%AD%EC%8B%9C%20%EC%98%B9%EC%A7%84%EA%B5%B0%20%EC%98%81%ED%9D%A5%EB%A9%B4%20%EC%98%81%ED%9D%A5%EB%A1%9C%20109-10%20109-12%2C%20%EC%88%98%ED%98%91%ED%9A%8C%EC%84%BC%ED%83%80%2012%ED%98%B8%20%EB%AF%B8%EC%A7%84%EC%83%81%ED%9A%8C%EC%A1%B0%EA%B0%9C%EA%B5%AC%EC%9D%B4" target="_blank">📍 지도보기</a>
+</div>
+</div>
+<div class="place-card" data-cat="food">
+<div class="place-header">
+<div class="place-emoji">🍽️</div>
+<div class="place-info">
+<span class="place-category food">맛집</span>
+<div class="place-name">조개사냥</div>
+</div>
+</div>
+<div class="place-desc">매주 월요일 휴무 / 반려견 동반 가능</div>
+<div class="place-meta">
+<div class="place-meta-item">🚗 차로 약 7분</div>
+<div class="place-meta-item">📍 인천광역시 옹진군 영흥면 영흥로 109-12 영흥수협회센타 20호 조개사냥</div>
+<div class="place-meta-item">🐶 반려견 동반 가능</div>
+</div>
+<div class="place-actions">
+<a class="place-action-btn" href="https://map.naver.com/v5/search/%EC%9D%B8%EC%B2%9C%EA%B4%91%EC%97%AD%EC%8B%9C%20%EC%98%B9%EC%A7%84%EA%B5%B0%20%EC%98%81%ED%9D%A5%EB%A9%B4%20%EC%98%81%ED%9D%A5%EB%A1%9C%20109-12%20%EC%98%81%ED%9D%A5%EC%88%98%ED%98%91%ED%9A%8C%EC%84%BC%ED%83%80%2020%ED%98%B8%20%EC%A1%B0%EA%B0%9C%EC%82%AC%EB%83%A5" target="_blank">📍 지도보기</a>
+</div>
+</div>
+<div class="place-card" data-cat="food">
+<div class="place-header">
+<div class="place-emoji">🍽️</div>
+<div class="place-info">
+<span class="place-category food">맛집</span>
+<div class="place-name">봉자네</div>
+</div>
+</div>
+<div class="place-desc">매주 월요일 휴무 / 횟집 포장 가능</div>
+<div class="place-meta">
+<div class="place-meta-item">🚗 차로 약 7분</div>
+<div class="place-meta-item">📍 인천광역시 옹진군 영흥면 영흥로 109-10 109-12, 5호 봉자네</div>
+<div class="place-meta-item">🐶 반려견 동반 가능</div>
+</div>
+<div class="place-actions">
+<a class="place-action-btn" href="https://map.naver.com/v5/search/%EC%9D%B8%EC%B2%9C%EA%B4%91%EC%97%AD%EC%8B%9C%20%EC%98%B9%EC%A7%84%EA%B5%B0%20%EC%98%81%ED%9D%A5%EB%A9%B4%20%EC%98%81%ED%9D%A5%EB%A1%9C%20109-10%20109-12%2C%205%ED%98%B8%20%EB%B4%89%EC%9E%90%EB%84%A4" target="_blank">📍 지도보기</a>
+</div>
+</div>
+<div class="section-title">☕ 카페</div>
+<div class="place-card" data-cat="cafe">
+<div class="place-header">
+<div class="place-emoji">☕</div>
+<div class="place-info">
+<span class="place-category cafe">카페</span>
+<div class="place-name">카페 메르디</div>
+</div>
+</div>
+<div class="place-desc">오션뷰 휴양지 감성 카페</div>
+<div class="place-meta">
+<div class="place-meta-item">🚗 차로 약 9분</div>
+<div class="place-meta-item">📍 인천광역시 옹진군 영흥면 선재로 354 카페 메르디</div>
+<div class="place-meta-item">🐶 반려견 동반 가능</div>
+</div>
+<div class="place-actions">
+<a class="place-action-btn" href="https://map.naver.com/v5/search/%EC%9D%B8%EC%B2%9C%EA%B4%91%EC%97%AD%EC%8B%9C%20%EC%98%B9%EC%A7%84%EA%B5%B0%20%EC%98%81%ED%9D%A5%EB%A9%B4%20%EC%84%A0%EC%9E%AC%EB%A1%9C%20354%20%EC%B9%B4%ED%8E%98%20%EB%A9%94%EB%A5%B4%EB%94%94" target="_blank">📍 지도보기</a>
+</div>
+</div>
+<div class="place-card" data-cat="cafe">
+<div class="place-header">
+<div class="place-emoji">☕</div>
+<div class="place-info">
+<span class="place-category cafe">카페</span>
+<div class="place-name">뻘다방</div>
+</div>
+</div>
+<div class="place-desc">영흥도 로컬 감성 카페</div>
+<div class="place-meta">
+<div class="place-meta-item">🚗 차로 약 20분</div>
+<div class="place-meta-item">📍 인천광역시 옹진군 영흥면 선재로 55</div>
+<div class="place-meta-item">🐶 반려견 동반 가능</div>
+</div>
+<div class="place-actions">
+<a class="place-action-btn" href="https://map.naver.com/v5/search/%EC%9D%B8%EC%B2%9C%EA%B4%91%EC%97%AD%EC%8B%9C%20%EC%98%B9%EC%A7%84%EA%B5%B0%20%EC%98%81%ED%9D%A5%EB%A9%B4%20%EC%84%A0%EC%9E%AC%EB%A1%9C%2055" target="_blank">📍 지도보기</a>
+</div>
+</div>
+<div class="place-card" data-cat="cafe">
+<div class="place-header">
+<div class="place-emoji">☕</div>
+<div class="place-info">
+<span class="place-category cafe">카페</span>
+<div class="place-name">몰베이크</div>
+</div>
+</div>
+<div class="place-desc">오션뷰 대형 베이커리 / 야외 가능</div>
+<div class="place-meta">
+<div class="place-meta-item">🚗 차로 약 15분</div>
+<div class="place-meta-item">📍 인천광역시 옹진군 영흥면 영흥로 301 몰베이크</div>
+<div class="place-meta-item">🐶 반려견 동반 가능</div>
+</div>
+<div class="place-actions">
+<a class="place-action-btn" href="https://map.naver.com/v5/search/%EC%9D%B8%EC%B2%9C%EA%B4%91%EC%97%AD%EC%8B%9C%20%EC%98%B9%EC%A7%84%EA%B5%B0%20%EC%98%81%ED%9D%A5%EB%A9%B4%20%EC%98%81%ED%9D%A5%EB%A1%9C%20301%20%EB%AA%B0%EB%B2%A0%EC%9D%B4%ED%81%AC" target="_blank">📍 지도보기</a>
+</div>
+</div>
+<div class="place-card" data-cat="cafe">
+<div class="place-header">
+<div class="place-emoji">☕</div>
+<div class="place-info">
+<span class="place-category cafe">카페</span>
+<div class="place-name">머드포레스트</div>
+</div>
+</div>
+<div class="place-desc">글램독 바로 인근/ 대형 2층 카페</div>
+<div class="place-meta">
+<div class="place-meta-item">🚗 차로 약 2분</div>
+<div class="place-meta-item">📍 인천광역시 옹진군 영흥면 영흥남로9번길 221-63 머드포레스트 카페</div>
+</div>
+<div class="place-actions">
+<a class="place-action-btn" href="https://map.naver.com/v5/search/%EC%9D%B8%EC%B2%9C%EA%B4%91%EC%97%AD%EC%8B%9C%20%EC%98%B9%EC%A7%84%EA%B5%B0%20%EC%98%81%ED%9D%A5%EB%A9%B4%20%EC%98%81%ED%9D%A5%EB%82%A8%EB%A1%9C9%EB%B2%88%EA%B8%B8%20221-63%20%EB%A8%B8%EB%93%9C%ED%8F%AC%EB%A0%88%EC%8A%A4%ED%8A%B8%20%EC%B9%B4%ED%8E%98" target="_blank">📍 지도보기</a>
+</div>
+</div>
+<div class="section-title">🛒 마트 / 편의점</div>
+<div class="place-card" data-cat="mart">
+<div class="place-header">
+<div class="place-emoji">🛒</div>
+<div class="place-info">
+<span class="place-category mart">마트/편의점</span>
+<div class="place-name">GS25·CU (장경리해변 주변)</div>
+</div>
+</div>
+<div class="place-meta">
+<div class="place-meta-item">🚗 차로 약 5분</div>
+<div class="place-meta-item">📍 인천 옹진군 영흥면 영흥서로 529</div></div>
+<div class="place-actions">
+<a class="place-action-btn" href="https://map.naver.com/v5/search/%EC%9D%B8%EC%B2%9C%20%EC%98%B9%EC%A7%84%EA%B5%B0%20%EC%98%81%ED%9D%A5%EB%A9%B4%20%EC%98%81%ED%9D%A5%EC%84%9C%EB%A1%9C%20529" target="_blank">📍 지도보기</a></div>
+</div>
+<div class="place-card" data-cat="mart">
+<div class="place-header">
+<div class="place-emoji">🛒</div>
+<div class="place-info">
+<span class="place-category mart">마트/편의점</span>
+<div class="place-name">세븐일레븐 인천영흥외리점</div>
+</div>
+</div>
+<div class="place-meta">
+<div class="place-meta-item">🚗 차로 약 1분</div>
+<div class="place-meta-item">📍 인천광역시 옹진군 영흥면 영흥남로 10-5 나동 1층 101호</div>
+</div>
+<div class="place-actions">
+<a class="place-action-btn" href="https://map.naver.com/v5/search/%EC%9D%B8%EC%B2%9C%EA%B4%91%EC%97%AD%EC%8B%9C%20%EC%98%B9%EC%A7%84%EA%B5%B0%20%EC%98%81%ED%9D%A5%EB%A9%B4%20%EC%98%81%ED%9D%A5%EB%82%A8%EB%A1%9C%2010-5%20%EB%82%98%EB%8F%99%201%EC%B8%B5%20101%ED%98%B8" target="_blank">📍 지도보기</a>
+</div>
+</div>
+<div class="place-card" data-cat="mart">
+<div class="place-header">
+<div class="place-emoji">🛒</div>
+<div class="place-info">
+<span class="place-category mart">마트/편의점</span>
+<div class="place-name">영흥백령할인마트</div>
+</div>
+</div>
+<div class="place-meta">
+<div class="place-meta-item">🚗 차로 약 5분</div>
+<div class="place-meta-item">📍 인천광역시 옹진군 영흥면 영흥로 164-10 백령할인마트</div>
+</div>
+<div class="place-actions">
+<a class="place-action-btn" href="https://map.naver.com/v5/search/%EC%9D%B8%EC%B2%9C%EA%B4%91%EC%97%AD%EC%8B%9C%20%EC%98%B9%EC%A7%84%EA%B5%B0%20%EC%98%81%ED%9D%A5%EB%A9%B4%20%EC%98%81%ED%9D%A5%EB%A1%9C%20164-10%20%EB%B0%B1%EB%A0%B9%ED%95%A0%EC%9D%B8%EB%A7%88%ED%8A%B8" target="_blank">📍 지도보기</a>
+</div>
+</div>
+<div class="place-card" data-cat="mart">
+<div class="place-header">
+<div class="place-emoji">🛒</div>
+<div class="place-info">
+<span class="place-category mart">마트/편의점</span>
+<div class="place-name">하나로마트 인천옹진농협 영흥점</div>
+</div>
+</div>
+<div class="place-meta">
+<div class="place-meta-item">🚗 차로 약 5분</div>
+<div class="place-meta-item">📍 인천광역시 옹진군 영흥면 영흥로176번길 25</div>
+</div>
+<div class="place-actions">
+<a class="place-action-btn" href="https://map.naver.com/v5/search/%EC%9D%B8%EC%B2%9C%EA%B4%91%EC%97%AD%EC%8B%9C%20%EC%98%B9%EC%A7%84%EA%B5%B0%20%EC%98%81%ED%9D%A5%EB%A9%B4%20%EC%98%81%ED%9D%A5%EB%A1%9C176%EB%B2%88%EA%B8%B8%2025" target="_blank">📍 지도보기</a>
+</div>
+</div>
+<div class="section-title">🏥 동물병원</div>
+<div class="place-card" data-cat="hospital">
+<div class="place-header">
+<div class="place-emoji">🏥</div>
+<div class="place-info">
+<span class="place-category hospital">동물병원</span>
+<div class="place-name">안산 센트럴 동물병원</div>
+</div>
+</div>
+<div class="place-desc">24시간 응급 / 영흥도에서 가장 가까운 24시 병원</div>
+<div class="place-meta">
+<div class="place-meta-item">🚗 차로 약 40분</div>
+<div class="place-meta-item">📍 경기도 안산시 단원구 중앙대로 899 2층</div>
+</div>
+<div class="place-actions">
+<a class="place-action-btn" href="https://map.naver.com/v5/search/%EA%B2%BD%EA%B8%B0%EB%8F%84%20%EC%95%88%EC%82%B0%EC%8B%9C%20%EB%8B%A8%EC%9B%90%EA%B5%AC%20%EC%A4%91%EC%95%99%EB%8C%80%EB%A1%9C%20899%202%EC%B8%B5" target="_blank">📍 지도보기</a>
+<a class="place-action-btn" href="tel:031-439-7582">📞 전화</a>
+</div>
+</div>
+<div class="place-card" data-cat="hospital">
+<div class="place-header">
+<div class="place-emoji">🏥</div>
+<div class="place-info">
+<span class="place-category hospital">동물병원</span>
+<div class="place-name">선부중앙동물의료센터</div>
+</div>
+</div>
+<div class="place-desc">연중무휴 / 응급환자 우선 진료</div>
+<div class="place-meta">
+<div class="place-meta-item">🚗 차로 약 40분</div>
+<div class="place-meta-item">📍 경기도 안산시 단원구 선부광장1로 69 단지내상가동 2층 205-1호</div>
+</div>
+<div class="place-actions">
+<a class="place-action-btn" href="https://map.naver.com/v5/search/%EA%B2%BD%EA%B8%B0%EB%8F%84%20%EC%95%88%EC%82%B0%EC%8B%9C%20%EB%8B%A8%EC%9B%90%EA%B5%AC%20%EC%84%A0%EB%B6%80%EA%B4%91%EC%9E%A51%EB%A1%9C%2069%20%EB%8B%A8%EC%A7%80%EB%82%B4%EC%83%81%EA%B0%80%EB%8F%99%202%EC%B8%B5%20205-1%ED%98%B8" target="_blank">📍 지도보기</a>
+</div>
+</div>
+<div class="place-card" data-cat="hospital">
+<div class="place-header">
+<div class="place-emoji">🏥</div>
+<div class="place-info">
+<span class="place-category hospital">동물병원</span>
+<div class="place-name">24시온누리동물메디컬센터</div>
+</div>
+</div>
+<div class="place-desc">🚨 24시간 응급 / 안산 권역 / 주소 네이버 확인 권장</div>
+<div class="place-meta">
+<div class="place-meta-item">🚗 차로 약 40분</div>
+<div class="place-meta-item">📍 경기도 안산시 단원구 광덕대로 251 1층 온누리동물메디컬센터</div></div>
+<div class="place-actions">
+<a class="place-action-btn" href="https://map.naver.com/v5/search/%EA%B2%BD%EA%B8%B0%EB%8F%84%20%EC%95%88%EC%82%B0%EC%8B%9C%20%EB%8B%A8%EC%9B%90%EA%B5%AC%20%EA%B4%91%EB%8D%95%EB%8C%80%EB%A1%9C%20251%201%EC%B8%B5%20%EC%98%A8%EB%88%84%EB%A6%AC%EB%8F%99%EB%AC%BC%EB%A9%94%EB%94%94%EC%BB%AC%EC%84%BC%ED%84%B0" target="_blank">📍 지도보기</a>
+</div>
+</div>
+<div class="section-title">🗺️ 관광지</div>
+<div class="place-card" data-cat="attraction">
+<div class="place-header">
+<div class="place-emoji">🗺️</div>
+<div class="place-info">
+<span class="place-category attraction">관광지</span>
+<div class="place-name">장경리해수욕장</div>
+</div>
+</div>
+<div class="place-desc">영흥도 대표 해변 / 반려견 동반 산책 가능</div>
+<div class="place-meta">
+<div class="place-meta-item">🚗 차로 약 10분</div>
+<div class="place-meta-item">📍 인천광역시 옹진군 영흥면 내리</div>
+<div class="place-meta-item">🐶 반려견 동반 가능</div>
+</div>
+<div class="place-actions">
+<a class="place-action-btn" href="https://map.naver.com/v5/search/%EC%9D%B8%EC%B2%9C%EA%B4%91%EC%97%AD%EC%8B%9C%20%EC%98%B9%EC%A7%84%EA%B5%B0%20%EC%98%81%ED%9D%A5%EB%A9%B4%20%EB%82%B4%EB%A6%AC" target="_blank">📍 지도보기</a>
+</div>
+</div>
+<div class="place-card" data-cat="attraction">
+<div class="place-header">
+<div class="place-emoji">🗺️</div>
+<div class="place-info">
+<span class="place-category attraction">관광지</span>
+<div class="place-name">십리포해수욕장</div>
+</div>
+</div>
+<div class="place-desc">조용한 해변 / 반려견 동반 가능</div>
+<div class="place-meta">
+<div class="place-meta-item">🚗 차로 약 15분</div>
+<div class="place-meta-item">📍 인천광역시 옹진군 영흥면 내리 734</div>
+<div class="place-meta-item">🐶 반려견 동반 가능</div>
+</div>
+<div class="place-actions">
+<a class="place-action-btn" href="https://map.naver.com/v5/search/%EC%9D%B8%EC%B2%9C%EA%B4%91%EC%97%AD%EC%8B%9C%20%EC%98%B9%EC%A7%84%EA%B5%B0%20%EC%98%81%ED%9D%A5%EB%A9%B4%20%EB%82%B4%EB%A6%AC%20734" target="_blank">📍 지도보기</a>
+</div>
+</div>
+<div class="place-card" data-cat="attraction">
+<div class="place-header">
+<div class="place-emoji">🗺️</div>
+<div class="place-info">
+<span class="place-category attraction">관광지</span>
+<div class="place-name">선재도 목섬</div>
+</div>
+</div>
+<div class="place-desc">물 빠지면 걸어서 입장 / 인생샷 명소</div>
+<div class="place-meta">
+<div class="place-meta-item">🚗 차로 약 20분</div>
+<div class="place-meta-item">📍 인천광역시 옹진군 영흥면 선재리</div>
+<div class="place-meta-item">🐶 반려견 동반 가능</div>
+</div>
+<div class="place-actions">
+<a class="place-action-btn" href="https://map.naver.com/v5/search/%EC%9D%B8%EC%B2%9C%EA%B4%91%EC%97%AD%EC%8B%9C%20%EC%98%B9%EC%A7%84%EA%B5%B0%20%EC%98%81%ED%9D%A5%EB%A9%B4%20%EC%84%A0%EC%9E%AC%EB%A6%AC" target="_blank">📍 지도보기</a>
+</div>
+</div>
+<div class="place-card" data-cat="attraction">
+<div class="place-header">
+<div class="place-emoji">🗺️</div>
+<div class="place-info">
+<span class="place-category attraction">관광지</span>
+<div class="place-name">노가리 해변</div>
+</div>
+</div>
+<div class="place-desc">반려견 동반 가능 해변 / 목줄 필수</div>
+<div class="place-meta">
+<div class="place-meta-item">🚗 차로 약 10분</div>
+<div class="place-meta-item">📍 인천광역시 옹진군 영흥면 외리</div>
+<div class="place-meta-item">🐶 반려견 동반 가능</div>
+</div>
+<div class="place-actions">
+<a class="place-action-btn" href="https://map.naver.com/v5/search/%EC%9D%B8%EC%B2%9C%EA%B4%91%EC%97%AD%EC%8B%9C%20%EC%98%B9%EC%A7%84%EA%B5%B0%20%EC%98%81%ED%9D%A5%EB%A9%B4%20%EC%99%B8%EB%A6%AC" target="_blank">📍 지도보기</a>
+</div>
+</div>
+</div>
+<!-- ══════ 양양 ══════ -->
+<div class="branch-content" id="branch-양양">
+<div class="tip-box"><strong>💡 양양점 주변 팁</strong><br/>멍비치(반려견 전용 해변)가 차로 5분 거리! 서핑 카페 거리와 함께 즐기세요. 인구해변도 반려견 동반 가능해요.</div>
+<div class="section-title">🍽️ 맛집</div>
+<div class="place-card" data-cat="food">
+<div class="place-header">
+<div class="place-emoji">🍽️</div>
+<div class="place-info">
+<span class="place-category food">맛집</span>
+<div class="place-name">소풍</div>
+</div>
+</div>
+<div class="place-desc">예약제 / 야외 반려견 동반 / 일~목 11:30~21:30</div>
+<div class="place-meta">
+<div class="place-meta-item">🚗 차로 약 20분</div>
+<div class="place-meta-item">📍 강원 양양군 현남면 시변리 38-9</div>
+<div class="place-meta-item">🐶 반려견 동반 가능</div>
+</div>
+<div class="place-actions">
+<a class="place-action-btn" href="https://map.naver.com/v5/search/%EA%B0%95%EC%9B%90%20%EC%96%91%EC%96%91%EA%B5%B0%20%ED%98%84%EB%82%A8%EB%A9%B4%20%EC%8B%9C%EB%B3%80%EB%A6%AC%2038-9" target="_blank">📍 지도보기</a>
+</div>
+</div>
+<div class="place-card" data-cat="food">
+<div class="place-header">
+<div class="place-emoji">🍽️</div>
+<div class="place-info">
+<span class="place-category food">맛집</span>
+<div class="place-name">파머스키친</div>
+</div>
+</div>
+<div class="place-desc">수제버거 성지 / 서퍼 맛집 / 야외 반려견 동반</div>
+<div class="place-meta">
+<div class="place-meta-item">🚗 차로 약 20분</div>
+<div class="place-meta-item">🐶 반려견 동반 가능</div>
+<div class="place-meta-item">📍 강원특별자치도 양양군 현남면 동산큰길 44-39 파머스키친</div></div>
+<div class="place-actions">
+<a class="place-action-btn" href="https://map.naver.com/v5/search/%EA%B0%95%EC%9B%90%ED%8A%B9%EB%B3%84%EC%9E%90%EC%B9%98%EB%8F%84%20%EC%96%91%EC%96%91%EA%B5%B0%20%ED%98%84%EB%82%A8%EB%A9%B4%20%EB%8F%99%EC%82%B0%ED%81%B0%EA%B8%B8%2044-39%20%ED%8C%8C%EB%A8%B8%EC%8A%A4%ED%82%A4%EC%B9%9C" target="_blank">📍 지도보기</a>
+</div>
+</div>
+<div class="place-card" data-cat="food">
+<div class="place-header">
+<div class="place-emoji">🍽️</div>
+<div class="place-info">
+<span class="place-category food">맛집</span>
+<div class="place-name">라이즈</div>
+</div>
+</div>
+<div class="place-desc">오므라이스 맛집 / 양식당+카페 / 반려견 동반 가능</div>
+<div class="place-meta">
+<div class="place-meta-item">🚗 차로 약 20분</div>
+<div class="place-meta-item">🐶 반려견 동반 가능</div>
+<div class="place-meta-item">📍 강원특별자치도 양양군 현남면 갯마을길 17 라이즈</div></div>
+<div class="place-actions">
+<a class="place-action-btn" href="https://map.naver.com/v5/search/%EA%B0%95%EC%9B%90%ED%8A%B9%EB%B3%84%EC%9E%90%EC%B9%98%EB%8F%84%20%EC%96%91%EC%96%91%EA%B5%B0%20%ED%98%84%EB%82%A8%EB%A9%B4%20%EA%B0%AF%EB%A7%88%EC%9D%84%EA%B8%B8%2017%20%EB%9D%BC%EC%9D%B4%EC%A6%88" target="_blank">📍 지도보기</a>
+</div>
+</div>
+<div class="place-card" data-cat="food">
+<div class="place-header">
+<div class="place-emoji">🍽️</div>
+<div class="place-info">
+<span class="place-category food">맛집</span>
+<div class="place-name">양양해산물식당</div>
+</div>
+</div>
+<div class="place-desc">애견동반 가능 / 포장 가능</div>
+<div class="place-meta">
+<div class="place-meta-item">🚗 차로 약 13분</div>
+<div class="place-meta-item">📍 강원특별자치도 양양군 현남면 동산큰길 21 101동 1층 2호</div>
+<div class="place-meta-item">🐶 반려견 동반 가능</div>
+</div>
+<div class="place-actions">
+<a class="place-action-btn" href="https://map.naver.com/v5/search/%EA%B0%95%EC%9B%90%ED%8A%B9%EB%B3%84%EC%9E%90%EC%B9%98%EB%8F%84%20%EC%96%91%EC%96%91%EA%B5%B0%20%ED%98%84%EB%82%A8%EB%A9%B4%20%EB%8F%99%EC%82%B0%ED%81%B0%EA%B8%B8%2021%20101%EB%8F%99%201%EC%B8%B5%202%ED%98%B8" target="_blank">📍 지도보기</a>
+</div>
+</div>
+<div class="section-title">☕ 카페</div>
+<div class="place-card" data-cat="cafe">
+<div class="place-header">
+<div class="place-emoji">☕</div>
+<div class="place-info">
+<span class="place-category cafe">카페</span>
+<div class="place-name">메밀라운지</div>
+</div>
+</div>
+<div class="place-desc">메밀 특화 카페 / 정원 포토존 / 반려견 동반 가능</div>
+<div class="place-meta">
+<div class="place-meta-item">🚗 차로 약 20분</div>
+<div class="place-meta-item">🐶 반려견 동반 가능</div>
+<div class="place-meta-item">📍 강원특별자치도 양양군 현남면 인구중앙길 46-38</div></div>
+<div class="place-actions">
+<a class="place-action-btn" href="https://map.naver.com/v5/search/%EA%B0%95%EC%9B%90%ED%8A%B9%EB%B3%84%EC%9E%90%EC%B9%98%EB%8F%84%20%EC%96%91%EC%96%91%EA%B5%B0%20%ED%98%84%EB%82%A8%EB%A9%B4%20%EC%9D%B8%EA%B5%AC%EC%A4%91%EC%95%99%EA%B8%B8%2046-38" target="_blank">📍 지도보기</a>
+</div>
+</div>
+<div class="place-card" data-cat="cafe">
+<div class="place-header">
+<div class="place-emoji">☕</div>
+<div class="place-info">
+<span class="place-category cafe">카페</span>
+<div class="place-name">거북이 서프바</div>
+</div>
+</div>
+<div class="place-desc">라탄 파라솔 야외테이블 / 바다뷰 / 반려견 동반</div>
+<div class="place-meta">
+<div class="place-meta-item">🚗 차로 약 7분</div>
+<div class="place-meta-item">📍 강원특별자치도 양양군 현남면 화상해안길 247 거북이 서프바</div>
+<div class="place-meta-item">🐶 반려견 동반 가능</div>
+</div>
+<div class="place-actions">
+<a class="place-action-btn" href="https://map.naver.com/v5/search/%EA%B0%95%EC%9B%90%ED%8A%B9%EB%B3%84%EC%9E%90%EC%B9%98%EB%8F%84%20%EC%96%91%EC%96%91%EA%B5%B0%20%ED%98%84%EB%82%A8%EB%A9%B4%20%ED%99%94%EC%83%81%ED%95%B4%EC%95%88%EA%B8%B8%20247%20%EA%B1%B0%EB%B6%81%EC%9D%B4%20%EC%84%9C%ED%94%84%EB%B0%94" target="_blank">📍 지도보기</a>
+</div>
+</div>
+<div class="place-card" data-cat="cafe">
+<div class="place-header">
+<div class="place-emoji">☕</div>
+<div class="place-info">
+<span class="place-category cafe">카페</span>
+<div class="place-name">컨센트릭 양양</div>
+</div>
+</div>
+<div class="place-desc">야외 목줄 시 가능</div>
+<div class="place-meta">
+<div class="place-meta-item">🚗 차로 약 30분</div>
+<div class="place-meta-item">🐶 반려견 동반 가능</div>
+<div class="place-meta-item">📍 강원특별자치도 양양군 강현면 뒷나루1길 4 컨센트릭</div></div>
+<div class="place-actions">
+<a class="place-action-btn" href="https://map.naver.com/v5/search/%EA%B0%95%EC%9B%90%ED%8A%B9%EB%B3%84%EC%9E%90%EC%B9%98%EB%8F%84%20%EC%96%91%EC%96%91%EA%B5%B0%20%EA%B0%95%ED%98%84%EB%A9%B4%20%EB%92%B7%EB%82%98%EB%A3%A81%EA%B8%B8%204%20%EC%BB%A8%EC%84%BC%ED%8A%B8%EB%A6%AD" target="_blank">📍 지도보기</a>
+</div>
+</div>
+<div class="place-card" data-cat="cafe">
+<div class="place-header">
+<div class="place-emoji">☕</div>
+<div class="place-info">
+<span class="place-category cafe">카페</span>
+<div class="place-name">페이보릿</div>
+</div>
+</div>
+<div class="place-desc">젤라또 맛집 / 앞마당 동반 가능</div>
+<div class="place-meta">
+<div class="place-meta-item">🚗 차로 약 10분</div>
+<div class="place-meta-item">📍 강원특별자치도 양양군 현남면 인구길 38 1층</div>
+<div class="place-meta-item">🐶 반려견 동반 가능</div>
+</div>
+<div class="place-actions">
+<a class="place-action-btn" href="https://map.naver.com/v5/search/%EA%B0%95%EC%9B%90%ED%8A%B9%EB%B3%84%EC%9E%90%EC%B9%98%EB%8F%84%20%EC%96%91%EC%96%91%EA%B5%B0%20%ED%98%84%EB%82%A8%EB%A9%B4%20%EC%9D%B8%EA%B5%AC%EA%B8%B8%2038%201%EC%B8%B5" target="_blank">📍 지도보기</a>
+</div>
+</div>
+<div class="place-card" data-cat="cafe">
+<div class="place-header">
+<div class="place-emoji">☕</div>
+<div class="place-info">
+<span class="place-category cafe">카페</span>
+<div class="place-name">모하나 (MOHANA)</div>
+</div>
+</div>
+<div class="place-desc">1층 전 구역 가능 / 리드줄 착용 필수!</div>
+<div class="place-meta">
+<div class="place-meta-item">🚗 차로 약 13분</div>
+<div class="place-meta-item">📍 강원특별자치도 양양군 현북면 동해대로 1108 잔교리 4-9</div>
+<div class="place-meta-item">🐶 반려견 동반 가능</div>
+</div>
+<div class="place-actions">
+<a class="place-action-btn" href="https://map.naver.com/v5/search/%EA%B0%95%EC%9B%90%ED%8A%B9%EB%B3%84%EC%9E%90%EC%B9%98%EB%8F%84%20%EC%96%91%EC%96%91%EA%B5%B0%20%ED%98%84%EB%B6%81%EB%A9%B4%20%EB%8F%99%ED%95%B4%EB%8C%80%EB%A1%9C%201108%20%EC%9E%94%EA%B5%90%EB%A6%AC%204-9" target="_blank">📍 지도보기</a>
+</div>
+</div>
+<div class="section-title">🛒 마트 / 편의점</div>
+<div class="place-card" data-cat="mart">
+<div class="place-header">
+<div class="place-emoji">🛒</div>
+<div class="place-info">
+<span class="place-category mart">마트/편의점</span>
+<div class="place-name">하나로마트 양양점</div>
+</div>
+</div>
+<div class="place-meta">
+<div class="place-meta-item">🚗 차로 약 20분</div>
+<div class="place-meta-item">📍 강원특별자치도 양양군 양양읍 남문5길 18 1</div></div>
+<div class="place-actions">
+<a class="place-action-btn" href="https://map.naver.com/v5/search/%EA%B0%95%EC%9B%90%ED%8A%B9%EB%B3%84%EC%9E%90%EC%B9%98%EB%8F%84%20%EC%96%91%EC%96%91%EA%B5%B0%20%EC%96%91%EC%96%91%EC%9D%8D%20%EB%82%A8%EB%AC%B85%EA%B8%B8%2018%201" target="_blank">📍 지도보기</a>
+</div>
+</div>
+<div class="place-card" data-cat="mart">
+<div class="place-header">
+<div class="place-emoji">🛒</div>
+<div class="place-info">
+<span class="place-category mart">마트/편의점</span>
+<div class="place-name">GS25 인구해변점</div>
+</div>
+</div>
+<div class="place-meta">
+<div class="place-meta-item">🚗 차로 약 11분</div>
+<div class="place-meta-item">📍 강원특별자치도 양양군 현남면 인구길 28-35</div>
+</div>
+<div class="place-actions">
+<a class="place-action-btn" href="https://map.naver.com/v5/search/%EA%B0%95%EC%9B%90%ED%8A%B9%EB%B3%84%EC%9E%90%EC%B9%98%EB%8F%84%20%EC%96%91%EC%96%91%EA%B5%B0%20%ED%98%84%EB%82%A8%EB%A9%B4%20%EC%9D%B8%EA%B5%AC%EA%B8%B8%2028-35" target="_blank">📍 지도보기</a>
+</div>
+</div>
+<div class="place-card" data-cat="mart">
+<div class="place-header">
+<div class="place-emoji">🛒</div>
+<div class="place-info">
+<span class="place-category mart">마트/편의점</span>
+<div class="place-name">하나로마트 북강릉농협본점</div>
+</div>
+</div>
+<div class="place-meta">
+<div class="place-meta-item">🚗 차로 12분</div>
+<div class="place-meta-item">📍 강원특별자치도 강릉시 주문진읍 주문로 44</div>
+</div>
+<div class="place-actions">
+<a class="place-action-btn" href="https://map.naver.com/v5/search/%EA%B0%95%EC%9B%90%ED%8A%B9%EB%B3%84%EC%9E%90%EC%B9%98%EB%8F%84%20%EA%B0%95%EB%A6%89%EC%8B%9C%20%EC%A3%BC%EB%AC%B8%EC%A7%84%EC%9D%8D%20%EC%A3%BC%EB%AC%B8%EB%A1%9C%2044" target="_blank">📍 지도보기</a>
+</div>
+</div>
+<div class="place-card" data-cat="mart">
+<div class="place-header">
+<div class="place-emoji">🛒</div>
+<div class="place-info">
+<span class="place-category mart">마트/편의점</span>
+<div class="place-name">양양 식자재마트</div>
+</div>
+</div>
+<div class="place-meta">
+<div class="place-meta-item">🚗 차로 26분</div>
+<div class="place-meta-item">📍 강원특별자치도 양양군 양양읍 양양로 163 양양식자재마트</div>
+</div>
+<div class="place-actions">
+<a class="place-action-btn" href="https://map.naver.com/v5/search/%EA%B0%95%EC%9B%90%ED%8A%B9%EB%B3%84%EC%9E%90%EC%B9%98%EB%8F%84%20%EC%96%91%EC%96%91%EA%B5%B0%20%EC%96%91%EC%96%91%EC%9D%8D%20%EC%96%91%EC%96%91%EB%A1%9C%20163%20%EC%96%91%EC%96%91%EC%8B%9D%EC%9E%90%EC%9E%AC%EB%A7%88%ED%8A%B8" target="_blank">📍 지도보기</a>
+</div>
+</div>
+<div class="section-title">🏥 동물병원</div>
+<div class="place-card" data-cat="hospital">
+<div class="place-header">
+<div class="place-emoji">🏥</div>
+<div class="place-info">
+<span class="place-category hospital">동물병원</span>
+<div class="place-name">양양동물병원</div>
+</div>
+</div>
+<div class="place-desc">매주 수요일 휴무</div>
+<div class="place-meta">
+<div class="place-meta-item">🚗 차로 약 27분</div>
+<div class="place-meta-item">📍 강원특별자치도 양양군 양양읍 군청길 73 1층</div>
+<div class="place-meta-item">🐶 반려견 동반 가능</div>
+</div>
+<div class="place-actions">
+<a class="place-action-btn" href="https://map.naver.com/v5/search/%EA%B0%95%EC%9B%90%ED%8A%B9%EB%B3%84%EC%9E%90%EC%B9%98%EB%8F%84%20%EC%96%91%EC%96%91%EA%B5%B0%20%EC%96%91%EC%96%91%EC%9D%8D%20%EA%B5%B0%EC%B2%AD%EA%B8%B8%2073%201%EC%B8%B5" target="_blank">📍 지도보기</a>
+</div>
+</div>
+<div class="place-card" data-cat="hospital">
+<div class="place-header">
+<div class="place-emoji">🏥</div>
+<div class="place-info">
+<span class="place-category hospital">동물병원</span>
+<div class="place-name">라온동물병원</div>
+</div>
+</div>
+<div class="place-desc">매주 일요일 휴무</div>
+<div class="place-meta">
+<div class="place-meta-item">🚗 차로 약 27분</div>
+<div class="place-meta-item">📍 강원특별자치도 양양군 양양읍 성안길 27 1층</div>
+<div class="place-meta-item">🐶 반려견 동반 가능</div>
+</div>
+<div class="place-actions">
+<a class="place-action-btn" href="https://map.naver.com/v5/search/%EA%B0%95%EC%9B%90%ED%8A%B9%EB%B3%84%EC%9E%90%EC%B9%98%EB%8F%84%20%EC%96%91%EC%96%91%EA%B5%B0%20%EC%96%91%EC%96%91%EC%9D%8D%20%EC%84%B1%EC%95%88%EA%B8%B8%2027%201%EC%B8%B5" target="_blank">📍 지도보기</a>
+</div>
+</div>
+<div class="section-title">🗺️ 관광지</div>
+<div class="place-card" data-cat="attraction">
+<div class="place-header">
+<div class="place-emoji">🗺️</div>
+<div class="place-info">
+<span class="place-category attraction">관광지</span>
+<div class="place-name">인구해변</div>
+</div>
+</div>
+<div class="place-desc">서핑 메카 / 반려견 산책 가능 / MZ 핫플</div>
+<div class="place-meta">
+<div class="place-meta-item">🚗 차로 약 20분</div>
+<div class="place-meta-item">📍 강원특별자치도 양양군 현남면</div>
+<div class="place-meta-item">🐶 반려견 동반 가능</div>
+</div>
+<div class="place-actions">
+<a class="place-action-btn" href="https://map.naver.com/v5/search/%EA%B0%95%EC%9B%90%ED%8A%B9%EB%B3%84%EC%9E%90%EC%B9%98%EB%8F%84%20%EC%96%91%EC%96%91%EA%B5%B0%20%ED%98%84%EB%82%A8%EB%A9%B4" target="_blank">📍 지도보기</a>
+</div>
+</div>
+<div class="place-card" data-cat="attraction">
+<div class="place-header">
+<div class="place-emoji">🗺️</div>
+<div class="place-info">
+<span class="place-category attraction">관광지</span>
+<div class="place-name">낙산해수욕장</div>
+</div>
+</div>
+<div class="place-desc">반려견 동반 가능 / 넓은 해변</div>
+<div class="place-meta">
+<div class="place-meta-item">🚗 차로 약 15분</div>
+<div class="place-meta-item">📍 강원특별자치도 양양군 강현면 해맞이길 55</div>
+<div class="place-meta-item">🐶 반려견 동반 가능</div>
+</div>
+<div class="place-actions">
+<a class="place-action-btn" href="https://map.naver.com/v5/search/%EA%B0%95%EC%9B%90%ED%8A%B9%EB%B3%84%EC%9E%90%EC%B9%98%EB%8F%84%20%EC%96%91%EC%96%91%EA%B5%B0%20%EA%B0%95%ED%98%84%EB%A9%B4%20%ED%95%B4%EB%A7%9E%EC%9D%B4%EA%B8%B8%2055" target="_blank">📍 지도보기</a>
+</div>
+</div>
+<div class="place-card" data-cat="attraction">
+<div class="place-header">
+<div class="place-emoji">🗺️</div>
+<div class="place-info">
+<span class="place-category attraction">관광지</span>
+<div class="place-name">남대천</div>
+</div>
+</div>
+<div class="place-desc">연어 회귀 하천 / 반려견 산책 명소</div>
+<div class="place-meta">
+<div class="place-meta-item">🚗 차로 약 20분</div>
+<div class="place-meta-item">📍 강원특별자치도 양양군 양양읍 남문리 362</div>
+<div class="place-meta-item">🐶 반려견 동반 가능</div>
+</div>
+<div class="place-actions">
+<a class="place-action-btn" href="https://map.naver.com/v5/search/%EA%B0%95%EC%9B%90%ED%8A%B9%EB%B3%84%EC%9E%90%EC%B9%98%EB%8F%84%20%EC%96%91%EC%96%91%EA%B5%B0%20%EC%96%91%EC%96%91%EC%9D%8D%20%EB%82%A8%EB%AC%B8%EB%A6%AC%20362" target="_blank">📍 지도보기</a>
+</div>
+</div>
+<div class="place-card" data-cat="attraction">
+<div class="place-header">
+<div class="place-emoji">🗺️</div>
+<div class="place-info">
+<span class="place-category attraction">관광지</span>
+<div class="place-name">낙산사</div>
+</div>
+</div>
+<div class="place-meta">
+<div class="place-meta-item">🚗 차로 약 15분</div>
+<div class="place-meta-item">📍 강원특별자치도 양양군 강현면 낙산사로 100</div>
+</div>
+<div class="place-actions">
+<a class="place-action-btn" href="https://map.naver.com/v5/search/%EA%B0%95%EC%9B%90%ED%8A%B9%EB%B3%84%EC%9E%90%EC%B9%98%EB%8F%84%20%EC%96%91%EC%96%91%EA%B5%B0%20%EA%B0%95%ED%98%84%EB%A9%B4%20%EB%82%99%EC%82%B0%EC%82%AC%EB%A1%9C%20100" target="_blank">📍 지도보기</a>
+</div>
+</div>
+<div class="place-card" data-cat="attraction">
+<div class="place-header">
+<div class="place-emoji">🗺️</div>
+<div class="place-info">
+<span class="place-category attraction">관광지</span>
+<div class="place-name">멍비치 (반려견 전용 해변)</div>
+</div>
+</div>
+<div class="place-desc">7~8월 45일 한정 운영 / 목줄 없이 가능 / 유료</div>
+<div class="place-meta">
+<div class="place-meta-item">🚗 차 5분</div>
+<div class="place-meta-item">📍 강원특별자치도 양양군 현남면 광진리 78-20</div>
+<div class="place-meta-item">🐶 반려견 동반 가능</div>
+</div>
+<div class="place-actions">
+<a class="place-action-btn" href="https://map.naver.com/v5/search/%EA%B0%95%EC%9B%90%ED%8A%B9%EB%B3%84%EC%9E%90%EC%B9%98%EB%8F%84%20%EC%96%91%EC%96%91%EA%B5%B0%20%ED%98%84%EB%82%A8%EB%A9%B4%20%EA%B4%91%EC%A7%84%EB%A6%AC%2078-20" target="_blank">📍 지도보기</a>
+</div>
+</div>
+</div>
+<!-- ══════ 통영 ══════ -->
+<div class="branch-content" id="branch-통영">
+<div class="tip-box"><strong>💡 통영점 주변 팁</strong><br/>이마트 통영점이 차로 10분 거리, 동물병원도 이마트 2층이라 편리해요. 동피랑 벽화마을은 반려견과 걷기 딱 좋아요!</div>
+<div class="section-title">🍽️ 맛집</div>
+<div class="place-card" data-cat="food">
+<div class="place-header">
+<div class="place-emoji">🍽️</div>
+<div class="place-info">
+<span class="place-category food">맛집</span>
+<div class="place-name">동해식당</div>
+</div>
+</div>
+<div class="place-desc">해물뚝배기·솥밥·생선구이 / 대형견 동반 가능 / 09:00~21:00</div>
+<div class="place-meta">
+<div class="place-meta-item">🚗 차로 약 20분</div>
+<div class="place-meta-item">📍 경상남도 통영시 동충4길 41 동해식당</div>
+<div class="place-meta-item">🐶 반려견 동반 가능</div>
+</div>
+<div class="place-actions">
+<a class="place-action-btn" href="https://map.naver.com/v5/search/%EA%B2%BD%EC%83%81%EB%82%A8%EB%8F%84%20%ED%86%B5%EC%98%81%EC%8B%9C%20%EB%8F%99%EC%B6%A94%EA%B8%B8%2041%20%EB%8F%99%ED%95%B4%EC%8B%9D%EB%8B%B9" target="_blank">📍 지도보기</a>
+<a class="place-action-btn" href="tel:0507-1444-1117">📞 전화</a>
+</div>
+</div>
+<div class="place-card" data-cat="food">
+<div class="place-header">
+<div class="place-emoji">🍽️</div>
+<div class="place-info">
+<span class="place-category food">맛집</span>
+<div class="place-name">하얀집</div>
+</div>
+</div>
+<div class="place-desc">웨딩스튜디오 개조 식당 / 대형견 동반 / 강아지 간식 제공</div>
+<div class="place-meta">
+<div class="place-meta-item">🚗 차로 약 20분</div>
+<div class="place-meta-item">🐶 반려견 동반 가능</div>
+<div class="place-meta-item">📍 경상남도 통영시 서송정3길 7-22 1층</div></div>
+<div class="place-actions">
+<a class="place-action-btn" href="https://map.naver.com/v5/search/%EA%B2%BD%EC%83%81%EB%82%A8%EB%8F%84%20%ED%86%B5%EC%98%81%EC%8B%9C%20%EC%84%9C%EC%86%A1%EC%A0%953%EA%B8%B8%207-22%201%EC%B8%B5" target="_blank">📍 지도보기</a>
+</div>
+</div>
+<div class="place-card" data-cat="food">
+<div class="place-header">
+<div class="place-emoji">🍽️</div>
+<div class="place-info">
+<span class="place-category food">맛집</span>
+<div class="place-name">가두리</div>
+</div>
+</div>
+<div class="place-desc">해산물 파스타 / 동피랑 인근 / 반려견 동반 가능</div>
+<div class="place-meta">
+<div class="place-meta-item">🚗 차로 약 20분</div>
+<div class="place-meta-item">🐶 반려견 동반 가능</div>
+<div class="place-meta-item">📍 경상남도 통영시 남망길 194 2층 해성마린</div></div>
+<div class="place-actions">
+<a class="place-action-btn" href="https://map.naver.com/v5/search/%EA%B2%BD%EC%83%81%EB%82%A8%EB%8F%84%20%ED%86%B5%EC%98%81%EC%8B%9C%20%EB%82%A8%EB%A7%9D%EA%B8%B8%20194%202%EC%B8%B5%20%ED%95%B4%EC%84%B1%EB%A7%88%EB%A6%B0" target="_blank">📍 지도보기</a>
+</div>
+</div>
+<div class="place-card" data-cat="food">
+<div class="place-header">
+<div class="place-emoji">🍽️</div>
+<div class="place-info">
+<span class="place-category food">맛집</span>
+<div class="place-name">워터프론트</div>
+</div>
+</div>
+<div class="place-desc">바다뷰 조개구이 / 뷰 맛집 / 반려견 동반 가능</div>
+<div class="place-meta">
+<div class="place-meta-item">🚗 차로 약 20분</div>
+<div class="place-meta-item">🐶 반려견 동반 가능</div>
+<div class="place-meta-item">📍 경상남도 통영시 중앙시장4길 17-3</div></div>
+<div class="place-actions">
+<a class="place-action-btn" href="https://map.naver.com/v5/search/%EA%B2%BD%EC%83%81%EB%82%A8%EB%8F%84%20%ED%86%B5%EC%98%81%EC%8B%9C%20%EC%A4%91%EC%95%99%EC%8B%9C%EC%9E%A54%EA%B8%B8%2017-3" target="_blank">📍 지도보기</a>
+</div>
+</div>
+<div class="place-card" data-cat="food">
+<div class="place-header">
+<div class="place-emoji">🍽️</div>
+<div class="place-info">
+<span class="place-category food">맛집</span>
+<div class="place-name">동피랑101</div>
+</div>
+</div>
+<div class="place-desc">회, 회정식, 솥밥, 생선 구이, 다찌 전문 한정식 / 애견 동반 가능</div>
+<div class="place-meta">
+<div class="place-meta-item">🚗 차로 약 14분</div>
+<div class="place-meta-item">📍 경상남도 통영시 동피랑길 101 3층</div>
+<div class="place-meta-item">🐶 반려견 동반 가능</div>
+</div>
+<div class="place-actions">
+<a class="place-action-btn" href="https://map.naver.com/v5/search/%EA%B2%BD%EC%83%81%EB%82%A8%EB%8F%84%20%ED%86%B5%EC%98%81%EC%8B%9C%20%EB%8F%99%ED%94%BC%EB%9E%91%EA%B8%B8%20101%203%EC%B8%B5" target="_blank">📍 지도보기</a>
+</div>
+</div>
+<div class="section-title">☕ 카페</div>
+<div class="place-card" data-cat="cafe">
+<div class="place-header">
+<div class="place-emoji">☕</div>
+<div class="place-info">
+<span class="place-category cafe">카페</span>
+<div class="place-name">쿠쿠오나</div>
+</div>
+</div>
+<div class="place-desc">저수지뷰 테라스 / 대형견 동반 가능 / 평점 5.0</div>
+<div class="place-meta">
+<div class="place-meta-item">🚗 차로 약 20분</div>
+<div class="place-meta-item">🐶 반려견 동반 가능</div>
+<div class="place-meta-item">📍 경상남도 통영시 산양읍 산양중앙로 118</div></div>
+<div class="place-actions">
+<a class="place-action-btn" href="https://map.naver.com/v5/search/%EA%B2%BD%EC%83%81%EB%82%A8%EB%8F%84%20%ED%86%B5%EC%98%81%EC%8B%9C%20%EC%82%B0%EC%96%91%EC%9D%8D%20%EC%82%B0%EC%96%91%EC%A4%91%EC%95%99%EB%A1%9C%20118" target="_blank">📍 지도보기</a>
+</div>
+</div>
+<div class="place-card" data-cat="cafe">
+<div class="place-header">
+<div class="place-emoji">☕</div>
+<div class="place-info">
+<span class="place-category cafe">카페</span>
+<div class="place-name">나나의주전자</div>
+</div>
+</div>
+<div class="place-desc">통창 바다뷰 / 대형견 실내 동반 가능</div>
+<div class="place-meta">
+<div class="place-meta-item">🚗 차로 약 20분</div>
+<div class="place-meta-item">🐶 반려견 동반 가능</div>
+<div class="place-meta-item">📍 경상남도 통영시 용남면 연기길 269</div></div>
+<div class="place-actions">
+<a class="place-action-btn" href="https://map.naver.com/v5/search/%EA%B2%BD%EC%83%81%EB%82%A8%EB%8F%84%20%ED%86%B5%EC%98%81%EC%8B%9C%20%EC%9A%A9%EB%82%A8%EB%A9%B4%20%EC%97%B0%EA%B8%B0%EA%B8%B8%20269" target="_blank">📍 지도보기</a>
+</div>
+</div>
+<div class="place-card" data-cat="cafe">
+<div class="place-header">
+<div class="place-emoji">☕</div>
+<div class="place-info">
+<span class="place-category cafe">카페</span>
+<div class="place-name">담소화</div>
+</div>
+</div>
+<div class="place-desc">한옥 카페 / 정원 / 별관 3곳 대형견 동반 가능</div>
+<div class="place-meta">
+<div class="place-meta-item">🚗 차로 약 20분</div>
+<div class="place-meta-item">🐶 반려견 동반 가능</div>
+<div class="place-meta-item">📍 경상남도 통영시 산양읍 풍화일주로 649-17 통영촌집 담소화</div></div>
+<div class="place-actions">
+<a class="place-action-btn" href="https://map.naver.com/v5/search/%EA%B2%BD%EC%83%81%EB%82%A8%EB%8F%84%20%ED%86%B5%EC%98%81%EC%8B%9C%20%EC%82%B0%EC%96%91%EC%9D%8D%20%ED%92%8D%ED%99%94%EC%9D%BC%EC%A3%BC%EB%A1%9C%20649-17%20%ED%86%B5%EC%98%81%EC%B4%8C%EC%A7%91%20%EB%8B%B4%EC%86%8C%ED%99%94" target="_blank">📍 지도보기</a>
+</div>
+</div>
+<div class="place-card" data-cat="cafe">
+<div class="place-header">
+<div class="place-emoji">☕</div>
+<div class="place-info">
+<span class="place-category cafe">카페</span>
+<div class="place-name">돌샘길</div>
+</div>
+</div>
+<div class="place-desc">매주 월요일 휴무 / 야외 가능</div>
+<div class="place-meta">
+<div class="place-meta-item">🚗 차로 약 17분</div>
+<div class="place-meta-item">📍 경상남도 통영시 봉수돌샘길 101 돌샘길</div>
+<div class="place-meta-item">🐶 반려견 동반 가능</div>
+</div>
+<div class="place-actions">
+<a class="place-action-btn" href="https://map.naver.com/v5/search/%EA%B2%BD%EC%83%81%EB%82%A8%EB%8F%84%20%ED%86%B5%EC%98%81%EC%8B%9C%20%EB%B4%89%EC%88%98%EB%8F%8C%EC%83%98%EA%B8%B8%20101%20%EB%8F%8C%EC%83%98%EA%B8%B8" target="_blank">📍 지도보기</a>
+</div>
+</div>
+<div class="place-card" data-cat="cafe">
+<div class="place-header">
+<div class="place-emoji">☕</div>
+<div class="place-info">
+<span class="place-category cafe">카페</span>
+<div class="place-name">카페 배양장</div>
+</div>
+</div>
+<div class="place-desc">30년 홍합 양식장 개조 / 오션뷰 / 화요일 휴무</div>
+<div class="place-meta">
+<div class="place-meta-item">🚗 차로 약 32분</div>
+<div class="place-meta-item">📍 경상남도 통영시 산양읍 함박길 51 카페 배양장</div>
+</div>
+<div class="place-actions">
+<a class="place-action-btn" href="https://map.naver.com/v5/search/%EA%B2%BD%EC%83%81%EB%82%A8%EB%8F%84%20%ED%86%B5%EC%98%81%EC%8B%9C%20%EC%82%B0%EC%96%91%EC%9D%8D%20%ED%95%A8%EB%B0%95%EA%B8%B8%2051%20%EC%B9%B4%ED%8E%98%20%EB%B0%B0%EC%96%91%EC%9E%A5" target="_blank">📍 지도보기</a>
+</div>
+</div>
+<div class="section-title">🛒 마트 / 편의점</div>
+<div class="place-card" data-cat="mart">
+<div class="place-header">
+<div class="place-emoji">🛒</div>
+<div class="place-info">
+<span class="place-category mart">마트/편의점</span>
+<div class="place-name">이마트 통영점</div>
+</div>
+</div>
+<div class="place-desc">글램독 인근 대형마트 / 10:00~22:00 / 지번: 죽림리 1566-2</div>
+<div class="place-meta">
+<div class="place-meta-item">🚗 차로 약 10분</div>
+<div class="place-meta-item">📍 경상남도 통영시 광도면 죽림4로 9</div>
+</div>
+<div class="place-actions">
+<a class="place-action-btn" href="https://map.naver.com/v5/search/%EA%B2%BD%EC%83%81%EB%82%A8%EB%8F%84%20%ED%86%B5%EC%98%81%EC%8B%9C%20%EA%B4%91%EB%8F%84%EB%A9%B4%20%EC%A3%BD%EB%A6%BC4%EB%A1%9C%209" target="_blank">📍 지도보기</a>
+<a class="place-action-btn" href="tel:055-650-1207">📞 전화</a>
+</div>
+</div>
+<div class="place-card" data-cat="mart">
+<div class="place-header">
+<div class="place-emoji">🛒</div>
+<div class="place-info">
+<span class="place-category mart">마트/편의점</span>
+<div class="place-name">GS25·CU (광도면 죽림)</div>
+</div>
+</div>
+<div class="place-meta">
+<div class="place-meta-item">🚗 차로 약 5분</div>
+<div class="place-meta-item">📍 경상남도 통영시 광도면 죽림2로 76-7 1층, 상가 109호 (죽림리 1580)</div></div>
+<div class="place-actions">
+<a class="place-action-btn" href="https://map.naver.com/v5/search/%EA%B2%BD%EC%83%81%EB%82%A8%EB%8F%84%20%ED%86%B5%EC%98%81%EC%8B%9C%20%EA%B4%91%EB%8F%84%EB%A9%B4%20%EC%A3%BD%EB%A6%BC2%EB%A1%9C%2076-7%201%EC%B8%B5%2C%20%EC%83%81%EA%B0%80%20109%ED%98%B8%20%28%EC%A3%BD%EB%A6%BC%EB%A6%AC%201580%29" target="_blank">📍 지도보기</a>
+</div>
+</div>
+<div class="section-title">🐾 반려견 놀이터</div>
+<div class="place-card" data-cat="play">
+<div class="place-header">
+<div class="place-emoji">🐾</div>
+<div class="place-info">
+<span class="place-category play">반려견놀이터</span>
+<div class="place-name">통영 숲속 반려동물 놀이터</div>
+</div>
+</div>
+<div class="place-desc">무료 / 소중형·대형 분리 / 화~일 10~18시 / 월 휴무</div>
+<div class="place-meta">
+<div class="place-meta-item">🚗 차로 약 10분</div>
+<div class="place-meta-item">📍 경상남도 통영시 광도면 조암길 45-189</div>
+<div class="place-meta-item">🐶 반려견 동반 가능</div>
+</div>
+<div class="place-actions">
+<a class="place-action-btn" href="https://map.naver.com/v5/search/%EA%B2%BD%EC%83%81%EB%82%A8%EB%8F%84%20%ED%86%B5%EC%98%81%EC%8B%9C%20%EA%B4%91%EB%8F%84%EB%A9%B4%20%EC%A1%B0%EC%95%94%EA%B8%B8%2045-189" target="_blank">📍 지도보기</a>
+</div>
+</div>
+<div class="section-title">🏥 동물병원</div>
+<div class="place-card" data-cat="hospital">
+<div class="place-header">
+<div class="place-emoji">🏥</div>
+<div class="place-info">
+<span class="place-category hospital">동물병원</span>
+<div class="place-name">쿨펫동물병원</div>
+</div>
+</div>
+<div class="place-desc">이마트 통영점 2층 / 10:00~20:00 / 글램독 바로 근처</div>
+<div class="place-meta">
+<div class="place-meta-item">🚗 차로 약 5분</div>
+<div class="place-meta-item">📍 경상남도 통영시 광도면 죽림4로 9 이마트 통영점 2층</div>
+<div class="place-meta-item">🐶 반려견 동반 가능</div>
+</div>
+<div class="place-actions">
+<a class="place-action-btn" href="https://map.naver.com/v5/search/%EA%B2%BD%EC%83%81%EB%82%A8%EB%8F%84%20%ED%86%B5%EC%98%81%EC%8B%9C%20%EA%B4%91%EB%8F%84%EB%A9%B4%20%EC%A3%BD%EB%A6%BC4%EB%A1%9C%209%20%EC%9D%B4%EB%A7%88%ED%8A%B8%20%ED%86%B5%EC%98%81%EC%A0%90%202%EC%B8%B5" target="_blank">📍 지도보기</a>
+<a class="place-action-btn" href="tel:055-646-1318">📞 전화</a>
+</div>
+</div>
+<div class="place-card" data-cat="hospital">
+<div class="place-header">
+<div class="place-emoji">🏥</div>
+<div class="place-info">
+<span class="place-category hospital">동물병원</span>
+<div class="place-name">on동물병원</div>
+</div>
+</div>
+<div class="place-desc">매주 일요일 휴무</div>
+<div class="place-meta">
+<div class="place-meta-item">🚗 차로 약 11분</div>
+<div class="place-meta-item">📍 경상남도 통영시 북신로 41-29</div>
+<div class="place-meta-item">🐶 반려견 동반 가능</div>
+</div>
+<div class="place-actions">
+<a class="place-action-btn" href="https://map.naver.com/v5/search/%EA%B2%BD%EC%83%81%EB%82%A8%EB%8F%84%20%ED%86%B5%EC%98%81%EC%8B%9C%20%EB%B6%81%EC%8B%A0%EB%A1%9C%2041-29" target="_blank">📍 지도보기</a>
+</div>
+</div>
+<div class="place-card" data-cat="hospital">
+<div class="place-header">
+<div class="place-emoji">🏥</div>
+<div class="place-info">
+<span class="place-category hospital">동물병원</span>
+<div class="place-name">24시더나은동물메디컬센터</div>
+</div>
+</div>
+<div class="place-desc">야간진료 24시까지</div>
+<div class="place-meta">
+<div class="place-meta-item">🚗 차로 약 33분</div>
+<div class="place-meta-item">📍 경상남도 거제시 동문천로 47 더나은동물병원</div>
+<div class="place-meta-item">🐶 반려견 동반 가능</div>
+</div>
+<div class="place-actions">
+<a class="place-action-btn" href="https://map.naver.com/v5/search/%EA%B2%BD%EC%83%81%EB%82%A8%EB%8F%84%20%EA%B1%B0%EC%A0%9C%EC%8B%9C%20%EB%8F%99%EB%AC%B8%EC%B2%9C%EB%A1%9C%2047%20%EB%8D%94%EB%82%98%EC%9D%80%EB%8F%99%EB%AC%BC%EB%B3%91%EC%9B%90" target="_blank">📍 지도보기</a>
+</div>
+</div>
+<div class="section-title">🗺️ 관광지</div>
+<div class="place-card" data-cat="attraction">
+<div class="place-header">
+<div class="place-emoji">🗺️</div>
+<div class="place-info">
+<span class="place-category attraction">관광지</span>
+<div class="place-name">동피랑 벽화마을</div>
+</div>
+</div>
+<div class="place-desc">알록달록 벽화 골목 / 반려견 산책 가능</div>
+<div class="place-meta">
+<div class="place-meta-item">🚗 차로 약 20분</div>
+<div class="place-meta-item">🐶 반려견 동반 가능</div>
+<div class="place-meta-item">📍 경상남도 통영시 동피랑1길 6-18</div></div>
+<div class="place-actions">
+<a class="place-action-btn" href="https://map.naver.com/v5/search/%EA%B2%BD%EC%83%81%EB%82%A8%EB%8F%84%20%ED%86%B5%EC%98%81%EC%8B%9C%20%EB%8F%99%ED%94%BC%EB%9E%911%EA%B8%B8%206-18" target="_blank">📍 지도보기</a>
+</div>
+</div>
+<div class="place-card" data-cat="attraction">
+<div class="place-header">
+<div class="place-emoji">🗺️</div>
+<div class="place-info">
+<span class="place-category attraction">관광지</span>
+<div class="place-name">통영 케이블카</div>
+</div>
+</div>
+<div class="place-desc">10kg 이하 반려견 탑승 가능 / 추가비용 없음 / 이동가방 필수</div>
+<div class="place-meta">
+<div class="place-meta-item">🚗 차로 약 25분</div>
+<div class="place-meta-item">📍 경상남도 통영시 발개로 205</div>
+<div class="place-meta-item">🐶 반려견 동반 가능</div>
+</div>
+<div class="place-actions">
+<a class="place-action-btn" href="https://map.naver.com/v5/search/%EA%B2%BD%EC%83%81%EB%82%A8%EB%8F%84%20%ED%86%B5%EC%98%81%EC%8B%9C%20%EB%B0%9C%EA%B0%9C%EB%A1%9C%20205" target="_blank">📍 지도보기</a>
+</div>
+</div>
+<div class="place-card" data-cat="attraction">
+<div class="place-header">
+<div class="place-emoji">🗺️</div>
+<div class="place-info">
+<span class="place-category attraction">관광지</span>
+<div class="place-name">통영 해저터널</div>
+</div>
+</div>
+<div class="place-desc">바다 아래 13m 산책 / 반려견 동반 가능</div>
+<div class="place-meta">
+<div class="place-meta-item">🚗 차로 약 25분</div>
+<div class="place-meta-item">🐶 반려견 동반 가능</div>
+<div class="place-meta-item">📍 경상남도 통영시 당동 1-3</div></div>
+<div class="place-actions">
+<a class="place-action-btn" href="https://map.naver.com/v5/search/%EA%B2%BD%EC%83%81%EB%82%A8%EB%8F%84%20%ED%86%B5%EC%98%81%EC%8B%9C%20%EB%8B%B9%EB%8F%99%201-3" target="_blank">📍 지도보기</a>
+</div>
+</div>
+<div class="place-card" data-cat="attraction">
+<div class="place-header">
+<div class="place-emoji">🗺️</div>
+<div class="place-info">
+<span class="place-category attraction">관광지</span>
+<div class="place-name">궁항어촌체험마을</div>
+</div>
+</div>
+<div class="place-desc">해루질 체험 1만원 / 갯벌+바다 산책 / 반려견 동반 가능</div>
+<div class="place-meta">
+<div class="place-meta-item">🚗 차로 약 20분</div>
+<div class="place-meta-item">🐶 반려견 동반 가능</div>
+<div class="place-meta-item">📍 경상남도 통영시 산양읍 궁항길 46-8 궁항어촌체험마을</div></div>
+<div class="place-actions">
+<a class="place-action-btn" href="https://map.naver.com/v5/search/%EA%B2%BD%EC%83%81%EB%82%A8%EB%8F%84%20%ED%86%B5%EC%98%81%EC%8B%9C%20%EC%82%B0%EC%96%91%EC%9D%8D%20%EA%B6%81%ED%95%AD%EA%B8%B8%2046-8%20%EA%B6%81%ED%95%AD%EC%96%B4%EC%B4%8C%EC%B2%B4%ED%97%98%EB%A7%88%EC%9D%84" target="_blank">📍 지도보기</a>
+</div>
+</div>
+<div class="place-card" data-cat="attraction">
+<div class="place-header">
+<div class="place-emoji">🗺️</div>
+<div class="place-info">
+<span class="place-category attraction">관광지</span>
+<div class="place-name">강구안 문화마당</div>
+</div>
+</div>
+<div class="place-desc">통영 항구 산책 / 포토스팟</div>
+<div class="place-meta">
+<div class="place-meta-item">🚗 차로 약 20분</div>
+<div class="place-meta-item">📍 경상남도 통영시 중앙동</div>
+<div class="place-meta-item">🐶 반려견 동반 가능</div>
+</div>
+<div class="place-actions">
+<a class="place-action-btn" href="https://map.naver.com/v5/search/%EA%B2%BD%EC%83%81%EB%82%A8%EB%8F%84%20%ED%86%B5%EC%98%81%EC%8B%9C%20%EC%A4%91%EC%95%99%EB%8F%99" target="_blank">📍 지도보기</a>
+</div>
+</div>
+</div>
 </div><!-- /container -->
-
 <script>
 // URL 파라미터로 지점 자동 선택
 const params = new URLSearchParams(window.location.search);
@@ -1029,6 +2585,29 @@ function applyFilter() {
 
 // 초기화
 window.addEventListener("DOMContentLoaded", () => {
+  // 카드 랜덤 셔플 (지점·섹션 단위 유지, 카드만 섞기)
+  document.querySelectorAll(".branch-content").forEach(branch => {
+    // 섹션별로 카드 셔플
+    const sections = branch.querySelectorAll(".section-title");
+    sections.forEach(section => {
+      const cards = [];
+      let next = section.nextElementSibling;
+      while (next && !next.classList.contains("section-title")) {
+        if (next.classList.contains("place-card")) cards.push(next);
+        next = next.nextElementSibling;
+      }
+      // Fisher-Yates 셔플
+      for (let i = cards.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        const parent = cards[i].parentNode;
+        const ref = cards[i].nextSibling;
+        parent.insertBefore(cards[j], cards[i]);
+        if (ref) parent.insertBefore(cards[i], ref);
+        else parent.appendChild(cards[i]);
+      }
+    });
+  });
+
   if (branchParam) {
     const tab = document.querySelector(`.branch-tab[data-branch="${branchParam}"]`);
     if (tab) switchBranch(tab);
