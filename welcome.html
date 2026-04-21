@@ -787,7 +787,7 @@
           <button class="toggle-btn" id="bbqYes" onclick="selectBBQ('yes')">🔥 네, 이용합니다</button>
           <button class="toggle-btn" id="bbqNo" onclick="selectBBQ('no')">✖ 이용 안 합니다</button>
         </div>
-        <div style="margin-top:8px; font-size:12px; color:var(--text-light);">
+        <div id="bbqDesc" style="margin-top:8px; font-size:12px; color:var(--text-light);">
           바베큐 도구는 현장에 구비되어 있으며, 식재료는 직접 준비해 주세요.
         </div>
         <div class="err-msg" id="err-bbq">바베큐 이용 여부를 선택해 주세요.</div>
@@ -913,6 +913,10 @@
         <div class="term-check" id="term8"></div>
         <div class="term-text"><strong>[필수]</strong> 저의 반려견이 타인·타 반려견에게 피해를 입혔을 경우 <strong>전적으로 책임</strong>지겠습니다.</div>
       </div>
+      <div class="term-item" onclick="toggleTerm(12)">
+        <div class="term-check" id="term12"></div>
+        <div class="term-text"><strong>[필수]</strong> 반려견을 객실에 <strong>혼자 두고 외출하거나 장시간 방치하는 행위는 금지</strong>됩니다. 위반 시 퇴실 조치될 수 있습니다.</div>
+      </div>
 
       <!-- ─ 제재 조항 ─ -->
       <div style="margin:14px 0 6px; font-size:12px; font-weight:700; color:var(--text-light); letter-spacing:0.05em;">제재 조항</div>
@@ -923,11 +927,15 @@
       </div>
       <div class="term-item" onclick="toggleTerm(10)">
         <div class="term-check" id="term10"></div>
-        <div class="term-text"><strong>[필수]</strong> 지정 구역 외 <strong>실내·객실 흡연</strong> 적발 시 딥클리닝 비용 및 해당 기간 <strong>객실 판매 손실분까지 배상</strong>이 청구됩니다.</div>
+        <div class="term-text"><strong>[필수]</strong> 지정 구역 외 <strong>실내·객실 흡연(전자담배 포함)</strong> 적발 시 딥클리닝 비용 및 해당 기간 <strong>객실 판매 손실분까지 배상</strong>이 청구됩니다.</div>
       </div>
       <div class="term-item" onclick="toggleTerm(11)">
         <div class="term-check" id="term11"></div>
         <div class="term-text"><strong>[필수]</strong> 시설 파손 시 <strong>원상복구 비용 전액</strong>을 부담하셔야 합니다.</div>
+      </div>
+      <div class="term-item" onclick="toggleTerm(13)">
+        <div class="term-check" id="term13"></div>
+        <div class="term-text"><strong>[필수]</strong> 침구류·수건 등 비품의 <strong>심한 오염 또는 분실 시 세탁·교체 비용</strong>이 청구됩니다.</div>
       </div>
 
       <div class="err-msg show" id="err-terms" style="display:none; margin-top:10px;"></div>
@@ -1034,7 +1042,7 @@ let selectedTime = "";
 let bbqChoice    = "";
 let bbqTime      = "";
 // terms[0]=개인정보(필수) [1]=마케팅(선택) [2~5]=이용규칙(필수) [6~8]=책임(필수) [9~11]=제재(필수)
-let terms        = new Array(12).fill(false);
+let terms        = new Array(14).fill(false);
 let sigDrawn     = false;
 
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -1158,7 +1166,7 @@ function validateStep(n) {
 
   if (n === 5) {
     // 필수 항목: 0, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11 (1번=마케팅은 선택)
-    const required = [0, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11];
+    const required = [0, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13];
     const missing  = required.filter(i => !terms[i]);
     if (missing.length > 0) {
       const errEl = document.getElementById("err-terms");
@@ -1308,7 +1316,7 @@ function updateExtraCharges() {
   const BASE_PERSON = 2;
   const EXTRA_PERSON_FEE = 20000;
   const DOG_OVER_10_FEE  = 10000;  // 10kg 초과 반려견 1마리당
-  const BBQ_FEE          = 20000;  // 바베큐 기본 숯+그릴
+  const BBQ_FEE          = 20000;  // 바베큐 기본료
 
   const rows = [];
   let total  = 0;
@@ -1442,14 +1450,14 @@ function toggleTerm(idx) {
 }
 
 function updateAllAgree() {
-  const required = [0, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11];
+  const required = [0, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13];
   const allRequired = required.every(i => terms[i]);
   const allIncOpt   = allRequired && terms[1];
   document.getElementById("allAgreeCheck").classList.toggle("checked", allIncOpt);
 }
 
 function toggleAllAgree() {
-  const required = [0, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11];
+  const required = [0, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13];
   const allDone  = required.every(i => terms[i]) && terms[1];
   const newVal   = !allDone;
   terms = terms.map(() => newVal);
