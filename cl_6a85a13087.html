@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
 <meta http-equiv="refresh" content="1800">
 <title>글램독 가평(가평점) 체크인 리스트</title>
-<!-- v2026-04-26 23:39 -->
+<!-- v2026-04-26 23:47 -->
 <style>
   :root {
     --navy: #1B3A5C;
@@ -396,11 +396,11 @@
     z-index:9000; align-items:flex-end; justify-content:center; }
   .fm-overlay.open { display:flex; }
   .fm-sheet { background:#fff; border-radius:16px 16px 0 0; width:100%;
-    max-width:560px; box-shadow:0 -6px 30px rgba(0,0,0,.2);
-    max-height:92vh; height:92vh; display:flex; flex-direction:column; overflow:hidden; }
-  .fm-scroll { flex:1 1 auto; min-height:0; overflow-y:auto; padding:20px 18px 8px; }
-  .fm-footer { flex:0 0 auto; padding:8px 18px 28px; background:#fff;
-    border-top:1px solid #eee; }
+    max-width:560px; padding:20px 18px 32px; box-shadow:0 -6px 30px rgba(0,0,0,.2);
+    max-height:92vh; overflow-y:auto; }
+  .fm-delete-header { background:none; border:none; color:#e53935; font-size:13px;
+    font-weight:600; cursor:pointer; padding:4px 8px; border-radius:6px; }
+  .fm-delete-header:hover { background:#ffeaea; }
   .fm-handle { width:44px; height:4px; background:#dde; border-radius:2px;
     margin:0 auto 18px; }
   .fm-header { display:flex; justify-content:space-between; align-items:flex-start;
@@ -499,14 +499,16 @@
 <!-- ── FM 모달 ── -->
 <div id="fmOverlay" class="fm-overlay" onclick="if(event.target===this)closeFM()">
   <div class="fm-sheet">
-    <div class="fm-scroll">
-      <div class="fm-handle"></div>
+    <div class="fm-handle"></div>
       <div class="fm-header">
         <div>
           <div class="fm-title">현장 추가 기록 <span class="fm-mode-badge" id="fmModeBadge" style="display:none">수정</span></div>
           <div class="fm-subtitle" id="fmSub"></div>
         </div>
-        <button class="fm-close" onclick="closeFM()">&#215;</button>
+        <div style="display:flex;align-items:center;gap:4px;">
+          <button class="fm-delete-header" id="fmDeleteBtn" onclick="fmDelete()" style="display:none">삭제</button>
+          <button class="fm-close" onclick="closeFM()">&#215;</button>
+        </div>
       </div>
       <div class="fm-sec">
         <div class="fm-sec-label">BBQ (1세트 20,000원)</div>
@@ -552,10 +554,7 @@
         <input id="fmDepositorName" class="fm-etc-input" type="text" placeholder="입금자명을 입력하세요" style="width:100%; margin-top:6px;">
       </div>
     </div>
-    <div class="fm-footer">
-      <button class="fm-save" id="fmSaveBtn" onclick="fmSave()" disabled>기록하기</button>
-      <button class="fm-delete" id="fmDeleteBtn" onclick="fmDelete()">이 현장기록 삭제</button>
-    </div>
+    <button class="fm-save" id="fmSaveBtn" onclick="fmSave()" disabled>기록하기</button>
   </div>
 </div>
 <!-- ── 토스트 ── -->
@@ -572,7 +571,7 @@
     <button class="btn-view"        id="btnField" onclick="setView('field')">💰 현장기록</button>
   </div>
   <button class="btn-refresh" id="btnRefresh" onclick="refreshData()">🔄 새로고침</button>
-  <span class="update-time">갱신: 2026-04-26 23:39</span>
+  <span class="update-time">갱신: 2026-04-26 23:47</span>
 </div>
 <div class="content" id="content">
   <div class="print-header" id="printHeader"></div>
