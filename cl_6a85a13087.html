@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
 <meta http-equiv="refresh" content="1800">
 <title>글램독 가평(가평점) 체크인 리스트</title>
-<!-- v2026-04-26 22:33 -->
+<!-- v2026-04-26 23:01 -->
 <style>
   :root {
     --navy: #1B3A5C;
@@ -565,7 +565,7 @@
     <button class="btn-view"        id="btnField" onclick="setView('field')">💰 현장기록</button>
   </div>
   <button class="btn-refresh" id="btnRefresh" onclick="refreshData()">🔄 새로고침</button>
-  <span class="update-time">갱신: 2026-04-26 22:33</span>
+  <span class="update-time">갱신: 2026-04-26 23:01</span>
 </div>
 <div class="content" id="content">
   <div class="print-header" id="printHeader"></div>
@@ -1244,6 +1244,15 @@ function fmRender() {
   document.getElementById("fmItems").innerHTML = items;
   var total = fmCalcTotal();
   document.getElementById("fmTotalAmt").textContent = total.toLocaleString()+"원";
+  // total이 0이 되면 결제방식 + 입금자명 초기화
+  if(total === 0) {
+    _fm.pay = "";
+    ["현금","계좌","카드"].forEach(function(l,i){ document.getElementById("fmPay"+i).classList.remove("on"); });
+    var depositorRow = document.getElementById("fmDepositorRow");
+    if(depositorRow) depositorRow.style.display = "none";
+    var depositorInput = document.getElementById("fmDepositorName");
+    if(depositorInput) depositorInput.value = "";
+  }
   // 신규 모드만 비활성화 조건 적용. 수정 모드는 openFM에서 이미 활성화됨
   if(!_fm.editMode) {
     document.getElementById("fmSaveBtn").disabled = (total===0 || !_fm.pay);
