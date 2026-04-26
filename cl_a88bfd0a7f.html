@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
 <meta http-equiv="refresh" content="1800">
 <title>글램독 영흥도 체크인 리스트</title>
-<!-- v2026-04-26 23:51 -->
+<!-- v2026-04-26 23:55 -->
 <style>
   :root {
     --navy: #1B3A5C;
@@ -393,10 +393,10 @@
 
   /* ── FM 모달 ── */
   .fm-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,.5);
-    z-index:9000; align-items:flex-end; justify-content:center; }
+    z-index:9000; align-items:flex-end; justify-content:center; flex-direction:column; }
   .fm-overlay.open { display:flex; }
   .fm-sheet { background:#fff; border-radius:16px 16px 0 0; width:100%;
-    max-width:560px; padding:20px 18px 32px; box-shadow:0 -6px 30px rgba(0,0,0,.2);
+    max-width:560px; margin:0 auto; padding:20px 18px 32px; box-shadow:0 -6px 30px rgba(0,0,0,.2);
     max-height:92vh; overflow-y:auto; }
   .fm-delete-header { background:none; border:none; color:#e53935; font-size:13px;
     font-weight:600; cursor:pointer; padding:4px 8px; border-radius:6px; }
@@ -570,7 +570,7 @@
     <button class="btn-view"        id="btnField" onclick="setView('field')">💰 현장기록</button>
   </div>
   <button class="btn-refresh" id="btnRefresh" onclick="refreshData()">🔄 새로고침</button>
-  <span class="update-time">갱신: 2026-04-26 23:51</span>
+  <span class="update-time">갱신: 2026-04-26 23:55</span>
 </div>
 <div class="content" id="content">
   <div class="print-header" id="printHeader"></div>
