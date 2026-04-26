@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
 <meta http-equiv="refresh" content="1800">
 <title>글램독 영흥도 체크인 리스트</title>
-<!-- v2026-04-26 23:12 -->
+<!-- v2026-04-26 23:27 -->
 <style>
   :root {
     --navy: #1B3A5C;
@@ -396,8 +396,11 @@
     z-index:9000; align-items:flex-end; justify-content:center; }
   .fm-overlay.open { display:flex; }
   .fm-sheet { background:#fff; border-radius:16px 16px 0 0; width:100%;
-    max-width:560px; padding:20px 18px 32px; box-shadow:0 -6px 30px rgba(0,0,0,.2);
-    max-height:92vh; overflow-y:auto; }
+    max-width:560px; box-shadow:0 -6px 30px rgba(0,0,0,.2);
+    max-height:92vh; display:flex; flex-direction:column; }
+  .fm-scroll { flex:1; overflow-y:auto; padding:20px 18px 8px; }
+  .fm-footer { flex-shrink:0; padding:8px 18px 28px; background:#fff;
+    border-top:1px solid #eee; }
   .fm-handle { width:44px; height:4px; background:#dde; border-radius:2px;
     margin:0 auto 18px; }
   .fm-header { display:flex; justify-content:space-between; align-items:flex-start;
@@ -496,59 +499,63 @@
 <!-- ── FM 모달 ── -->
 <div id="fmOverlay" class="fm-overlay" onclick="if(event.target===this)closeFM()">
   <div class="fm-sheet">
-    <div class="fm-handle"></div>
-    <div class="fm-header">
-      <div>
-        <div class="fm-title">현장 추가 기록 <span class="fm-mode-badge" id="fmModeBadge" style="display:none">수정</span></div>
-        <div class="fm-subtitle" id="fmSub"></div>
+    <div class="fm-scroll">
+      <div class="fm-handle"></div>
+      <div class="fm-header">
+        <div>
+          <div class="fm-title">현장 추가 기록 <span class="fm-mode-badge" id="fmModeBadge" style="display:none">수정</span></div>
+          <div class="fm-subtitle" id="fmSub"></div>
+        </div>
+        <button class="fm-close" onclick="closeFM()">&#215;</button>
       </div>
-      <button class="fm-close" onclick="closeFM()">&#215;</button>
-    </div>
-    <div class="fm-sec">
-      <div class="fm-sec-label">BBQ (1세트 20,000원)</div>
-      <div class="fm-btns">
-        <button class="fm-btn" onclick="fmAdd('bbq')">BBQ +20,000원</button>
+      <div class="fm-sec">
+        <div class="fm-sec-label">BBQ (1세트 20,000원)</div>
+        <div class="fm-btns">
+          <button class="fm-btn" onclick="fmAdd('bbq')">BBQ +20,000원</button>
+        </div>
+      </div>
+      <div class="fm-sec">
+        <div class="fm-sec-label">인원추가 (1인당 20,000원)</div>
+        <div class="fm-btns">
+          <button class="fm-btn" id="fmP1" onclick="fmPerson(1)">+1인</button>
+          <button class="fm-btn" id="fmP2" onclick="fmPerson(2)">+2인</button>
+          <button class="fm-btn" id="fmP3" onclick="fmPerson(3)">+3인</button>
+          <button class="fm-btn" id="fmP4" onclick="fmPerson(4)">+4인</button>
+          <button class="fm-btn" id="fmP5" onclick="fmPerson(5)">+5인</button>
+        </div>
+      </div>
+      <div class="fm-sec">
+        <div class="fm-sec-label">애견추가 (마리당 10,000원)</div>
+        <div class="fm-btns">
+          <button class="fm-btn" onclick="fmAdd('dog')">추가 마리 +10,000원</button>
+          <button class="fm-btn" onclick="fmAdd('bigdog')">무게 초과 +10,000원</button>
+        </div>
+      </div>
+      <div class="fm-sec">
+        <div class="fm-sec-label">기타</div>
+        <div class="fm-etc-row">
+          <input id="fmEtcNote" class="fm-etc-input" type="text" placeholder="내용" style="flex:1;min-width:100px;">
+          <input id="fmEtcAmt"  class="fm-etc-input" type="number" placeholder="금액(원)" style="width:100px;">
+          <button class="fm-btn" onclick="fmAddEtc()">추가</button>
+        </div>
+      </div>
+      <div id="fmItems" class="fm-items"></div>
+      <div class="fm-total"><span>합계</span><span id="fmTotalAmt">0원</span></div>
+      <div class="fm-sec-label" style="margin-top:14px">결제 방식</div>
+      <div class="fm-pay-row">
+        <button class="fm-pay-btn" id="fmPay0" onclick="fmPay('현금')">현금</button>
+        <button class="fm-pay-btn" id="fmPay1" onclick="fmPay('계좌')">계좌</button>
+        <button class="fm-pay-btn" id="fmPay2" onclick="fmPay('카드')">카드</button>
+      </div>
+      <div id="fmDepositorRow" style="display:none; margin-top:10px;">
+        <div class="fm-sec-label">입금자명</div>
+        <input id="fmDepositorName" class="fm-etc-input" type="text" placeholder="입금자명을 입력하세요" style="width:100%; margin-top:6px;">
       </div>
     </div>
-    <div class="fm-sec">
-      <div class="fm-sec-label">인원추가 (1인당 20,000원)</div>
-      <div class="fm-btns">
-        <button class="fm-btn" id="fmP1" onclick="fmPerson(1)">+1인</button>
-        <button class="fm-btn" id="fmP2" onclick="fmPerson(2)">+2인</button>
-        <button class="fm-btn" id="fmP3" onclick="fmPerson(3)">+3인</button>
-        <button class="fm-btn" id="fmP4" onclick="fmPerson(4)">+4인</button>
-        <button class="fm-btn" id="fmP5" onclick="fmPerson(5)">+5인</button>
-      </div>
+    <div class="fm-footer">
+      <button class="fm-save" id="fmSaveBtn" onclick="fmSave()" disabled>기록하기</button>
+      <button class="fm-delete" id="fmDeleteBtn" onclick="fmDelete()">이 현장기록 삭제</button>
     </div>
-    <div class="fm-sec">
-      <div class="fm-sec-label">애견추가 (마리당 10,000원)</div>
-      <div class="fm-btns">
-        <button class="fm-btn" onclick="fmAdd('dog')">추가 마리 +10,000원</button>
-        <button class="fm-btn" onclick="fmAdd('bigdog')">무게 초과 +10,000원</button>
-      </div>
-    </div>
-    <div class="fm-sec">
-      <div class="fm-sec-label">기타</div>
-      <div class="fm-etc-row">
-        <input id="fmEtcNote" class="fm-etc-input" type="text" placeholder="내용" style="flex:1;min-width:100px;">
-        <input id="fmEtcAmt"  class="fm-etc-input" type="number" placeholder="금액(원)" style="width:100px;">
-        <button class="fm-btn" onclick="fmAddEtc()">추가</button>
-      </div>
-    </div>
-    <div id="fmItems" class="fm-items"></div>
-    <div class="fm-total"><span>합계</span><span id="fmTotalAmt">0원</span></div>
-    <div class="fm-sec-label" style="margin-top:14px">결제 방식</div>
-    <div class="fm-pay-row">
-      <button class="fm-pay-btn" id="fmPay0" onclick="fmPay('현금')">현금</button>
-      <button class="fm-pay-btn" id="fmPay1" onclick="fmPay('계좌')">계좌</button>
-      <button class="fm-pay-btn" id="fmPay2" onclick="fmPay('카드')">카드</button>
-    </div>
-    <div id="fmDepositorRow" style="display:none; margin-top:10px;">
-      <div class="fm-sec-label">입금자명</div>
-      <input id="fmDepositorName" class="fm-etc-input" type="text" placeholder="입금자명을 입력하세요" style="width:100%; margin-top:6px;">
-    </div>
-    <button class="fm-save" id="fmSaveBtn" onclick="fmSave()" disabled>기록하기</button>
-    <button class="fm-delete" id="fmDeleteBtn" onclick="fmDelete()">이 현장기록 삭제</button>
   </div>
 </div>
 <!-- ── 토스트 ── -->
@@ -565,7 +572,7 @@
     <button class="btn-view"        id="btnField" onclick="setView('field')">💰 현장기록</button>
   </div>
   <button class="btn-refresh" id="btnRefresh" onclick="refreshData()">🔄 새로고침</button>
-  <span class="update-time">갱신: 2026-04-26 23:12</span>
+  <span class="update-time">갱신: 2026-04-26 23:27</span>
 </div>
 <div class="content" id="content">
   <div class="print-header" id="printHeader"></div>

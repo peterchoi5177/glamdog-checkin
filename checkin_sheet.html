@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
 <meta http-equiv="refresh" content="1800">
 <title>글램독 체크인 리스트 (본사)</title>
-<!-- v2026-04-26 23:12 -->
+<!-- v2026-04-26 23:27 -->
 <style>
   :root {
     --navy: #1B3A5C;
@@ -396,8 +396,11 @@
     z-index:9000; align-items:flex-end; justify-content:center; }
   .fm-overlay.open { display:flex; }
   .fm-sheet { background:#fff; border-radius:16px 16px 0 0; width:100%;
-    max-width:560px; padding:20px 18px 32px; box-shadow:0 -6px 30px rgba(0,0,0,.2);
-    max-height:92vh; overflow-y:auto; }
+    max-width:560px; box-shadow:0 -6px 30px rgba(0,0,0,.2);
+    max-height:92vh; display:flex; flex-direction:column; }
+  .fm-scroll { flex:1; overflow-y:auto; padding:20px 18px 8px; }
+  .fm-footer { flex-shrink:0; padding:8px 18px 28px; background:#fff;
+    border-top:1px solid #eee; }
   .fm-handle { width:44px; height:4px; background:#dde; border-radius:2px;
     margin:0 auto 18px; }
   .fm-header { display:flex; justify-content:space-between; align-items:flex-start;
@@ -529,7 +532,7 @@
     <option value="">🏠 예약현황 (지점 선택)</option>
     <option value="cl_6a85a13087.html">가평(가평점)</option><option value="cl_806a86626b.html">가평(청평점)</option><option value="cl_8eacf6d6c1.html">경주</option><option value="cl_a88bfd0a7f.html">영흥도</option><option value="cl_9edad9ddd2.html">양양</option><option value="cl_d3039f7a59.html">통영</option>
   </select>
-  <span class="update-time">갱신: 2026-04-26 23:12</span>
+  <span class="update-time">갱신: 2026-04-26 23:27</span>
 </div>
 <div class="tabs" id="tabs"></div>
 <div class="content" id="content">
