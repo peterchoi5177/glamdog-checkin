@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
 <meta http-equiv="refresh" content="1800">
 <title>글램독 가평(가평점) 체크인 리스트</title>
-<!-- v2026-04-26 16:19 -->
+<!-- v2026-04-26 22:33 -->
 <style>
   :root {
     --navy: #1B3A5C;
@@ -543,6 +543,10 @@
       <button class="fm-pay-btn" id="fmPay1" onclick="fmPay('계좌')">계좌</button>
       <button class="fm-pay-btn" id="fmPay2" onclick="fmPay('카드')">카드</button>
     </div>
+    <div id="fmDepositorRow" style="display:none; margin-top:10px;">
+      <div class="fm-sec-label">입금자명</div>
+      <input id="fmDepositorName" class="fm-etc-input" type="text" placeholder="입금자명을 입력하세요" style="width:100%; margin-top:6px;">
+    </div>
     <button class="fm-save" id="fmSaveBtn" onclick="fmSave()" disabled>기록하기</button>
     <button class="fm-delete" id="fmDeleteBtn" onclick="fmDelete()">이 현장기록 삭제</button>
   </div>
@@ -561,7 +565,7 @@
     <button class="btn-view"        id="btnField" onclick="setView('field')">💰 현장기록</button>
   </div>
   <button class="btn-refresh" id="btnRefresh" onclick="refreshData()">🔄 새로고침</button>
-  <span class="update-time">갱신: 2026-04-26 16:19</span>
+  <span class="update-time">갱신: 2026-04-26 22:33</span>
 </div>
 <div class="content" id="content">
   <div class="print-header" id="printHeader"></div>
@@ -1171,6 +1175,14 @@ function openFM(btn) {
   ["현금","계좌","카드"].forEach(function(l,i){ document.getElementById("fmPay"+i).classList.toggle("on",l===_fm.pay); });
   document.getElementById("fmEtcNote").value="";
   document.getElementById("fmEtcAmt").value="";
+  // 입금자명 복원 (계좌 결제인 경우)
+  var depositorRow = document.getElementById("fmDepositorRow");
+  var depositorInput = document.getElementById("fmDepositorName");
+  if(depositorRow && depositorInput) {
+    var isAccount = (_fm.pay === "계좌");
+    depositorRow.style.display = isAccount ? "" : "none";
+    depositorInput.value = (isAccount && existing && existing.depositorName) ? existing.depositorName : "";
+  }
   fmRender();
   document.getElementById("fmOverlay").classList.add("open");
   document.body.style.overflow="hidden";
@@ -1212,6 +1224,10 @@ function fmRemove(type, idx) {
 function fmPay(method) {
   _fm.pay = method;
   ["현금","계좌","카드"].forEach(function(l,i){ document.getElementById("fmPay"+i).classList.toggle("on",l===method); });
+  // 계좌 선택 시 입금자명 입력란 표시
+  var depositorRow = document.getElementById("fmDepositorRow");
+  if(depositorRow) depositorRow.style.display = (method === "계좌") ? "" : "none";
+  if(method !== "계좌") document.getElementById("fmDepositorName").value = "";
   fmRender();
 }
 function fmCalcTotal() {
@@ -1239,6 +1255,7 @@ function fmSave() {
   var etcNote = _fm.etc.map(function(x){return x.note;}).join(", ");
   var etcAmt  = _fm.etc.reduce(function(s,x){return s+x.amount;},0);
   var bbq=_fm.bbq, person=_fm.person, dog=_fm.dog, bigdog=_fm.bigdog, pay=_fm.pay;
+  var depositorName = (pay==="계좌") ? (document.getElementById("fmDepositorName").value.trim()||"") : "";
 
   var payload = JSON.stringify({
     action: _fm.editMode ? "editFieldEntry" : "fieldEntry",
@@ -1249,7 +1266,7 @@ function fmSave() {
     dogCount: dog, dogAmount: dog*10000,
     bigDogCount: bigdog, bigDogAmount: bigdog*10000,
     etcNote: etcNote, etcAmount: etcAmt,
-    total: total, payMethod: pay
+    total: total, payMethod: pay, depositorName: depositorName
   });
   var btn = document.getElementById("fmSaveBtn");
   btn.disabled=true; btn.textContent="저장 중...";
@@ -1259,11 +1276,13 @@ function fmSave() {
       var res; try{res=JSON.parse(text);}catch(e){throw new Error("응답 오류: "+text.slice(0,200));}
       if(!res.ok) throw new Error(res.error||"저장 실패");
       var entry = { entryId:res.entryId||_fm.entryId, total:total, payMethod:pay,
+        depositorName:depositorName,
         bbq:bbq, person:person, dog:dog, bigdog:bigdog,
         etc:JSON.parse(JSON.stringify(_fm.etc)), room:_fm.room, guest:_fm.guest };
       if(_fm.bno) _fieldEntries[_fm.bno] = entry;
       updateFieldBtns(); closeFM();
-      showToast("💾 저장 완료! " + total.toLocaleString() + "원 (" + pay + ")");
+      var toastMsg = "💾 저장 완료! " + total.toLocaleString() + "원 (" + pay + (depositorName?" / "+depositorName:"") + ")";
+      showToast(toastMsg);
       loadTodayFieldEntries();
     })
     .catch(function(err){
@@ -1296,7 +1315,9 @@ function updateFieldBtns() {
     var bno = btn.dataset.bno;
     if(bno && _fieldEntries[bno]){
       var e=_fieldEntries[bno];
-      btn.textContent="✏️ "+Number(e.total).toLocaleString()+"원 (수정)";
+      var label = "✏️ "+Number(e.total).toLocaleString()+"원";
+      if(e.payMethod) label += " ("+e.payMethod+(e.depositorName?" / "+e.depositorName:"")+")";
+      btn.textContent=label;
       btn.classList.add("has-record");
     } else {
       btn.textContent="+ 현장기록";
@@ -1316,6 +1337,7 @@ function loadTodayFieldEntries() {
         res.data.forEach(function(e){
           if(e.bookingNo) _fieldEntries[e.bookingNo]={
             entryId:e.entryId, total:e.total, payMethod:e.payMethod,
+            depositorName:e.depositorName||"",
             bbq:Math.round((e.bbq||0)/20000), person:e.personCount||0, dog:e.dogCount||0, bigdog:e.bigDogCount||0,
             etc:e.etcNote?[{note:e.etcNote,amount:e.etcAmount||0}]:[],
             room:e.room, guest:e.guest
