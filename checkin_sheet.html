@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
 <meta http-equiv="refresh" content="1800">
 <title>글램독 체크인 리스트 (본사)</title>
-<!-- v2026-05-01 13:54 -->
+<!-- v2026-05-01 14:23 -->
 <style>
   :root {
     --navy: #1B3A5C;
@@ -532,7 +532,7 @@
     <option value="">🏠 예약현황 (지점 선택)</option>
     <option value="cl_6a85a13087.html">가평(가평점)</option><option value="cl_806a86626b.html">가평(청평점)</option><option value="cl_8eacf6d6c1.html">경주</option><option value="cl_a88bfd0a7f.html">영흥도</option><option value="cl_9edad9ddd2.html">양양</option><option value="cl_d3039f7a59.html">통영</option>
   </select>
-  <span class="update-time">갱신: 2026-05-01 13:54</span>
+  <span class="update-time">갱신: 2026-05-01 14:23</span>
 </div>
 <div class="tabs" id="tabs"></div>
 <div class="content" id="content">
@@ -690,10 +690,27 @@ function extraHtml(bno, wd) {
   return '<div style="font-size:11px;line-height:1.7;text-align:center;color:#888">' + lines.join('<br>') + '</div>';
 }
 
+function roomSortKey(room) {
+  var typePriority = {'펜션형':0,'테라스형':1,'일반형':2};
+  var parts = room.trim().split(/\s+/);
+  if(parts.length >= 2 && typePriority.hasOwnProperty(parts[0])) {
+    return [typePriority[parts[0]], parseInt(parts[1])||0, ''];
+  }
+  var m = room.trim().match(/^([A-Za-z]*)(\d+)/);
+  if(m) return [99, parseInt(m[2])||0, m[1]];
+  return [99, 0, room.trim()];
+}
+function roomSortCmp(a, b) {
+  var ka=roomSortKey(a), kb=roomSortKey(b);
+  if(ka[0]!==kb[0]) return ka[0]-kb[0];
+  if(ka[1]!==kb[1]) return ka[1]-kb[1];
+  return ka[2].localeCompare(kb[2],'ko');
+}
+
 function renderTable() {
   const records = ALL_RECORDS
     .filter(r => !r.is_block && r.stay_dates.includes(currentDate) && r.branch === currentBranch)
-    .sort((a,b) => a.room.localeCompare(b.room, 'ko'));
+    .sort((a,b) => roomSortCmp(a.room, b.room));
 
   const dateObj = new Date(currentDate);
   const dateKo  = dateObj.getFullYear() + '년 ' + (dateObj.getMonth()+1) + '월 ' + dateObj.getDate() + '일';
