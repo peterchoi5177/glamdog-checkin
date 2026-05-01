@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
 <meta http-equiv="refresh" content="1800">
 <title>글램독 통영 체크인 리스트</title>
-<!-- v2026-05-01 14:23 -->
+<!-- v2026-05-01 14:29 -->
 <style>
   :root {
     --navy: #1B3A5C;
@@ -173,10 +173,9 @@
   .nights-box { text-align: center; font-size: 12px; line-height: 1.6; }
   .nights-box b { font-size: 15px; color: var(--navy); }
 
-  /* 수기 공란 - 선 3개 */
+  /* 수기 공란 */
   .write-lines { padding-top: 4px; }
   .write-line  {
-    border-bottom: 1px solid #999;
     height: 18px; margin-bottom: 5px;
     width: 100%;
   }
@@ -570,7 +569,7 @@
     <button class="btn-view"        id="btnField" onclick="setView('field')">💰 현장기록</button>
   </div>
   <button class="btn-refresh" id="btnRefresh" onclick="refreshData()">🔄 새로고침</button>
-  <span class="update-time">갱신: 2026-05-01 14:23</span>
+  <span class="update-time">갱신: 2026-05-01 14:29</span>
 </div>
 <div class="content" id="content">
   <div class="print-header" id="printHeader"></div>
@@ -1047,7 +1046,7 @@ function renderResCal() {
   for (let i = 0; i < resCalDays; i++) dates.push(resCalDateAdd(resCalStart, i));
 
   // 객실 정렬
-  const rooms = [...new Set(records.map(r => r.room))].sort((a,b) => a.localeCompare(b,'ko'));
+  const rooms = [...new Set(records.map(r => r.room))].sort((a,b) => roomSortCmp(a,b));
 
   const DOW = ['일','월','화','수','목','금','토'];
 
