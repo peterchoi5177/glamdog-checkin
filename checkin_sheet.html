@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
 <meta http-equiv="refresh" content="1800">
 <title>글램독 체크인 리스트 (본사)</title>
-<!-- v2026-05-02 19:20 -->
+<!-- v2026-05-02 20:24 -->
 <style>
   :root {
     --navy: #1B3A5C;
@@ -477,12 +477,14 @@
   .cl-hd-extended { border-color:#1976d2; color:#1565c0; }
   .cl-hd-deferred { border-color:#f57c00; color:#e65100; }
   .cl-hd-done     { border-color:#388e3c; color:#2e7d32; }
+  .cl-hd-block    { border-color:#9ca3af; color:#6b7280; }
   .cl-cnt { font-size:11px; font-weight:600; padding:2px 6px;
     border-radius:10px; background:#eee; color:#666; margin-left:2px; }
   .cl-hd-need     .cl-cnt { background:#ffebee; color:#c62828; }
   .cl-hd-extended .cl-cnt { background:#e3f2fd; color:#1565c0; }
   .cl-hd-deferred .cl-cnt { background:#fff3e0; color:#e65100; }
   .cl-hd-done     .cl-cnt { background:#e8f5e9; color:#2e7d32; }
+  .cl-hd-block    .cl-cnt { background:#f3f4f6; color:#6b7280; }
   .cl-hint { font-size:11px; color:#aaa; font-style:italic; margin-bottom:8px; }
   .cl-fl-lbl { font-size:11px; font-weight:700; color:#bbb;
     letter-spacing:.5px; margin:8px 0 5px; }
@@ -501,8 +503,10 @@
   .cl-yeonbak:active { background:#bfdbfe; transform:scale(.97); }
   .cl-done     { background:#f1f8f1; border-color:#a5d6a7; opacity:.75; }
   .cl-done:active { background:#e8f5e9; transform:scale(.97); }
+  .cl-block    { background:#f3f4f6; border-color:#9ca3af; color:#6b7280; cursor:default; }
   .cl-rn { font-size:14px; font-weight:700; color:#1B3A5C; }
   .cl-yeonbak .cl-rn { color:#1e40af !important; }
+  .cl-guest-name { font-size:11px; color:#888; margin-top:2px; }
   .cl-sub { font-size:11px; color:#888; margin-top:4px; }
   .cl-yeonbak .cl-sub { color:#1e40af !important; }
   .cl-done-lbl { color:#388e3c; font-weight:700; }
@@ -551,8 +555,10 @@
     .cl-pr-done { border-color:#666; background:#f0f0f0; color:#333; }
     .cl-pr-defer { border-color:#f59e0b; color:#92400e; border-style:dashed; }
     .cl-pr-yon { border-color:#3b82f6; background:#dbeafe; color:#1e40af; }
-    /* 인쇄 시 되돌리기 버튼 숨기기 */
+    .cl-pr-block { border-color:#9ca3af; background:#f3f4f6; color:#6b7280; }
+    /* 인쇄 시 숨기기 */
     .cl-reset-btn { display:none !important; }
+    .cl-guest-name { display:none !important; }
     /* 구형 호환 유지 */
     .cl-print-row { display:none; }
     .cl-print-done { display:none; }
@@ -696,7 +702,7 @@ function _submitPw() {
     <option value="">🏠 예약현황 (지점 선택)</option>
     <option value="cl_6a85a13087.html">가평(가평점)</option><option value="cl_806a86626b.html">가평(청평점)</option><option value="cl_8eacf6d6c1.html">경주</option><option value="cl_a88bfd0a7f.html">영흥도</option><option value="cl_9edad9ddd2.html">양양</option><option value="cl_d3039f7a59.html">통영</option>
   </select>
-  <span class="update-time">갱신: 2026-05-02 19:20</span>
+  <span class="update-time">갱신: 2026-05-02 20:24</span>
 </div>
 <div class="tabs" id="tabs"></div>
 <div class="content" id="content">

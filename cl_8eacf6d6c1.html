@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
 <meta http-equiv="refresh" content="1800">
 <title>글램독 경주 체크인 리스트</title>
-<!-- v2026-05-02 19:20 -->
+<!-- v2026-05-02 20:24 -->
 <style>
   :root {
     --navy: #1B3A5C;
@@ -477,12 +477,14 @@
   .cl-hd-extended { border-color:#1976d2; color:#1565c0; }
   .cl-hd-deferred { border-color:#f57c00; color:#e65100; }
   .cl-hd-done     { border-color:#388e3c; color:#2e7d32; }
+  .cl-hd-block    { border-color:#9ca3af; color:#6b7280; }
   .cl-cnt { font-size:11px; font-weight:600; padding:2px 6px;
     border-radius:10px; background:#eee; color:#666; margin-left:2px; }
   .cl-hd-need     .cl-cnt { background:#ffebee; color:#c62828; }
   .cl-hd-extended .cl-cnt { background:#e3f2fd; color:#1565c0; }
   .cl-hd-deferred .cl-cnt { background:#fff3e0; color:#e65100; }
   .cl-hd-done     .cl-cnt { background:#e8f5e9; color:#2e7d32; }
+  .cl-hd-block    .cl-cnt { background:#f3f4f6; color:#6b7280; }
   .cl-hint { font-size:11px; color:#aaa; font-style:italic; margin-bottom:8px; }
   .cl-fl-lbl { font-size:11px; font-weight:700; color:#bbb;
     letter-spacing:.5px; margin:8px 0 5px; }
@@ -501,8 +503,10 @@
   .cl-yeonbak:active { background:#bfdbfe; transform:scale(.97); }
   .cl-done     { background:#f1f8f1; border-color:#a5d6a7; opacity:.75; }
   .cl-done:active { background:#e8f5e9; transform:scale(.97); }
+  .cl-block    { background:#f3f4f6; border-color:#9ca3af; color:#6b7280; cursor:default; }
   .cl-rn { font-size:14px; font-weight:700; color:#1B3A5C; }
   .cl-yeonbak .cl-rn { color:#1e40af !important; }
+  .cl-guest-name { font-size:11px; color:#888; margin-top:2px; }
   .cl-sub { font-size:11px; color:#888; margin-top:4px; }
   .cl-yeonbak .cl-sub { color:#1e40af !important; }
   .cl-done-lbl { color:#388e3c; font-weight:700; }
@@ -551,8 +555,10 @@
     .cl-pr-done { border-color:#666; background:#f0f0f0; color:#333; }
     .cl-pr-defer { border-color:#f59e0b; color:#92400e; border-style:dashed; }
     .cl-pr-yon { border-color:#3b82f6; background:#dbeafe; color:#1e40af; }
-    /* 인쇄 시 되돌리기 버튼 숨기기 */
+    .cl-pr-block { border-color:#9ca3af; background:#f3f4f6; color:#6b7280; }
+    /* 인쇄 시 숨기기 */
     .cl-reset-btn { display:none !important; }
+    .cl-guest-name { display:none !important; }
     /* 구형 호환 유지 */
     .cl-print-row { display:none; }
     .cl-print-done { display:none; }
@@ -735,7 +741,7 @@ function _submitPw() {
     <button class="btn-view"        id="btnField" onclick="setView('field')">💰 현장기록</button>
   </div>
   <button class="btn-refresh" id="btnRefresh" onclick="refreshData()">🔄 새로고침</button>
-  <span class="update-time">갱신: 2026-05-02 19:20</span>
+  <span class="update-time">갱신: 2026-05-02 20:24</span>
 </div>
 <div class="content" id="content">
   <div class="print-header" id="printHeader"></div>
@@ -1726,6 +1732,11 @@ function renderCleaningView() {
     return !r.is_block && r.checkin < today && r.checkout > today;
   });
 
+  // 고객명 매핑 테이블: room → guest
+  var guestMap = {};
+  checkoutRecs.forEach(function(r) { guestMap[r.room] = r.guest || ''; });
+  extRecs.forEach(function(r) { guestMap[r.room] = r.guest || ''; });
+
   // 연속예약 감지: 오늘 체크아웃 + 같은 방·같은 게스트가 오늘 체크인
   var checkinToday = ALL_RECORDS.filter(function(r) {
     return !r.is_block && r.checkin === today;
@@ -1760,6 +1771,19 @@ function renderCleaningView() {
   var deferRooms= checkoutRooms.filter(function(rm) { return _clStatus[rm] === 'deferred'; });
   var yeonbakRooms = checkoutRooms.filter(function(rm) { return _clStatus[rm] === 'yeonbak'; });
 
+  // 방막기 방 목록: 오늘 체크아웃 + is_block인 방들
+  var blockRooms = ALL_RECORDS
+    .filter(function(r) { return r.checkout === today && r.is_block; })
+    .map(function(r) { return r.room; });
+  // 중복 제거
+  seen = {};
+  blockRooms = blockRooms.filter(function(r) { return !seen[r] && !(seen[r]=true); });
+  // 방막기 채널 매핑 (방->채널)
+  var blockChannelMap = {};
+  ALL_RECORDS
+    .filter(function(r) { return r.checkout === today && r.is_block; })
+    .forEach(function(r) { blockChannelMap[r.room] = r.channel || '방막기'; });
+
   // 층별 그룹 + 정렬 헬퍼
   function byFloor(rooms) {
     var floors = {};
@@ -1777,12 +1801,16 @@ function renderCleaningView() {
     return Object.keys(obj).sort(function(a,b){ return parseInt(a)-parseInt(b); });
   }
 
-  // 카드 HTML — 고객 이름 없음 (개인정보 보호)
-  function makeCard(rm, type) {
+  // 카드 HTML — guestMap으로 고객명 표시 (인쇄 제외)
+  function makeCard(rm, type, guestNameMap) {
     var extra = '';
     var cardClass = 'cl-card cl-' + type;
     var events = '';
     var resetBtn = '';
+
+    // 고객명 HTML (있으면 표시, 없으면 빈 문자열)
+    var guestName = guestNameMap ? (guestNameMap[rm] || '') : '';
+    var guestHtml = guestName ? '<div class="cl-guest-name">' + guestName + '</div>' : '';
 
     // 실제 상태에 따른 카드 스타일 업데이트
     var st = _clStatus[rm] || '';
@@ -1807,17 +1835,18 @@ function renderCleaningView() {
       resetBtn = '<button class="cl-reset-btn" data-rm="' + rm + '" onclick="event.stopPropagation(); clResetRoom(this.dataset.rm)">↩ 되돌리기</button>';
     }
 
-    if (type !== 'extended') {
+    if (type !== 'extended' && type !== 'block') {
       events = ' data-rm="' + rm + '"'
              + ' ontouchstart="clLongPressStart(this.dataset.rm)" ontouchend="clLongPressEnd()"'
              + ' onmousedown="clLongPressStart(this.dataset.rm)" onmouseup="clLongPressEnd()"'
              + ' onclick="clToggleDone(this.dataset.rm)"';
     }
     return '<div class="' + cardClass + '"' + events + '>'
-         + '<div class="cl-rn">' + rm + '</div>' + extra + resetBtn + '</div>';
+         + '<div class="cl-rn">' + rm + '</div>'
+         + guestHtml + extra + resetBtn + '</div>';
   }
 
-  function makeSection(title, icon, rooms, type, hint) {
+  function makeSection(title, icon, rooms, type, hint, guestNameMap) {
     var cls = type;
     var html = '<div class="cl-sec">'
              + '<div class="cl-sec-hd cl-hd-' + cls + '">'
@@ -1830,7 +1859,7 @@ function renderCleaningView() {
       var floors = byFloor(rooms);
       floorsSorted(floors).forEach(function(fl) {
         html += '<div class="cl-fl-lbl">' + fl + '</div><div class="cl-grid">';
-        floors[fl].forEach(function(rm) { html += makeCard(rm, type); });
+        floors[fl].forEach(function(rm) { html += makeCard(rm, type, guestNameMap); });
         html += '</div>';
       });
     }
@@ -1848,15 +1877,36 @@ function renderCleaningView() {
            + '</div>';
 
   html += makeSection('청소 필요', '🔴', needClean, 'need',
-                      '탭 → 완료 &nbsp;|&nbsp; 길게 누르기 → 상태변경');
+                      '탭 → 완료 &nbsp;|&nbsp; 길게 누르기 → 상태변경', guestMap);
   // 연박·청소불필요: stayRooms(자동연박) + yeonbakRooms(수동연박) 합쳐서 렌더링
   var stayRooms = extRooms.filter(function(rm) { return _clStatus[rm] !== 'yeonbak'; });
   var combinedExtRooms = stayRooms.concat(yeonbakRooms);
-  html += makeSection('연박 · 청소 불필요', '🔵', combinedExtRooms, 'extended', '');
+  html += makeSection('연박 · 청소 불필요', '🔵', combinedExtRooms, 'extended', '', guestMap);
   html += makeSection('청소대기', '🟡', deferRooms, 'deferred',
-                      '길게 누르기 → 상태변경');
+                      '길게 누르기 → 상태변경', guestMap);
   html += makeSection('완료', '✅', doneRooms, 'done',
-                      '탭 → 청소 필요로 복귀');
+                      '탭 → 청소 필요로 복귀', guestMap);
+
+  // 방막기·기타 섹션
+  if (blockRooms.length > 0) {
+    var blockFloors = byFloor(blockRooms);
+    var blockHtml = '<div class="cl-sec">'
+                  + '<div class="cl-sec-hd cl-hd-block">'
+                  + '🚫 방막기·기타 <span class="cl-cnt">' + blockRooms.length + '</span></div>'
+                  + '<div class="cl-hint">체크아웃이지만 청소 불필요</div>';
+    floorsSorted(blockFloors).forEach(function(fl) {
+      blockHtml += '<div class="cl-fl-lbl">' + fl + '</div><div class="cl-grid">';
+      blockFloors[fl].forEach(function(rm) {
+        var channelName = blockChannelMap[rm] || '방막기';
+        blockHtml += '<div class="cl-card cl-block">'
+                   + '<div class="cl-rn">' + rm + '</div>'
+                   + '<div class="cl-guest-name">' + channelName + '</div>'
+                   + '</div>';
+      });
+      blockHtml += '</div>';
+    });
+    html += blockHtml + '</div>';
+  }
 
   // 인쇄용 3단 레이아웃 (화면에서는 숨김) - 층별 가로 배치
   function makePrintCol() {
@@ -1914,6 +1964,23 @@ function renderCleaningView() {
           var icon = st==='yeonbak' ? '🌙' : '';
           var cls = st==='yeonbak' ? 'cl-pr-yon' : 'cl-pr-done';
           ph += '<span class="cl-pr-card ' + cls + '">' + icon + rm + '</span>';
+        });
+        ph += '</div></div>';
+      });
+    }
+
+    // 방막기·기타 섹션
+    ph += '<div class="cl-print-sec-lbl">▣ 방막기·기타</div>';
+    if (blockRooms.length === 0) {
+      ph += '<div class="cl-print-none">없음</div>';
+    } else {
+      var blockFloors = byFloor(blockRooms);
+      floorsSorted(blockFloors).forEach(function(fl) {
+        ph += '<div class="cl-floor-row">'
+           + '<div class="cl-floor-label">' + fl + '</div>'
+           + '<div class="cl-floor-rooms">';
+        blockFloors[fl].forEach(function(rm) {
+          ph += '<span class="cl-pr-card cl-pr-block">' + rm + '</span>';
         });
         ph += '</div></div>';
       });
