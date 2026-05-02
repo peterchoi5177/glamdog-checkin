@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
 <meta http-equiv="refresh" content="1800">
 <title>글램독 가평(청평점) 체크인 리스트</title>
-<!-- v2026-05-02 17:41 -->
+<!-- v2026-05-02 17:47 -->
 <style>
   :root {
     --navy: #1B3A5C;
@@ -512,6 +512,14 @@
   .cl-card-yeonbak { background:#c7d2fe !important; border-color:#6366f1 !important; }
   .cl-card-yeonbak .cl-rn { color:#3730a3 !important; }
   .cl-card-yeonbak .cl-sub { color:#4338ca !important; }
+  /* 되돌리기 버튼 */
+  .cl-reset-btn {
+    display:block; width:100%; margin-top:8px; padding:4px 0;
+    border:1px solid rgba(0,0,0,0.15); border-radius:6px;
+    background:rgba(255,255,255,0.6); font-size:11px; color:#555;
+    cursor:pointer; text-align:center; transition:all .12s;
+  }
+  .cl-reset-btn:active { background:rgba(0,0,0,0.1); }
   .cl-none { font-size:12px; color:#bbb; padding:8px 0; }
   /* 인쇄용 3단 레이아웃 (화면에서는 숨김) */
   .cl-print-wrap { display:none; }
@@ -531,18 +539,20 @@
     .cl-print-hd { font-size:13pt; font-weight:bold; color:#000;
       border-bottom:2.5px solid #000; padding-bottom:6px; margin-bottom:8px; }
     .cl-print-sec-lbl { font-size:11pt; font-weight:bold; color:#000;
-      margin:6px 0 3px; border-bottom:1.5px solid #333; padding-bottom:2px; }
+      margin:8px 0 4px; border-bottom:1.5px solid #333; padding-bottom:2px; }
     /* 층별 행 레이아웃 */
-    .cl-floor-row { display:flex; align-items:flex-start; margin-bottom:4px; border-bottom:1px solid #ddd;
-      padding-bottom:3px; page-break-inside:avoid; gap:6px; }
+    .cl-floor-row { display:flex; align-items:flex-start; margin-bottom:10px; border-bottom:1px solid #ddd;
+      padding-bottom:8px; page-break-inside:avoid; gap:6px; }
     .cl-floor-label { font-size:10pt; font-weight:bold; color:#000; min-width:26px; padding-top:1px; flex-shrink:0; }
-    .cl-floor-rooms { display:flex; flex-wrap:wrap; gap:3px; }
-    .cl-pr-card { font-size:8.5pt; padding:2px 5px; border:1.2px solid #333; border-radius:3px;
+    .cl-floor-rooms { display:flex; flex-wrap:wrap; gap:6px; }
+    .cl-pr-card { font-size:8.5pt; padding:4px 10px; margin:2px; border:1.2px solid #333; border-radius:3px;
       white-space:nowrap; font-weight:600; }
     .cl-pr-need { border-color:#dc2626; color:#dc2626; }
     .cl-pr-done { border-color:#666; background:#f0f0f0; color:#333; }
     .cl-pr-defer { border-color:#f59e0b; color:#92400e; border-style:dashed; }
     .cl-pr-yon { border-color:#3b82f6; background:#dbeafe; color:#1e40af; }
+    /* 인쇄 시 되돌리기 버튼 숨기기 */
+    .cl-reset-btn { display:none !important; }
     /* 구형 호환 유지 */
     .cl-print-row { display:none; }
     .cl-print-done { display:none; }
@@ -666,7 +676,7 @@
     <button class="btn-view"        id="btnField" onclick="setView('field')">💰 현장기록</button>
   </div>
   <button class="btn-refresh" id="btnRefresh" onclick="refreshData()">🔄 새로고침</button>
-  <span class="update-time">갱신: 2026-05-02 17:41</span>
+  <span class="update-time">갱신: 2026-05-02 17:47</span>
 </div>
 <div class="content" id="content">
   <div class="print-header" id="printHeader"></div>
@@ -1712,12 +1722,14 @@ function renderCleaningView() {
     var extra = '';
     var cardClass = 'cl-card cl-' + type;
     var events = '';
+    var resetBtn = '';
 
     // 실제 상태에 따른 카드 스타일 업데이트
     var st = _clStatus[rm] || '';
     if (st === 'yeonbak') {
       cardClass = 'cl-card cl-card-yeonbak';
       extra = '<div class="cl-sub cl-yon-lbl">연박</div>';
+      resetBtn = '<button class="cl-reset-btn" data-rm="' + rm + '" onclick="event.stopPropagation(); clSetStatus(this.dataset.rm, '')">↩ 되돌리기</button>';
     } else if (type === 'extended') {
       var extRec = extRecs.find(function(r){ return r.room===rm; })
                 || checkoutRecs.find(function(r){ return r.room===rm; });
@@ -1726,8 +1738,14 @@ function renderCleaningView() {
         extra = '<div class="cl-sub">퇴실까지 ' + diff + '일</div>';
       }
     }
-    if (type === 'done')     extra = '<div class="cl-sub cl-done-lbl">✓ 완료</div>';
-    if (type === 'deferred') extra = '<div class="cl-sub cl-def-lbl">대기 중</div>';
+    if (type === 'done') {
+      extra = '<div class="cl-sub cl-done-lbl">✓ 완료</div>';
+      resetBtn = '<button class="cl-reset-btn" data-rm="' + rm + '" onclick="event.stopPropagation(); clSetStatus(this.dataset.rm, '')">↩ 되돌리기</button>';
+    }
+    if (type === 'deferred') {
+      extra = '<div class="cl-sub cl-def-lbl">대기 중</div>';
+      resetBtn = '<button class="cl-reset-btn" data-rm="' + rm + '" onclick="event.stopPropagation(); clSetStatus(this.dataset.rm, '')">↩ 되돌리기</button>';
+    }
 
     if (type !== 'extended') {
       events = ' data-rm="' + rm + '"'
@@ -1736,7 +1754,7 @@ function renderCleaningView() {
              + ' onclick="clToggleDone(this.dataset.rm)"';
     }
     return '<div class="' + cardClass + '"' + events + '>'
-         + '<div class="cl-rn">' + rm + '</div>' + extra + '</div>';
+         + '<div class="cl-rn">' + rm + '</div>' + extra + resetBtn + '</div>';
   }
 
   function makeSection(title, icon, rooms, type, hint) {
