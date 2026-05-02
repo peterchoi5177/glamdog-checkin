@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
 <meta http-equiv="refresh" content="1800">
 <title>글램독 체크인 리스트 (본사)</title>
-<!-- v2026-05-02 18:54 -->
+<!-- v2026-05-02 19:06 -->
 <style>
   :root {
     --navy: #1B3A5C;
@@ -623,6 +623,65 @@
   </div>
 </div>
 
+<script>
+(function() {
+  var PW    = "glamdog2025!";
+  var MPW   = "glamdog2025!";
+  var SK    = "gd_125567d0";
+  var TOKEN = "ac50e3827c7c2afe";
+  var LSKEY = "gd_master_auth";
+
+  function hide() {
+    var el = document.getElementById('pwOverlay');
+    if (el) el.style.display = 'none';
+  }
+
+  // 1. URL ?auth= 파라미터
+  var urlToken = new URLSearchParams(window.location.search).get('auth');
+  if (urlToken === TOKEN) {
+    sessionStorage.setItem(SK, MPW);
+    localStorage.setItem(LSKEY, TOKEN);
+    hide(); return;
+  }
+
+  // 2. localStorage (본사에서 새 탭 열 때 설정됨)
+  try {
+    if (localStorage.getItem(LSKEY) === TOKEN) {
+      sessionStorage.setItem(SK, MPW);
+      hide(); return;
+    }
+  } catch(e) {}
+
+  // 3. sessionStorage (이미 로그인한 세션)
+  var saved = sessionStorage.getItem(SK);
+  if (saved === PW || saved === MPW) {
+    hide(); return;
+  }
+
+  // 인증 실패 → 오버레이 표시
+  var el = document.getElementById('pwOverlay');
+  if (el) el.style.display = 'flex';
+})();
+
+function _submitPw() {
+  var PW    = "glamdog2025!";
+  var MPW   = "glamdog2025!";
+  var SK    = "gd_125567d0";
+  var v     = document.getElementById('pwInput').value.trim();
+  var err   = document.getElementById('pwError');
+  var ov    = document.getElementById('pwOverlay');
+  if (v === PW || v === MPW) {
+    sessionStorage.setItem(SK, v);
+    if (ov)  ov.style.display  = 'none';
+    if (err) err.style.display = 'none';
+    document.getElementById('pwInput').value = '';
+  } else {
+    if (err) err.style.display = 'block';
+    document.getElementById('pwInput').value = '';
+    document.getElementById('pwInput').focus();
+  }
+}
+</script>
 <div class="top-bar">
   <h1>🐾 글램독 체크인 리스트</h1>
   <label>날짜</label>
@@ -637,7 +696,7 @@
     <option value="">🏠 예약현황 (지점 선택)</option>
     <option value="cl_6a85a13087.html">가평(가평점)</option><option value="cl_806a86626b.html">가평(청평점)</option><option value="cl_8eacf6d6c1.html">경주</option><option value="cl_a88bfd0a7f.html">영흥도</option><option value="cl_9edad9ddd2.html">양양</option><option value="cl_d3039f7a59.html">통영</option>
   </select>
-  <span class="update-time">갱신: 2026-05-02 18:54</span>
+  <span class="update-time">갱신: 2026-05-02 19:06</span>
 </div>
 <div class="tabs" id="tabs"></div>
 <div class="content" id="content">
@@ -959,6 +1018,7 @@ document.getElementById('datePicker').addEventListener('change', e => {
 const _HQ_TOKEN = "ac50e3827c7c2afe";
 document.getElementById('resCalBranchSel').addEventListener('change', function() {
   if (this.value) {
+    try { localStorage.setItem('gd_master_auth', _HQ_TOKEN); } catch(e) {}
     window.open(this.value + '?auth=' + _HQ_TOKEN + '#rescal', '_blank');
     this.value = '';
   }
@@ -1160,59 +1220,6 @@ function fdShowBranch(branch) {
 
 loadWelcomeData(currentDate);
 renderAll(); // make_calendar_js의 currentView 선언 이후로 이동 (TDZ 오류 방지)
-
-const _PW    = "glamdog2025!";
-const _MPW   = "glamdog2025!";
-const _SK    = "gd_125567d0";
-const _TOKEN = "ac50e3827c7c2afe";
-
-(function() {
-  // 페이지 로드 직후 인증 확인
-  const overlay = document.getElementById('pwOverlay');
-  if (!overlay) return;
-  
-  // 1. URL 토큰으로 자동 인증 (본사에서 열 때)
-  const urlToken = new URLSearchParams(window.location.search).get('auth');
-  console.log('[AUTH] URL token check:', urlToken === _TOKEN ? '✅' : '❌');
-  if (urlToken === _TOKEN) {
-    sessionStorage.setItem(_SK, _MPW);
-    overlay.style.display = 'none';
-    console.log('[AUTH] URL 인증 성공');
-    return;
-  }
-  
-  // 2. 세션 저장된 비밀번호로 자동 인증
-  const saved = sessionStorage.getItem(_SK);
-  console.log('[AUTH] Session check:', saved ? '✅' : '❌');
-  if (saved === _PW || saved === _MPW) {
-    overlay.style.display = 'none';
-    console.log('[AUTH] Session 인증 성공');
-    return;
-  }
-  
-  // 3. 비밀번호 입력 대기
-  overlay.style.display = 'flex';
-  const errEl = document.getElementById('pwError');
-  if (errEl) errEl.style.display = 'none';
-})();
-
-function _submitPw() {
-  const v = document.getElementById('pwInput').value.trim();
-  const err = document.getElementById('pwError');
-  
-  if (v === _PW || v === _MPW) {
-    sessionStorage.setItem(_SK, v);
-    document.getElementById('pwOverlay').style.display = 'none';
-    if (err) err.style.display = 'none';
-    document.getElementById('pwInput').value = '';
-    console.log('[AUTH] 비밀번호 인증 성공');
-  } else {
-    if (err) err.style.display = 'block';
-    document.getElementById('pwInput').value = '';
-    document.getElementById('pwInput').select();
-    console.log('[AUTH] 비밀번호 인증 실패');
-  }
-}
 
 </script>
 </body></html>
