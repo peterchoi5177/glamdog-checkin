@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
 <meta http-equiv="refresh" content="1800">
 <title>글램독 체크인 리스트 (본사)</title>
-<!-- v2026-05-02 17:22 -->
+<!-- v2026-05-02 17:31 -->
 <style>
   :root {
     --navy: #1B3A5C;
@@ -497,12 +497,17 @@
   .cl-extended { background:#f0f7ff; border-color:#bbdefb; cursor:default; }
   .cl-deferred { background:#fff8f0; border-color:#ffe0b2; }
   .cl-deferred:active { background:#fff3e0; transform:scale(.97); }
+  .cl-yeonbak  { background:#dbeafe !important; border-color:#3b82f6 !important; }
+  .cl-yeonbak:active { background:#bfdbfe; transform:scale(.97); }
   .cl-done     { background:#f1f8f1; border-color:#a5d6a7; opacity:.75; }
   .cl-done:active { background:#e8f5e9; transform:scale(.97); }
   .cl-rn { font-size:14px; font-weight:700; color:#1B3A5C; }
+  .cl-yeonbak .cl-rn { color:#1e40af !important; }
   .cl-sub { font-size:11px; color:#888; margin-top:4px; }
+  .cl-yeonbak .cl-sub { color:#1e40af !important; }
   .cl-done-lbl { color:#388e3c; font-weight:700; }
   .cl-def-lbl  { color:#e65100; font-weight:700; }
+  .cl-yon-lbl  { color:#1e40af; font-weight:700; }
   .cl-none { font-size:12px; color:#bbb; padding:8px 0; }
   /* 인쇄용 3단 레이아웃 (화면에서는 숨김) */
   .cl-print-wrap { display:none; }
@@ -527,9 +532,12 @@
       padding:6px 0; border-bottom:1px solid #ddd; line-height:1.5; }
     .cl-print-done { background:#f0f0f0; }
     .cl-print-ext  { color:#000; }
+    .cl-print-yon  { border-left:3px solid #3b82f6; background:#f0f7ff; }
     .cl-print-chk  { font-size:13pt; flex-shrink:0; font-weight:bold; width:16px; }
     .cl-print-rm   { font-weight:bold; font-size:11pt; }
     .cl-print-tag  { font-size:9pt; background:#fff; color:#000; border:1px solid #000;
+      padding:2px 5px; border-radius:3px; margin-left:auto; font-weight:bold; }
+    .cl-print-yon-tag { font-size:9pt; background:#dbeafe; color:#1e40af; border:1px solid #3b82f6;
       padding:2px 5px; border-radius:3px; margin-left:auto; font-weight:bold; }
     .cl-print-none { color:#999; font-size:10pt; }
   }
@@ -606,7 +614,7 @@
     <option value="">🏠 예약현황 (지점 선택)</option>
     <option value="cl_6a85a13087.html">가평(가평점)</option><option value="cl_806a86626b.html">가평(청평점)</option><option value="cl_8eacf6d6c1.html">경주</option><option value="cl_a88bfd0a7f.html">영흥도</option><option value="cl_9edad9ddd2.html">양양</option><option value="cl_d3039f7a59.html">통영</option>
   </select>
-  <span class="update-time">갱신: 2026-05-02 17:22</span>
+  <span class="update-time">갱신: 2026-05-02 17:31</span>
 </div>
 <div class="tabs" id="tabs"></div>
 <div class="content" id="content">

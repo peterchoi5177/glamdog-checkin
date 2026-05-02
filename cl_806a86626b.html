@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
 <meta http-equiv="refresh" content="1800">
 <title>글램독 가평(청평점) 체크인 리스트</title>
-<!-- v2026-05-02 17:22 -->
+<!-- v2026-05-02 17:31 -->
 <style>
   :root {
     --navy: #1B3A5C;
@@ -497,12 +497,17 @@
   .cl-extended { background:#f0f7ff; border-color:#bbdefb; cursor:default; }
   .cl-deferred { background:#fff8f0; border-color:#ffe0b2; }
   .cl-deferred:active { background:#fff3e0; transform:scale(.97); }
+  .cl-yeonbak  { background:#dbeafe !important; border-color:#3b82f6 !important; }
+  .cl-yeonbak:active { background:#bfdbfe; transform:scale(.97); }
   .cl-done     { background:#f1f8f1; border-color:#a5d6a7; opacity:.75; }
   .cl-done:active { background:#e8f5e9; transform:scale(.97); }
   .cl-rn { font-size:14px; font-weight:700; color:#1B3A5C; }
+  .cl-yeonbak .cl-rn { color:#1e40af !important; }
   .cl-sub { font-size:11px; color:#888; margin-top:4px; }
+  .cl-yeonbak .cl-sub { color:#1e40af !important; }
   .cl-done-lbl { color:#388e3c; font-weight:700; }
   .cl-def-lbl  { color:#e65100; font-weight:700; }
+  .cl-yon-lbl  { color:#1e40af; font-weight:700; }
   .cl-none { font-size:12px; color:#bbb; padding:8px 0; }
   /* 인쇄용 3단 레이아웃 (화면에서는 숨김) */
   .cl-print-wrap { display:none; }
@@ -527,9 +532,12 @@
       padding:6px 0; border-bottom:1px solid #ddd; line-height:1.5; }
     .cl-print-done { background:#f0f0f0; }
     .cl-print-ext  { color:#000; }
+    .cl-print-yon  { border-left:3px solid #3b82f6; background:#f0f7ff; }
     .cl-print-chk  { font-size:13pt; flex-shrink:0; font-weight:bold; width:16px; }
     .cl-print-rm   { font-weight:bold; font-size:11pt; }
     .cl-print-tag  { font-size:9pt; background:#fff; color:#000; border:1px solid #000;
+      padding:2px 5px; border-radius:3px; margin-left:auto; font-weight:bold; }
+    .cl-print-yon-tag { font-size:9pt; background:#dbeafe; color:#1e40af; border:1px solid #3b82f6;
       padding:2px 5px; border-radius:3px; margin-left:auto; font-weight:bold; }
     .cl-print-none { color:#999; font-size:10pt; }
   }
@@ -645,7 +653,7 @@
     <button class="btn-view"        id="btnField" onclick="setView('field')">💰 현장기록</button>
   </div>
   <button class="btn-refresh" id="btnRefresh" onclick="refreshData()">🔄 새로고침</button>
-  <span class="update-time">갱신: 2026-05-02 17:22</span>
+  <span class="update-time">갱신: 2026-05-02 17:31</span>
 </div>
 <div class="content" id="content">
   <div class="print-header" id="printHeader"></div>
@@ -682,6 +690,15 @@
       border-top:2px solid var(--border);padding:10px 16px;gap:10px;align-items:center;">
       <button class="btn-print" onclick="window.print()">🖨️ 청소현황 인쇄 (3등분)</button>
       <span class="print-tip">A4 세로 출력 후 절취선에서 잘라 사용하세요.</span>
+    </div>
+    <!-- 청소상태 변경 팝업 메뉴 -->
+    <div id="clActionMenu" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;z-index:9999;background:rgba(0,0,0,0.4);" onclick="clMenuClose()">
+      <div style="position:absolute;bottom:0;left:0;right:0;background:#fff;border-radius:16px 16px 0 0;padding:16px;" onclick="event.stopPropagation()">
+        <div style="text-align:center;font-weight:bold;font-size:15px;margin-bottom:14px;color:#555;" id="clMenuRoomLabel"></div>
+        <button onclick="clMenuSelect('deferred')" style="width:100%;padding:14px;margin-bottom:8px;border:2px solid #f59e0b;border-radius:10px;background:#fffbeb;font-size:16px;font-weight:bold;color:#92400e;">⏸ 청소대기</button>
+        <button onclick="clMenuSelect('yeonbak')" style="width:100%;padding:14px;margin-bottom:8px;border:2px solid #3b82f6;border-radius:10px;background:#eff6ff;font-size:16px;font-weight:bold;color:#1e40af;">🌙 연박</button>
+        <button onclick="clMenuClose()" style="width:100%;padding:12px;border:1px solid #ddd;border-radius:10px;background:#f9fafb;font-size:15px;color:#666;">취소</button>
+      </div>
     </div>
   </div>
   <!-- 현장기록 탭 -->
@@ -1559,6 +1576,8 @@ function clSetStatus(room, status) {
 // 탭: 청소 필요 → 완료 → 청소 필요 (토글)
 function clToggleDone(room) {
   var cur = _clStatus[room];
+  // 연박/대기는 탭으로 변경 안 함
+  if (cur === 'yeonbak' || cur === 'deferred') return;
   if (cur === 'done') {
     clSetStatus(room, null);
     showToast(room + ' ← 청소 필요로 복귀');
@@ -1568,23 +1587,38 @@ function clToggleDone(room) {
   }
 }
 
-// 길게 누르기: 청소대기 토글
+// 길게 누르기: 청소상태 변경 팝업 메뉴
 var _clLongPressTimer = null;
+var _clMenuRoom = null;
 function clLongPressStart(room) {
   _clLongPressTimer = setTimeout(function() {
-    _clLongPressTimer = null;
-    var cur = _clStatus[room];
-    if (cur === 'deferred') {
-      clSetStatus(room, null);
-      showToast(room + ' ← 청소 필요로 복귀');
-    } else {
-      clSetStatus(room, 'deferred');
-      showToast(room + ' → 청소대기');
-    }
+    _clMenuRoom = room;
+    document.getElementById('clMenuRoomLabel').textContent = room + ' 상태 변경';
+    document.getElementById('clActionMenu').style.display = 'block';
   }, 600);
 }
 function clLongPressEnd() {
   if (_clLongPressTimer) { clearTimeout(_clLongPressTimer); _clLongPressTimer = null; }
+}
+function clMenuClose() {
+  document.getElementById('clActionMenu').style.display = 'none';
+  _clMenuRoom = null;
+}
+function clMenuSelect(status) {
+  if (_clMenuRoom) {
+    var prev = (_clStatus[_clMenuRoom] || '');
+    // 이미 같은 상태면 토글(해제)
+    var next = (prev === status) ? '' : status;
+    clSetStatus(_clMenuRoom, next);
+    if (next === 'deferred') {
+      showToast(_clMenuRoom + ' → 청소대기');
+    } else if (next === 'yeonbak') {
+      showToast(_clMenuRoom + ' → 연박');
+    } else {
+      showToast(_clMenuRoom + ' ← 청소 필요로 복귀');
+    }
+  }
+  clMenuClose();
 }
 
 function clGroupByFloor(rooms) {
@@ -1662,7 +1696,15 @@ function renderCleaningView() {
   // 카드 HTML — 고객 이름 없음 (개인정보 보호)
   function makeCard(rm, type) {
     var extra = '';
-    if (type === 'extended') {
+    var cardClass = 'cl-card cl-' + type;
+    var events = '';
+
+    // 실제 상태에 따른 카드 스타일 업데이트
+    var st = _clStatus[rm] || '';
+    if (st === 'yeonbak') {
+      cardClass = 'cl-card cl-yeonbak';
+      extra = '<div class="cl-sub cl-yon-lbl">🌙 연박</div>';
+    } else if (type === 'extended') {
       var extRec = extRecs.find(function(r){ return r.room===rm; })
                 || checkoutRecs.find(function(r){ return r.room===rm; });
       if (extRec) {
@@ -1673,14 +1715,13 @@ function renderCleaningView() {
     if (type === 'done')     extra = '<div class="cl-sub cl-done-lbl">✓ 완료</div>';
     if (type === 'deferred') extra = '<div class="cl-sub cl-def-lbl">대기 중</div>';
 
-    var events = '';
     if (type !== 'extended') {
       events = ' data-rm="' + rm + '"'
              + ' ontouchstart="clLongPressStart(this.dataset.rm)" ontouchend="clLongPressEnd()"'
              + ' onmousedown="clLongPressStart(this.dataset.rm)" onmouseup="clLongPressEnd()"'
              + ' onclick="clToggleDone(this.dataset.rm)"';
     }
-    return '<div class="cl-card cl-' + type + '"' + events + '>'
+    return '<div class="' + cardClass + '"' + events + '>'
          + '<div class="cl-rn">' + rm + '</div>' + extra + '</div>';
   }
 
@@ -1715,10 +1756,10 @@ function renderCleaningView() {
            + '</div>';
 
   html += makeSection('청소 필요', '🔴', needClean, 'need',
-                      '탭 → 완료 &nbsp;|&nbsp; 길게 누르기 → 청소대기');
+                      '탭 → 완료 &nbsp;|&nbsp; 길게 누르기 → 상태변경');
   html += makeSection('연박 · 청소 불필요', '🔵', extRooms, 'extended', '');
   html += makeSection('청소대기', '🟡', deferRooms, 'deferred',
-                      '길게 누르기 → 청소 필요로 복귀');
+                      '길게 누르기 → 상태변경');
   html += makeSection('완료', '✅', doneRooms, 'done',
                       '탭 → 청소 필요로 복귀');
 
@@ -1729,19 +1770,22 @@ function renderCleaningView() {
     ph += '<div class="cl-print-sec-lbl">▣ 퇴실 · 청소 필요 (' + checkoutRooms.length + ')</div>';
     checkoutRooms.sort(roomSortCmp).forEach(function(rm) {
       var st = _clStatus[rm];
-      var statusClass = st==='done' ? ' cl-print-done' : '';
+      var statusClass = st==='done' ? ' cl-print-done' : (st==='yeonbak' ? ' cl-print-yon' : '');
       var checkMark = st==='done' ? '✓' : '□';
-      var deferTag = st==='deferred' ? '<span class="cl-print-tag">대기</span>' : '';
+      var statusTag = '';
+      if (st==='deferred') statusTag = '<span class="cl-print-tag">대기</span>';
+      else if (st==='yeonbak') statusTag = '<span class="cl-print-yon-tag">연박</span>';
       ph += '<div class="cl-print-row' + statusClass + '" data-status="' + (st||'') + '">'
           + '<span class="cl-print-chk">' + checkMark + '</span>'
           + '<span class="cl-print-rm">' + rm + '</span>'
-          + deferTag
+          + statusTag
           + '</div>';
     });
     if (checkoutRooms.length === 0) ph += '<div class="cl-print-none">없음</div>';
     ph += '<div class="cl-print-sec-lbl" style="margin-top:8px">▣ 연박 · 청소 불필요 (' + extRooms.length + ')</div>';
     extRooms.sort(roomSortCmp).forEach(function(rm) {
-      ph += '<div class="cl-print-row cl-print-ext">  ' + rm + '</div>';
+      var statusTag = _clStatus[rm]==='yeonbak' ? ' <span class="cl-print-yon-tag">연박</span>' : '';
+      ph += '<div class="cl-print-row cl-print-ext">  ' + rm + statusTag + '</div>';
     });
     if (extRooms.length === 0) ph += '<div class="cl-print-none">없음</div>';
     return ph + '</div>';
