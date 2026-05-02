@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
 <meta http-equiv="refresh" content="1800">
 <title>글램독 통영 체크인 리스트</title>
-<!-- v2026-05-02 19:19 -->
+<!-- v2026-05-02 19:20 -->
 <style>
   :root {
     --navy: #1B3A5C;
@@ -735,7 +735,7 @@ function _submitPw() {
     <button class="btn-view"        id="btnField" onclick="setView('field')">💰 현장기록</button>
   </div>
   <button class="btn-refresh" id="btnRefresh" onclick="refreshData()">🔄 새로고침</button>
-  <span class="update-time">갱신: 2026-05-02 19:19</span>
+  <span class="update-time">갱신: 2026-05-02 19:20</span>
 </div>
 <div class="content" id="content">
   <div class="print-header" id="printHeader"></div>
@@ -1635,6 +1635,7 @@ function clLoadStatus(callback) {
 }
 
 // GAS에 상태 저장 후 즉시 재렌더
+function clResetRoom(room) { clSetStatus(room, ''); }
 function clSetStatus(room, status) {
   // 낙관적 업데이트: 즉시 화면 반영
   if (status === null) {
@@ -1788,7 +1789,7 @@ function renderCleaningView() {
     if (st === 'yeonbak') {
       cardClass = 'cl-card cl-card-yeonbak';
       extra = '<div class="cl-sub cl-yon-lbl">연박</div>';
-      resetBtn = '<button class="cl-reset-btn" data-rm="' + rm + '" onclick="event.stopPropagation(); clSetStatus(this.dataset.rm, '')">↩ 되돌리기</button>';
+      resetBtn = '<button class="cl-reset-btn" data-rm="' + rm + '" onclick="event.stopPropagation(); clResetRoom(this.dataset.rm)">↩ 되돌리기</button>';
     } else if (type === 'extended') {
       var extRec = extRecs.find(function(r){ return r.room===rm; })
                 || checkoutRecs.find(function(r){ return r.room===rm; });
@@ -1799,11 +1800,11 @@ function renderCleaningView() {
     }
     if (type === 'done') {
       extra = '<div class="cl-sub cl-done-lbl">✓ 완료</div>';
-      resetBtn = '<button class="cl-reset-btn" data-rm="' + rm + '" onclick="event.stopPropagation(); clSetStatus(this.dataset.rm, '')">↩ 되돌리기</button>';
+      resetBtn = '<button class="cl-reset-btn" data-rm="' + rm + '" onclick="event.stopPropagation(); clResetRoom(this.dataset.rm)">↩ 되돌리기</button>';
     }
     if (type === 'deferred') {
       extra = '<div class="cl-sub cl-def-lbl">대기 중</div>';
-      resetBtn = '<button class="cl-reset-btn" data-rm="' + rm + '" onclick="event.stopPropagation(); clSetStatus(this.dataset.rm, '')">↩ 되돌리기</button>';
+      resetBtn = '<button class="cl-reset-btn" data-rm="' + rm + '" onclick="event.stopPropagation(); clResetRoom(this.dataset.rm)">↩ 되돌리기</button>';
     }
 
     if (type !== 'extended') {
