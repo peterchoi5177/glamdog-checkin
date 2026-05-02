@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
 <meta http-equiv="refresh" content="1800">
 <title>글램독 가평(청평점) 체크인 리스트</title>
-<!-- v2026-05-02 18:40 -->
+<!-- v2026-05-02 18:50 -->
 <style>
   :root {
     --navy: #1B3A5C;
@@ -676,7 +676,7 @@
     <button class="btn-view"        id="btnField" onclick="setView('field')">💰 현장기록</button>
   </div>
   <button class="btn-refresh" id="btnRefresh" onclick="refreshData()">🔄 새로고침</button>
-  <span class="update-time">갱신: 2026-05-02 18:40</span>
+  <span class="update-time">갱신: 2026-05-02 18:50</span>
 </div>
 <div class="content" id="content">
   <div class="print-header" id="printHeader"></div>
@@ -1889,33 +1889,84 @@ const _PW    = "cp@2025";
 const _MPW   = "glamdog2025!";
 const _SK    = "gd_9b592349";
 const _TOKEN = "ac50e3827c7c2afe";  // 본사 자동인증 토큰
+
+function _hideAuthOverlay() {
+  try {
+    const overlay = document.getElementById('pwOverlay');
+    if (overlay) {
+      overlay.style.display = 'none';
+      console.log('[AUTH] Overlay hidden');
+    }
+  } catch (e) {
+    console.error('[AUTH] Error hiding overlay:', e);
+  }
+}
+
 function _checkAuth() {
-  // URL ?auth=TOKEN 이면 자동 인증 (본사에서 열 때)
-  const urlToken = new URLSearchParams(window.location.search).get('auth');
-  if (urlToken === _TOKEN) {
-    sessionStorage.setItem(_SK, _MPW);
-    document.getElementById('pwOverlay').style.display = 'none';
-    return;
-  }
-  const saved = sessionStorage.getItem(_SK);
-  if (saved === _PW || saved === _MPW) {
-    document.getElementById('pwOverlay').style.display = 'none';
+  try {
+    console.log('[AUTH] Starting auth check...');
+
+    // 1. URL ?auth=TOKEN 이면 자동 인증 (본사에서 열 때)
+    const urlToken = new URLSearchParams(window.location.search).get('auth');
+    console.log('[AUTH] URL token:', urlToken, 'Expected:', _TOKEN);
+
+    if (urlToken && urlToken === _TOKEN) {
+      console.log('[AUTH] ✅ Token matched! Saving master password');
+      sessionStorage.setItem(_SK, _MPW);
+      _hideAuthOverlay();
+      return;
+    }
+
+    // 2. sessionStorage에 저장된 비밀번호 확인
+    const saved = sessionStorage.getItem(_SK);
+    console.log('[AUTH] Saved session:', saved ? '(exists)' : '(none)');
+
+    if (saved === _PW || saved === _MPW) {
+      console.log('[AUTH] ✅ Saved password matched!');
+      _hideAuthOverlay();
+    } else {
+      console.log('[AUTH] No auth found, showing overlay');
+      // 에러 메시지 초기 숨김 (명확히 함)
+      const errEl = document.getElementById('pwError');
+      if (errEl) {
+        errEl.style.display = 'none';
+      }
+    }
+  } catch (e) {
+    console.error('[AUTH] Error in _checkAuth:', e);
   }
 }
+
 function _submitPw() {
-  const v = document.getElementById('pwInput').value.trim();
-  if (v === _PW || v === _MPW) {
-    sessionStorage.setItem(_SK, v);
-    document.getElementById('pwOverlay').style.display = 'none';
-    document.getElementById('pwInput').value = '';
-    document.getElementById('pwError').style.display = 'none';  // ← 추가: 성공 시 에러 메시지 숨김
-  } else {
-    document.getElementById('pwError').style.display = 'block';
-    document.getElementById('pwInput').value = '';
-    document.getElementById('pwInput').focus();
+  try {
+    const v = document.getElementById('pwInput').value.trim();
+    console.log('[AUTH] Password entered, checking...');
+
+    if (v === _PW || v === _MPW) {
+      console.log('[AUTH] ✅ Password correct!');
+      sessionStorage.setItem(_SK, v);
+      document.getElementById('pwInput').value = '';
+      const errEl = document.getElementById('pwError');
+      if (errEl) errEl.style.display = 'none';
+      _hideAuthOverlay();
+    } else {
+      console.log('[AUTH] ❌ Password incorrect');
+      const errEl = document.getElementById('pwError');
+      if (errEl) errEl.style.display = 'block';
+      document.getElementById('pwInput').value = '';
+      document.getElementById('pwInput').focus();
+    }
+  } catch (e) {
+    console.error('[AUTH] Error in _submitPw:', e);
   }
 }
-_checkAuth();
+
+// 페이지 로드 후 인증 확인
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', _checkAuth);
+} else {
+  _checkAuth();
+}
 
 // 기본 뷰: 체크인 리스트
 </script>
