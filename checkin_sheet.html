@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
 <meta http-equiv="refresh" content="1800">
 <title>글램독 체크인 리스트 (본사)</title>
-<!-- v2026-05-02 09:42 -->
+<!-- v2026-05-02 16:56 -->
 <style>
   :root {
     --navy: #1B3A5C;
@@ -459,6 +459,79 @@
   .fr-subtotal { text-align: right; font-size: 14px; font-weight: 700; color: var(--navy); padding: 10px 0; }
   .fr-empty { text-align: center; color: #aaa; padding: 50px; font-size: 14px; }
 
+  /* ── 청소현황 탭 (모바일 최적화) ── */
+  .cl-wrap { padding: 12px 12px 80px; }
+  /* 상단 바 */
+  .cl-topbar { display:flex; justify-content:space-between; align-items:center;
+    margin-bottom:12px; }
+  .cl-title { font-size:15px; font-weight:700; color:var(--navy); }
+  .cl-sync { font-size:11px; color:#999; display:flex; align-items:center; gap:4px; }
+  .cl-reload-btn { background:none; border:none; font-size:14px; cursor:pointer;
+    color:#888; padding:0 2px; line-height:1; }
+  /* 섹션 */
+  .cl-sec { margin-bottom:18px; }
+  .cl-sec-hd { display:flex; align-items:center; gap:6px;
+    font-size:14px; font-weight:700; padding:6px 0 5px;
+    border-bottom:2px solid #ddd; margin-bottom:8px; }
+  .cl-hd-need     { border-color:#e53935; color:#c62828; }
+  .cl-hd-extended { border-color:#1976d2; color:#1565c0; }
+  .cl-hd-deferred { border-color:#f57c00; color:#e65100; }
+  .cl-hd-done     { border-color:#388e3c; color:#2e7d32; }
+  .cl-cnt { font-size:11px; font-weight:600; padding:2px 6px;
+    border-radius:10px; background:#eee; color:#666; margin-left:2px; }
+  .cl-hd-need     .cl-cnt { background:#ffebee; color:#c62828; }
+  .cl-hd-extended .cl-cnt { background:#e3f2fd; color:#1565c0; }
+  .cl-hd-deferred .cl-cnt { background:#fff3e0; color:#e65100; }
+  .cl-hd-done     .cl-cnt { background:#e8f5e9; color:#2e7d32; }
+  .cl-hint { font-size:11px; color:#aaa; font-style:italic; margin-bottom:8px; }
+  .cl-fl-lbl { font-size:11px; font-weight:700; color:#bbb;
+    letter-spacing:.5px; margin:8px 0 5px; }
+  /* 카드 그리드 - 모바일에서 큼직하게 */
+  .cl-grid { display:grid;
+    grid-template-columns:repeat(auto-fill,minmax(100px,1fr)); gap:8px; }
+  .cl-card { border-radius:10px; padding:14px 10px; text-align:center;
+    cursor:pointer; border:2px solid transparent;
+    transition:all .12s; user-select:none; -webkit-user-select:none; }
+  .cl-need     { background:#fff5f5; border-color:#ffcdd2; }
+  .cl-need:active { background:#ffebee; transform:scale(.97); }
+  .cl-extended { background:#f0f7ff; border-color:#bbdefb; cursor:default; }
+  .cl-deferred { background:#fff8f0; border-color:#ffe0b2; }
+  .cl-deferred:active { background:#fff3e0; transform:scale(.97); }
+  .cl-done     { background:#f1f8f1; border-color:#a5d6a7; opacity:.75; }
+  .cl-done:active { background:#e8f5e9; transform:scale(.97); }
+  .cl-rn { font-size:14px; font-weight:700; color:#1B3A5C; }
+  .cl-sub { font-size:11px; color:#888; margin-top:4px; }
+  .cl-done-lbl { color:#388e3c; font-weight:700; }
+  .cl-def-lbl  { color:#e65100; font-weight:700; }
+  .cl-none { font-size:12px; color:#bbb; padding:8px 0; }
+  /* 인쇄용 3단 레이아웃 (화면에서는 숨김) */
+  .cl-print-wrap { display:none; }
+  @media print {
+    #cleanSection { display:block !important; }
+    .cl-topbar, .cl-sec, .cl-hint, .cl-reload-btn { display:none !important; }
+    .cl-print-wrap {
+      display:grid; grid-template-columns:1fr 1fr 1fr;
+      width:100%; gap:0; page-break-inside:avoid;
+    }
+    .cl-print-col {
+      padding:6px 8px; border-right:1px dashed #aaa; font-size:10px;
+    }
+    .cl-print-col:last-child { border-right:none; }
+    .cl-print-hd { font-size:11px; font-weight:700; color:#1B3A5C;
+      border-bottom:1.5px solid #1B3A5C; padding-bottom:4px; margin-bottom:6px; }
+    .cl-print-sec-lbl { font-size:10px; font-weight:700; color:#444;
+      margin:5px 0 3px; }
+    .cl-print-row { display:flex; align-items:center; gap:4px;
+      padding:2px 0; border-bottom:0.5px solid #eee; line-height:1.4; }
+    .cl-print-done { color:#aaa; text-decoration:line-through; }
+    .cl-print-ext  { color:#1565c0; }
+    .cl-print-chk  { font-size:12px; flex-shrink:0; }
+    .cl-print-rm   { font-weight:600; }
+    .cl-print-tag  { font-size:9px; background:#fff3e0; color:#e65100;
+      padding:1px 4px; border-radius:4px; margin-left:auto; }
+    .cl-print-none { color:#bbb; font-size:9px; }
+  }
+
   /* ── 새로고침 버튼 ── */
   .btn-refresh {
     padding: 5px 12px; border-radius: 4px; font-size: 12px; font-weight: 600;
@@ -531,7 +604,7 @@
     <option value="">🏠 예약현황 (지점 선택)</option>
     <option value="cl_6a85a13087.html">가평(가평점)</option><option value="cl_806a86626b.html">가평(청평점)</option><option value="cl_8eacf6d6c1.html">경주</option><option value="cl_a88bfd0a7f.html">영흥도</option><option value="cl_9edad9ddd2.html">양양</option><option value="cl_d3039f7a59.html">통영</option>
   </select>
-  <span class="update-time">갱신: 2026-05-02 09:42</span>
+  <span class="update-time">갱신: 2026-05-02 16:56</span>
 </div>
 <div class="tabs" id="tabs"></div>
 <div class="content" id="content">
@@ -865,19 +938,23 @@ let currentView = 'list'; // 'list' or 'calendar'
 
 function setView(v) {
   currentView = v;
-  ['btnList','btnCal','btnRes','btnField'].forEach(id => {
+  ['btnList','btnCal','btnRes','btnClean','btnField'].forEach(id => {
     const el = document.getElementById(id);
     if (el) el.classList.remove('active');
   });
-  const activeBtn = {list:'btnList', calendar:'btnCal', rescal:'btnRes', field:'btnField'}[v];
+  const activeBtn = {list:'btnList', calendar:'btnCal', rescal:'btnRes', clean:'btnClean', field:'btnField'}[v];
   if (activeBtn && document.getElementById(activeBtn))
     document.getElementById(activeBtn).classList.add('active');
 
   document.getElementById('listSection').style.display  = v === 'list'     ? '' : 'none';
   document.getElementById('calSection').style.display   = v === 'calendar' ? '' : 'none';
   const resEl   = document.getElementById('resCalSection');
+  const cleanEl = document.getElementById('cleanSection');
   const fieldEl = document.getElementById('fieldDashSection');
   if (resEl)   resEl.style.display   = v === 'rescal' ? '' : 'none';
+  if (cleanEl) cleanEl.style.display = v === 'clean'  ? '' : 'none';
+  var clPrintBar = document.getElementById('clPrintBar');
+  if (clPrintBar) clPrintBar.style.display = v === 'clean' ? 'flex' : 'none';
   if (fieldEl) fieldEl.style.display = v === 'field'  ? '' : 'none';
 
   if (v === 'calendar') renderCalendar();
@@ -885,6 +962,7 @@ function setView(v) {
   if (v === 'list') {
     if (typeof renderAll === 'function') renderAll(); else renderTable();
   }
+  if (v === 'clean') { clLoadStatus(renderCleaningView); }
   if (v === 'field') { initFieldDash(); }
 }
 

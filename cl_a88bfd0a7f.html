@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
 <meta http-equiv="refresh" content="1800">
 <title>글램독 영흥도 체크인 리스트</title>
-<!-- v2026-05-02 09:42 -->
+<!-- v2026-05-02 16:56 -->
 <style>
   :root {
     --navy: #1B3A5C;
@@ -459,6 +459,79 @@
   .fr-subtotal { text-align: right; font-size: 14px; font-weight: 700; color: var(--navy); padding: 10px 0; }
   .fr-empty { text-align: center; color: #aaa; padding: 50px; font-size: 14px; }
 
+  /* ── 청소현황 탭 (모바일 최적화) ── */
+  .cl-wrap { padding: 12px 12px 80px; }
+  /* 상단 바 */
+  .cl-topbar { display:flex; justify-content:space-between; align-items:center;
+    margin-bottom:12px; }
+  .cl-title { font-size:15px; font-weight:700; color:var(--navy); }
+  .cl-sync { font-size:11px; color:#999; display:flex; align-items:center; gap:4px; }
+  .cl-reload-btn { background:none; border:none; font-size:14px; cursor:pointer;
+    color:#888; padding:0 2px; line-height:1; }
+  /* 섹션 */
+  .cl-sec { margin-bottom:18px; }
+  .cl-sec-hd { display:flex; align-items:center; gap:6px;
+    font-size:14px; font-weight:700; padding:6px 0 5px;
+    border-bottom:2px solid #ddd; margin-bottom:8px; }
+  .cl-hd-need     { border-color:#e53935; color:#c62828; }
+  .cl-hd-extended { border-color:#1976d2; color:#1565c0; }
+  .cl-hd-deferred { border-color:#f57c00; color:#e65100; }
+  .cl-hd-done     { border-color:#388e3c; color:#2e7d32; }
+  .cl-cnt { font-size:11px; font-weight:600; padding:2px 6px;
+    border-radius:10px; background:#eee; color:#666; margin-left:2px; }
+  .cl-hd-need     .cl-cnt { background:#ffebee; color:#c62828; }
+  .cl-hd-extended .cl-cnt { background:#e3f2fd; color:#1565c0; }
+  .cl-hd-deferred .cl-cnt { background:#fff3e0; color:#e65100; }
+  .cl-hd-done     .cl-cnt { background:#e8f5e9; color:#2e7d32; }
+  .cl-hint { font-size:11px; color:#aaa; font-style:italic; margin-bottom:8px; }
+  .cl-fl-lbl { font-size:11px; font-weight:700; color:#bbb;
+    letter-spacing:.5px; margin:8px 0 5px; }
+  /* 카드 그리드 - 모바일에서 큼직하게 */
+  .cl-grid { display:grid;
+    grid-template-columns:repeat(auto-fill,minmax(100px,1fr)); gap:8px; }
+  .cl-card { border-radius:10px; padding:14px 10px; text-align:center;
+    cursor:pointer; border:2px solid transparent;
+    transition:all .12s; user-select:none; -webkit-user-select:none; }
+  .cl-need     { background:#fff5f5; border-color:#ffcdd2; }
+  .cl-need:active { background:#ffebee; transform:scale(.97); }
+  .cl-extended { background:#f0f7ff; border-color:#bbdefb; cursor:default; }
+  .cl-deferred { background:#fff8f0; border-color:#ffe0b2; }
+  .cl-deferred:active { background:#fff3e0; transform:scale(.97); }
+  .cl-done     { background:#f1f8f1; border-color:#a5d6a7; opacity:.75; }
+  .cl-done:active { background:#e8f5e9; transform:scale(.97); }
+  .cl-rn { font-size:14px; font-weight:700; color:#1B3A5C; }
+  .cl-sub { font-size:11px; color:#888; margin-top:4px; }
+  .cl-done-lbl { color:#388e3c; font-weight:700; }
+  .cl-def-lbl  { color:#e65100; font-weight:700; }
+  .cl-none { font-size:12px; color:#bbb; padding:8px 0; }
+  /* 인쇄용 3단 레이아웃 (화면에서는 숨김) */
+  .cl-print-wrap { display:none; }
+  @media print {
+    #cleanSection { display:block !important; }
+    .cl-topbar, .cl-sec, .cl-hint, .cl-reload-btn { display:none !important; }
+    .cl-print-wrap {
+      display:grid; grid-template-columns:1fr 1fr 1fr;
+      width:100%; gap:0; page-break-inside:avoid;
+    }
+    .cl-print-col {
+      padding:6px 8px; border-right:1px dashed #aaa; font-size:10px;
+    }
+    .cl-print-col:last-child { border-right:none; }
+    .cl-print-hd { font-size:11px; font-weight:700; color:#1B3A5C;
+      border-bottom:1.5px solid #1B3A5C; padding-bottom:4px; margin-bottom:6px; }
+    .cl-print-sec-lbl { font-size:10px; font-weight:700; color:#444;
+      margin:5px 0 3px; }
+    .cl-print-row { display:flex; align-items:center; gap:4px;
+      padding:2px 0; border-bottom:0.5px solid #eee; line-height:1.4; }
+    .cl-print-done { color:#aaa; text-decoration:line-through; }
+    .cl-print-ext  { color:#1565c0; }
+    .cl-print-chk  { font-size:12px; flex-shrink:0; }
+    .cl-print-rm   { font-weight:600; }
+    .cl-print-tag  { font-size:9px; background:#fff3e0; color:#e65100;
+      padding:1px 4px; border-radius:4px; margin-left:auto; }
+    .cl-print-none { color:#bbb; font-size:9px; }
+  }
+
   /* ── 새로고침 버튼 ── */
   .btn-refresh {
     padding: 5px 12px; border-radius: 4px; font-size: 12px; font-weight: 600;
@@ -566,10 +639,11 @@
     <button class="btn-view active" id="btnList"  onclick="setView('list')">📋 체크인 리스트</button>
     <button class="btn-view"        id="btnCal"   onclick="setView('calendar')">📅 월별 달력</button>
     <button class="btn-view"        id="btnRes"   onclick="setView('rescal')">🏠 예약현황</button>
+    <button class="btn-view"        id="btnClean" onclick="setView('clean')">🧹 청소현황</button>
     <button class="btn-view"        id="btnField" onclick="setView('field')">💰 현장기록</button>
   </div>
   <button class="btn-refresh" id="btnRefresh" onclick="refreshData()">🔄 새로고침</button>
-  <span class="update-time">갱신: 2026-05-02 09:42</span>
+  <span class="update-time">갱신: 2026-05-02 16:56</span>
 </div>
 <div class="content" id="content">
   <div class="print-header" id="printHeader"></div>
@@ -597,6 +671,15 @@
     </div>
     <div class="rescal-scroll" id="resCalScroll">
       <div class="rescal-grid" id="resCalGrid"></div>
+    </div>
+  </div>
+  <!-- 청소현황 탭 -->
+  <div id="cleanSection" class="cl-wrap" style="display:none">
+    <div id="cleanArea"></div>
+    <div id="clPrintBar" style="display:none;position:sticky;bottom:0;background:white;
+      border-top:2px solid var(--border);padding:10px 16px;gap:10px;align-items:center;">
+      <button class="btn-print" onclick="window.print()">🖨️ 청소현황 인쇄 (3등분)</button>
+      <span class="print-tip">A4 세로 출력 후 절취선에서 잘라 사용하세요.</span>
     </div>
   </div>
   <!-- 현장기록 탭 -->
@@ -902,6 +985,7 @@ document.getElementById('datePicker').addEventListener('change', e => {
   currentDate = e.target.value;
   loadWelcomeData(currentDate);
   loadTodayFieldEntries();
+  if (currentView === 'clean') { _clStatus = {}; clLoadStatus(renderCleaningView); }
 });
 setTimeout(() => location.reload(), 30 * 60 * 1000);
 
@@ -911,19 +995,23 @@ let currentView = 'list'; // 'list' or 'calendar'
 
 function setView(v) {
   currentView = v;
-  ['btnList','btnCal','btnRes','btnField'].forEach(id => {
+  ['btnList','btnCal','btnRes','btnClean','btnField'].forEach(id => {
     const el = document.getElementById(id);
     if (el) el.classList.remove('active');
   });
-  const activeBtn = {list:'btnList', calendar:'btnCal', rescal:'btnRes', field:'btnField'}[v];
+  const activeBtn = {list:'btnList', calendar:'btnCal', rescal:'btnRes', clean:'btnClean', field:'btnField'}[v];
   if (activeBtn && document.getElementById(activeBtn))
     document.getElementById(activeBtn).classList.add('active');
 
   document.getElementById('listSection').style.display  = v === 'list'     ? '' : 'none';
   document.getElementById('calSection').style.display   = v === 'calendar' ? '' : 'none';
   const resEl   = document.getElementById('resCalSection');
+  const cleanEl = document.getElementById('cleanSection');
   const fieldEl = document.getElementById('fieldDashSection');
   if (resEl)   resEl.style.display   = v === 'rescal' ? '' : 'none';
+  if (cleanEl) cleanEl.style.display = v === 'clean'  ? '' : 'none';
+  var clPrintBar = document.getElementById('clPrintBar');
+  if (clPrintBar) clPrintBar.style.display = v === 'clean' ? 'flex' : 'none';
   if (fieldEl) fieldEl.style.display = v === 'field'  ? '' : 'none';
 
   if (v === 'calendar') renderCalendar();
@@ -931,6 +1019,7 @@ function setView(v) {
   if (v === 'list') {
     if (typeof renderAll === 'function') renderAll(); else renderTable();
   }
+  if (v === 'clean') { clLoadStatus(renderCleaningView); }
   if (v === 'field') { initFieldDash(); }
 }
 
@@ -1418,6 +1507,261 @@ function showToast(msg) {
   el.classList.add('show');
   setTimeout(function() { el.classList.remove('show'); }, 3000);
 }
+
+// ─── 청소현황 탭 ─────────────────────────────────────────
+// 상태값: 'done'(완료) | 'deferred'(청소대기) | 없음(청소 필요)
+var _clStatus = {};       // {room: 'done'|'deferred'} — GAS에서 로드
+var _clPolling = null;
+
+function getRoomFloor(room) {
+  var m = room.match(/(\d+)/);
+  if (!m) return '기타';
+  var num = parseInt(m[1]);
+  return num >= 100 ? Math.floor(num / 100) + '층' : num + '층';
+}
+
+// GAS에서 상태 로드
+function clLoadStatus(callback) {
+  fetch(GAS_ENDPOINT + '?action=getCleaningStatus'
+    + '&date=' + currentDate
+    + '&branch=' + encodeURIComponent(currentBranch))
+    .then(function(r) { return r.json(); })
+    .then(function(res) {
+      if (res && res.ok) { _clStatus = res.data || {}; }
+      if (callback) callback();
+    })
+    .catch(function() { if (callback) callback(); });
+}
+
+// GAS에 상태 저장 후 즉시 재렌더
+function clSetStatus(room, status) {
+  // 낙관적 업데이트: 즉시 화면 반영
+  if (status === null) {
+    delete _clStatus[room];
+  } else {
+    _clStatus[room] = status;
+  }
+  renderCleaningView();
+  // GAS 저장
+  var body = JSON.stringify({
+    action: 'setCleaningStatus',
+    date: currentDate,
+    branch: currentBranch,
+    room: room,
+    status: status || ''
+  });
+  fetch(GAS_ENDPOINT, { method:'POST', body:body })
+    .catch(function() { showToast('저장 실패 — 재시도해주세요'); });
+}
+
+// 탭: 청소 필요 → 완료 → 청소 필요 (토글)
+function clToggleDone(room) {
+  var cur = _clStatus[room];
+  if (cur === 'done') {
+    clSetStatus(room, null);
+    showToast(room + ' ← 청소 필요로 복귀');
+  } else {
+    clSetStatus(room, 'done');
+    showToast(room + ' ✓ 완료');
+  }
+}
+
+// 길게 누르기: 청소대기 토글
+var _clLongPressTimer = null;
+function clLongPressStart(room) {
+  _clLongPressTimer = setTimeout(function() {
+    _clLongPressTimer = null;
+    var cur = _clStatus[room];
+    if (cur === 'deferred') {
+      clSetStatus(room, null);
+      showToast(room + ' ← 청소 필요로 복귀');
+    } else {
+      clSetStatus(room, 'deferred');
+      showToast(room + ' → 청소대기');
+    }
+  }, 600);
+}
+function clLongPressEnd() {
+  if (_clLongPressTimer) { clearTimeout(_clLongPressTimer); _clLongPressTimer = null; }
+}
+
+function clGroupByFloor(rooms) {
+  var floors = {};
+  rooms.forEach(function(room) {
+    var fl = getRoomFloor(room);
+    if (!floors[fl]) floors[fl] = [];
+    floors[fl].push(room);
+  });
+  return floors;
+}
+
+function renderCleaningView() {
+  var today = currentDate;
+
+  // 퇴실 (오늘 체크아웃), 방막기 제외
+  var checkoutRecs = ALL_RECORDS.filter(function(r) {
+    return !r.is_block && r.checkout === today;
+  });
+  // 연박 (어제 이전 체크인 + 내일 이후 퇴실)
+  var extRecs = ALL_RECORDS.filter(function(r) {
+    return !r.is_block && r.checkin < today && r.checkout > today;
+  });
+
+  // 연속예약 감지: 오늘 체크아웃 + 같은 방·같은 게스트가 오늘 체크인
+  var checkinToday = ALL_RECORDS.filter(function(r) {
+    return !r.is_block && r.checkin === today;
+  });
+  var consecRooms = {};
+  checkoutRecs.forEach(function(r) {
+    if (checkinToday.some(function(c) {
+      return c.room === r.room && (c.phone === r.phone || c.guest === r.guest);
+    })) { consecRooms[r.room] = true; }
+  });
+
+  // 실제 퇴실 방 목록 (연속예약 제외), 중복 제거
+  var checkoutRooms = [];
+  var seen = {};
+  checkoutRecs.forEach(function(r) {
+    if (!consecRooms[r.room] && !seen[r.room]) { seen[r.room]=true; checkoutRooms.push(r.room); }
+  });
+
+  // 연박 방 목록 (연속예약 포함), 중복 제거
+  var extRooms = [];
+  seen = {};
+  extRecs.forEach(function(r) {
+    if (!seen[r.room]) { seen[r.room]=true; extRooms.push(r.room); }
+  });
+  Object.keys(consecRooms).forEach(function(room) {
+    if (!seen[room]) { seen[room]=true; extRooms.push(room); }
+  });
+
+  // 상태별 분류
+  var needClean = checkoutRooms.filter(function(rm) { return !_clStatus[rm]; });
+  var doneRooms = checkoutRooms.filter(function(rm) { return _clStatus[rm] === 'done'; });
+  var deferRooms= checkoutRooms.filter(function(rm) { return _clStatus[rm] === 'deferred'; });
+
+  // 층별 그룹 + 정렬 헬퍼
+  function byFloor(rooms) {
+    var floors = {};
+    rooms.forEach(function(rm) {
+      var fl = getRoomFloor(rm);
+      if (!floors[fl]) floors[fl] = [];
+      floors[fl].push(rm);
+    });
+    Object.keys(floors).forEach(function(fl) {
+      floors[fl].sort(function(a,b){ return roomSortCmp(a,b); });
+    });
+    return floors;
+  }
+  function floorsSorted(obj) {
+    return Object.keys(obj).sort(function(a,b){ return parseInt(a)-parseInt(b); });
+  }
+
+  // 카드 HTML — 고객 이름 없음 (개인정보 보호)
+  function makeCard(rm, type) {
+    var extra = '';
+    if (type === 'extended') {
+      var extRec = extRecs.find(function(r){ return r.room===rm; })
+                || checkoutRecs.find(function(r){ return r.room===rm; });
+      if (extRec) {
+        var diff = Math.round((new Date(extRec.checkout+'T00:00:00') - new Date(today+'T00:00:00')) / 86400000);
+        extra = '<div class="cl-sub">퇴실까지 ' + diff + '일</div>';
+      }
+    }
+    if (type === 'done')     extra = '<div class="cl-sub cl-done-lbl">✓ 완료</div>';
+    if (type === 'deferred') extra = '<div class="cl-sub cl-def-lbl">대기 중</div>';
+
+    var events = '';
+    if (type !== 'extended') {
+      events = ' ontouchstart="clLongPressStart('' + rm + '')" ontouchend="clLongPressEnd()"'
+             + ' onmousedown="clLongPressStart('' + rm + '')" onmouseup="clLongPressEnd()"'
+             + ' onclick="clToggleDone('' + rm + '')"';
+    }
+    return '<div class="cl-card cl-' + type + '"' + events + '>'
+         + '<div class="cl-rn">' + rm + '</div>' + extra + '</div>';
+  }
+
+  function makeSection(title, icon, rooms, type, hint) {
+    var cls = type;
+    var html = '<div class="cl-sec">'
+             + '<div class="cl-sec-hd cl-hd-' + cls + '">'
+             + icon + ' ' + title
+             + ' <span class="cl-cnt">' + rooms.length + '</span></div>';
+    if (hint) html += '<div class="cl-hint">' + hint + '</div>';
+    if (rooms.length === 0) {
+      html += '<div class="cl-none">없음</div>';
+    } else {
+      var floors = byFloor(rooms);
+      floorsSorted(floors).forEach(function(fl) {
+        html += '<div class="cl-fl-lbl">' + fl + '</div><div class="cl-grid">';
+        floors[fl].forEach(function(rm) { html += makeCard(rm, type); });
+        html += '</div>';
+      });
+    }
+    return html + '</div>';
+  }
+
+  var dateObj = new Date(today+'T00:00:00');
+  var dateKo  = dateObj.getFullYear()+'년 '+(dateObj.getMonth()+1)+'월 '+dateObj.getDate()+'일';
+  var lastSync = new Date().toLocaleTimeString('ko-KR',{hour:'2-digit',minute:'2-digit'});
+
+  var html = '<div class="cl-topbar">'
+           + '<span class="cl-title">🧹 ' + dateKo + ' 청소현황</span>'
+           + '<span class="cl-sync">갱신 ' + lastSync
+           + ' <button class="cl-reload-btn" onclick="clReload()">↺</button></span>'
+           + '</div>';
+
+  html += makeSection('청소 필요', '🔴', needClean, 'need',
+                      '탭 → 완료 &nbsp;|&nbsp; 길게 누르기 → 청소대기');
+  html += makeSection('연박 · 청소 불필요', '🔵', extRooms, 'extended', '');
+  html += makeSection('청소대기', '🟡', deferRooms, 'deferred',
+                      '길게 누르기 → 청소 필요로 복귀');
+  html += makeSection('완료', '✅', doneRooms, 'done',
+                      '탭 → 청소 필요로 복귀');
+
+  // 인쇄용 3단 레이아웃 (화면에서는 숨김)
+  function makePrintCol() {
+    var ph = '<div class="cl-print-col">'
+           + '<div class="cl-print-hd">영흥도 · ' + dateKo + ' 청소현황</div>';
+    ph += '<div class="cl-print-sec-lbl">▣ 퇴실 · 청소 필요 (' + checkoutRooms.length + ')</div>';
+    checkoutRooms.sort(roomSortCmp).forEach(function(rm) {
+      var st = _clStatus[rm];
+      ph += '<div class="cl-print-row' + (st==='done'?' cl-print-done':'') + '">'
+          + '<span class="cl-print-chk">' + (st==='done'?'☑':'☐') + '</span>'
+          + '<span class="cl-print-rm">' + rm + '</span>'
+          + (st==='deferred'?'<span class="cl-print-tag">대기</span>':'')
+          + '</div>';
+    });
+    if (checkoutRooms.length === 0) ph += '<div class="cl-print-none">없음</div>';
+    ph += '<div class="cl-print-sec-lbl" style="margin-top:8px">▣ 연박 · 청소 불필요 (' + extRooms.length + ')</div>';
+    extRooms.sort(roomSortCmp).forEach(function(rm) {
+      ph += '<div class="cl-print-row cl-print-ext">  ' + rm + '</div>';
+    });
+    if (extRooms.length === 0) ph += '<div class="cl-print-none">없음</div>';
+    return ph + '</div>';
+  }
+  html += '<div class="cl-print-wrap" id="clPrintArea">'
+        + makePrintCol() + makePrintCol() + makePrintCol()
+        + '</div>';
+
+  document.getElementById('cleanArea').innerHTML = html;
+}
+
+// 수동 새로고침
+function clReload() {
+  clLoadStatus(renderCleaningView);
+}
+
+// 자동 폴링 (60초)
+function clStartPolling() {
+  if (_clPolling) clearInterval(_clPolling);
+  _clPolling = setInterval(function() {
+    if (typeof currentView !== 'undefined' && currentView === 'clean') {
+      clLoadStatus(renderCleaningView);
+    }
+  }, 60000);
+}
+clStartPolling();
 
 
 const _PW    = "yh@2025";
