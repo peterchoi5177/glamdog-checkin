@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
 <meta http-equiv="refresh" content="1800">
 <title>글램독 가평(가평점) 체크인 리스트</title>
-<!-- v2026-05-02 17:37 -->
+<!-- v2026-05-02 17:41 -->
 <style>
   :root {
     --navy: #1B3A5C;
@@ -508,6 +508,10 @@
   .cl-done-lbl { color:#388e3c; font-weight:700; }
   .cl-def-lbl  { color:#e65100; font-weight:700; }
   .cl-yon-lbl  { color:#1e40af; font-weight:700; }
+  /* 수동 연박(yeonbak) 카드 스타일 */
+  .cl-card-yeonbak { background:#c7d2fe !important; border-color:#6366f1 !important; }
+  .cl-card-yeonbak .cl-rn { color:#3730a3 !important; }
+  .cl-card-yeonbak .cl-sub { color:#4338ca !important; }
   .cl-none { font-size:12px; color:#bbb; padding:8px 0; }
   /* 인쇄용 3단 레이아웃 (화면에서는 숨김) */
   .cl-print-wrap { display:none; }
@@ -662,7 +666,7 @@
     <button class="btn-view"        id="btnField" onclick="setView('field')">💰 현장기록</button>
   </div>
   <button class="btn-refresh" id="btnRefresh" onclick="refreshData()">🔄 새로고침</button>
-  <span class="update-time">갱신: 2026-05-02 17:37</span>
+  <span class="update-time">갱신: 2026-05-02 17:41</span>
 </div>
 <div class="content" id="content">
   <div class="print-header" id="printHeader"></div>
@@ -1712,8 +1716,8 @@ function renderCleaningView() {
     // 실제 상태에 따른 카드 스타일 업데이트
     var st = _clStatus[rm] || '';
     if (st === 'yeonbak') {
-      cardClass = 'cl-card cl-yeonbak';
-      extra = '<div class="cl-sub cl-yon-lbl">🌙 연박</div>';
+      cardClass = 'cl-card cl-card-yeonbak';
+      extra = '<div class="cl-sub cl-yon-lbl">연박</div>';
     } else if (type === 'extended') {
       var extRec = extRecs.find(function(r){ return r.room===rm; })
                 || checkoutRecs.find(function(r){ return r.room===rm; });
@@ -1767,9 +1771,10 @@ function renderCleaningView() {
 
   html += makeSection('청소 필요', '🔴', needClean, 'need',
                       '탭 → 완료 &nbsp;|&nbsp; 길게 누르기 → 상태변경');
-  html += makeSection('연박', '🌙', yeonbakRooms, 'yeonbak',
-                      '길게 누르기 → 상태변경');
-  html += makeSection('연박 · 청소 불필요', '🔵', extRooms, 'extended', '');
+  // 연박·청소불필요: stayRooms(자동연박) + yeonbakRooms(수동연박) 합쳐서 렌더링
+  var stayRooms = extRooms.filter(function(rm) { return _clStatus[rm] !== 'yeonbak'; });
+  var combinedExtRooms = stayRooms.concat(yeonbakRooms);
+  html += makeSection('연박 · 청소 불필요', '🔵', combinedExtRooms, 'extended', '');
   html += makeSection('청소대기', '🟡', deferRooms, 'deferred',
                       '길게 누르기 → 상태변경');
   html += makeSection('완료', '✅', doneRooms, 'done',
