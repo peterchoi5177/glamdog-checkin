@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
 <meta http-equiv="refresh" content="1800">
 <title>글램독 가평(가평점) 체크인 리스트</title>
-<!-- v2026-05-02 17:31 -->
+<!-- v2026-05-02 17:35 -->
 <style>
   :root {
     --navy: #1B3A5C;
@@ -653,7 +653,7 @@
     <button class="btn-view"        id="btnField" onclick="setView('field')">💰 현장기록</button>
   </div>
   <button class="btn-refresh" id="btnRefresh" onclick="refreshData()">🔄 새로고침</button>
-  <span class="update-time">갱신: 2026-05-02 17:31</span>
+  <span class="update-time">갱신: 2026-05-02 17:35</span>
 </div>
 <div class="content" id="content">
   <div class="print-header" id="printHeader"></div>
@@ -1675,6 +1675,7 @@ function renderCleaningView() {
   var needClean = checkoutRooms.filter(function(rm) { return !_clStatus[rm]; });
   var doneRooms = checkoutRooms.filter(function(rm) { return _clStatus[rm] === 'done'; });
   var deferRooms= checkoutRooms.filter(function(rm) { return _clStatus[rm] === 'deferred'; });
+  var yeonbakRooms = checkoutRooms.filter(function(rm) { return _clStatus[rm] === 'yeonbak'; });
 
   // 층별 그룹 + 정렬 헬퍼
   function byFloor(rooms) {
@@ -1757,6 +1758,8 @@ function renderCleaningView() {
 
   html += makeSection('청소 필요', '🔴', needClean, 'need',
                       '탭 → 완료 &nbsp;|&nbsp; 길게 누르기 → 상태변경');
+  html += makeSection('연박', '🌙', yeonbakRooms, 'yeonbak',
+                      '길게 누르기 → 상태변경');
   html += makeSection('연박 · 청소 불필요', '🔵', extRooms, 'extended', '');
   html += makeSection('청소대기', '🟡', deferRooms, 'deferred',
                       '길게 누르기 → 상태변경');
