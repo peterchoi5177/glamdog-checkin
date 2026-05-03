@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
 <meta http-equiv="refresh" content="1800">
 <title>글램독 양양 체크인 리스트</title>
-<!-- v2026-05-03 20:41 -->
+<!-- v2026-05-03 20:43 -->
 <style>
   :root {
     --navy: #1B3A5C;
@@ -784,7 +784,7 @@ function _submitPw() {
     <button class="btn-view"        id="btnField" onclick="setView('field')">💰 현장기록</button>
   </div>
   <button class="btn-refresh" id="btnRefresh" onclick="refreshData()">🔄 새로고침</button>
-  <span class="update-time">갱신: 2026-05-03 20:41</span>
+  <span class="update-time">갱신: 2026-05-03 20:43</span>
 </div>
 <div class="content" id="content">
   <div class="print-header" id="printHeader"></div>
@@ -1744,30 +1744,6 @@ function clSetTeam(team) {
 // 보기 모드 변경
 function clSetViewMode(mode) {
   _clViewMode = mode;
-  var btns = document.querySelectorAll('.cl-view-btn');
-  btns.forEach(function(btn) {
-    if (btn.getAttribute('data-view') === mode) {
-      btn.classList.add('active');
-    } else {
-      btn.classList.remove('active');
-    }
-  });
-  clLoadStatus(renderCleaningView);
-}
-
-// 보기 모드 변경
-function clSetViewMode(mode) {
-  _clViewMode = mode;
-  var btns = document.querySelectorAll('.cl-view-btn');
-  btns.forEach(function(btn) { if (btn.getAttribute('data-view') === mode) { btn.classList.add('active'); } else { btn.classList.remove('active'); } });
-  clLoadStatus(renderCleaningView);
-}
-
-// 보기 모드 변경
-function clSetViewMode(mode) {
-  _clViewMode = mode;
-  var btns = document.querySelectorAll('.cl-view-btn');
-  btns.forEach(function(btn) { if (btn.getAttribute('data-view') === mode) { btn.classList.add('active'); } else { btn.classList.remove('active'); } });
   clLoadStatus(renderCleaningView);
 }
 
