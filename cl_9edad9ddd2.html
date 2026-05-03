@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
 <meta http-equiv="refresh" content="1800">
 <title>글램독 양양 체크인 리스트</title>
-<!-- v2026-05-03 20:36 -->
+<!-- v2026-05-03 20:41 -->
 <style>
   :root {
     --navy: #1B3A5C;
@@ -784,7 +784,7 @@ function _submitPw() {
     <button class="btn-view"        id="btnField" onclick="setView('field')">💰 현장기록</button>
   </div>
   <button class="btn-refresh" id="btnRefresh" onclick="refreshData()">🔄 새로고침</button>
-  <span class="update-time">갱신: 2026-05-03 20:36</span>
+  <span class="update-time">갱신: 2026-05-03 20:41</span>
 </div>
 <div class="content" id="content">
   <div class="print-header" id="printHeader"></div>
@@ -816,10 +816,6 @@ function _submitPw() {
   </div>
   <!-- 청소현황 탭 -->
   <div id="cleanSection" class="cl-wrap" style="display:none">
-    <div class="cl-view-toggle" id="clViewToggle">
-      <button class="cl-view-btn active" data-view="section" onclick="clSetViewMode('section')">📋 섹션별 보기</button>
-      <button class="cl-view-btn" data-view="team" onclick="clSetViewMode('team')">👥 팀별 보기</button>
-    </div>
     <div id="cleanArea"></div>
     <div id="clPrintBar" style="display:none;position:sticky;bottom:0;background:white;
       border-top:2px solid var(--border);padding:10px 16px;gap:10px;align-items:center;">
@@ -1887,7 +1883,12 @@ function renderTeamView() {
   function makeCard(rm) { var st = getCardStatus(rm); return '<div class="cl-team-card ' + st + '" data-rm="' + rm + '" onclick="clToggleDone(this.dataset.rm)">' + rm + '</div>'; }
   var dateObj = new Date(today+'T00:00:00');
   var dateKo = dateObj.getFullYear()+'년 '+(dateObj.getMonth()+1)+'월 '+dateObj.getDate()+'일';
-  var html = '<div class="cl-topbar"><span class="cl-title">🧹 ' + dateKo + ' 청소현황</span></div>';
+  var viewToggle = '<div class="cl-view-toggle" style="margin-bottom:10px;">'
+    + '<button class="cl-view-btn" onclick="clSetViewMode(\'section\')">📋 섹션별 보기</button>'
+    + '<button class="cl-view-btn active" onclick="clSetViewMode(\'team\')">👥 팀별 보기</button>'
+    + '</div>';
+  var html = viewToggle;
+  html += '<div class="cl-topbar"><span class="cl-title">🧹 ' + dateKo + ' 청소현황</span></div>';
   html += '<div class="cl-team-view">';
   html += '<div class="cl-team-col"><div class="cl-team-col-hd cl-team-1-hd">1팀 (' + team1.length + ')</div><div class="cl-team-col-rooms">';
   team1.forEach(function(rm) { html += makeCard(rm); });
@@ -2082,11 +2083,16 @@ function renderCleaningView() {
   var dateKo  = dateObj.getFullYear()+'년 '+(dateObj.getMonth()+1)+'월 '+dateObj.getDate()+'일';
   var lastSync = new Date().toLocaleTimeString('ko-KR',{hour:'2-digit',minute:'2-digit'});
 
-  var html = '<div class="cl-topbar">'
-           + '<span class="cl-title">🧹 ' + dateKo + ' 청소현황</span>'
-           + '<span class="cl-sync">갱신 ' + lastSync
-           + ' <button class="cl-reload-btn" onclick="clReload()">↺</button></span>'
-           + '</div>';
+  var viewToggle = '<div class="cl-view-toggle" style="margin-bottom:10px;">'
+    + '<button class="cl-view-btn' + (_clViewMode==='section' ? ' active' : '') + '" onclick="clSetViewMode(\'section\')">📋 섹션별 보기</button>'
+    + '<button class="cl-view-btn' + (_clViewMode==='team' ? ' active' : '') + '" onclick="clSetViewMode(\'team\')">👥 팀별 보기</button>'
+    + '</div>';
+  var html = viewToggle;
+  html += '<div class="cl-topbar">'
+        + '<span class="cl-title">🧹 ' + dateKo + ' 청소현황</span>'
+        + '<span class="cl-sync">갱신 ' + lastSync
+        + ' <button class="cl-reload-btn" onclick="clReload()">↺</button></span>'
+        + '</div>';
 
   html += makeSection('청소 필요', '🔴', needClean.concat(blockNeedCleanRooms), 'need',
                       '탭 → 완료 &nbsp;|&nbsp; 길게 누르기 → 상태변경', guestMap);
