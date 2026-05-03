@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
 <meta http-equiv="refresh" content="1800">
 <title>글램독 경주 체크인 리스트</title>
-<!-- v2026-05-03 20:11 -->
+<!-- v2026-05-03 20:16 -->
 <style>
   :root {
     --navy: #1B3A5C;
@@ -755,7 +755,7 @@ function _submitPw() {
     <button class="btn-view"        id="btnField" onclick="setView('field')">💰 현장기록</button>
   </div>
   <button class="btn-refresh" id="btnRefresh" onclick="refreshData()">🔄 새로고침</button>
-  <span class="update-time">갱신: 2026-05-03 20:11</span>
+  <span class="update-time">갱신: 2026-05-03 20:16</span>
 </div>
 <div class="content" id="content">
   <div class="print-header" id="printHeader"></div>
@@ -808,10 +808,10 @@ function _submitPw() {
     <div id="clTeamMenu" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;z-index:9999;background:rgba(0,0,0,0.4);" onclick="clTeamMenuClose()">
       <div style="position:absolute;bottom:0;left:0;right:0;background:#fff;border-radius:16px 16px 0 0;padding:16px;" onclick="event.stopPropagation()">
         <div style="text-align:center;font-weight:bold;font-size:15px;margin-bottom:14px;color:#555;" id="clTeamMenuRoom"></div>
-        <button onclick="clSetTeam(document.getElementById('clTeamMenu').dataset.room, 1)" style="width:100%;padding:14px;margin-bottom:8px;border:2px solid #2D5F8A;border-radius:10px;background:#eff6ff;font-size:16px;font-weight:bold;color:#1e40af;">🔵 1팀 (파란색)</button>
-        <button onclick="clSetTeam(document.getElementById('clTeamMenu').dataset.room, 2)" style="width:100%;padding:14px;margin-bottom:8px;border:2px solid #10b981;border-radius:10px;background:#ecfdf5;font-size:16px;font-weight:bold;color:#065f46;">🟢 2팀 (초록색)</button>
-        <button onclick="clSetTeam(document.getElementById('clTeamMenu').dataset.room, 3)" style="width:100%;padding:14px;margin-bottom:8px;border:2px solid #E8740C;border-radius:10px;background:#fff5e6;font-size:16px;font-weight:bold;color:#92400e;">🟠 3팀 (주황색)</button>
-        <button onclick="clSetTeam(document.getElementById('clTeamMenu').dataset.room, null)" style="width:100%;padding:14px;margin-bottom:8px;border:2px solid #aaa;border-radius:10px;background:#f0f0f0;font-size:16px;font-weight:bold;color:#666;">⚪ 미배정</button>
+        <button onclick="clSetTeam(1)" style="width:100%;padding:14px;margin-bottom:8px;border:2px solid #2D5F8A;border-radius:10px;background:#eff6ff;font-size:16px;font-weight:bold;color:#1e40af;">🔵 1팀</button>
+        <button onclick="clSetTeam(2)" style="width:100%;padding:14px;margin-bottom:8px;border:2px solid #10b981;border-radius:10px;background:#ecfdf5;font-size:16px;font-weight:bold;color:#065f46;">🟢 2팀</button>
+        <button onclick="clSetTeam(3)" style="width:100%;padding:14px;margin-bottom:8px;border:2px solid #E8740C;border-radius:10px;background:#fff5e6;font-size:16px;font-weight:bold;color:#92400e;">🟠 3팀</button>
+        <button onclick="clSetTeam(null)" style="width:100%;padding:14px;margin-bottom:8px;border:2px solid #aaa;border-radius:10px;background:#f0f0f0;font-size:16px;font-weight:bold;color:#666;">⚪ 미배정</button>
         <button onclick="clTeamMenuClose()" style="width:100%;padding:12px;border:1px solid #ddd;border-radius:10px;background:#f9fafb;font-size:15px;color:#666;">취소</button>
       </div>
     </div>
@@ -1694,23 +1694,25 @@ function clSaveTeam(room, team) {
   renderCleaningView();
 }
 
-// 팀 설정
-function clSetTeam(room, team) {
-  clSaveTeam(room, team);
-  clTeamMenuClose();
-}
+var _clTeamMenuRoom = null;
 
 // 팀 선택 팝업 보기
-function clShowTeamMenu(room, event) {
-  event.stopPropagation();
-  document.getElementById('clTeamMenuRoom').textContent = room;
-  document.getElementById('clTeamMenu').dataset.room = room;
+function clShowTeamMenu(room) {
+  _clTeamMenuRoom = room;
+  document.getElementById('clTeamMenuRoom').textContent = room + ' 팀 배정';
   document.getElementById('clTeamMenu').style.display = 'block';
+}
+
+// 팀 설정
+function clSetTeam(team) {
+  if (_clTeamMenuRoom) clSaveTeam(_clTeamMenuRoom, team);
+  clTeamMenuClose();
 }
 
 // 팀 선택 팝업 닫기
 function clTeamMenuClose() {
   document.getElementById('clTeamMenu').style.display = 'none';
+  _clTeamMenuRoom = null;
 }
 
 // GAS에 상태 저장 후 즉시 재렌더
@@ -1942,16 +1944,9 @@ function renderCleaningView() {
 
     // 팀 배지 버튼 추가
     var teamNum = _clTeam[rm] || null;
-    var teamBadgeHtml = '';
-    if (teamNum === 1) {
-      teamBadgeHtml = '<button class="cl-team-badge cl-team-1" onclick="clShowTeamMenu(this.parentElement.querySelector(' + "'.cl-rn'" + ').textContent, event)" style="background:#2D5F8A;color:white;">1팀</button>';
-    } else if (teamNum === 2) {
-      teamBadgeHtml = '<button class="cl-team-badge cl-team-2" onclick="clShowTeamMenu(this.parentElement.querySelector(' + "'.cl-rn'" + ').textContent, event)" style="background:#10b981;color:white;">2팀</button>';
-    } else if (teamNum === 3) {
-      teamBadgeHtml = '<button class="cl-team-badge cl-team-3" onclick="clShowTeamMenu(this.parentElement.querySelector(' + "'.cl-rn'" + ').textContent, event)" style="background:#E8740C;color:white;">3팀</button>';
-    } else {
-      teamBadgeHtml = '<button class="cl-team-badge cl-team-none" onclick="clShowTeamMenu(this.parentElement.querySelector(' + "'.cl-rn'" + ').textContent, event)" style="background:#999;color:white;">팀</button>';
-    }
+    var teamLabel = teamNum ? teamNum + '팀' : '팀';
+    var teamBg = teamNum === 1 ? '#2D5F8A' : teamNum === 2 ? '#10b981' : teamNum === 3 ? '#E8740C' : '#bbb';
+    var teamBadgeHtml = '<button class="cl-team-badge" data-rm="' + rm + '" onclick="event.stopPropagation();clShowTeamMenu(this.dataset.rm)" style="background:' + teamBg + ';color:white;">' + teamLabel + '</button>';
 
     return '<div class="' + cardClass + '"' + events + '>'
          + '<div class="cl-rn">' + rm + '</div>'
