@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
 <meta http-equiv="refresh" content="1800">
 <title>글램독 경주 체크인 리스트</title>
-<!-- v2026-05-03 20:04 -->
+<!-- v2026-05-03 20:11 -->
 <style>
   :root {
     --navy: #1B3A5C;
@@ -516,14 +516,28 @@
   .cl-card-yeonbak { background:#c7d2fe !important; border-color:#6366f1 !important; }
   .cl-card-yeonbak .cl-rn { color:#3730a3 !important; }
   .cl-card-yeonbak .cl-sub { color:#4338ca !important; }
+  /* 팀 배지 버튼 */
+  .cl-team-badge {{
+    display:inline-block; padding:3px 8px; margin:2px;
+    border-radius:5px; font-size:10px; font-weight:bold;
+    border:none; cursor:pointer; transition:all .12s;
+  }}
+  .cl-team-1 {{ background:#2D5F8A; color:white; }}
+  .cl-team-1:active {{ background:#1a3a52; transform:scale(.95); }}
+  .cl-team-2 {{ background:#10b981; color:white; }}
+  .cl-team-2:active {{ background:#059669; transform:scale(.95); }}
+  .cl-team-3 {{ background:#E8740C; color:white; }}
+  .cl-team-3:active {{ background:#c25d03; transform:scale(.95); }}
+  .cl-team-none {{ background:#999; color:white; }}
+  .cl-team-none:active {{ background:#666; transform:scale(.95); }}
   /* 되돌리기 버튼 */
-  .cl-reset-btn {
+  .cl-reset-btn {{
     display:block; width:100%; margin-top:8px; padding:4px 0;
     border:1px solid rgba(0,0,0,0.15); border-radius:6px;
     background:rgba(255,255,255,0.6); font-size:11px; color:#555;
     cursor:pointer; text-align:center; transition:all .12s;
-  }
-  .cl-reset-btn:active { background:rgba(0,0,0,0.1); }
+  }}
+  .cl-reset-btn:active {{ background:rgba(0,0,0,0.1); }}
   .cl-none { font-size:12px; color:#bbb; padding:8px 0; }
   /* 인쇄용 3단 레이아웃 (화면에서는 숨김) */
   .cl-print-wrap { display:none; }
@@ -741,7 +755,7 @@ function _submitPw() {
     <button class="btn-view"        id="btnField" onclick="setView('field')">💰 현장기록</button>
   </div>
   <button class="btn-refresh" id="btnRefresh" onclick="refreshData()">🔄 새로고침</button>
-  <span class="update-time">갱신: 2026-05-03 20:04</span>
+  <span class="update-time">갱신: 2026-05-03 20:11</span>
 </div>
 <div class="content" id="content">
   <div class="print-header" id="printHeader"></div>
@@ -788,6 +802,17 @@ function _submitPw() {
         <button onclick="clMenuSelect('deferred')" style="width:100%;padding:14px;margin-bottom:8px;border:2px solid #f59e0b;border-radius:10px;background:#fffbeb;font-size:16px;font-weight:bold;color:#92400e;">⏸ 청소대기</button>
         <button onclick="clMenuSelect('yeonbak')" style="width:100%;padding:14px;margin-bottom:8px;border:2px solid #3b82f6;border-radius:10px;background:#eff6ff;font-size:16px;font-weight:bold;color:#1e40af;">🌙 연박</button>
         <button onclick="clMenuClose()" style="width:100%;padding:12px;border:1px solid #ddd;border-radius:10px;background:#f9fafb;font-size:15px;color:#666;">취소</button>
+      </div>
+    </div>
+    <!-- 팀 선택 팝업 메뉴 -->
+    <div id="clTeamMenu" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;z-index:9999;background:rgba(0,0,0,0.4);" onclick="clTeamMenuClose()">
+      <div style="position:absolute;bottom:0;left:0;right:0;background:#fff;border-radius:16px 16px 0 0;padding:16px;" onclick="event.stopPropagation()">
+        <div style="text-align:center;font-weight:bold;font-size:15px;margin-bottom:14px;color:#555;" id="clTeamMenuRoom"></div>
+        <button onclick="clSetTeam(document.getElementById('clTeamMenu').dataset.room, 1)" style="width:100%;padding:14px;margin-bottom:8px;border:2px solid #2D5F8A;border-radius:10px;background:#eff6ff;font-size:16px;font-weight:bold;color:#1e40af;">🔵 1팀 (파란색)</button>
+        <button onclick="clSetTeam(document.getElementById('clTeamMenu').dataset.room, 2)" style="width:100%;padding:14px;margin-bottom:8px;border:2px solid #10b981;border-radius:10px;background:#ecfdf5;font-size:16px;font-weight:bold;color:#065f46;">🟢 2팀 (초록색)</button>
+        <button onclick="clSetTeam(document.getElementById('clTeamMenu').dataset.room, 3)" style="width:100%;padding:14px;margin-bottom:8px;border:2px solid #E8740C;border-radius:10px;background:#fff5e6;font-size:16px;font-weight:bold;color:#92400e;">🟠 3팀 (주황색)</button>
+        <button onclick="clSetTeam(document.getElementById('clTeamMenu').dataset.room, null)" style="width:100%;padding:14px;margin-bottom:8px;border:2px solid #aaa;border-radius:10px;background:#f0f0f0;font-size:16px;font-weight:bold;color:#666;">⚪ 미배정</button>
+        <button onclick="clTeamMenuClose()" style="width:100%;padding:12px;border:1px solid #ddd;border-radius:10px;background:#f9fafb;font-size:15px;color:#666;">취소</button>
       </div>
     </div>
   </div>
@@ -1620,6 +1645,7 @@ function showToast(msg) {
 // ─── 청소현황 탭 ─────────────────────────────────────────
 // 상태값: 'done'(완료) | 'deferred'(청소대기) | 없음(청소 필요)
 var _clStatus = {};       // {room: 'done'|'deferred'} — GAS에서 로드
+var _clTeam = {};         // {room: 1|2|3|null} — localStorage에서 로드
 var _clPolling = null;
 
 function getRoomFloor(room) {
@@ -1640,6 +1666,51 @@ function clLoadStatus(callback) {
       if (callback) callback();
     })
     .catch(function() { if (callback) callback(); });
+}
+
+// localStorage에서 팀 데이터 로드
+function clLoadTeam() {
+  _clTeam = {};
+  if (!currentBranch || !currentDate) return;
+  var storagePrefix = 'gd_team_' + (currentBranch || '').replace(/\s+/g, '_');
+  var storageKey = storagePrefix + '_' + currentDate;
+  try {
+    var stored = localStorage.getItem(storageKey);
+    if (stored) {
+      _clTeam = JSON.parse(stored);
+    }
+  } catch(e) {}
+}
+
+// localStorage에 팀 데이터 저장
+function clSaveTeam(room, team) {
+  if (!currentBranch || !currentDate) return;
+  _clTeam[room] = team;
+  var storagePrefix = 'gd_team_' + (currentBranch || '').replace(/\s+/g, '_');
+  var storageKey = storagePrefix + '_' + currentDate;
+  try {
+    localStorage.setItem(storageKey, JSON.stringify(_clTeam));
+  } catch(e) {}
+  renderCleaningView();
+}
+
+// 팀 설정
+function clSetTeam(room, team) {
+  clSaveTeam(room, team);
+  clTeamMenuClose();
+}
+
+// 팀 선택 팝업 보기
+function clShowTeamMenu(room, event) {
+  event.stopPropagation();
+  document.getElementById('clTeamMenuRoom').textContent = room;
+  document.getElementById('clTeamMenu').dataset.room = room;
+  document.getElementById('clTeamMenu').style.display = 'block';
+}
+
+// 팀 선택 팝업 닫기
+function clTeamMenuClose() {
+  document.getElementById('clTeamMenu').style.display = 'none';
 }
 
 // GAS에 상태 저장 후 즉시 재렌더
@@ -1728,6 +1799,7 @@ function clGroupByFloor(rooms) {
 }
 
 function renderCleaningView() {
+  clLoadTeam();  // 팀 데이터 로드
   var today = currentDate;
 
   // 퇴실 (오늘 체크아웃), 방막기 제외
@@ -1867,8 +1939,23 @@ function renderCleaningView() {
              + ' onmousedown="clLongPressStart(this.dataset.rm)" onmouseup="clLongPressEnd()"'
              + ' onclick="(function(el) { _clMenuRoom=el.dataset.rm; document.getElementById(' + "'" + 'clMenuRoomLabel' + "'" + ').textContent=el.dataset.rm+' + "' 상태 변경'" + '; document.getElementById(' + "'" + 'clActionMenu' + "'" + ').style.display=' + "'" + 'block' + "'" + '; })(' + 'this' + ')"';
     }
+
+    // 팀 배지 버튼 추가
+    var teamNum = _clTeam[rm] || null;
+    var teamBadgeHtml = '';
+    if (teamNum === 1) {
+      teamBadgeHtml = '<button class="cl-team-badge cl-team-1" onclick="clShowTeamMenu(this.parentElement.querySelector(' + "'.cl-rn'" + ').textContent, event)" style="background:#2D5F8A;color:white;">1팀</button>';
+    } else if (teamNum === 2) {
+      teamBadgeHtml = '<button class="cl-team-badge cl-team-2" onclick="clShowTeamMenu(this.parentElement.querySelector(' + "'.cl-rn'" + ').textContent, event)" style="background:#10b981;color:white;">2팀</button>';
+    } else if (teamNum === 3) {
+      teamBadgeHtml = '<button class="cl-team-badge cl-team-3" onclick="clShowTeamMenu(this.parentElement.querySelector(' + "'.cl-rn'" + ').textContent, event)" style="background:#E8740C;color:white;">3팀</button>';
+    } else {
+      teamBadgeHtml = '<button class="cl-team-badge cl-team-none" onclick="clShowTeamMenu(this.parentElement.querySelector(' + "'.cl-rn'" + ').textContent, event)" style="background:#999;color:white;">팀</button>';
+    }
+
     return '<div class="' + cardClass + '"' + events + '>'
          + '<div class="cl-rn">' + rm + '</div>'
+         + teamBadgeHtml
          + guestHtml + extra + resetBtn + '</div>';
   }
 
@@ -1965,7 +2052,9 @@ function renderCleaningView() {
           var st = _clStatus[rm] || '';
           var icon = getStatusIcon(st);
           var cls = getCardClass(st);
-          ph += '<span class="cl-pr-card ' + cls + '">' + icon + rm + '</span>';
+          var teamNum = _clTeam[rm];
+          var teamLabel = teamNum ? ' [' + teamNum + '팀]' : '';
+          ph += '<span class="cl-pr-card ' + cls + '">' + icon + rm + teamLabel + '</span>';
         });
         ph += '</div></div>';
       });
@@ -1985,7 +2074,9 @@ function renderCleaningView() {
           var st = _clStatus[rm] || '';
           var icon = st==='yeonbak' ? '🌙' : '';
           var cls = st==='yeonbak' ? 'cl-pr-yon' : 'cl-pr-done';
-          ph += '<span class="cl-pr-card ' + cls + '">' + icon + rm + '</span>';
+          var teamNum = _clTeam[rm];
+          var teamLabel = teamNum ? ' [' + teamNum + '팀]' : '';
+          ph += '<span class="cl-pr-card ' + cls + '">' + icon + rm + teamLabel + '</span>';
         });
         ph += '</div></div>';
       });
@@ -2005,7 +2096,9 @@ function renderCleaningView() {
           var st = _clStatus[rm] || '';
           var icon = st==='done' ? '✓' : (st==='yeonbak' ? '🌙' : (st==='deferred' ? '⏸' : ''));
           var cls = st==='done' ? 'cl-pr-done' : (st==='yeonbak' ? 'cl-pr-yon' : (st==='deferred' ? 'cl-pr-defer' : 'cl-pr-block'));
-          ph += '<span class="cl-pr-card ' + cls + '">' + icon + rm + '</span>';
+          var teamNum = _clTeam[rm];
+          var teamLabel = teamNum ? ' [' + teamNum + '팀]' : '';
+          ph += '<span class="cl-pr-card ' + cls + '">' + icon + rm + teamLabel + '</span>';
         });
         ph += '</div></div>';
       });
