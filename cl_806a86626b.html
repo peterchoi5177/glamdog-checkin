@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
 <meta http-equiv="refresh" content="1800">
 <title>글램독 가평(청평점) 체크인 리스트</title>
-<!-- v2026-05-03 20:25 -->
+<!-- v2026-05-03 20:36 -->
 <style>
   :root {
     --navy: #1B3A5C;
@@ -539,6 +539,35 @@
   }}
   .cl-reset-btn:active {{ background:rgba(0,0,0,0.1); }}
   .cl-none { font-size:12px; color:#bbb; padding:8px 0; }
+  /* ── 팀별 보기 (3분할) ── */
+  .cl-view-toggle { display: flex; gap: 8px; margin-bottom: 12px; }
+  .cl-view-btn { padding: 8px 14px; border: 2px solid #ddd; border-radius: 8px;
+    background: white; font-size: 12px; font-weight: 600; cursor: pointer;
+    transition: all 0.2s; color: #666; }
+  .cl-view-btn.active { background: var(--navy); color: white; border-color: var(--navy); }
+  .cl-team-view { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; margin-bottom: 20px; }
+  .cl-team-col { border: 2px solid #ddd; border-radius: 10px; padding: 12px; background: white; }
+  .cl-team-col-hd { font-size: 13px; font-weight: 700; text-align: center; padding: 8px;
+    border-radius: 6px; color: white; margin-bottom: 10px; }
+  .cl-team-1-hd { background: #2D5F8A; }
+  .cl-team-2-hd { background: #10b981; }
+  .cl-team-3-hd { background: #E8740C; }
+  .cl-team-col-rooms { display: grid; grid-template-columns: repeat(auto-fill, minmax(75px, 1fr)); gap: 6px; }
+  .cl-team-card { border-radius: 8px; padding: 10px 6px; text-align: center; font-size: 12px;
+    font-weight: 600; cursor: pointer; border: 2px solid transparent;
+    transition: all 0.12s; user-select: none; }
+  .cl-team-card.need { background: #fff5f5; border-color: #ffcdd2; color: #c62828; }
+  .cl-team-card.done { background: #f1f8f1; border-color: #a5d6a7; color: #2e7d32; opacity: 0.75; }
+  .cl-team-card.extended { background: #f0f7ff; border-color: #bbdefb; color: #1565c0; }
+  .cl-team-card.deferred { background: #fff8f0; border-color: #ffe0b2; color: #e65100; }
+  .cl-team-card.yeonbak { background: #c7d2fe; border-color: #6366f1; color: #3730a3; }
+  .cl-team-none { padding: 12px; background: #f9fafb; border: 2px dashed #ddd;
+    border-radius: 10px; text-align: center; color: #999; font-size: 12px; margin-top: 12px; }
+  @media print {
+    .cl-view-toggle { display: none !important; }
+    .cl-team-view { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; page-break-inside: avoid; }
+    .cl-section-view { display: none !important; }
+  }
   /* 인쇄용 3단 레이아웃 (화면에서는 숨김) */
   .cl-print-wrap { display:none; }
   @media print {
@@ -755,7 +784,7 @@ function _submitPw() {
     <button class="btn-view"        id="btnField" onclick="setView('field')">💰 현장기록</button>
   </div>
   <button class="btn-refresh" id="btnRefresh" onclick="refreshData()">🔄 새로고침</button>
-  <span class="update-time">갱신: 2026-05-03 20:25</span>
+  <span class="update-time">갱신: 2026-05-03 20:36</span>
 </div>
 <div class="content" id="content">
   <div class="print-header" id="printHeader"></div>
@@ -787,6 +816,10 @@ function _submitPw() {
   </div>
   <!-- 청소현황 탭 -->
   <div id="cleanSection" class="cl-wrap" style="display:none">
+    <div class="cl-view-toggle" id="clViewToggle">
+      <button class="cl-view-btn active" data-view="section" onclick="clSetViewMode('section')">📋 섹션별 보기</button>
+      <button class="cl-view-btn" data-view="team" onclick="clSetViewMode('team')">👥 팀별 보기</button>
+    </div>
     <div id="cleanArea"></div>
     <div id="clPrintBar" style="display:none;position:sticky;bottom:0;background:white;
       border-top:2px solid var(--border);padding:10px 16px;gap:10px;align-items:center;">
@@ -1642,6 +1675,8 @@ function showToast(msg) {
   setTimeout(function() { el.classList.remove('show'); }, 3000);
 }
 
+var _clViewMode = 'section';  // 'section' | 'team'
+
 // ─── 청소현황 탭 ─────────────────────────────────────────
 // 상태값: 'done'(완료) | 'deferred'(청소대기) | 없음(청소 필요)
 var _clStatus = {};       // {room: 'done'|'deferred'} — GAS에서 로드
@@ -1710,6 +1745,36 @@ function clSetTeam(team) {
 }
 
 // 팀 선택 팝업 닫기
+// 보기 모드 변경
+function clSetViewMode(mode) {
+  _clViewMode = mode;
+  var btns = document.querySelectorAll('.cl-view-btn');
+  btns.forEach(function(btn) {
+    if (btn.getAttribute('data-view') === mode) {
+      btn.classList.add('active');
+    } else {
+      btn.classList.remove('active');
+    }
+  });
+  clLoadStatus(renderCleaningView);
+}
+
+// 보기 모드 변경
+function clSetViewMode(mode) {
+  _clViewMode = mode;
+  var btns = document.querySelectorAll('.cl-view-btn');
+  btns.forEach(function(btn) { if (btn.getAttribute('data-view') === mode) { btn.classList.add('active'); } else { btn.classList.remove('active'); } });
+  clLoadStatus(renderCleaningView);
+}
+
+// 보기 모드 변경
+function clSetViewMode(mode) {
+  _clViewMode = mode;
+  var btns = document.querySelectorAll('.cl-view-btn');
+  btns.forEach(function(btn) { if (btn.getAttribute('data-view') === mode) { btn.classList.add('active'); } else { btn.classList.remove('active'); } });
+  clLoadStatus(renderCleaningView);
+}
+
 function clTeamMenuClose() {
   document.getElementById('clTeamMenu').style.display = 'none';
   _clTeamMenuRoom = null;
@@ -1800,7 +1865,46 @@ function clGroupByFloor(rooms) {
   return floors;
 }
 
+// 팀별 3분할 보기 렌더
+function renderTeamView() {
+  clLoadTeam();
+  var today = currentDate;
+  var checkoutRecs = ALL_RECORDS.filter(function(r) { return !r.is_block && r.checkout === today; });
+  var extRecs = ALL_RECORDS.filter(function(r) { return !r.is_block && r.checkin < today && r.checkout > today; });
+  var checkinToday = ALL_RECORDS.filter(function(r) { return !r.is_block && r.checkin === today; });
+  var consecRooms = {};
+  checkoutRecs.forEach(function(r) { if (checkinToday.some(function(c) { return c.room === r.room && (c.phone === r.phone || c.guest === r.guest); }) ) { consecRooms[r.room] = true; } });
+  var checkoutRooms = [];
+  var seen = {};
+  checkoutRecs.forEach(function(r) { if (!consecRooms[r.room] && !seen[r.room]) { seen[r.room]=true; checkoutRooms.push(r.room); } });
+  var blockRooms = ALL_RECORDS.filter(function(r) { return r.is_block && (r.stay_dates.indexOf(today) >= 0 || r.checkout === today); }).map(function(r) { return r.room; });
+  seen = {};
+  blockRooms = blockRooms.filter(function(r) { return !seen[r] && (seen[r]=true); });
+  var allRooms = checkoutRooms.concat(blockRooms);
+  var team1 = [], team2 = [], team3 = [], unassigned = [];
+  allRooms.forEach(function(rm) { var t = _clTeam[rm]; if (t === 1) team1.push(rm); else if (t === 2) team2.push(rm); else if (t === 3) team3.push(rm); else unassigned.push(rm); });
+  function getCardStatus(rm) { var st = _clStatus[rm]; if (st === 'done') return 'done'; if (st === 'deferred') return 'deferred'; if (st === 'yeonbak') return 'yeonbak'; var isExt = extRecs.some(function(r) { return r.room === rm; }); if (!checkoutRooms.includes(rm) && isExt) return 'extended'; return checkoutRooms.includes(rm) || blockRooms.includes(rm) ? 'need' : 'block'; }
+  function makeCard(rm) { var st = getCardStatus(rm); return '<div class="cl-team-card ' + st + '" data-rm="' + rm + '" onclick="clToggleDone(this.dataset.rm)">' + rm + '</div>'; }
+  var dateObj = new Date(today+'T00:00:00');
+  var dateKo = dateObj.getFullYear()+'년 '+(dateObj.getMonth()+1)+'월 '+dateObj.getDate()+'일';
+  var html = '<div class="cl-topbar"><span class="cl-title">🧹 ' + dateKo + ' 청소현황</span></div>';
+  html += '<div class="cl-team-view">';
+  html += '<div class="cl-team-col"><div class="cl-team-col-hd cl-team-1-hd">1팀 (' + team1.length + ')</div><div class="cl-team-col-rooms">';
+  team1.forEach(function(rm) { html += makeCard(rm); });
+  html += '</div></div>';
+  html += '<div class="cl-team-col"><div class="cl-team-col-hd cl-team-2-hd">2팀 (' + team2.length + ')</div><div class="cl-team-col-rooms">';
+  team2.forEach(function(rm) { html += makeCard(rm); });
+  html += '</div></div>';
+  html += '<div class="cl-team-col"><div class="cl-team-col-hd cl-team-3-hd">3팀 (' + team3.length + ')</div><div class="cl-team-col-rooms">';
+  team3.forEach(function(rm) { html += makeCard(rm); });
+  html += '</div></div>';
+  html += '</div>';
+  if (unassigned.length > 0) { html += '<div class="cl-team-none"><div style="font-weight:700;margin-bottom:8px;">미배정 (' + unassigned.length + ')</div>'; unassigned.forEach(function(rm) { html += makeCard(rm); }); html += '</div>'; }
+  document.getElementById('cleanArea').innerHTML = html;
+}
+
 function renderCleaningView() {
+  if (_clViewMode === 'team') { renderTeamView(); return; }
   clLoadTeam();  // 팀 데이터 로드
   var today = currentDate;
 
