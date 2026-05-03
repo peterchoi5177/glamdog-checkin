@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
 <meta http-equiv="refresh" content="1800">
 <title>글램독 가평(청평점) 체크인 리스트</title>
-<!-- v2026-05-03 18:23 -->
+<!-- v2026-05-03 20:04 -->
 <style>
   :root {
     --navy: #1B3A5C;
@@ -741,7 +741,7 @@ function _submitPw() {
     <button class="btn-view"        id="btnField" onclick="setView('field')">💰 현장기록</button>
   </div>
   <button class="btn-refresh" id="btnRefresh" onclick="refreshData()">🔄 새로고침</button>
-  <span class="update-time">갱신: 2026-05-03 18:23</span>
+  <span class="update-time">갱신: 2026-05-03 20:04</span>
 </div>
 <div class="content" id="content">
   <div class="print-header" id="printHeader"></div>
@@ -783,6 +783,7 @@ function _submitPw() {
     <div id="clActionMenu" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;z-index:9999;background:rgba(0,0,0,0.4);" onclick="clMenuClose()">
       <div style="position:absolute;bottom:0;left:0;right:0;background:#fff;border-radius:16px 16px 0 0;padding:16px;" onclick="event.stopPropagation()">
         <div style="text-align:center;font-weight:bold;font-size:15px;margin-bottom:14px;color:#555;" id="clMenuRoomLabel"></div>
+        <button onclick="clMenuSelect('needclean')" style="width:100%;padding:14px;margin-bottom:8px;border:2px solid #ef4444;border-radius:10px;background:#fef2f2;font-size:16px;font-weight:bold;color:#991b1b;">🧹 청소필요</button>
         <button onclick="clMenuSelect('done')" style="width:100%;padding:14px;margin-bottom:8px;border:2px solid #10b981;border-radius:10px;background:#ecfdf5;font-size:16px;font-weight:bold;color:#065f46;">✅ 완료</button>
         <button onclick="clMenuSelect('deferred')" style="width:100%;padding:14px;margin-bottom:8px;border:2px solid #f59e0b;border-radius:10px;background:#fffbeb;font-size:16px;font-weight:bold;color:#92400e;">⏸ 청소대기</button>
         <button onclick="clMenuSelect('yeonbak')" style="width:100%;padding:14px;margin-bottom:8px;border:2px solid #3b82f6;border-radius:10px;background:#eff6ff;font-size:16px;font-weight:bold;color:#1e40af;">🌙 연박</button>
@@ -1697,6 +1698,11 @@ function clMenuClose() {
 function clMenuSelect(status) {
   if (_clMenuRoom) {
     var prev = (_clStatus[_clMenuRoom] || '');
+    // '청소필요' 선택: 방막기 방은 'needclean', 일반 방은 ''
+    if (status === 'needclean') {
+      var isBlock = ALL_RECORDS.some(function(r) { return r.room === _clMenuRoom && r.is_block; });
+      if (!isBlock) status = '';
+    }
     // 이미 같은 상태면 토글(해제)
     var next = (prev === status) ? '' : status;
     clSetStatus(_clMenuRoom, next);
@@ -1786,10 +1792,11 @@ function renderCleaningView() {
     .forEach(function(r) { blockChannelMap[r.room] = r.channel || '방막기'; });
 
   // 방막기 방 상태별 분류 (blockRooms 선언 후에 실행)
-  var blockDoneRooms    = blockRooms.filter(function(rm) { return _clStatus[rm] === 'done'; });
-  var blockDeferRooms   = blockRooms.filter(function(rm) { return _clStatus[rm] === 'deferred'; });
-  var blockYeonbakRooms = blockRooms.filter(function(rm) { return _clStatus[rm] === 'yeonbak'; });
-  var pureBlockRooms    = blockRooms.filter(function(rm) { return !_clStatus[rm] || _clStatus[rm] === 'block'; });
+  var blockDoneRooms      = blockRooms.filter(function(rm) { return _clStatus[rm] === 'done'; });
+  var blockDeferRooms     = blockRooms.filter(function(rm) { return _clStatus[rm] === 'deferred'; });
+  var blockYeonbakRooms   = blockRooms.filter(function(rm) { return _clStatus[rm] === 'yeonbak'; });
+  var blockNeedCleanRooms = blockRooms.filter(function(rm) { return _clStatus[rm] === 'needclean'; });
+  var pureBlockRooms      = blockRooms.filter(function(rm) { return !_clStatus[rm] || _clStatus[rm] === 'block'; });
 
   // 층별 그룹 + 정렬 헬퍼
   function byFloor(rooms) {
@@ -1895,7 +1902,7 @@ function renderCleaningView() {
            + ' <button class="cl-reload-btn" onclick="clReload()">↺</button></span>'
            + '</div>';
 
-  html += makeSection('청소 필요', '🔴', needClean, 'need',
+  html += makeSection('청소 필요', '🔴', needClean.concat(blockNeedCleanRooms), 'need',
                       '탭 → 완료 &nbsp;|&nbsp; 길게 누르기 → 상태변경', guestMap);
   // 연박·청소불필요: stayRooms(자동연박) + yeonbakRooms(수동연박) + 방막기 yeonbak 합쳐서 렌더링
   var stayRooms = extRooms.filter(function(rm) { return _clStatus[rm] !== 'yeonbak'; });
