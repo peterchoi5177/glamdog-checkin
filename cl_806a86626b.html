@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
 <meta http-equiv="refresh" content="1800">
 <title>글램독 가평(청평점) 체크인 리스트</title>
-<!-- v2026-05-04 21:03 -->
+<!-- v2026-05-04 12:07 -->
 <style>
   :root {
     --navy: #1B3A5C;
@@ -809,7 +809,7 @@ function _submitPw() {
     <button class="btn-view"        id="btnField" onclick="setView('field')">💰 현장기록</button>
   </div>
   <button class="btn-refresh" id="btnRefresh" onclick="refreshData()">🔄 새로고침</button>
-  <span class="update-time">갱신: 2026-05-04 21:03</span>
+  <span class="update-time">갱신: 2026-05-04 12:07</span>
 </div>
 <div class="content" id="content">
   <div class="print-header" id="printHeader"></div>
@@ -1895,7 +1895,9 @@ function renderTeamView() {
   var blockRooms = ALL_RECORDS.filter(function(r) { return r.is_block && (r.stay_dates.indexOf(today) >= 0 || r.checkout === today); }).map(function(r) { return r.room; });
   seen = {};
   blockRooms = blockRooms.filter(function(r) { return !seen[r] && (seen[r]=true); });
-  var allRooms = checkoutRooms.concat(blockRooms);
+  // 같은 방에 일반체크아웃+방막기(청소조절 등) 동시 존재 가능 — dedup 필수
+  var seenAll = {};
+  var allRooms = checkoutRooms.concat(blockRooms).filter(function(rm) { return !seenAll[rm] && (seenAll[rm] = true); });
   var team1 = [], team2 = [], team3 = [], unassigned = [];
   allRooms.forEach(function(rm) { var t = _clTeam[rm]; if (t === 1) team1.push(rm); else if (t === 2) team2.push(rm); else if (t === 3) team3.push(rm); else unassigned.push(rm); });
   function getCardStatus(rm) { var st = _clStatus[rm]; if (st === 'done') return 'done'; if (st === 'deferred') return 'deferred'; if (st === 'yeonbak') return 'yeonbak'; var isExt = extRecs.some(function(r) { return r.room === rm; }); if (!checkoutRooms.includes(rm) && isExt) return 'extended'; return checkoutRooms.includes(rm) || blockRooms.includes(rm) ? 'need' : 'block'; }
@@ -2096,6 +2098,9 @@ function renderCleaningView() {
   }
 
   function makeSection(title, icon, rooms, type, hint, guestNameMap) {
+    // 같은 방이 두 레코드(일반+방막기)로 중복 들어오면 dedup
+    var _secSeen = {};
+    rooms = (rooms || []).filter(function(rm) { return !_secSeen[rm] && (_secSeen[rm] = true); });
     var cls = type;
     var html = '<div class="cl-sec">'
              + '<div class="cl-sec-hd cl-hd-' + cls + '">'
