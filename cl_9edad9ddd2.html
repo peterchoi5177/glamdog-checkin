@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
 <meta http-equiv="refresh" content="1800">
 <title>글램독 양양 체크인 리스트</title>
-<!-- v2026-05-04 14:53 -->
+<!-- v2026-05-04 07:17 -->
 <style>
   :root {
     --navy: #1B3A5C;
@@ -516,12 +516,16 @@
   .cl-card-yeonbak { background:#c7d2fe !important; border-color:#6366f1 !important; }
   .cl-card-yeonbak .cl-rn { color:#3730a3 !important; }
   .cl-card-yeonbak .cl-sub { color:#4338ca !important; }
-  /* 팀 배지 버튼 */
+  /* 팀 배지 버튼 — 카드 하단 풀폭, 큼직하게 */
   .cl-team-badge {{
-    display:inline-block; padding:3px 8px; margin:2px;
-    border-radius:5px; font-size:10px; font-weight:bold;
+    display:block; width:100%; box-sizing:border-box;
+    padding:9px 6px; margin-top:8px;
+    border-radius:8px; font-size:13px; font-weight:700;
     border:none; cursor:pointer; transition:all .12s;
+    min-height:38px; letter-spacing:.3px;
+    box-shadow:0 1px 2px rgba(0,0,0,0.08);
   }}
+  .cl-team-badge:active {{ transform:scale(.96); box-shadow:0 0 0 rgba(0,0,0,0); }}
   .cl-team-1 {{ background:#2D5F8A; color:white; }}
   .cl-team-1:active {{ background:#1a3a52; transform:scale(.95); }}
   .cl-team-2 {{ background:#10b981; color:white; }}
@@ -530,6 +534,23 @@
   .cl-team-3:active {{ background:#c25d03; transform:scale(.95); }}
   .cl-team-none {{ background:#999; color:white; }}
   .cl-team-none:active {{ background:#666; transform:scale(.95); }}
+  /* 층별 일괄배정 영역 */
+  .cl-fl-row {{ display:flex; align-items:center; justify-content:space-between;
+    gap:8px; margin:10px 0 6px; flex-wrap:wrap; }}
+  .cl-fl-row .cl-fl-lbl {{ margin:0; }}
+  .cl-fl-bulk {{ display:flex; gap:4px; flex-wrap:wrap; }}
+  .cl-fl-bulk-btn {{ padding:5px 10px; border-radius:6px; border:1.5px solid #ddd;
+    background:white; font-size:11px; font-weight:700; cursor:pointer;
+    transition:all .12s; color:#666; }}
+  .cl-fl-bulk-btn:active {{ transform:scale(.94); }}
+  .cl-fl-bulk-1 {{ border-color:#2D5F8A; color:#2D5F8A; }}
+  .cl-fl-bulk-1:active {{ background:#2D5F8A; color:white; }}
+  .cl-fl-bulk-2 {{ border-color:#10b981; color:#10b981; }}
+  .cl-fl-bulk-2:active {{ background:#10b981; color:white; }}
+  .cl-fl-bulk-3 {{ border-color:#E8740C; color:#E8740C; }}
+  .cl-fl-bulk-3:active {{ background:#E8740C; color:white; }}
+  .cl-fl-bulk-x {{ border-color:#bbb; color:#888; }}
+  .cl-fl-bulk-x:active {{ background:#888; color:white; }}
   /* 되돌리기 버튼 */
   .cl-reset-btn {{
     display:block; width:100%; margin-top:8px; padding:4px 0;
@@ -545,14 +566,16 @@
     background: white; font-size: 12px; font-weight: 600; cursor: pointer;
     transition: all 0.2s; color: #666; }
   .cl-view-btn.active { background: var(--navy); color: white; border-color: var(--navy); }
-  .cl-team-view { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; margin-bottom: 20px; }
+  .cl-team-view { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 12px; margin-bottom: 20px; }
   .cl-team-col { border: 2px solid #ddd; border-radius: 10px; padding: 12px; background: white; }
   .cl-team-col-hd { font-size: 13px; font-weight: 700; text-align: center; padding: 8px;
     border-radius: 6px; color: white; margin-bottom: 10px; }
   .cl-team-1-hd { background: #2D5F8A; }
   .cl-team-2-hd { background: #10b981; }
   .cl-team-3-hd { background: #E8740C; }
+  .cl-team-none-hd { background: #94a3b8; }
   .cl-team-col-rooms { display: grid; grid-template-columns: repeat(auto-fill, minmax(75px, 1fr)); gap: 6px; }
+  .cl-team-col-empty { text-align:center; color:#bbb; font-size:11px; padding:14px 0; }
   .cl-team-card { border-radius: 8px; padding: 10px 6px; text-align: center; font-size: 12px;
     font-weight: 600; cursor: pointer; border: 2px solid transparent;
     transition: all 0.12s; user-select: none; }
@@ -561,11 +584,13 @@
   .cl-team-card.extended { background: #f0f7ff; border-color: #bbdefb; color: #1565c0; }
   .cl-team-card.deferred { background: #fff8f0; border-color: #ffe0b2; color: #e65100; }
   .cl-team-card.yeonbak { background: #c7d2fe; border-color: #6366f1; color: #3730a3; }
-  .cl-team-none { padding: 12px; background: #f9fafb; border: 2px dashed #ddd;
-    border-radius: 10px; text-align: center; color: #999; font-size: 12px; margin-top: 12px; }
   @media print {
     .cl-view-toggle { display: none !important; }
-    .cl-team-view { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; page-break-inside: avoid; }
+    .cl-team-view { display: grid !important; grid-template-columns: 1fr 1fr 1fr 1fr !important;
+      gap: 0 !important; page-break-inside: avoid; }
+    .cl-team-col { border: none !important; border-right: 1.5px dashed #666 !important;
+      border-radius: 0 !important; padding: 0 8px !important; }
+    .cl-team-col:last-child { border-right: none !important; }
     .cl-section-view { display: none !important; }
   }
   /* 인쇄용 3단 레이아웃 (화면에서는 숨김) */
@@ -784,7 +809,7 @@ function _submitPw() {
     <button class="btn-view"        id="btnField" onclick="setView('field')">💰 현장기록</button>
   </div>
   <button class="btn-refresh" id="btnRefresh" onclick="refreshData()">🔄 새로고침</button>
-  <span class="update-time">갱신: 2026-05-04 14:53</span>
+  <span class="update-time">갱신: 2026-05-04 07:17</span>
 </div>
 <div class="content" id="content">
   <div class="print-header" id="printHeader"></div>
@@ -1725,6 +1750,24 @@ function clSaveTeam(room, team) {
   renderCleaningView();
 }
 
+// 층별/그룹 일괄 팀 배정
+function clBulkAssignTeam(roomsCsv, team) {
+  if (!currentBranch || !currentDate || !roomsCsv) return;
+  var teamVal = (team === 0 || team === '0') ? null : team;
+  var rooms = roomsCsv.split('|');
+  rooms.forEach(function(rm) {
+    if (!rm) return;
+    if (teamVal === null) { delete _clTeam[rm]; }
+    else { _clTeam[rm] = teamVal; }
+  });
+  var storagePrefix = 'gd_team_' + (currentBranch || '').replace(/\s+/g, '_');
+  var storageKey = storagePrefix + '_' + currentDate;
+  try {
+    localStorage.setItem(storageKey, JSON.stringify(_clTeam));
+  } catch(e) {}
+  renderCleaningView();
+}
+
 var _clTeamMenuRoom = null;
 
 // 팀 선택 팝업 보기
@@ -1865,18 +1908,24 @@ function renderTeamView() {
     + '</div>';
   var html = viewToggle;
   html += '<div class="cl-topbar"><span class="cl-title">🧹 ' + dateKo + ' 청소현황</span></div>';
+  function teamColHtml(label, hdCls, list) {
+    var inner = '';
+    if (list.length === 0) {
+      inner = '<div class="cl-team-col-empty">없음</div>';
+    } else {
+      inner = '<div class="cl-team-col-rooms">';
+      list.forEach(function(rm) { inner += makeCard(rm); });
+      inner += '</div>';
+    }
+    return '<div class="cl-team-col"><div class="cl-team-col-hd ' + hdCls + '">'
+         + label + ' (' + list.length + ')</div>' + inner + '</div>';
+  }
   html += '<div class="cl-team-view">';
-  html += '<div class="cl-team-col"><div class="cl-team-col-hd cl-team-1-hd">1팀 (' + team1.length + ')</div><div class="cl-team-col-rooms">';
-  team1.forEach(function(rm) { html += makeCard(rm); });
-  html += '</div></div>';
-  html += '<div class="cl-team-col"><div class="cl-team-col-hd cl-team-2-hd">2팀 (' + team2.length + ')</div><div class="cl-team-col-rooms">';
-  team2.forEach(function(rm) { html += makeCard(rm); });
-  html += '</div></div>';
-  html += '<div class="cl-team-col"><div class="cl-team-col-hd cl-team-3-hd">3팀 (' + team3.length + ')</div><div class="cl-team-col-rooms">';
-  team3.forEach(function(rm) { html += makeCard(rm); });
-  html += '</div></div>';
+  html += teamColHtml('1팀', 'cl-team-1-hd', team1);
+  html += teamColHtml('2팀', 'cl-team-2-hd', team2);
+  html += teamColHtml('3팀', 'cl-team-3-hd', team3);
+  html += teamColHtml('미배정', 'cl-team-none-hd', unassigned);
   html += '</div>';
-  if (unassigned.length > 0) { html += '<div class="cl-team-none"><div style="font-weight:700;margin-bottom:8px;">미배정 (' + unassigned.length + ')</div>'; unassigned.forEach(function(rm) { html += makeCard(rm); }); html += '</div>'; }
   document.getElementById('cleanArea').innerHTML = html;
 }
 
@@ -2035,6 +2084,17 @@ function renderCleaningView() {
          + guestHtml + extra + resetBtn + '</div>';
   }
 
+  // 층별 일괄배정 버튼 바
+  function clFloorBulkBar(rooms) {
+    var csv = rooms.join('|');
+    return '<span class="cl-fl-bulk">'
+      + '<button class="cl-fl-bulk-btn cl-fl-bulk-1" data-rms="' + csv + '" onclick="event.stopPropagation();clBulkAssignTeam(this.dataset.rms,1)">1팀</button>'
+      + '<button class="cl-fl-bulk-btn cl-fl-bulk-2" data-rms="' + csv + '" onclick="event.stopPropagation();clBulkAssignTeam(this.dataset.rms,2)">2팀</button>'
+      + '<button class="cl-fl-bulk-btn cl-fl-bulk-3" data-rms="' + csv + '" onclick="event.stopPropagation();clBulkAssignTeam(this.dataset.rms,3)">3팀</button>'
+      + '<button class="cl-fl-bulk-btn cl-fl-bulk-x" data-rms="' + csv + '" onclick="event.stopPropagation();clBulkAssignTeam(this.dataset.rms,0)">해제</button>'
+      + '</span>';
+  }
+
   function makeSection(title, icon, rooms, type, hint, guestNameMap) {
     var cls = type;
     var html = '<div class="cl-sec">'
@@ -2047,7 +2107,9 @@ function renderCleaningView() {
     } else {
       var floors = byFloor(rooms);
       floorsSorted(floors).forEach(function(fl) {
-        html += '<div class="cl-fl-lbl">' + fl + '</div><div class="cl-grid">';
+        html += '<div class="cl-fl-row"><span class="cl-fl-lbl">' + fl + '</span>'
+              + clFloorBulkBar(floors[fl]) + '</div>'
+              + '<div class="cl-grid">';
         floors[fl].forEach(function(rm) { html += makeCard(rm, type, guestNameMap); });
         html += '</div>';
       });
@@ -2089,7 +2151,9 @@ function renderCleaningView() {
                   + '🚫 방막기·기타 <span class="cl-cnt">' + pureBlockRooms.length + '</span></div>'
                   + '<div class="cl-hint">길게 누르기 → 상태변경 &nbsp;|&nbsp; 다른 상태로 이동 가능</div>';
     floorsSorted(blockFloors).forEach(function(fl) {
-      blockHtml += '<div class="cl-fl-lbl">' + fl + '</div><div class="cl-grid">';
+      blockHtml += '<div class="cl-fl-row"><span class="cl-fl-lbl">' + fl + '</span>'
+                 + clFloorBulkBar(blockFloors[fl]) + '</div>'
+                 + '<div class="cl-grid">';
       blockFloors[fl].forEach(function(rm) {
         blockHtml += makeCard(rm, 'block', null);
       });
