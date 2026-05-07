@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
 <meta http-equiv="refresh" content="1800">
 <title>글램독 양양 체크인 리스트</title>
-<!-- v2026-05-07 21:40 -->
+<!-- v2026-05-07 23:25 -->
 <style>
   :root {
     --navy: #1B3A5C;
@@ -809,7 +809,7 @@ function _submitPw() {
     <button class="btn-view"        id="btnField" onclick="setView('field')">💰 현장기록</button>
   </div>
   <button class="btn-refresh" id="btnRefresh" onclick="refreshData()">🔄 새로고침</button>
-  <span class="update-time">갱신: 2026-05-07 21:40</span>
+  <span class="update-time">갱신: 2026-05-07 23:25</span>
 </div>
 <div class="content" id="content">
   <div class="print-header" id="printHeader"></div>
@@ -943,26 +943,47 @@ function getWelcomeEntry(dateStr, room) {
   return null;
 }
 
+// dogs는 GAS에서 JSON 문자열로 올 수도 있음 — 안전하게 array로 정규화
+function parseDogs(wd) {
+  var dogs = wd && wd.dogs;
+  if (typeof dogs === 'string') {
+    try { dogs = JSON.parse(dogs); } catch(e) { dogs = []; }
+  }
+  return Array.isArray(dogs) ? dogs : [];
+}
+
 function dogInfoHtml(wd) {
   if (!wd) return '<div class="write-lines">' + writeLine() + writeLine() + '</div>';
   if (wd.dogCount === 0) return '<div style="font-size:12px;color:#aaa;text-align:center">—</div>';
-  var dogs = wd.dogs || [];
+  var dogs = parseDogs(wd);
   if (dogs.length === 0 && wd.dogCount > 0) {
     return '<div style="font-size:12px;color:#555;text-align:center">' + wd.dogCount + '마리</div>';
   }
-  var parts = dogs.map(function(d) {
-    var nm = d.name ? '<b>' + d.name + '</b>' : '';
-    var br = d.breed ? ' <span style="color:#777">' + d.breed + '</span>' : '';
-    var wt = d.weight ? ' <span style="color:#aaa;font-size:10px">(' + d.weight + ')</span>' : '';
+  var parts = dogs.map(function(d, i) {
+    var nm = d.name
+      ? '<b style="color:#1B3A5C">' + d.name + '</b>'
+      : '<span style="color:#aaa">강아지 ' + (i + 1) + '</span>';
+    var br = d.breed  ? ' <span style="color:#777;font-size:10px">' + d.breed + '</span>' : '';
+    var wt = d.weight ? ' <span style="color:#666;font-size:10px">(' + d.weight + ')</span>' : '';
     return nm + br + wt;
   });
-  return '<div style="font-size:11px;line-height:1.8">' + parts.join('<br>') + '</div>';
+  return '<div style="font-size:12px;line-height:1.7">' + parts.join('<br>') + '</div>';
+}
+
+// HH:MM 추출 — JS Date toString("Sat Dec 30 1899 16:00:00 GMT+0827")이나 ISO 등 어떤 포맷에서도 시각만 뽑음
+function fmtTime(t) {
+  if (!t) return '';
+  var s = String(t).trim();
+  if (/^\d{1,2}:\d{2}$/.test(s)) return s;
+  var m = s.match(/(\d{1,2}):(\d{2})/);
+  if (m) return ('0' + m[1]).slice(-2) + ':' + m[2];
+  return s;
 }
 
 function bbqHtml(wd) {
   if (!wd) return '<div class="bbq-box">□</div>';
   if (wd.bbq === 'yes') {
-    var t = wd.bbqTime ? wd.bbqTime : '시간미정';
+    var t = fmtTime(wd.bbqTime) || '시간미정';
     return '<div style="text-align:center;line-height:1.6">✅<br>'
       + '<b style="font-size:14px;color:#2d6a4f">' + t + '</b></div>';
   }
@@ -971,7 +992,8 @@ function bbqHtml(wd) {
 
 function arriveHtml(wd) {
   if (!wd || !wd.arrivalTime) return '<div class="write-lines">' + writeLine() + '</div>';
-  return '<div style="font-size:14px;font-weight:700;color:#1B3A5C;text-align:center">' + wd.arrivalTime + '</div>';
+  var t = fmtTime(wd.arrivalTime) || wd.arrivalTime;
+  return '<div style="font-size:14px;font-weight:700;color:#1B3A5C;text-align:center">' + t + '</div>';
 }
 
 function memoHtml(wd) {
@@ -986,19 +1008,58 @@ function personsHtml(wd) {
 }
 
 function extraHtml(bno, wd) {
-  // 현장기록 있으면 실제 금액 표시
+  // 현장기록 있으면 실제 결제된 금액 우선 표시
   if (typeof _fieldEntries !== 'undefined' && bno && _fieldEntries[bno]) {
     var e = _fieldEntries[bno];
     return '<div style="text-align:center;font-size:13px;font-weight:700;color:#e65100">'
       + Number(e.total).toLocaleString() + '원</div>';
   }
   if (!wd) return '<div style="color:#ddd;text-align:center;font-size:11px">—</div>';
+
+  // 단가
+  var FEE_PERSON = 20000;   // 인원 1명 추가
+  var FEE_DOG    = 10000;   // 강아지 1마리 추가
+  var FEE_BIG    = 10000;   // 대형견 1마리 추가
+
+  // 인원 추가 (2명 초과)
+  var pExtra = (wd.persons && wd.persons > 2) ? (wd.persons - 2) : 0;
+  var pAmt   = pExtra * FEE_PERSON;
+
+  // 강아지 추가 (1마리 초과)
+  var dExtra = (wd.dogCount && wd.dogCount > 1) ? (wd.dogCount - 1) : 0;
+  var dAmt   = dExtra * FEE_DOG;
+
+  // 대형견 (welcome.html 옵션: "5kg 미만" / "5-10kg" / "10-15kg" → 10kg 이상을 대형으로 카운트)
+  var dogs = parseDogs(wd);
+  var bigCount = dogs.filter(function(d) {
+    if (!d.weight) return false;
+    return /10-15kg|10kg\s*이상|10kg\+|15kg|20kg/i.test(d.weight);
+  }).length;
+  var bAmt = bigCount * FEE_BIG;
+
+  var bbqOn = (wd.bbq === 'yes');
+  var total = pAmt + dAmt + bAmt;
+
+  if (total === 0 && !bbqOn) {
+    return '<div style="color:#ddd;text-align:center;font-size:11px">—</div>';
+  }
+
   var lines = [];
-  if (wd.persons && wd.persons > 2) lines.push((wd.persons-2) + '명 추가');
-  if (wd.dogCount && wd.dogCount > 1) lines.push('강아지 ' + (wd.dogCount-1) + '마리 추가');
-  if (wd.bbq === 'yes') lines.push('BBQ');
-  if (!lines.length) return '<div style="color:#ddd;text-align:center;font-size:11px">—</div>';
-  return '<div style="font-size:11px;line-height:1.7;text-align:center;color:#888">' + lines.join('<br>') + '</div>';
+  if (pExtra > 0)   lines.push('인원+' + pExtra + '명 ' + pAmt.toLocaleString() + '원');
+  if (dExtra > 0)   lines.push('강아지+' + dExtra + '마리 ' + dAmt.toLocaleString() + '원');
+  if (bigCount > 0) lines.push('대형견 ' + bigCount + '마리 ' + bAmt.toLocaleString() + '원');
+
+  var html = '<div style="font-size:10px;line-height:1.5;text-align:center;color:#666">';
+  if (lines.length) html += lines.join('<br>');
+  if (total > 0) {
+    html += (lines.length ? '<div style="border-top:1px dashed #ccc;margin-top:3px;padding-top:3px"></div>' : '')
+         +  '<b style="font-size:13px;color:#1B3A5C">합 ' + total.toLocaleString() + '원</b>';
+  }
+  if (bbqOn) {
+    html += '<div style="margin-top:3px;color:#888;font-size:10px">+ BBQ 별도</div>';
+  }
+  html += '</div>';
+  return html;
 }
 
 function roomSortKey(room) {
