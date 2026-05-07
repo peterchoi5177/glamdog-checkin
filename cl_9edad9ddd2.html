@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
 <meta http-equiv="refresh" content="1800">
 <title>글램독 양양 체크인 리스트</title>
-<!-- v2026-05-07 23:55 -->
+<!-- v2026-05-07 15:18 -->
 <style>
   :root {
     --navy: #1B3A5C;
@@ -138,14 +138,14 @@
   /* 열 너비 */
   .col-no      { width: 3%;  text-align: center; color: #999; font-size: 12px; }
   .col-room    { width: 5%;  text-align: center; }
-  .col-guest   { width: 10%; }
+  .col-guest   { width: 8%;  }
   .col-stays   { width: 8%;  text-align: center; white-space: nowrap; }
   .col-arrive  { width: 5%;  text-align: center; }
   .col-bookdt  { width: 6%;  text-align: center; }
   .col-persons { width: 4%;  text-align: center; }
   .col-dog     { width: 9%;  }
   .col-bbq     { width: 6%;  text-align: center; }
-  .col-extra   { width: 8%;  text-align: center; }
+  .col-extra   { width: 11%; text-align: center; }
   .col-payment { width: 7%;  text-align: center; }
   .col-memo    { width: 22%; }
 
@@ -323,13 +323,13 @@
     /* 인쇄용 열 너비 재조정 (bookdt+payment 빠진 20% 재분배) */
     .col-no      { width: 3%; }
     .col-room    { width: 5%; }
-    .col-guest   { width: 11%; }
+    .col-guest   { width: 8%; }
     .col-stays   { width: 9%; }
     .col-arrive  { width: 5%; }
     .col-persons { width: 4%; }
     .col-dog     { width: 9%; }
     .col-bbq     { width: 6%; }
-    .col-extra   { width: 8%; }
+    .col-extra   { width: 12%; }
     .col-memo    { width: 22%; }
     /* 글꼴 크기 축소 */
     .room-name   { font-size: 11px; }
@@ -597,8 +597,7 @@
   .cl-print-wrap { display:none; }
   @media print {
     @page { size: A4 portrait; margin: 10mm; }
-    #cleanSection { display:block !important; }
-    .cl-topbar, .cl-sec, .cl-hint, .cl-reload-btn, .cl-wrap, .tab-bar, .btn-row, .top-bar, button { display:none !important; }
+    .cl-topbar, .cl-sec, .cl-hint, .cl-reload-btn, .tab-bar, .btn-row, .top-bar, button { display:none !important; }
     body { background: white !important; }
     .cl-print-wrap {
       display:grid; grid-template-columns:1fr 1fr 1fr;
@@ -809,7 +808,7 @@ function _submitPw() {
     <button class="btn-view"        id="btnField" onclick="setView('field')">💰 현장기록</button>
   </div>
   <button class="btn-refresh" id="btnRefresh" onclick="refreshData()">🔄 새로고침</button>
-  <span class="update-time">갱신: 2026-05-07 23:55</span>
+  <span class="update-time">갱신: 2026-05-07 15:18</span>
 </div>
 <div class="content" id="content">
   <div class="print-header" id="printHeader"></div>
@@ -964,10 +963,10 @@ function dogInfoHtml(wd) {
       ? '<b style="color:#1B3A5C">' + d.name + '</b>'
       : '<span style="color:#aaa">강아지 ' + (i + 1) + '</span>';
     var br = d.breed  ? ' <span style="color:#777;font-size:10px">' + d.breed + '</span>' : '';
-    var wt = d.weight ? ' <span style="color:#666;font-size:10px">(' + d.weight + ')</span>' : '';
+    var wt = d.weight ? '<br><span style="color:#666;font-size:10px;padding-left:4px">(' + d.weight + ')</span>' : '';
     return nm + br + wt;
   });
-  return '<div style="font-size:12px;line-height:1.7">' + parts.join('<br>') + '</div>';
+  return '<div style="font-size:12px;line-height:1.6">' + parts.join('<br>') + '</div>';
 }
 
 // HH:MM 추출 — JS Date toString("Sat Dec 30 1899 16:00:00 GMT+0827")이나 ISO 등 어떤 포맷에서도 시각만 뽑음
@@ -1049,11 +1048,11 @@ function extraHtml(bno, wd) {
   if (dExtra > 0)   lines.push('강아지+' + dExtra + '마리 ' + dAmt.toLocaleString() + '원');
   if (bigCount > 0) lines.push('대형견 ' + bigCount + '마리 ' + bAmt.toLocaleString() + '원');
 
-  var html = '<div style="font-size:10px;line-height:1.5;text-align:center;color:#666">';
+  var html = '<div style="font-size:10px;line-height:1.6;text-align:center;color:#555">';
   if (lines.length) html += lines.join('<br>');
   if (total > 0) {
     html += (lines.length ? '<div style="border-top:1px dashed #ccc;margin-top:3px;padding-top:3px"></div>' : '')
-         +  '<b style="font-size:13px;color:#1B3A5C">합 ' + total.toLocaleString() + '원</b>';
+         +  '<span style="font-size:12px;color:#333">합 ' + total.toLocaleString() + '원</span>';
   }
   if (bbqOn) {
     html += '<div style="margin-top:3px;color:#888;font-size:10px">+ BBQ 별도</div>';
@@ -1114,7 +1113,8 @@ function renderTable() {
       <td class="col-no">${idx + 1}</td>
       <td class="col-room"><span class="room-name">${r.room}</span></td>
       <td class="col-guest">
-        <div class="guest-name" style="white-space:nowrap">${r.guest}${welcomeCheck} <span style="font-weight:400;font-size:12px;color:#555">${r.phone}</span></div>
+        <div class="guest-name">${r.guest}${welcomeCheck}</div>
+        <div class="guest-phone">${r.phone}</div>
         ${channelBadge(r.channel)}
       </td>
       <td class="col-stays">${staysLabel(r)}</td>
