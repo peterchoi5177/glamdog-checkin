@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
 <meta http-equiv="refresh" content="1800">
 <title>글램독 양양 체크인 리스트</title>
-<!-- v2026-05-07 23:25 -->
+<!-- v2026-05-07 23:55 -->
 <style>
   :root {
     --navy: #1B3A5C;
@@ -596,7 +596,7 @@
   /* 인쇄용 3단 레이아웃 (화면에서는 숨김) */
   .cl-print-wrap { display:none; }
   @media print {
-    @page { size: A4 landscape; margin: 10mm; }
+    @page { size: A4 portrait; margin: 10mm; }
     #cleanSection { display:block !important; }
     .cl-topbar, .cl-sec, .cl-hint, .cl-reload-btn, .cl-wrap, .tab-bar, .btn-row, .top-bar, button { display:none !important; }
     body { background: white !important; }
@@ -809,7 +809,7 @@ function _submitPw() {
     <button class="btn-view"        id="btnField" onclick="setView('field')">💰 현장기록</button>
   </div>
   <button class="btn-refresh" id="btnRefresh" onclick="refreshData()">🔄 새로고침</button>
-  <span class="update-time">갱신: 2026-05-07 23:25</span>
+  <span class="update-time">갱신: 2026-05-07 23:55</span>
 </div>
 <div class="content" id="content">
   <div class="print-header" id="printHeader"></div>
