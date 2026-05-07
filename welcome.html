@@ -866,17 +866,21 @@
         <div class="all-agree-text">전체 약관에 동의합니다 (필수 + 선택 포함)</div>
       </div>
 
-      <!-- ─ 개인정보 / 마케팅 동의 ─ -->
-      <div style="margin:12px 0 6px; font-size:12px; font-weight:700; color:var(--text-light); letter-spacing:0.05em;">개인정보 · 마케팅</div>
+      <!-- ─ 개인정보 동의 ─ -->
+      <div style="margin:12px 0 6px; font-size:12px; font-weight:700; color:var(--text-light); letter-spacing:0.05em;">개인정보</div>
 
       <div class="term-item" onclick="toggleTerm(0)">
         <div class="term-check" id="term0"></div>
         <div class="term-text"><strong>[필수]</strong> <a href="privacy.html" target="_blank" onclick="event.stopPropagation()" style="color:var(--primary);text-decoration:underline;">개인정보 수집·이용 동의</a> — 예약 확인 및 서비스 제공 목적으로 수집합니다.</div>
       </div>
-      <div class="term-item" onclick="toggleTerm(1)">
-        <div class="term-check" id="term1"></div>
-        <div class="term-text"><strong>[선택]</strong> <a href="marketing.html" target="_blank" onclick="event.stopPropagation()" style="color:var(--primary);text-decoration:underline;">마케팅 정보 수신 동의</a> — 할인 혜택·이벤트 안내를 위해 활용됩니다.</div>
+
+      <!-- ─ 마케팅 수신 거부 (별도, 전체동의 미포함) ─ -->
+      <div style="margin:14px 0 6px; font-size:12px; font-weight:700; color:var(--text-light); letter-spacing:0.05em;">마케팅 메시지</div>
+      <div class="term-item" id="noMktRow" onclick="toggleNoMarketing()" style="background:#fff8f0; border:1px solid #ffd0a0; border-radius:8px;">
+        <div class="term-check" id="noMktCheck"></div>
+        <div class="term-text" style="color:#b84400;">퇴실 이후 마케팅 메시지(쿠폰·프로모션·이벤트 등)를 <strong>받지 않겠습니다</strong>.</div>
       </div>
+      <div style="font-size:11px; color:#aaa; margin:4px 4px 0; line-height:1.5;">체크하지 않으면 글램독의 할인 혜택·이벤트 안내를 받으실 수 있습니다.</div>
 
       <!-- ─ 이용 규칙 ─ -->
       <div style="margin:14px 0 6px; font-size:12px; font-weight:700; color:var(--text-light); letter-spacing:0.05em;">이용 규칙</div>
@@ -1041,8 +1045,9 @@ let dogCount    = 0;
 let selectedTime = "";
 let bbqChoice    = "";
 let bbqTime      = "";
-// terms[0]=개인정보(필수) [1]=마케팅(선택) [2~5]=이용규칙(필수) [6~8]=책임(필수) [9~11]=제재(필수)
+// terms[0]=개인정보(필수) [2~13]=이용규칙·책임·제재(필수) / terms[1]은 미사용(하위호환용 슬롯 유지)
 let terms        = new Array(14).fill(false);
+let noMarketing  = false;   // 마케팅 수신 거부 (전체동의 별도)
 let sigDrawn     = false;
 
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -1452,20 +1457,24 @@ function toggleTerm(idx) {
 function updateAllAgree() {
   const required = [0, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13];
   const allRequired = required.every(i => terms[i]);
-  const allIncOpt   = allRequired && terms[1];
-  document.getElementById("allAgreeCheck").classList.toggle("checked", allIncOpt);
+  document.getElementById("allAgreeCheck").classList.toggle("checked", allRequired);
 }
 
 function toggleAllAgree() {
   const required = [0, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13];
-  const allDone  = required.every(i => terms[i]) && terms[1];
+  const allDone  = required.every(i => terms[i]);
   const newVal   = !allDone;
-  terms = terms.map(() => newVal);
-  for (let i = 0; i < 12; i++) {
+  required.forEach(i => {
+    terms[i] = newVal;
     const el = document.getElementById("term" + i);
     if (el) el.classList.toggle("checked", newVal);
-  }
+  });
   document.getElementById("allAgreeCheck").classList.toggle("checked", newVal);
+}
+
+function toggleNoMarketing() {
+  noMarketing = !noMarketing;
+  document.getElementById("noMktCheck").classList.toggle("checked", noMarketing);
 }
 
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -1582,7 +1591,7 @@ async function submitForm() {
     bbq:         bbqChoice,
     bbqTime:     bbqChoice === "yes" ? bbqTime : "",
     request:     document.getElementById("request").value.trim(),
-    marketing:   terms[1] ? "동의" : "미동의",
+    marketing:   noMarketing ? "수신거부" : "동의",
     signature:   sigData,
     submittedAt: new Date().toLocaleString("ko-KR", { timeZone: "Asia/Seoul" }),
   };
