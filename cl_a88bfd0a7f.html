@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
 <meta http-equiv="refresh" content="1800">
 <title>글램독 영흥도 체크인 리스트</title>
-<!-- v2026-05-08 12:37 -->
+<!-- v2026-05-08 12:51 -->
 <style>
   :root {
     --navy: #1B3A5C;
@@ -808,7 +808,7 @@ function _submitPw() {
     <button class="btn-view"        id="btnField" onclick="setView('field')">💰 현장기록</button>
   </div>
   <button class="btn-refresh" id="btnRefresh" onclick="refreshData()">🔄 새로고침</button>
-  <span class="update-time">갱신: 2026-05-08 12:37</span>
+  <span class="update-time">갱신: 2026-05-08 12:51</span>
 </div>
 <div class="content" id="content">
   <div class="print-header" id="printHeader"></div>
@@ -928,16 +928,22 @@ function writeLine() {
 }
 
 // ── 웰컴 등록 데이터 조회 ──────────────────────────────────
-// _welcomeData: { "2026-04-20": { "A101": {...}, ... }, ... }
-function getWelcomeEntry(dateStr, room) {
+// _welcomeData: { "2026-04-20": { "지점|||객실명": {...}, ... }, ... }
+function getWelcomeEntry(dateStr, branch, room) {
   if (typeof _welcomeData === 'undefined') return null;
   var day = _welcomeData[dateStr];
   if (!day) return null;
+  // 정확한 키 매칭
+  var key = (branch || '') + '|||' + room;
+  if (day[key]) return day[key];
   // 객실명 정규화 매칭 (공백/특수문자 차이 허용)
-  if (day[room]) return day[room];
-  var norm = room.replace(/\s+/g, '').toLowerCase();
+  var normRoom = room.replace(/\s+/g, '').toLowerCase();
+  var normBr   = (branch || '').replace(/\s+/g, '').toLowerCase();
   for (var k in day) {
-    if (k.replace(/\s+/g, '').toLowerCase() === norm) return day[k];
+    var parts = k.split('|||');
+    var kBr   = (parts[0] || '').replace(/\s+/g, '').toLowerCase();
+    var kRm   = (parts[1] || '').replace(/\s+/g, '').toLowerCase();
+    if (kBr === normBr && kRm === normRoom) return day[k];
   }
   return null;
 }
@@ -1102,7 +1108,7 @@ function renderTable() {
     const fldBtn = (typeof _fieldEntries !== 'undefined')
       ? `<td class="col-field"><button class="field-btn${hasRec?' has-record':''}" data-bno="${bno}" data-room="${r.room}" data-guest="${r.guest}" onclick="openFM(this)">${hasRec ? '✏️ '+Number(_fieldEntries[bno].total).toLocaleString()+'원 (수정)' : '+ 현장기록'}</button></td>`
       : '';
-    const wd = getWelcomeEntry(currentDate, r.room);
+    const wd = getWelcomeEntry(currentDate, r.branch, r.room);
     const welcomeCheck = wd
       ? ' <span style="color:#16a34a;font-weight:900;font-size:15px;vertical-align:middle" title="웰컴등록완료">✓</span>'
       : '';
