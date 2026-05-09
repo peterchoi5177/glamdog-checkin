@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
 <meta http-equiv="refresh" content="1800">
 <title>글램독 체크인 리스트 (본사)</title>
-<!-- v2026-05-09 13:10 -->
+<!-- v2026-05-09 13:13 -->
 <style>
   :root {
     --navy: #1B3A5C;
@@ -805,6 +805,53 @@
     white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
   }
 
+  /* 첨부 (HQ 공지 작성) */
+  .op-btn-ghost {
+    background: transparent; color: var(--navy);
+    border: 1px solid var(--border);
+  }
+  .op-btn-ghost:hover { background: #f4f6f9; }
+  .op-upload-status {
+    color: var(--blue); font-size: 12px; margin-top: 4px; min-height: 16px;
+  }
+  .op-attachments {
+    display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px;
+  }
+  .op-attachment-chip {
+    display: inline-flex; align-items: center; gap: 6px;
+    border: 1px solid var(--border); border-radius: 6px;
+    padding: 6px 10px; font-size: 12px;
+    background: #fafafa;
+  }
+  .op-attachment-thumb {
+    width: 32px; height: 32px; object-fit: cover; border-radius: 4px;
+    background: #eee;
+  }
+  .op-attachment-icon {
+    width: 32px; height: 32px; display: flex; align-items: center; justify-content: center;
+    background: #eef2f7; border-radius: 4px; font-size: 16px;
+  }
+  .op-attachment-name {
+    max-width: 180px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  }
+  .op-attachment-remove {
+    color: #c00; cursor: pointer; font-size: 14px;
+    border: none; background: none; padding: 0 2px;
+  }
+  .op-attachment-remove:hover { color: #900; }
+
+  /* 공지 본문 안의 이미지/링크 (renderMarkdown 출력) */
+  .op-notice-item-content img,
+  .br-notice-row-content img,
+  .notice-banner-modal-content img {
+    max-width: 100%; border-radius: 6px; margin: 6px 0; display: block;
+  }
+  .op-notice-item-content a,
+  .br-notice-row-content a,
+  .notice-banner-modal-content a {
+    color: var(--blue); text-decoration: underline; word-break: break-all;
+  }
+
   /* ── 현장기록 대시보드 ── */
   .fd-controls { display:flex; gap:10px; align-items:center; padding:12px 0 8px; flex-wrap:wrap; }
   .fd-controls label { font-size:13px; color:#555; }
@@ -919,7 +966,7 @@ function _submitPw() {
     <option value="">🏠 예약현황 (지점 선택)</option>
     <option value="cl_6a85a13087.html">가평(가평점)</option><option value="cl_806a86626b.html">가평(청평점)</option><option value="cl_8eacf6d6c1.html">경주</option><option value="cl_a88bfd0a7f.html">영흥도</option><option value="cl_9edad9ddd2.html">양양</option><option value="cl_d3039f7a59.html">통영</option>
   </select>
-  <span class="update-time">갱신: 2026-05-09 13:10</span>
+  <span class="update-time">갱신: 2026-05-09 13:13</span>
 </div>
 <div class="tabs" id="tabs"></div>
 <div class="content" id="content">
@@ -952,7 +999,14 @@ function _submitPw() {
             <label>제목</label>
             <input type="text" id="noTitle" placeholder="공지 제목">
             <label>내용</label>
-            <textarea id="noContent" rows="4" placeholder="공지 내용"></textarea>
+            <textarea id="noContent" rows="4" placeholder="공지 내용 (사진 붙여넣기/드래그/첨부 가능)"></textarea>
+            <div>
+              <button type="button" class="op-btn op-btn-ghost" onclick="document.getElementById('noFileInput').click()">📎 파일 첨부</button>
+              <input type="file" id="noFileInput" multiple accept="image/*,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,text/plain" style="display:none" onchange="onNoticeFileInput(this)">
+              <span class="op-attachment-hint" style="font-size:11px;color:#777;margin-left:8px">이미지는 자동으로 본문에 삽입됩니다</span>
+            </div>
+            <div id="noUploadStatus" class="op-upload-status"></div>
+            <div id="noAttachments" class="op-attachments"></div>
             <div class="op-form-row">
               <div>
                 <label>유형</label>
@@ -1582,7 +1636,127 @@ function initNoticeDash() {
     }).join('');
     wrap.dataset.populated = '1';
   }
+  bindNoticeAttachEvents();
   loadNoticeList();
+}
+
+function bindNoticeAttachEvents() {
+  var ta = document.getElementById('noContent');
+  if (!ta || ta.dataset.attachBound) return;
+  ta.dataset.attachBound = '1';
+  ta.addEventListener('paste', function(e){
+    var items = (e.clipboardData || {}).items || [];
+    var files = [];
+    for (var i = 0; i < items.length; i++) {
+      if (items[i].kind === 'file') { var f = items[i].getAsFile(); if (f) files.push(f); }
+    }
+    if (files.length) { e.preventDefault(); handleAttachments(files); }
+  });
+  ta.addEventListener('dragover', function(e){ e.preventDefault(); });
+  ta.addEventListener('drop', function(e){
+    var files = (e.dataTransfer && e.dataTransfer.files) ? Array.prototype.slice.call(e.dataTransfer.files) : [];
+    if (files.length) { e.preventDefault(); handleAttachments(files); }
+  });
+}
+
+function onNoticeFileInput(input) {
+  if (!input.files || !input.files.length) return;
+  handleAttachments(Array.prototype.slice.call(input.files));
+  input.value = '';
+}
+
+function handleAttachments(files) {
+  if (!files.length) return;
+  var ta     = document.getElementById('noContent');
+  var status = document.getElementById('noUploadStatus');
+  var done = 0;
+  if (status) status.textContent = '📤 업로드 중... (0/' + files.length + ')';
+  files.forEach(function(file){
+    var reader = new FileReader();
+    reader.onload = function() {
+      var b64 = String(reader.result || '').split(',')[1] || '';
+      fetch(GAS_HQ, { method:'POST', body: JSON.stringify({
+        action:'uploadAttachment', filename:file.name, mimeType:file.type, base64:b64
+      }) })
+      .then(function(r){ return r.json(); })
+      .then(function(res){
+        done++;
+        if (res && res.ok) {
+          insertAttachmentIntoTextarea(ta, res);
+          addAttachmentChip(res);
+        } else if (status) {
+          status.textContent = '❌ 업로드 실패: ' + ((res && res.error) || file.name);
+        }
+        if (status) {
+          if (done === files.length) {
+            status.textContent = '✅ 업로드 완료';
+            setTimeout(function(){ status.textContent = ''; }, 2000);
+          } else {
+            status.textContent = '📤 업로드 중... (' + done + '/' + files.length + ')';
+          }
+        }
+      })
+      .catch(function(){
+        done++;
+        if (status) status.textContent = '❌ 네트워크 오류';
+      });
+    };
+    reader.readAsDataURL(file);
+  });
+}
+
+function insertAttachmentIntoTextarea(ta, res) {
+  if (!ta) return;
+  var snippet = res.isImage
+    ? '\n![' + (res.filename || 'image') + '](' + res.url + ')\n'
+    : '\n[📎 ' + (res.filename || 'file') + '](' + res.url + ')\n';
+  var start = (typeof ta.selectionStart === 'number') ? ta.selectionStart : ta.value.length;
+  var end   = (typeof ta.selectionEnd   === 'number') ? ta.selectionEnd   : ta.value.length;
+  ta.value = ta.value.slice(0, start) + snippet + ta.value.slice(end);
+  var cursor = start + snippet.length;
+  try { ta.selectionStart = ta.selectionEnd = cursor; ta.focus(); } catch(e) {}
+}
+
+function addAttachmentChip(res) {
+  var wrap = document.getElementById('noAttachments');
+  if (!wrap) return;
+  var chip = document.createElement('div');
+  chip.className = 'op-attachment-chip';
+  chip.dataset.url = res.url;
+  var thumb = res.isImage
+    ? ('<img class="op-attachment-thumb" src="' + res.url + '" alt="">')
+    : ('<span class="op-attachment-icon">📎</span>');
+  chip.innerHTML = thumb +
+    '<span class="op-attachment-name" title="' + opEscapeHtml(res.filename) + '">' + opEscapeHtml(res.filename) + '</span>' +
+    '<button type="button" class="op-attachment-remove" title="본문에서 제거">×</button>';
+  chip.querySelector('.op-attachment-remove').addEventListener('click', function(){
+    removeAttachmentLine(res.url);
+    chip.remove();
+  });
+  wrap.appendChild(chip);
+}
+
+function removeAttachmentLine(url) {
+  var ta = document.getElementById('noContent');
+  if (!ta) return;
+  var lines = ta.value.split('\n');
+  var kept = lines.filter(function(line){ return line.indexOf(url) < 0; });
+  ta.value = kept.join('\n');
+}
+
+function renderMarkdown(text) {
+  var s = String(text == null ? '' : text)
+    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  s = s.replace(/!\[([^\]]*)\]\(([^)]+)\)/g, function(_m, alt, url){
+    if (!/^https:\/\/(drive\.google\.com|lh\d+\.googleusercontent\.com)/.test(url)) return '';
+    return '<img src="' + url + '" alt="' + alt + '" loading="lazy">';
+  });
+  s = s.replace(/\[([^\]]+)\]\(([^)]+)\)/g, function(_m, txt, url){
+    if (!/^https?:\/\//.test(url)) return txt;
+    return '<a href="' + url + '" target="_blank" rel="noopener">' + txt + '</a>';
+  });
+  s = s.replace(/\n/g, '<br>');
+  return s;
 }
 
 function onNoticeTargetAllChange() {
@@ -1620,7 +1794,7 @@ function renderNoticeList(items) {
         '<span class="op-notice-item-title">' + opEscapeHtml(it.title) + '</span>' +
         '<span class="op-notice-item-meta">' + opEscapeHtml(formatNoticeDate(it.createdAt)) + '</span>' +
       '</div>' +
-      '<div class="op-notice-item-content">' + opEscapeHtml(it.content) + '</div>' +
+      '<div class="op-notice-item-content">' + renderMarkdown(it.content) + '</div>' +
       '<div class="op-notice-item-foot">' +
         '<span>대상: ' + opEscapeHtml(it.target) + ' · 만료: ' + opEscapeHtml(expires) + ' · 읽음 ' + (it.readCount || 0) + '/' + BRANCH_ORDER.length + '</span>' +
         '<button class="op-btn ' + toggleClass + '" style="padding:4px 10px;font-size:11px;margin:0" onclick="toggleNoticeActive(\'' + it.noticeId + '\',' + nextActive + ')">' + toggleLabel + '</button>' +
@@ -1658,6 +1832,8 @@ function submitNotice() {
       document.getElementById('noTargetAll').checked = true;
       onNoticeTargetAllChange();
       Array.prototype.forEach.call(document.querySelectorAll('.no-tgt-br'), function(c){ c.checked = false; });
+      var atW = document.getElementById('noAttachments');   if (atW) atW.innerHTML = '';
+      var stW = document.getElementById('noUploadStatus');  if (stW) stW.textContent = '';
       loadNoticeList();
     })
     .catch(function(){ showFormMsg('네트워크 오류', 'error'); });

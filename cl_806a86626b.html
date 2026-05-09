@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
 <meta http-equiv="refresh" content="1800">
 <title>글램독 가평(청평점) 체크인 리스트</title>
-<!-- v2026-05-09 13:10 -->
+<!-- v2026-05-09 13:13 -->
 <style>
   :root {
     --navy: #1B3A5C;
@@ -804,6 +804,53 @@
     font-size: 12px; color: #555;
     white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
   }
+
+  /* 첨부 (HQ 공지 작성) */
+  .op-btn-ghost {
+    background: transparent; color: var(--navy);
+    border: 1px solid var(--border);
+  }
+  .op-btn-ghost:hover { background: #f4f6f9; }
+  .op-upload-status {
+    color: var(--blue); font-size: 12px; margin-top: 4px; min-height: 16px;
+  }
+  .op-attachments {
+    display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px;
+  }
+  .op-attachment-chip {
+    display: inline-flex; align-items: center; gap: 6px;
+    border: 1px solid var(--border); border-radius: 6px;
+    padding: 6px 10px; font-size: 12px;
+    background: #fafafa;
+  }
+  .op-attachment-thumb {
+    width: 32px; height: 32px; object-fit: cover; border-radius: 4px;
+    background: #eee;
+  }
+  .op-attachment-icon {
+    width: 32px; height: 32px; display: flex; align-items: center; justify-content: center;
+    background: #eef2f7; border-radius: 4px; font-size: 16px;
+  }
+  .op-attachment-name {
+    max-width: 180px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  }
+  .op-attachment-remove {
+    color: #c00; cursor: pointer; font-size: 14px;
+    border: none; background: none; padding: 0 2px;
+  }
+  .op-attachment-remove:hover { color: #900; }
+
+  /* 공지 본문 안의 이미지/링크 (renderMarkdown 출력) */
+  .op-notice-item-content img,
+  .br-notice-row-content img,
+  .notice-banner-modal-content img {
+    max-width: 100%; border-radius: 6px; margin: 6px 0; display: block;
+  }
+  .op-notice-item-content a,
+  .br-notice-row-content a,
+  .notice-banner-modal-content a {
+    color: var(--blue); text-decoration: underline; word-break: break-all;
+  }
 </style>
 </head>
 <body>
@@ -956,7 +1003,7 @@ function _submitPw() {
     <button class="btn-view"        id="btnNotice" onclick="setView('notice')">📢 공지사항</button>
   </div>
   <button class="btn-refresh" id="btnRefresh" onclick="refreshData()">🔄 새로고침</button>
-  <span class="update-time">갱신: 2026-05-09 13:10</span>
+  <span class="update-time">갱신: 2026-05-09 13:13</span>
 </div>
 <div id="brNoticeBanner"></div>
 <div class="content" id="content">
@@ -2562,7 +2609,7 @@ function renderNoticeHistory() {
         '<span class="br-notice-row-title">' + opEscapeHtml(n.title) + '</span>' +
         '<span class="br-notice-row-meta">' + opEscapeHtml(formatNoticeDate(n.createdAt)) + '</span>' +
       '</div>' +
-      '<div class="br-notice-row-content">' + opEscapeHtml(n.content) + '</div>' +
+      '<div class="br-notice-row-content">' + renderMarkdown(n.content) + '</div>' +
     '</div>';
   }).join('');
 }
@@ -2580,7 +2627,7 @@ function openNoticeModal(noticeId) {
     '<div class="notice-banner-modal" onclick="event.stopPropagation()">' +
       '<h3>' + opEscapeHtml(n.title) + '</h3>' +
       '<div class="notice-banner-modal-meta">' + opEscapeHtml(n.type) + ' · ' + opEscapeHtml(formatNoticeDate(n.createdAt)) + '</div>' +
-      '<div class="notice-banner-modal-content">' + opEscapeHtml(n.content) + '</div>' +
+      '<div class="notice-banner-modal-content">' + renderMarkdown(n.content) + '</div>' +
       '<div class="notice-banner-modal-buttons">' +
         '<button class="op-btn op-btn-primary" onclick="markRead(\'' + n.noticeId + '\')">확인</button>' +
       '</div>' +
@@ -2618,6 +2665,21 @@ function opEscapeHtml(s) {
     .replace(/>/g, '&gt;')
     .replace(/"/g, '&quot;')
     .replace(/'/g, '&#39;');
+}
+
+function renderMarkdown(text) {
+  var s = String(text == null ? '' : text)
+    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  s = s.replace(/!\[([^\]]*)\]\(([^)]+)\)/g, function(_m, alt, url){
+    if (!/^https:\/\/(drive\.google\.com|lh\d+\.googleusercontent\.com)/.test(url)) return '';
+    return '<img src="' + url + '" alt="' + alt + '" loading="lazy">';
+  });
+  s = s.replace(/\[([^\]]+)\]\(([^)]+)\)/g, function(_m, txt, url){
+    if (!/^https?:\/\//.test(url)) return txt;
+    return '<a href="' + url + '" target="_blank" rel="noopener">' + txt + '</a>';
+  });
+  s = s.replace(/\n/g, '<br>');
+  return s;
 }
 
 loadBranchNotices();
