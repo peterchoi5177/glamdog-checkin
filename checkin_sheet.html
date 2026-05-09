@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
 <meta http-equiv="refresh" content="1800">
 <title>글램독 체크인 리스트 (본사)</title>
-<!-- v2026-05-09 13:13 -->
+<!-- v2026-05-09 13:33 -->
 <style>
   :root {
     --navy: #1B3A5C;
@@ -852,6 +852,124 @@
     color: var(--blue); text-decoration: underline; word-break: break-all;
   }
 
+  /* ═════════ 운영확장 — 지출/이슈 공통 ═════════ */
+  .op-filter-row {
+    display: flex; flex-wrap: wrap; gap: 8px; align-items: center;
+    margin-bottom: 16px;
+  }
+  .op-filter-row select,
+  .op-filter-row input[type=date] {
+    padding: 6px 10px; border: 1px solid var(--border); border-radius: 4px;
+    font-size: 13px; background: white;
+  }
+  .op-filter-row label {
+    font-size: 12px; color: #555; margin-right: 4px;
+  }
+  .op-summary-grid {
+    display: grid; grid-template-columns: repeat(4, 1fr);
+    gap: 12px; margin-bottom: 12px;
+  }
+  @media (max-width: 800px) {
+    .op-summary-grid { grid-template-columns: 1fr 1fr; }
+  }
+  .op-summary-card {
+    background: white; border: 1px solid var(--border); border-radius: 6px;
+    padding: 12px 14px;
+  }
+  .op-summary-label { font-size: 12px; color: #666; margin-bottom: 4px; }
+  .op-summary-value { font-size: 18px; font-weight: 700; color: var(--navy); }
+  .op-grand-total {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 12px 16px; background: var(--navy); color: white;
+    border-radius: 6px; font-size: 14px; font-weight: 700; margin-bottom: 12px;
+  }
+  .op-pager {
+    text-align: center; padding: 10px; color: #666; font-size: 12px;
+  }
+  .op-error {
+    color: #c00; padding: 16px; text-align: center; font-size: 13px;
+    background: #fff4f4; border: 1px solid #f5c2c2; border-radius: 6px;
+  }
+  .op-table tbody tr {
+    cursor: default;
+  }
+  .op-table.clickable tbody tr { cursor: pointer; }
+  .op-table.clickable tbody tr:hover td { background: #eef4fb; }
+
+  /* 이슈 상태 배지 */
+  .op-issue-status {
+    display: inline-block; padding: 2px 8px; border-radius: 10px;
+    font-size: 11px; font-weight: 700; color: white;
+  }
+  .op-issue-status-receive { background: #888; }
+  .op-issue-status-progress { background: #2D5F8A; }
+  .op-issue-status-ordered { background: #7B61FF; }
+  .op-issue-status-done { background: #2e8b57; }
+  .op-issue-status-hold { background: #d4a300; }
+  .op-issue-status-abandon { background: #c00; }
+
+  /* 우선순위 배지 */
+  .op-priority {
+    display: inline-block; padding: 1px 6px; border-radius: 8px;
+    font-size: 11px; font-weight: 600;
+    border: 1px solid var(--border); color: #333;
+  }
+  .op-priority-high   { background: #fff0f0; color: #c00;    border-color: #f5b8b8; }
+  .op-priority-mid    { background: #fff6e6; color: #b06b00; border-color: #f0d6a0; }
+  .op-priority-low    { background: #f3f7fc; color: #2D5F8A; border-color: #c6d8eb; }
+
+  /* 모달 (이슈 상세) */
+  .op-modal-bg {
+    position: fixed; inset: 0; background: rgba(0,0,0,0.55);
+    z-index: 1000; display: flex; align-items: center; justify-content: center;
+    padding: 20px;
+  }
+  .op-modal {
+    background: white; border-radius: 8px; max-width: 720px; width: 100%;
+    max-height: 88vh; overflow-y: auto;
+    display: flex; flex-direction: column;
+  }
+  .op-modal-head {
+    padding: 14px 20px; border-bottom: 1px solid #e5e7eb;
+    display: flex; align-items: center; gap: 10px;
+  }
+  .op-modal-title { flex: 1; font-size: 16px; font-weight: 700; color: var(--navy); }
+  .op-modal-close {
+    background: none; border: none; font-size: 22px; color: #888;
+    cursor: pointer; padding: 0 4px;
+  }
+  .op-modal-body { padding: 16px 20px; }
+  .op-modal-section { margin-bottom: 14px; }
+  .op-modal-section-label {
+    font-size: 11px; color: #666; margin-bottom: 4px; font-weight: 600;
+  }
+  .op-modal-section-content {
+    font-size: 14px; color: #333; white-space: pre-wrap; line-height: 1.5;
+  }
+
+  /* 댓글 스레드 */
+  .op-comment-list {
+    border: 1px solid #e5e7eb; border-radius: 6px; padding: 8px;
+    background: #fafafa; max-height: 280px; overflow-y: auto; margin-bottom: 8px;
+  }
+  .op-comment {
+    padding: 8px 10px; margin-bottom: 6px;
+    background: white; border-radius: 4px; border: 1px solid #e5e7eb;
+  }
+  .op-comment-head {
+    display: flex; gap: 8px; align-items: center; margin-bottom: 4px;
+  }
+  .op-comment-author { font-weight: 700; font-size: 12px; }
+  .op-comment-author.hq { color: var(--navy); }
+  .op-comment-author.branch { color: var(--accent); }
+  .op-comment-time { font-size: 11px; color: #888; }
+  .op-comment-content { font-size: 13px; color: #333; white-space: pre-wrap; }
+  .op-comment-form { display: flex; gap: 8px; }
+  .op-comment-form textarea {
+    flex: 1; padding: 7px 10px; border: 1px solid var(--border); border-radius: 4px;
+    font-size: 13px; font-family: inherit; resize: vertical; min-height: 50px;
+  }
+
   /* ── 현장기록 대시보드 ── */
   .fd-controls { display:flex; gap:10px; align-items:center; padding:12px 0 8px; flex-wrap:wrap; }
   .fd-controls label { font-size:13px; color:#555; }
@@ -966,7 +1084,7 @@ function _submitPw() {
     <option value="">🏠 예약현황 (지점 선택)</option>
     <option value="cl_6a85a13087.html">가평(가평점)</option><option value="cl_806a86626b.html">가평(청평점)</option><option value="cl_8eacf6d6c1.html">경주</option><option value="cl_a88bfd0a7f.html">영흥도</option><option value="cl_9edad9ddd2.html">양양</option><option value="cl_d3039f7a59.html">통영</option>
   </select>
-  <span class="update-time">갱신: 2026-05-09 13:13</span>
+  <span class="update-time">갱신: 2026-05-09 13:33</span>
 </div>
 <div class="tabs" id="tabs"></div>
 <div class="content" id="content">
@@ -1038,16 +1156,67 @@ function _submitPw() {
     </div>
   </div>
 
-  <!-- ═════════ 💸 지출 현황 (HQ) — STEP 3에서 채워짐 ═════════ -->
+  <!-- ═════════ 💸 지출 현황 (HQ) ═════════ -->
   <div id="expenseSection" style="display:none">
-    <div class="op-wrap"><div class="op-loading">지출 현황 — STEP 3 구현 예정</div></div>
+    <div class="op-wrap">
+      <div class="op-filter-row">
+        <label>지점</label>
+        <select id="expBranchSel"></select>
+        <label>기간</label>
+        <select id="expPeriodSel" onchange="onExpPeriodChange()">
+          <option value="thisMonth">이번달</option>
+          <option value="lastMonth">지난달</option>
+          <option value="custom">직접 입력</option>
+        </select>
+        <input type="date" id="expFrom" style="display:none">
+        <input type="date" id="expTo" style="display:none">
+        <button class="op-btn op-btn-primary" style="margin:0;padding:6px 14px" onclick="loadExpenseData()">🔍 조회</button>
+      </div>
+      <div class="op-summary-grid" id="expSummaryArea"></div>
+      <div class="op-grand-total" id="expGrandTotal" style="display:none"></div>
+      <div id="expTableArea"><div class="op-empty">조회 버튼을 눌러주세요.</div></div>
+    </div>
   </div>
 
-  <!-- ═════════ 🔧 이슈 관리 (HQ) — STEP 4에서 채워짐 ═════════ -->
+  <!-- ═════════ 🔧 이슈 관리 (HQ) ═════════ -->
   <div id="issueSection" style="display:none">
-    <div class="op-wrap"><div class="op-loading">이슈 관리 — STEP 4 구현 예정</div></div>
+    <div class="op-wrap">
+      <div class="op-filter-row">
+        <label>지점</label>
+        <select id="isBranchSel"></select>
+        <label>상태</label>
+        <select id="isStatusSel">
+          <option value="전체">전체</option>
+          <option value="접수됨">접수됨</option>
+          <option value="처리중">처리중</option>
+          <option value="주문완료">주문완료</option>
+          <option value="완료">완료</option>
+          <option value="보류">보류</option>
+          <option value="포기">포기</option>
+        </select>
+        <label>카테고리</label>
+        <select id="isCatSel">
+          <option value="전체">전체</option>
+          <option value="시설">시설</option>
+          <option value="소모품">소모품</option>
+          <option value="청소">청소</option>
+          <option value="운영">운영</option>
+          <option value="기타">기타</option>
+        </select>
+        <label>우선순위</label>
+        <select id="isPrioritySel">
+          <option value="전체">전체</option>
+          <option value="높음">높음</option>
+          <option value="중간">중간</option>
+          <option value="낮음">낮음</option>
+        </select>
+        <button class="op-btn op-btn-primary" style="margin:0;padding:6px 14px" onclick="loadIssues()">🔍 조회</button>
+      </div>
+      <div id="issueTableArea"><div class="op-empty">조회 버튼을 눌러주세요.</div></div>
+    </div>
   </div>
 </div>
+<div id="hqIssueModal"></div>
 <div class="print-bar">
   <button class="btn-print" onclick="window.print()">🖨️ 인쇄</button>
   <span class="print-tip">세로(Portrait) A4로 인쇄하세요.</span>
@@ -1869,6 +2038,296 @@ function opEscapeHtml(s) {
     .replace(/>/g, '&gt;')
     .replace(/"/g, '&quot;')
     .replace(/'/g, '&#39;');
+}
+
+// ─── 운영확장 — 지출 현황 (HQ) ─────
+function _padN(n) { return n < 10 ? '0' + n : '' + n; }
+function _ymd(dt) { return dt.getFullYear() + '-' + _padN(dt.getMonth()+1) + '-' + _padN(dt.getDate()); }
+
+function initExpenseDash() {
+  var sel = document.getElementById('expBranchSel');
+  if (sel && !sel.dataset.populated) {
+    sel.innerHTML = '<option value="전체">전체 지점</option>' +
+      BRANCH_ORDER.map(function(b){ return '<option value="' + b + '">' + b + '</option>'; }).join('');
+    sel.dataset.populated = '1';
+  }
+  setExpensePeriodPreset('thisMonth');
+  loadExpenseData();
+}
+
+function setExpensePeriodPreset(kind) {
+  var d = new Date();
+  var y = d.getFullYear();
+  var m = d.getMonth() + 1;
+  var fromEl = document.getElementById('expFrom');
+  var toEl   = document.getElementById('expTo');
+  if (kind === 'thisMonth') {
+    fromEl.value = y + '-' + _padN(m) + '-01';
+    toEl.value   = y + '-' + _padN(m) + '-' + _padN(new Date(y, m, 0).getDate());
+  } else if (kind === 'lastMonth') {
+    var lm = m === 1 ? 12 : m - 1;
+    var ly = m === 1 ? y - 1 : y;
+    fromEl.value = ly + '-' + _padN(lm) + '-01';
+    toEl.value   = ly + '-' + _padN(lm) + '-' + _padN(new Date(ly, lm, 0).getDate());
+  }
+}
+
+function onExpPeriodChange() {
+  var v = document.getElementById('expPeriodSel').value;
+  var fromEl = document.getElementById('expFrom');
+  var toEl   = document.getElementById('expTo');
+  if (v === 'custom') {
+    fromEl.style.display = '';
+    toEl.style.display   = '';
+  } else {
+    fromEl.style.display = 'none';
+    toEl.style.display   = 'none';
+    setExpensePeriodPreset(v);
+    loadExpenseData();
+  }
+}
+
+function loadExpenseData() {
+  var area  = document.getElementById('expTableArea');
+  var sum   = document.getElementById('expSummaryArea');
+  var grand = document.getElementById('expGrandTotal');
+  if (!area || !sum) return;
+  area.innerHTML = '<div class="op-loading">⏳ 조회 중...</div>';
+  sum.innerHTML  = '';
+  grand.style.display = 'none';
+  var branch = document.getElementById('expBranchSel').value || '전체';
+  var from   = document.getElementById('expFrom').value;
+  var to     = document.getElementById('expTo').value;
+  if (!from || !to) { area.innerHTML = '<div class="op-empty">기간을 선택해 주세요.</div>'; return; }
+  fetch(GAS_HQ + '?action=getExpenses&branch=' + encodeURIComponent(branch) + '&fromDate=' + from + '&toDate=' + to)
+    .then(function(r){ return r.json(); })
+    .then(function(res){
+      if (!res || !res.ok) {
+        area.innerHTML = '<div class="op-error">조회 실패: ' + ((res && res.error) || '알 수 없는 오류') + '</div>';
+        return;
+      }
+      var rows = res.data || [];
+      renderExpenseSummary(rows);
+      renderExpenseTable(rows);
+    })
+    .catch(function(){ area.innerHTML = '<div class="op-error">네트워크 오류</div>'; });
+}
+
+function renderExpenseSummary(rows) {
+  var cats = ['현금지출', '카드지출', '청소용역', '본사입금'];
+  var byCat = { '현금지출':0, '카드지출':0, '청소용역':0, '본사입금':0 };
+  var total = 0;
+  rows.forEach(function(r){
+    var amt = Number(r.amount) || 0;
+    if (byCat[r.category] !== undefined) byCat[r.category] += amt;
+    total += amt;
+  });
+  var html = cats.map(function(c){
+    return '<div class="op-summary-card"><div class="op-summary-label">' + c + '</div>' +
+      '<div class="op-summary-value">' + byCat[c].toLocaleString() + '원</div></div>';
+  }).join('');
+  document.getElementById('expSummaryArea').innerHTML = html;
+  var grand = document.getElementById('expGrandTotal');
+  grand.innerHTML = '<span>전체 합계 (' + rows.length + '건)</span><span>' + total.toLocaleString() + '원</span>';
+  grand.style.display = '';
+}
+
+function renderExpenseTable(rows) {
+  var area = document.getElementById('expTableArea');
+  if (!rows.length) { area.innerHTML = '<div class="op-empty">아직 등록된 지출 내역이 없습니다.</div>'; return; }
+  rows.sort(function(a, b){ return a.date < b.date ? 1 : (a.date > b.date ? -1 : 0); });
+  var pageLimit = 100;
+  var visible = rows.slice(0, pageLimit);
+  var rest = rows.length - pageLimit;
+  var thead = '<thead><tr><th>날짜</th><th>지점</th><th>구분</th><th style="text-align:right">금액</th><th>비고</th><th>등록자</th></tr></thead>';
+  var tbody = '<tbody>' + visible.map(function(r){
+    return '<tr>' +
+      '<td>' + opEscapeHtml(r.date) + '</td>' +
+      '<td>' + opEscapeHtml(r.branch) + '</td>' +
+      '<td>' + opEscapeHtml(r.category) + '</td>' +
+      '<td style="text-align:right;font-weight:600">' + (Number(r.amount)||0).toLocaleString() + '원</td>' +
+      '<td>' + opEscapeHtml(r.memo || '') + '</td>' +
+      '<td>' + opEscapeHtml(r.registeredBy || '') + '</td>' +
+    '</tr>';
+  }).join('') + '</tbody>';
+  var more = rest > 0 ? '<div class="op-pager">최근 ' + pageLimit + '건만 표시 — 더 보려면 기간을 좁혀주세요 (+' + rest + '건)</div>' : '';
+  area.innerHTML = '<table class="op-table">' + thead + tbody + '</table>' + more;
+}
+
+// ─── 운영확장 — 이슈 관리 (HQ) ─────
+function statusBadgeClass(s) {
+  return ({'접수됨':'op-issue-status-receive','처리중':'op-issue-status-progress',
+    '주문완료':'op-issue-status-ordered','완료':'op-issue-status-done',
+    '보류':'op-issue-status-hold','포기':'op-issue-status-abandon'})[s] || 'op-issue-status-receive';
+}
+function priorityBadgeClass(p) {
+  return ({'높음':'op-priority-high','중간':'op-priority-mid','낮음':'op-priority-low'})[p] || 'op-priority-mid';
+}
+
+function initIssueDash() {
+  var sel = document.getElementById('isBranchSel');
+  if (sel && !sel.dataset.populated) {
+    sel.innerHTML = '<option value="전체">전체 지점</option>' +
+      BRANCH_ORDER.map(function(b){ return '<option value="' + b + '">' + b + '</option>'; }).join('');
+    sel.dataset.populated = '1';
+  }
+  loadIssues();
+}
+
+function loadIssues() {
+  var area = document.getElementById('issueTableArea');
+  if (!area) return;
+  area.innerHTML = '<div class="op-loading">⏳ 조회 중...</div>';
+  var branch = document.getElementById('isBranchSel').value || '전체';
+  var status = document.getElementById('isStatusSel').value || '전체';
+  fetch(GAS_HQ + '?action=getIssues&branch=' + encodeURIComponent(branch) + '&status=' + encodeURIComponent(status))
+    .then(function(r){ return r.json(); })
+    .then(function(res){
+      if (!res || !res.ok) { area.innerHTML = '<div class="op-error">조회 실패: ' + ((res && res.error)||'오류') + '</div>'; return; }
+      var cat = document.getElementById('isCatSel').value || '전체';
+      var pri = document.getElementById('isPrioritySel').value || '전체';
+      var rows = (res.data || []).filter(function(it){
+        if (cat !== '전체' && it.category !== cat) return false;
+        if (pri !== '전체' && it.priority !== pri) return false;
+        return true;
+      });
+      renderIssueTable(rows);
+    })
+    .catch(function(){ area.innerHTML = '<div class="op-error">네트워크 오류</div>'; });
+}
+
+var _hqIssueCache = {};
+
+function renderIssueTable(rows) {
+  var area = document.getElementById('issueTableArea');
+  if (!rows.length) { area.innerHTML = '<div class="op-empty">조건에 맞는 이슈가 없습니다.</div>'; return; }
+  rows.sort(function(a, b){ return a.createdAt < b.createdAt ? 1 : (a.createdAt > b.createdAt ? -1 : 0); });
+  _hqIssueCache = {};
+  rows.forEach(function(it){ _hqIssueCache[String(it.issueId)] = it; });
+  var pageLimit = 100;
+  var visible = rows.slice(0, pageLimit);
+  var rest = rows.length - pageLimit;
+  var thead = '<thead><tr><th>지점</th><th>제목</th><th>카테고리</th><th>우선순위</th><th>상태</th><th>등록일</th><th style="text-align:right">댓글</th></tr></thead>';
+  var tbody = '<tbody>' + visible.map(function(it){
+    return '<tr onclick="openIssueDetail(\'' + it.issueId + '\')">' +
+      '<td>' + opEscapeHtml(it.branch) + '</td>' +
+      '<td><strong>' + opEscapeHtml(it.title) + '</strong></td>' +
+      '<td>' + opEscapeHtml(it.category) + '</td>' +
+      '<td><span class="op-priority ' + priorityBadgeClass(it.priority) + '">' + opEscapeHtml(it.priority) + '</span></td>' +
+      '<td><span class="op-issue-status ' + statusBadgeClass(it.status) + '">' + opEscapeHtml(it.status) + '</span></td>' +
+      '<td>' + opEscapeHtml((it.createdAt||'').slice(0, 10)) + '</td>' +
+      '<td style="text-align:right">' + (it.commentCount || 0) + '</td>' +
+    '</tr>';
+  }).join('') + '</tbody>';
+  var more = rest > 0 ? '<div class="op-pager">최근 ' + pageLimit + '건만 표시 — 필터로 좁혀주세요 (+' + rest + '건)</div>' : '';
+  area.innerHTML = '<table class="op-table clickable">' + thead + tbody + '</table>' + more;
+}
+
+function openIssueDetail(issueId) {
+  var it = _hqIssueCache[String(issueId)];
+  if (!it) return;
+  var modal = document.getElementById('hqIssueModal');
+  if (!modal) return;
+  var statuses = ['접수됨','처리중','주문완료','완료','보류','포기'];
+  modal.innerHTML = '<div class="op-modal-bg" onclick="closeIssueModal(event)">' +
+    '<div class="op-modal" onclick="event.stopPropagation()">' +
+      '<div class="op-modal-head">' +
+        '<span class="op-issue-status ' + statusBadgeClass(it.status) + '">' + opEscapeHtml(it.status) + '</span>' +
+        '<span class="op-priority ' + priorityBadgeClass(it.priority) + '">' + opEscapeHtml(it.priority) + '</span>' +
+        '<div class="op-modal-title">' + opEscapeHtml(it.title) + '</div>' +
+        '<button class="op-modal-close" onclick="closeIssueModal()">×</button>' +
+      '</div>' +
+      '<div class="op-modal-body">' +
+        '<div class="op-modal-section">' +
+          '<div class="op-modal-section-label">지점 · 카테고리 · 등록일</div>' +
+          '<div class="op-modal-section-content">' + opEscapeHtml(it.branch) + ' · ' + opEscapeHtml(it.category) + ' · ' + opEscapeHtml(it.createdAt || '') + '</div>' +
+        '</div>' +
+        '<div class="op-modal-section">' +
+          '<div class="op-modal-section-label">상세 내용</div>' +
+          '<div class="op-modal-section-content">' + opEscapeHtml(it.description || '') + '</div>' +
+        '</div>' +
+        '<div class="op-modal-section">' +
+          '<div class="op-modal-section-label">상태 변경 (본사 권한)</div>' +
+          '<select id="hqIsStatusChange" onchange="changeStatus(\'' + it.issueId + '\', this.value)" style="padding:6px 10px;border:1px solid var(--border);border-radius:4px;font-size:13px">' +
+            statuses.map(function(s){ return '<option value="' + s + '"' + (s === it.status ? ' selected' : '') + '>' + s + '</option>'; }).join('') +
+          '</select>' +
+        '</div>' +
+        '<div class="op-modal-section">' +
+          '<div class="op-modal-section-label">댓글 스레드</div>' +
+          '<div id="hqCommentList" class="op-comment-list"><div class="op-loading">⏳</div></div>' +
+          '<div class="op-comment-form">' +
+            '<textarea id="hqCommentInput" placeholder="본사 댓글 입력 (지점 운영자에게 전달됩니다)"></textarea>' +
+            '<button class="op-btn op-btn-primary" style="align-self:flex-end;margin:0;padding:8px 14px" onclick="submitHqComment(\'' + it.issueId + '\')">작성</button>' +
+          '</div>' +
+        '</div>' +
+      '</div>' +
+    '</div>' +
+  '</div>';
+  modal.style.display = 'block';
+  loadComments(it.issueId, 'hqCommentList');
+}
+
+function closeIssueModal(e) {
+  if (e && e.target && e.target.classList && !e.target.classList.contains('op-modal-bg')) return;
+  var modal = document.getElementById('hqIssueModal');
+  if (modal) { modal.innerHTML = ''; modal.style.display = 'none'; }
+}
+
+function loadComments(issueId, listElId) {
+  var list = document.getElementById(listElId);
+  if (!list) return;
+  list.innerHTML = '<div class="op-loading">⏳</div>';
+  fetch(GAS_HQ + '?action=getComments&issueId=' + encodeURIComponent(issueId))
+    .then(function(r){ return r.json(); })
+    .then(function(res){
+      if (!res || !res.ok) { list.innerHTML = '<div class="op-error">댓글 불러오기 실패</div>'; return; }
+      renderComments(list, res.data || []);
+    })
+    .catch(function(){ list.innerHTML = '<div class="op-error">네트워크 오류</div>'; });
+}
+
+function renderComments(list, rows) {
+  if (!rows.length) { list.innerHTML = '<div class="op-empty" style="padding:8px">아직 댓글이 없습니다.</div>'; return; }
+  rows.sort(function(a, b){ return a.createdAt < b.createdAt ? -1 : (a.createdAt > b.createdAt ? 1 : 0); });
+  list.innerHTML = rows.map(function(c){
+    var cls = c.authorType === '본사' ? 'hq' : 'branch';
+    return '<div class="op-comment">' +
+      '<div class="op-comment-head">' +
+        '<span class="op-comment-author ' + cls + '">' + opEscapeHtml(c.author || c.authorType) + '</span>' +
+        '<span class="op-comment-time">' + opEscapeHtml(c.createdAt || '') + '</span>' +
+      '</div>' +
+      '<div class="op-comment-content">' + opEscapeHtml(c.content || '') + '</div>' +
+    '</div>';
+  }).join('');
+}
+
+function changeStatus(issueId, status) {
+  fetch(GAS_HQ, { method:'POST', body: JSON.stringify({action:'updateIssueStatus', issueId:issueId, status:status, updatedBy:'본사'}) })
+    .then(function(r){ return r.json(); })
+    .then(function(res){
+      if (!res || !res.ok) { alert('상태 변경 실패: ' + ((res && res.error) || '오류')); return; }
+      if (_hqIssueCache[String(issueId)]) _hqIssueCache[String(issueId)].status = status;
+      var head = document.querySelector('#hqIssueModal .op-modal-head .op-issue-status');
+      if (head) { head.textContent = status; head.className = 'op-issue-status ' + statusBadgeClass(status); }
+      loadIssues();
+    })
+    .catch(function(){ alert('네트워크 오류'); });
+}
+
+function submitHqComment(issueId) {
+  var ta = document.getElementById('hqCommentInput');
+  if (!ta) return;
+  var content = (ta.value || '').trim();
+  if (!content) return;
+  fetch(GAS_HQ, { method:'POST', body: JSON.stringify({action:'addComment', issueId:issueId, authorType:'본사', author:'본사', content:content}) })
+    .then(function(r){ return r.json(); })
+    .then(function(res){
+      if (!res || !res.ok) { alert('댓글 작성 실패: ' + ((res && res.error) || '오류')); return; }
+      ta.value = '';
+      loadComments(issueId, 'hqCommentList');
+      loadIssues();
+    })
+    .catch(function(){ alert('네트워크 오류'); });
 }
 
 loadWelcomeData(currentDate);
