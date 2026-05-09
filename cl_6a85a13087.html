@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
 <meta http-equiv="refresh" content="1800">
 <title>글램독 가평(가평점) 체크인 리스트</title>
-<!-- v2026-05-09 18:57 -->
+<!-- v2026-05-09 19:15 -->
 <style>
   :root {
     --navy: #1B3A5C;
@@ -41,6 +41,13 @@
     border: none; cursor: pointer; background: rgba(255,255,255,0.15); color: white;
   }
   .btn-view.active { background: white; color: var(--navy); }
+  .btn-view .cnt {
+    display: inline-block; margin-left: 6px;
+    background: #c73838; color: white;
+    border-radius: 10px; padding: 1px 7px;
+    font-size: 11px; font-weight: 700; min-width: 18px; text-align: center;
+  }
+  .btn-view.has-unread { box-shadow: 0 0 0 2px rgba(232,116,12,0.7); }
 
   /* 달력 */
   .calendar-wrap { padding: 16px 20px; }
@@ -1123,7 +1130,7 @@ function _submitPw() {
     <button class="btn-view"        id="btnIssue"   onclick="setView('issue')">🔧 이슈 신고</button>
   </div>
   <button class="btn-refresh" id="btnRefresh" onclick="refreshData()">🔄 새로고침</button>
-  <span class="update-time">갱신: 2026-05-09 18:57</span>
+  <span class="update-time">갱신: 2026-05-09 19:15</span>
 </div>
 <div id="brNoticeBanner"></div>
 <div class="content" id="content">
@@ -3083,9 +3090,28 @@ function loadBranchIssues() {
     .then(function(r){ return r.json(); })
     .then(function(res){
       if (!res || !res.ok) { area.innerHTML = '<div class="op-error">조회 실패</div>'; return; }
-      renderBranchIssues(res.data || []);
+      var rows = res.data || [];
+      renderBranchIssues(rows);
+      updateIssueBadge(rows);
     })
     .catch(function(){ area.innerHTML = '<div class="op-error">네트워크 오류</div>'; });
+}
+
+function updateIssueBadge(issues) {
+  var unseen = (issues || []).reduce(function(s, it){ return s + (it.newHqCommentCount || 0); }, 0);
+  var btn = document.getElementById('btnIssue');
+  if (!btn) return;
+  var oldCnt = btn.querySelector('.cnt');
+  if (oldCnt) oldCnt.remove();
+  if (unseen > 0) {
+    var span = document.createElement('span');
+    span.className = 'cnt';
+    span.textContent = unseen;
+    btn.appendChild(span);
+    btn.classList.add('has-unread');
+  } else {
+    btn.classList.remove('has-unread');
+  }
 }
 
 function renderBranchIssues(rows) {
@@ -3173,6 +3199,10 @@ function openBranchIssue(issueId) {
   modal.style.display = 'block';
   loadBranchComments(it.issueId);
   bindAttachWidget({ textareaId:'brCommentInput', fileInputId:'brCmtFile', statusId:'brCmtUploadStatus', attachmentsId:'brCmtAttachments', gasUrl: GAS_ENDPOINT });
+  fetch(GAS_ENDPOINT, { method:'POST', body: JSON.stringify({action:'markIssueSeen', issueId:it.issueId, branch:currentBranch}) })
+    .then(function(r){ return r.json(); })
+    .then(function(res){ if (res && res.ok) loadBranchIssues(); })
+    .catch(function(){});
 }
 
 function closeBranchIssueModal(e) {
