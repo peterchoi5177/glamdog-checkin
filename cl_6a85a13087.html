@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
 <meta http-equiv="refresh" content="1800">
 <title>글램독 가평(가평점) 체크인 리스트</title>
-<!-- v2026-05-09 19:15 -->
+<!-- v2026-05-09 19:21 -->
 <style>
   :root {
     --navy: #1B3A5C;
@@ -1130,7 +1130,7 @@ function _submitPw() {
     <button class="btn-view"        id="btnIssue"   onclick="setView('issue')">🔧 이슈 신고</button>
   </div>
   <button class="btn-refresh" id="btnRefresh" onclick="refreshData()">🔄 새로고침</button>
-  <span class="update-time">갱신: 2026-05-09 19:15</span>
+  <span class="update-time">갱신: 2026-05-09 19:21</span>
 </div>
 <div id="brNoticeBanner"></div>
 <div class="content" id="content">
@@ -2778,6 +2778,7 @@ function loadBranchNotices() {
       _brNoticeAll = res.data || [];
       var unread = _brNoticeAll.filter(function(n){ return !n.isRead; });
       renderNoticeBanner(unread);
+      updateNoticeBadge(_brNoticeAll);
       if (typeof currentView !== 'undefined' && currentView === 'notice') renderNoticeHistory();
     })
     .catch(function(){ _brNoticeAll = []; });
@@ -2853,6 +2854,7 @@ function markRead(noticeId) {
   var modal = document.getElementById('brNoticeModal');
   if (modal) { modal.innerHTML = ''; modal.style.display = 'none'; }
   renderNoticeBanner(_brNoticeAll.filter(function(n){ return !n.isRead; }));
+  updateNoticeBadge(_brNoticeAll);
   if (typeof currentView !== 'undefined' && currentView === 'notice') renderNoticeHistory();
 }
 
@@ -3107,6 +3109,23 @@ function updateIssueBadge(issues) {
     var span = document.createElement('span');
     span.className = 'cnt';
     span.textContent = unseen;
+    btn.appendChild(span);
+    btn.classList.add('has-unread');
+  } else {
+    btn.classList.remove('has-unread');
+  }
+}
+
+function updateNoticeBadge(notices) {
+  var unread = (notices || []).filter(function(n){ return !n.isRead; }).length;
+  var btn = document.getElementById('btnNotice');
+  if (!btn) return;
+  var oldCnt = btn.querySelector('.cnt');
+  if (oldCnt) oldCnt.remove();
+  if (unread > 0) {
+    var span = document.createElement('span');
+    span.className = 'cnt';
+    span.textContent = unread;
     btn.appendChild(span);
     btn.classList.add('has-unread');
   } else {
