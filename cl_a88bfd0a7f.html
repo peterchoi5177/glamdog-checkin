@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
 <meta http-equiv="refresh" content="1800">
 <title>글램독 영흥도 체크인 리스트</title>
-<!-- v2026-05-09 17:08 -->
+<!-- v2026-05-09 17:40 -->
 <style>
   :root {
     --navy: #1B3A5C;
@@ -1123,7 +1123,7 @@ function _submitPw() {
     <button class="btn-view"        id="btnIssue"   onclick="setView('issue')">🔧 이슈 신고</button>
   </div>
   <button class="btn-refresh" id="btnRefresh" onclick="refreshData()">🔄 새로고침</button>
-  <span class="update-time">갱신: 2026-05-09 17:08</span>
+  <span class="update-time">갱신: 2026-05-09 17:40</span>
 </div>
 <div id="brNoticeBanner"></div>
 <div class="content" id="content">
@@ -1259,8 +1259,14 @@ function _submitPw() {
               <label><input type="radio" name="brIsPriority" value="중간" checked> 중간</label>
               <label><input type="radio" name="brIsPriority" value="낮음"> 낮음</label>
             </div>
-            <label>상세 내용</label>
+            <label>상세 내용 (사진 paste/drag/첨부 가능)</label>
             <textarea id="brIsContent" rows="4" placeholder="문제 상황·필요 조치 등"></textarea>
+            <div style="display:flex;align-items:center;gap:8px">
+              <button type="button" class="op-btn op-btn-ghost" onclick="document.getElementById('brIsFileInput').click()" style="padding:4px 10px;font-size:12px;margin:0">📎 첨부</button>
+              <input type="file" id="brIsFileInput" multiple accept="image/*,application/pdf,.doc,.docx,.xls,.xlsx,.txt" style="display:none">
+              <span id="brIsUploadStatus" class="op-upload-status" style="margin:0"></span>
+            </div>
+            <div id="brIsAttachments" class="op-attachments"></div>
             <button class="op-btn op-btn-primary" onclick="submitBranchIssue()">📨 등록</button>
             <div id="brIsFormMsg" class="op-form-msg"></div>
           </div>
@@ -2872,6 +2878,105 @@ function renderMarkdown(text) {
   return s;
 }
 
+// ─── 운영확장 — 첨부 위젯 (공통) ─────
+function bindAttachWidget(opts) {
+  var ta = document.getElementById(opts.textareaId);
+  var fi = document.getElementById(opts.fileInputId);
+  var st = document.getElementById(opts.statusId);
+  var aw = document.getElementById(opts.attachmentsId);
+  if (!ta || ta.dataset.attachBound) return;
+  ta.dataset.attachBound = '1';
+
+  function handle(files) {
+    if (!files.length) return;
+    var done = 0;
+    if (st) st.textContent = '📤 업로드 중... (0/' + files.length + ')';
+    Array.prototype.forEach.call(files, function(file){
+      var reader = new FileReader();
+      reader.onload = function() {
+        var b64 = String(reader.result || '').split(',')[1] || '';
+        fetch(opts.gasUrl, { method:'POST', body: JSON.stringify({
+          action:'uploadAttachment', filename:file.name, mimeType:file.type, base64:b64
+        }) })
+        .then(function(r){ return r.json(); })
+        .then(function(res){
+          done++;
+          if (res && res.ok) { insertSnippet(res); addChip(res); }
+          else if (st) { st.textContent = '❌ 업로드 실패: ' + ((res && res.error) || file.name); }
+          if (st) {
+            if (done === files.length) {
+              st.textContent = '✅ 업로드 완료';
+              setTimeout(function(){ st.textContent = ''; }, 2000);
+            } else {
+              st.textContent = '📤 업로드 중... (' + done + '/' + files.length + ')';
+            }
+          }
+        })
+        .catch(function(){ done++; if (st) st.textContent = '❌ 네트워크 오류'; });
+      };
+      reader.readAsDataURL(file);
+    });
+  }
+
+  function insertSnippet(res) {
+    var snippet = res.isImage
+      ? '\n![' + (res.filename || 'image') + '](' + res.url + ')\n'
+      : '\n[📎 ' + (res.filename || 'file') + '](' + res.url + ')\n';
+    var start = (typeof ta.selectionStart === 'number') ? ta.selectionStart : ta.value.length;
+    var end   = (typeof ta.selectionEnd   === 'number') ? ta.selectionEnd   : ta.value.length;
+    ta.value = ta.value.slice(0, start) + snippet + ta.value.slice(end);
+    var cursor = start + snippet.length;
+    try { ta.selectionStart = ta.selectionEnd = cursor; ta.focus(); } catch(e) {}
+  }
+
+  function addChip(res) {
+    if (!aw) return;
+    var chip = document.createElement('div');
+    chip.className = 'op-attachment-chip';
+    chip.dataset.url = res.url;
+    var thumb = res.isImage
+      ? ('<img class="op-attachment-thumb" src="' + res.url + '" alt="">')
+      : ('<span class="op-attachment-icon">📎</span>');
+    chip.innerHTML = thumb +
+      '<span class="op-attachment-name" title="' + opEscapeHtml(res.filename) + '">' + opEscapeHtml(res.filename) + '</span>' +
+      '<button type="button" class="op-attachment-remove" title="본문에서 제거">×</button>';
+    chip.querySelector('.op-attachment-remove').addEventListener('click', function(){
+      var lines = ta.value.split('\n');
+      var kept = lines.filter(function(line){ return line.indexOf(res.url) < 0; });
+      ta.value = kept.join('\n');
+      chip.remove();
+    });
+    aw.appendChild(chip);
+  }
+
+  ta.addEventListener('paste', function(e){
+    var items = (e.clipboardData || {}).items || [];
+    var files = [];
+    for (var i = 0; i < items.length; i++) {
+      if (items[i].kind === 'file') { var f = items[i].getAsFile(); if (f) files.push(f); }
+    }
+    if (files.length) { e.preventDefault(); handle(files); }
+  });
+  ta.addEventListener('dragover', function(e){ e.preventDefault(); });
+  ta.addEventListener('drop', function(e){
+    var files = (e.dataTransfer && e.dataTransfer.files) ? Array.prototype.slice.call(e.dataTransfer.files) : [];
+    if (files.length) { e.preventDefault(); handle(files); }
+  });
+  if (fi) {
+    fi.addEventListener('change', function(){
+      if (!fi.files || !fi.files.length) return;
+      handle(Array.prototype.slice.call(fi.files));
+      fi.value = '';
+    });
+  }
+
+  ta._attachReset = function() {
+    if (st) st.textContent = '';
+    if (aw) aw.innerHTML = '';
+    if (fi) fi.value = '';
+  };
+}
+
 // ─── 운영확장 — 지출 입력 (지점) ─────
 function _padN(n) { return n < 10 ? '0' + n : '' + n; }
 function _ymd(dt) { return dt.getFullYear() + '-' + _padN(dt.getMonth()+1) + '-' + _padN(dt.getDate()); }
@@ -2957,6 +3062,7 @@ function priorityBadgeClass(p) {
 var _brIssueCache = {};
 
 function initIssueDash() {
+  bindAttachWidget({ textareaId:'brIsContent', fileInputId:'brIsFileInput', statusId:'brIsUploadStatus', attachmentsId:'brIsAttachments', gasUrl: GAS_ENDPOINT });
   loadBranchIssues();
 }
 
@@ -3009,6 +3115,8 @@ function submitBranchIssue() {
     showBrIsMsg('✅ 등록 완료', 'success');
     document.getElementById('brIsTitle').value = '';
     document.getElementById('brIsContent').value = '';
+    var _brIsTa = document.getElementById('brIsContent');
+    if (_brIsTa && _brIsTa._attachReset) _brIsTa._attachReset();
     loadBranchIssues();
   })
   .catch(function(){ showBrIsMsg('네트워크 오류', 'error'); });
@@ -3034,21 +3142,28 @@ function openBranchIssue(issueId) {
         '</div>' +
         '<div class="op-modal-section">' +
           '<div class="op-modal-section-label">상세 내용</div>' +
-          '<div class="op-modal-section-content">' + opEscapeHtml(it.description || '') + '</div>' +
+          '<div class="op-modal-section-content">' + renderMarkdown(it.description || '') + '</div>' +
         '</div>' +
         '<div class="op-modal-section">' +
           '<div class="op-modal-section-label">댓글 스레드</div>' +
           '<div id="brCommentList" class="op-comment-list"><div class="op-loading">⏳</div></div>' +
           '<div class="op-comment-form">' +
-            '<textarea id="brCommentInput" placeholder="지점 댓글 (본사에 전달됩니다)"></textarea>' +
+            '<textarea id="brCommentInput" placeholder="지점 댓글 (사진 paste/drag/첨부 가능)"></textarea>' +
             '<button class="op-btn op-btn-primary" style="align-self:flex-end;margin:0;padding:8px 14px" onclick="submitBranchComment(\'' + it.issueId + '\')">작성</button>' +
           '</div>' +
+          '<div style="display:flex;align-items:center;gap:8px;margin-top:6px">' +
+            '<button type="button" class="op-btn op-btn-ghost" onclick="document.getElementById(\'brCmtFile\').click()" style="padding:4px 10px;font-size:12px;margin:0">📎 첨부</button>' +
+            '<input type="file" id="brCmtFile" multiple accept="image/*,application/pdf,.doc,.docx,.xls,.xlsx,.txt" style="display:none">' +
+            '<span id="brCmtUploadStatus" class="op-upload-status" style="margin:0"></span>' +
+          '</div>' +
+          '<div id="brCmtAttachments" class="op-attachments"></div>' +
         '</div>' +
       '</div>' +
     '</div>' +
   '</div>';
   modal.style.display = 'block';
   loadBranchComments(it.issueId);
+  bindAttachWidget({ textareaId:'brCommentInput', fileInputId:'brCmtFile', statusId:'brCmtUploadStatus', attachmentsId:'brCmtAttachments', gasUrl: GAS_ENDPOINT });
 }
 
 function closeBranchIssueModal(e) {
@@ -3080,7 +3195,7 @@ function renderComments(list, rows) {
         '<span class="op-comment-author ' + cls + '">' + opEscapeHtml(c.author || c.authorType) + '</span>' +
         '<span class="op-comment-time">' + opEscapeHtml(c.createdAt || '') + '</span>' +
       '</div>' +
-      '<div class="op-comment-content">' + opEscapeHtml(c.content || '') + '</div>' +
+      '<div class="op-comment-content">' + renderMarkdown(c.content || '') + '</div>' +
     '</div>';
   }).join('');
 }
@@ -3095,6 +3210,7 @@ function submitBranchComment(issueId) {
     .then(function(res){
       if (!res || !res.ok) { alert('댓글 작성 실패: ' + ((res && res.error) || '오류')); return; }
       ta.value = '';
+      if (ta._attachReset) ta._attachReset();
       loadBranchComments(issueId);
       loadBranchIssues();
     })

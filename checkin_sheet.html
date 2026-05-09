@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
 <meta http-equiv="refresh" content="1800">
 <title>글램독 체크인 리스트 (본사)</title>
-<!-- v2026-05-09 17:08 -->
+<!-- v2026-05-09 17:40 -->
 <style>
   :root {
     --navy: #1B3A5C;
@@ -1084,7 +1084,7 @@ function _submitPw() {
     <option value="">🏠 예약현황 (지점 선택)</option>
     <option value="cl_6a85a13087.html">가평(가평점)</option><option value="cl_806a86626b.html">가평(청평점)</option><option value="cl_8eacf6d6c1.html">경주</option><option value="cl_a88bfd0a7f.html">영흥도</option><option value="cl_9edad9ddd2.html">양양</option><option value="cl_d3039f7a59.html">통영</option>
   </select>
-  <span class="update-time">갱신: 2026-05-09 17:08</span>
+  <span class="update-time">갱신: 2026-05-09 17:40</span>
 </div>
 <div class="tabs" id="tabs"></div>
 <div class="content" id="content">
@@ -2040,6 +2040,105 @@ function opEscapeHtml(s) {
     .replace(/'/g, '&#39;');
 }
 
+// ─── 운영확장 — 첨부 위젯 (공통) ─────
+function bindAttachWidget(opts) {
+  var ta = document.getElementById(opts.textareaId);
+  var fi = document.getElementById(opts.fileInputId);
+  var st = document.getElementById(opts.statusId);
+  var aw = document.getElementById(opts.attachmentsId);
+  if (!ta || ta.dataset.attachBound) return;
+  ta.dataset.attachBound = '1';
+
+  function handle(files) {
+    if (!files.length) return;
+    var done = 0;
+    if (st) st.textContent = '📤 업로드 중... (0/' + files.length + ')';
+    Array.prototype.forEach.call(files, function(file){
+      var reader = new FileReader();
+      reader.onload = function() {
+        var b64 = String(reader.result || '').split(',')[1] || '';
+        fetch(opts.gasUrl, { method:'POST', body: JSON.stringify({
+          action:'uploadAttachment', filename:file.name, mimeType:file.type, base64:b64
+        }) })
+        .then(function(r){ return r.json(); })
+        .then(function(res){
+          done++;
+          if (res && res.ok) { insertSnippet(res); addChip(res); }
+          else if (st) { st.textContent = '❌ 업로드 실패: ' + ((res && res.error) || file.name); }
+          if (st) {
+            if (done === files.length) {
+              st.textContent = '✅ 업로드 완료';
+              setTimeout(function(){ st.textContent = ''; }, 2000);
+            } else {
+              st.textContent = '📤 업로드 중... (' + done + '/' + files.length + ')';
+            }
+          }
+        })
+        .catch(function(){ done++; if (st) st.textContent = '❌ 네트워크 오류'; });
+      };
+      reader.readAsDataURL(file);
+    });
+  }
+
+  function insertSnippet(res) {
+    var snippet = res.isImage
+      ? '\n![' + (res.filename || 'image') + '](' + res.url + ')\n'
+      : '\n[📎 ' + (res.filename || 'file') + '](' + res.url + ')\n';
+    var start = (typeof ta.selectionStart === 'number') ? ta.selectionStart : ta.value.length;
+    var end   = (typeof ta.selectionEnd   === 'number') ? ta.selectionEnd   : ta.value.length;
+    ta.value = ta.value.slice(0, start) + snippet + ta.value.slice(end);
+    var cursor = start + snippet.length;
+    try { ta.selectionStart = ta.selectionEnd = cursor; ta.focus(); } catch(e) {}
+  }
+
+  function addChip(res) {
+    if (!aw) return;
+    var chip = document.createElement('div');
+    chip.className = 'op-attachment-chip';
+    chip.dataset.url = res.url;
+    var thumb = res.isImage
+      ? ('<img class="op-attachment-thumb" src="' + res.url + '" alt="">')
+      : ('<span class="op-attachment-icon">📎</span>');
+    chip.innerHTML = thumb +
+      '<span class="op-attachment-name" title="' + opEscapeHtml(res.filename) + '">' + opEscapeHtml(res.filename) + '</span>' +
+      '<button type="button" class="op-attachment-remove" title="본문에서 제거">×</button>';
+    chip.querySelector('.op-attachment-remove').addEventListener('click', function(){
+      var lines = ta.value.split('\n');
+      var kept = lines.filter(function(line){ return line.indexOf(res.url) < 0; });
+      ta.value = kept.join('\n');
+      chip.remove();
+    });
+    aw.appendChild(chip);
+  }
+
+  ta.addEventListener('paste', function(e){
+    var items = (e.clipboardData || {}).items || [];
+    var files = [];
+    for (var i = 0; i < items.length; i++) {
+      if (items[i].kind === 'file') { var f = items[i].getAsFile(); if (f) files.push(f); }
+    }
+    if (files.length) { e.preventDefault(); handle(files); }
+  });
+  ta.addEventListener('dragover', function(e){ e.preventDefault(); });
+  ta.addEventListener('drop', function(e){
+    var files = (e.dataTransfer && e.dataTransfer.files) ? Array.prototype.slice.call(e.dataTransfer.files) : [];
+    if (files.length) { e.preventDefault(); handle(files); }
+  });
+  if (fi) {
+    fi.addEventListener('change', function(){
+      if (!fi.files || !fi.files.length) return;
+      handle(Array.prototype.slice.call(fi.files));
+      fi.value = '';
+    });
+  }
+
+  ta._attachReset = function() {
+    if (st) st.textContent = '';
+    if (aw) aw.innerHTML = '';
+    if (fi) fi.value = '';
+  };
+}
+
 // ─── 운영확장 — 지출 현황 (HQ) ─────
 function _padN(n) { return n < 10 ? '0' + n : '' + n; }
 function _ymd(dt) { return dt.getFullYear() + '-' + _padN(dt.getMonth()+1) + '-' + _padN(dt.getDate()); }
@@ -2244,7 +2343,7 @@ function openIssueDetail(issueId) {
         '</div>' +
         '<div class="op-modal-section">' +
           '<div class="op-modal-section-label">상세 내용</div>' +
-          '<div class="op-modal-section-content">' + opEscapeHtml(it.description || '') + '</div>' +
+          '<div class="op-modal-section-content">' + renderMarkdown(it.description || '') + '</div>' +
         '</div>' +
         '<div class="op-modal-section">' +
           '<div class="op-modal-section-label">상태 변경 (본사 권한)</div>' +
@@ -2256,15 +2355,22 @@ function openIssueDetail(issueId) {
           '<div class="op-modal-section-label">댓글 스레드</div>' +
           '<div id="hqCommentList" class="op-comment-list"><div class="op-loading">⏳</div></div>' +
           '<div class="op-comment-form">' +
-            '<textarea id="hqCommentInput" placeholder="본사 댓글 입력 (지점 운영자에게 전달됩니다)"></textarea>' +
+            '<textarea id="hqCommentInput" placeholder="본사 댓글 입력 (사진 paste/drag/첨부 가능)"></textarea>' +
             '<button class="op-btn op-btn-primary" style="align-self:flex-end;margin:0;padding:8px 14px" onclick="submitHqComment(\'' + it.issueId + '\')">작성</button>' +
           '</div>' +
+          '<div style="display:flex;align-items:center;gap:8px;margin-top:6px">' +
+            '<button type="button" class="op-btn op-btn-ghost" onclick="document.getElementById(\'hqCmtFile\').click()" style="padding:4px 10px;font-size:12px;margin:0">📎 첨부</button>' +
+            '<input type="file" id="hqCmtFile" multiple accept="image/*,application/pdf,.doc,.docx,.xls,.xlsx,.txt" style="display:none">' +
+            '<span id="hqCmtUploadStatus" class="op-upload-status" style="margin:0"></span>' +
+          '</div>' +
+          '<div id="hqCmtAttachments" class="op-attachments"></div>' +
         '</div>' +
       '</div>' +
     '</div>' +
   '</div>';
   modal.style.display = 'block';
   loadComments(it.issueId, 'hqCommentList');
+  bindAttachWidget({ textareaId:'hqCommentInput', fileInputId:'hqCmtFile', statusId:'hqCmtUploadStatus', attachmentsId:'hqCmtAttachments', gasUrl: GAS_HQ });
 }
 
 function closeIssueModal(e) {
@@ -2296,7 +2402,7 @@ function renderComments(list, rows) {
         '<span class="op-comment-author ' + cls + '">' + opEscapeHtml(c.author || c.authorType) + '</span>' +
         '<span class="op-comment-time">' + opEscapeHtml(c.createdAt || '') + '</span>' +
       '</div>' +
-      '<div class="op-comment-content">' + opEscapeHtml(c.content || '') + '</div>' +
+      '<div class="op-comment-content">' + renderMarkdown(c.content || '') + '</div>' +
     '</div>';
   }).join('');
 }
@@ -2324,6 +2430,7 @@ function submitHqComment(issueId) {
     .then(function(res){
       if (!res || !res.ok) { alert('댓글 작성 실패: ' + ((res && res.error) || '오류')); return; }
       ta.value = '';
+      if (ta._attachReset) ta._attachReset();
       loadComments(issueId, 'hqCommentList');
       loadIssues();
     })
