@@ -822,13 +822,14 @@
           <span style="font-size:20px;">💡</span>
           <span style="font-size:14px; font-weight:800; color:#9a3412;">추가요금 결제는 현장에서 해주세요</span>
         </div>
-        <div style="font-size:13px; color:#7c2d12; line-height:1.9; margin-bottom:14px;">
-          추가요금은 미리 결제하지 마시고, 입실 시 최종 금액을 확인하신 후 결제해 주세요.<br>
-          사전에 결제하시면 금액이 달라질 경우 <strong>환불·취소 처리가 어렵습니다.</strong>
+        <div style="font-size:13px; color:#7c2d12; line-height:1.8; margin-bottom:14px; word-break:keep-all;">
+          추가요금은 미리 결제하지 마시고,<br>
+          입실 시 최종 금액 확인 후 결제해 주세요.<br>
+          <span style="margin-top:4px; display:inline-block;">사전 결제 시 금액이 달라지면 <strong>환불·취소가 어렵습니다.</strong></span>
         </div>
-        <label style="display:flex; align-items:center; gap:10px; cursor:pointer; background:#fff; border:1.5px solid #fb923c; border-radius:8px; padding:11px 14px;">
-          <input type="checkbox" id="chkPayOnsite" onchange="clearPayOnsiteErr()" style="width:18px; height:18px; accent-color:#f97316; cursor:pointer; flex-shrink:0;">
-          <span style="font-size:13px; font-weight:700; color:#9a3412;">확인했습니다 — 추가요금은 현장에서 결제하겠습니다.</span>
+        <label style="display:flex; align-items:center; gap:10px; cursor:pointer; background:#fff; border:1.5px solid #fb923c; border-radius:8px; padding:12px 14px;">
+          <input type="checkbox" id="chkPayOnsite" onchange="clearPayOnsiteErr()" style="width:20px; height:20px; accent-color:#f97316; cursor:pointer; flex-shrink:0;">
+          <span style="font-size:13px; font-weight:700; color:#9a3412; word-break:keep-all;">확인했습니다 — 추가요금은 현장에서 결제하겠습니다.</span>
         </label>
         <div id="err-pay-onsite" style="display:none; font-size:12px; color:#dc2626; margin-top:7px; padding-left:4px;">⚠️ 위 내용을 확인하고 체크해 주세요.</div>
       </div>
