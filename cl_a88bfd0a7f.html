@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
 <meta http-equiv="refresh" content="1800">
 <title>글램독 영흥도 체크인 리스트</title>
-<!-- v2026-05-09 18:49 -->
+<!-- v2026-05-09 18:57 -->
 <style>
   :root {
     --navy: #1B3A5C;
@@ -1123,7 +1123,7 @@ function _submitPw() {
     <button class="btn-view"        id="btnIssue"   onclick="setView('issue')">🔧 이슈 신고</button>
   </div>
   <button class="btn-refresh" id="btnRefresh" onclick="refreshData()">🔄 새로고침</button>
-  <span class="update-time">갱신: 2026-05-09 18:49</span>
+  <span class="update-time">갱신: 2026-05-09 18:57</span>
 </div>
 <div id="brNoticeBanner"></div>
 <div class="content" id="content">
@@ -2887,8 +2887,9 @@ function bindAttachWidget(opts) {
   if (!ta || ta.dataset.attachBound) return;
   ta.dataset.attachBound = '1';
 
-  function handle(files) {
+  function handle(files, mode) {
     if (!files.length) return;
+    mode = mode || 'append';
     var done = 0;
     if (st) st.textContent = '📤 업로드 중... (0/' + files.length + ')';
     Array.prototype.forEach.call(files, function(file){
@@ -2901,7 +2902,7 @@ function bindAttachWidget(opts) {
         .then(function(r){ return r.json(); })
         .then(function(res){
           done++;
-          if (res && res.ok) { insertSnippet(res); addChip(res); }
+          if (res && res.ok) { insertSnippet(res, mode); addChip(res); }
           else if (st) { st.textContent = '❌ 업로드 실패: ' + ((res && res.error) || file.name); }
           if (st) {
             if (done === files.length) {
@@ -2918,15 +2919,23 @@ function bindAttachWidget(opts) {
     });
   }
 
-  function insertSnippet(res) {
+  function insertSnippet(res, mode) {
     var snippet = res.isImage
-      ? '\n![' + (res.filename || 'image') + '](' + res.url + ')\n'
-      : '\n[📎 ' + (res.filename || 'file') + '](' + res.url + ')\n';
-    var start = (typeof ta.selectionStart === 'number') ? ta.selectionStart : ta.value.length;
-    var end   = (typeof ta.selectionEnd   === 'number') ? ta.selectionEnd   : ta.value.length;
-    ta.value = ta.value.slice(0, start) + snippet + ta.value.slice(end);
-    var cursor = start + snippet.length;
-    try { ta.selectionStart = ta.selectionEnd = cursor; ta.focus(); } catch(e) {}
+      ? '![' + (res.filename || 'image') + '](' + res.url + ')'
+      : '[📎 ' + (res.filename || 'file') + '](' + res.url + ')';
+    if (mode === 'cursor') {
+      var pad = '\n' + snippet + '\n';
+      var start = (typeof ta.selectionStart === 'number') ? ta.selectionStart : ta.value.length;
+      var end   = (typeof ta.selectionEnd   === 'number') ? ta.selectionEnd   : ta.value.length;
+      ta.value = ta.value.slice(0, start) + pad + ta.value.slice(end);
+      var cursor = start + pad.length;
+      try { ta.selectionStart = ta.selectionEnd = cursor; ta.focus(); } catch(e) {}
+    } else {
+      var base = ta.value.replace(/\s+$/, '');
+      ta.value = (base ? base + '\n' : '') + snippet + '\n';
+      var endPos = ta.value.length;
+      try { ta.selectionStart = ta.selectionEnd = endPos; } catch(e) {}
+    }
   }
 
   function addChip(res) {
@@ -2955,17 +2964,17 @@ function bindAttachWidget(opts) {
     for (var i = 0; i < items.length; i++) {
       if (items[i].kind === 'file') { var f = items[i].getAsFile(); if (f) files.push(f); }
     }
-    if (files.length) { e.preventDefault(); handle(files); }
+    if (files.length) { e.preventDefault(); handle(files, 'cursor'); }
   });
   ta.addEventListener('dragover', function(e){ e.preventDefault(); });
   ta.addEventListener('drop', function(e){
     var files = (e.dataTransfer && e.dataTransfer.files) ? Array.prototype.slice.call(e.dataTransfer.files) : [];
-    if (files.length) { e.preventDefault(); handle(files); }
+    if (files.length) { e.preventDefault(); handle(files, 'cursor'); }
   });
   if (fi) {
     fi.addEventListener('change', function(){
       if (!fi.files || !fi.files.length) return;
-      handle(Array.prototype.slice.call(fi.files));
+      handle(Array.prototype.slice.call(fi.files), 'append');
       fi.value = '';
     });
   }

@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
 <meta http-equiv="refresh" content="1800">
 <title>글램독 체크인 리스트 (본사)</title>
-<!-- v2026-05-09 18:49 -->
+<!-- v2026-05-09 18:57 -->
 <style>
   :root {
     --navy: #1B3A5C;
@@ -1084,7 +1084,7 @@ function _submitPw() {
     <option value="">🏠 예약현황 (지점 선택)</option>
     <option value="cl_6a85a13087.html">가평(가평점)</option><option value="cl_806a86626b.html">가평(청평점)</option><option value="cl_8eacf6d6c1.html">경주</option><option value="cl_a88bfd0a7f.html">영흥도</option><option value="cl_9edad9ddd2.html">양양</option><option value="cl_d3039f7a59.html">통영</option>
   </select>
-  <span class="update-time">갱신: 2026-05-09 18:49</span>
+  <span class="update-time">갱신: 2026-05-09 18:57</span>
 </div>
 <div class="tabs" id="tabs"></div>
 <div class="content" id="content">
@@ -1217,6 +1217,7 @@ function _submitPw() {
   </div>
 </div>
 <div id="hqIssueModal"></div>
+<div id="noticeEditModal"></div>
 <div class="print-bar">
   <button class="btn-print" onclick="window.print()">🖨️ 인쇄</button>
   <span class="print-tip">세로(Portrait) A4로 인쇄하세요.</span>
@@ -1819,23 +1820,24 @@ function bindNoticeAttachEvents() {
     for (var i = 0; i < items.length; i++) {
       if (items[i].kind === 'file') { var f = items[i].getAsFile(); if (f) files.push(f); }
     }
-    if (files.length) { e.preventDefault(); handleAttachments(files); }
+    if (files.length) { e.preventDefault(); handleAttachments(files, 'cursor'); }
   });
   ta.addEventListener('dragover', function(e){ e.preventDefault(); });
   ta.addEventListener('drop', function(e){
     var files = (e.dataTransfer && e.dataTransfer.files) ? Array.prototype.slice.call(e.dataTransfer.files) : [];
-    if (files.length) { e.preventDefault(); handleAttachments(files); }
+    if (files.length) { e.preventDefault(); handleAttachments(files, 'cursor'); }
   });
 }
 
 function onNoticeFileInput(input) {
   if (!input.files || !input.files.length) return;
-  handleAttachments(Array.prototype.slice.call(input.files));
+  handleAttachments(Array.prototype.slice.call(input.files), 'append');
   input.value = '';
 }
 
-function handleAttachments(files) {
+function handleAttachments(files, mode) {
   if (!files.length) return;
+  mode = mode || 'append';
   var ta     = document.getElementById('noContent');
   var status = document.getElementById('noUploadStatus');
   var done = 0;
@@ -1851,7 +1853,7 @@ function handleAttachments(files) {
       .then(function(res){
         done++;
         if (res && res.ok) {
-          insertAttachmentIntoTextarea(ta, res);
+          insertAttachmentIntoTextarea(ta, res, mode);
           addAttachmentChip(res);
         } else if (status) {
           status.textContent = '❌ 업로드 실패: ' + ((res && res.error) || file.name);
@@ -1874,16 +1876,24 @@ function handleAttachments(files) {
   });
 }
 
-function insertAttachmentIntoTextarea(ta, res) {
+function insertAttachmentIntoTextarea(ta, res, mode) {
   if (!ta) return;
   var snippet = res.isImage
-    ? '\n![' + (res.filename || 'image') + '](' + res.url + ')\n'
-    : '\n[📎 ' + (res.filename || 'file') + '](' + res.url + ')\n';
-  var start = (typeof ta.selectionStart === 'number') ? ta.selectionStart : ta.value.length;
-  var end   = (typeof ta.selectionEnd   === 'number') ? ta.selectionEnd   : ta.value.length;
-  ta.value = ta.value.slice(0, start) + snippet + ta.value.slice(end);
-  var cursor = start + snippet.length;
-  try { ta.selectionStart = ta.selectionEnd = cursor; ta.focus(); } catch(e) {}
+    ? '![' + (res.filename || 'image') + '](' + res.url + ')'
+    : '[📎 ' + (res.filename || 'file') + '](' + res.url + ')';
+  if (mode === 'cursor') {
+    var pad = '\n' + snippet + '\n';
+    var start = (typeof ta.selectionStart === 'number') ? ta.selectionStart : ta.value.length;
+    var end   = (typeof ta.selectionEnd   === 'number') ? ta.selectionEnd   : ta.value.length;
+    ta.value = ta.value.slice(0, start) + pad + ta.value.slice(end);
+    var cursor = start + pad.length;
+    try { ta.selectionStart = ta.selectionEnd = cursor; ta.focus(); } catch(e) {}
+  } else {
+    var base = ta.value.replace(/\s+$/, '');
+    ta.value = (base ? base + '\n' : '') + snippet + '\n';
+    var endPos = ta.value.length;
+    try { ta.selectionStart = ta.selectionEnd = endPos; } catch(e) {}
+  }
 }
 
 function addAttachmentChip(res) {
@@ -1946,11 +1956,15 @@ function loadNoticeList() {
     .catch(function(){ area.innerHTML = '<div class="op-empty">네트워크 오류</div>'; });
 }
 
+var _noticesCache = {};
+
 function renderNoticeList(items) {
   var area = document.getElementById('noticeListArea');
   if (!area) return;
+  _noticesCache = {};
   if (!items.length) { area.innerHTML = '<div class="op-empty">등록된 공지가 없습니다.</div>'; return; }
   area.innerHTML = items.map(function(it){
+    _noticesCache[String(it.noticeId)] = it;
     var typeBadgeClass = it.type === '긴급' ? 'op-badge-urgent' : (it.type === '시스템' ? 'op-badge-system' : 'op-badge-normal');
     var inactiveClass  = it.isActive ? '' : ' inactive';
     var expires = it.expiresAt || '영구';
@@ -1966,7 +1980,10 @@ function renderNoticeList(items) {
       '<div class="op-notice-item-content">' + renderMarkdown(it.content) + '</div>' +
       '<div class="op-notice-item-foot">' +
         '<span>대상: ' + opEscapeHtml(it.target) + ' · 만료: ' + opEscapeHtml(expires) + ' · 읽음 ' + (it.readCount || 0) + '/' + BRANCH_ORDER.length + '</span>' +
-        '<button class="op-btn ' + toggleClass + '" style="padding:4px 10px;font-size:11px;margin:0" onclick="toggleNoticeActive(\'' + it.noticeId + '\',' + nextActive + ')">' + toggleLabel + '</button>' +
+        '<span class="op-notice-item-actions">' +
+          '<button class="op-btn op-btn-ghost" style="padding:4px 10px;font-size:11px;margin:0 6px 0 0" onclick="openNoticeEdit(\'' + it.noticeId + '\')">수정</button>' +
+          '<button class="op-btn ' + toggleClass + '" style="padding:4px 10px;font-size:11px;margin:0" onclick="toggleNoticeActive(\'' + it.noticeId + '\',' + nextActive + ')">' + toggleLabel + '</button>' +
+        '</span>' +
       '</div>' +
     '</div>';
   }).join('');
@@ -2019,6 +2036,116 @@ function toggleNoticeActive(noticeId, makeActive) {
     .catch(function(){ alert('네트워크 오류'); });
 }
 
+function openNoticeEdit(noticeId) {
+  var it = _noticesCache[String(noticeId)];
+  if (!it) { alert('공지 정보를 찾을 수 없습니다.'); return; }
+  var modal = document.getElementById('noticeEditModal');
+  if (!modal) return;
+  var targetVal = it.target || '전체';
+  var isAll = (targetVal === '전체');
+  var targetSet = {};
+  if (!isAll) {
+    targetVal.split(',').forEach(function(b){ targetSet[b.trim()] = true; });
+  }
+  var brBoxes = BRANCH_ORDER.map(function(b){
+    var checked = targetSet[b] ? ' checked' : '';
+    return '<label style="margin-right:10px"><input type="checkbox" class="ne-tgt-br" value="' + opEscapeHtml(b) + '"' + checked + '> ' + opEscapeHtml(b) + '</label>';
+  }).join('');
+  var typeOpts = ['일반','긴급','시스템'].map(function(t){
+    return '<option value="' + t + '"' + (it.type === t ? ' selected' : '') + '>' + t + '</option>';
+  }).join('');
+  modal.innerHTML = '<div class="op-modal-bg" onclick="closeNoticeEditModal(event)">' +
+    '<div class="op-modal" onclick="event.stopPropagation()">' +
+      '<div class="op-modal-head">' +
+        '<div class="op-modal-title">📝 공지 수정</div>' +
+        '<button class="op-modal-close" onclick="closeNoticeEditModal()">×</button>' +
+      '</div>' +
+      '<div class="op-modal-body">' +
+        '<div class="op-form">' +
+          '<div class="op-modal-section">' +
+            '<div class="op-modal-section-label">제목</div>' +
+            '<input type="text" id="neTitle" value="' + opEscapeHtml(it.title || '') + '">' +
+          '</div>' +
+          '<div class="op-modal-section">' +
+            '<div class="op-modal-section-label">유형</div>' +
+            '<select id="neType">' + typeOpts + '</select>' +
+          '</div>' +
+          '<div class="op-modal-section">' +
+            '<div class="op-modal-section-label">내용 (사진 paste/drag/첨부 가능)</div>' +
+            '<textarea id="neContent" rows="6">' + opEscapeHtml(it.content || '') + '</textarea>' +
+            '<div style="display:flex;align-items:center;gap:8px;margin-top:6px">' +
+              '<button type="button" class="op-btn op-btn-ghost" onclick="document.getElementById(\'neFileInput\').click()" style="padding:4px 10px;font-size:12px;margin:0">📎 첨부</button>' +
+              '<input type="file" id="neFileInput" multiple accept="image/*,application/pdf,.doc,.docx,.xls,.xlsx,.txt" style="display:none">' +
+              '<span id="neUploadStatus" class="op-upload-status" style="margin:0"></span>' +
+            '</div>' +
+            '<div id="neAttachments" class="op-attachments"></div>' +
+          '</div>' +
+          '<div class="op-modal-section">' +
+            '<div class="op-modal-section-label">대상 지점</div>' +
+            '<label style="margin-right:14px"><input type="checkbox" id="neTargetAll"' + (isAll ? ' checked' : '') + ' onchange="onNoticeEditTargetAllChange()"> 전체</label>' +
+            '<div id="neBranchBoxes" style="display:' + (isAll ? 'none' : 'block') + ';margin-top:6px">' + brBoxes + '</div>' +
+          '</div>' +
+          '<div class="op-modal-section">' +
+            '<div class="op-modal-section-label">만료일 (비우면 영구)</div>' +
+            '<input type="date" id="neExpires" value="' + opEscapeHtml((it.expiresAt && it.expiresAt.length >= 10) ? it.expiresAt.slice(0,10) : '') + '">' +
+          '</div>' +
+          '<div id="neFormMsg" class="op-form-msg"></div>' +
+          '<div style="display:flex;justify-content:flex-end;gap:8px;margin-top:12px">' +
+            '<button class="op-btn op-btn-ghost" onclick="closeNoticeEditModal()">취소</button>' +
+            '<button class="op-btn op-btn-primary" onclick="submitNoticeEdit(\'' + it.noticeId + '\')">수정 완료</button>' +
+          '</div>' +
+        '</div>' +
+      '</div>' +
+    '</div>' +
+  '</div>';
+  modal.style.display = 'block';
+  bindAttachWidget({ textareaId:'neContent', fileInputId:'neFileInput', statusId:'neUploadStatus', attachmentsId:'neAttachments', gasUrl: GAS_HQ });
+}
+
+function onNoticeEditTargetAllChange() {
+  var all = document.getElementById('neTargetAll');
+  var box = document.getElementById('neBranchBoxes');
+  if (!all || !box) return;
+  box.style.display = all.checked ? 'none' : 'block';
+}
+
+function closeNoticeEditModal(e) {
+  if (e && e.target && e.target.classList && !e.target.classList.contains('op-modal-bg')) return;
+  var modal = document.getElementById('noticeEditModal');
+  if (modal) { modal.innerHTML = ''; modal.style.display = 'none'; }
+}
+
+function submitNoticeEdit(noticeId) {
+  var title   = (document.getElementById('neTitle').value || '').trim();
+  var content = (document.getElementById('neContent').value || '').trim();
+  var type    = document.getElementById('neType').value;
+  var expires = document.getElementById('neExpires').value || '';
+  var allChecked = document.getElementById('neTargetAll').checked;
+  var msgEl = document.getElementById('neFormMsg');
+  function showMsg(text, kind) {
+    if (!msgEl) return;
+    msgEl.className = 'op-form-msg' + (kind ? ' ' + kind : '');
+    msgEl.textContent = text;
+  }
+  if (!title || !content) { showMsg('제목과 내용을 입력하세요.', 'error'); return; }
+  var target;
+  if (allChecked) { target = '전체'; }
+  else {
+    var sel = Array.prototype.slice.call(document.querySelectorAll('.ne-tgt-br:checked')).map(function(c){ return c.value; });
+    if (!sel.length) { showMsg('대상 지점을 1개 이상 선택하세요.', 'error'); return; }
+    target = sel.join(',');
+  }
+  showMsg('저장 중...', '');
+  fetch(GAS_HQ, { method:'POST', body: JSON.stringify({action:'updateNotice', noticeId:noticeId, title:title, content:content, type:type, target:target, expiresAt:expires}) })
+    .then(function(r){ return r.json(); })
+    .then(function(res){
+      if (!res || !res.ok) { showMsg('수정 실패: ' + ((res && res.error) || '오류'), 'error'); return; }
+      closeNoticeEditModal();
+      loadNoticeList();
+    })
+    .catch(function(){ showMsg('네트워크 오류', 'error'); });
+}
+
 function showFormMsg(msg, kind) {
   var el = document.getElementById('noFormMsg');
   if (!el) return;
@@ -2049,8 +2176,9 @@ function bindAttachWidget(opts) {
   if (!ta || ta.dataset.attachBound) return;
   ta.dataset.attachBound = '1';
 
-  function handle(files) {
+  function handle(files, mode) {
     if (!files.length) return;
+    mode = mode || 'append';
     var done = 0;
     if (st) st.textContent = '📤 업로드 중... (0/' + files.length + ')';
     Array.prototype.forEach.call(files, function(file){
@@ -2063,7 +2191,7 @@ function bindAttachWidget(opts) {
         .then(function(r){ return r.json(); })
         .then(function(res){
           done++;
-          if (res && res.ok) { insertSnippet(res); addChip(res); }
+          if (res && res.ok) { insertSnippet(res, mode); addChip(res); }
           else if (st) { st.textContent = '❌ 업로드 실패: ' + ((res && res.error) || file.name); }
           if (st) {
             if (done === files.length) {
@@ -2080,15 +2208,23 @@ function bindAttachWidget(opts) {
     });
   }
 
-  function insertSnippet(res) {
+  function insertSnippet(res, mode) {
     var snippet = res.isImage
-      ? '\n![' + (res.filename || 'image') + '](' + res.url + ')\n'
-      : '\n[📎 ' + (res.filename || 'file') + '](' + res.url + ')\n';
-    var start = (typeof ta.selectionStart === 'number') ? ta.selectionStart : ta.value.length;
-    var end   = (typeof ta.selectionEnd   === 'number') ? ta.selectionEnd   : ta.value.length;
-    ta.value = ta.value.slice(0, start) + snippet + ta.value.slice(end);
-    var cursor = start + snippet.length;
-    try { ta.selectionStart = ta.selectionEnd = cursor; ta.focus(); } catch(e) {}
+      ? '![' + (res.filename || 'image') + '](' + res.url + ')'
+      : '[📎 ' + (res.filename || 'file') + '](' + res.url + ')';
+    if (mode === 'cursor') {
+      var pad = '\n' + snippet + '\n';
+      var start = (typeof ta.selectionStart === 'number') ? ta.selectionStart : ta.value.length;
+      var end   = (typeof ta.selectionEnd   === 'number') ? ta.selectionEnd   : ta.value.length;
+      ta.value = ta.value.slice(0, start) + pad + ta.value.slice(end);
+      var cursor = start + pad.length;
+      try { ta.selectionStart = ta.selectionEnd = cursor; ta.focus(); } catch(e) {}
+    } else {
+      var base = ta.value.replace(/\s+$/, '');
+      ta.value = (base ? base + '\n' : '') + snippet + '\n';
+      var endPos = ta.value.length;
+      try { ta.selectionStart = ta.selectionEnd = endPos; } catch(e) {}
+    }
   }
 
   function addChip(res) {
@@ -2117,17 +2253,17 @@ function bindAttachWidget(opts) {
     for (var i = 0; i < items.length; i++) {
       if (items[i].kind === 'file') { var f = items[i].getAsFile(); if (f) files.push(f); }
     }
-    if (files.length) { e.preventDefault(); handle(files); }
+    if (files.length) { e.preventDefault(); handle(files, 'cursor'); }
   });
   ta.addEventListener('dragover', function(e){ e.preventDefault(); });
   ta.addEventListener('drop', function(e){
     var files = (e.dataTransfer && e.dataTransfer.files) ? Array.prototype.slice.call(e.dataTransfer.files) : [];
-    if (files.length) { e.preventDefault(); handle(files); }
+    if (files.length) { e.preventDefault(); handle(files, 'cursor'); }
   });
   if (fi) {
     fi.addEventListener('change', function(){
       if (!fi.files || !fi.files.length) return;
-      handle(Array.prototype.slice.call(fi.files));
+      handle(Array.prototype.slice.call(fi.files), 'append');
       fi.value = '';
     });
   }
