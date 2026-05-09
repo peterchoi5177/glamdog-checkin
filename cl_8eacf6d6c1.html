@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
 <meta http-equiv="refresh" content="1800">
 <title>글램독 경주 체크인 리스트</title>
-<!-- v2026-05-09 12:36 -->
+<!-- v2026-05-09 12:44 -->
 <style>
   :root {
     --navy: #1B3A5C;
@@ -953,10 +953,12 @@ function _submitPw() {
     <button class="btn-view"        id="btnRes"   onclick="setView('rescal')">🏠 예약현황</button>
     <button class="btn-view"        id="btnClean" onclick="setView('clean')">🧹 청소현황</button>
     <button class="btn-view"        id="btnField" onclick="setView('field')">💰 현장기록</button>
+    <button class="btn-view"        id="btnNotice" onclick="setView('notice')">📢 공지사항</button>
   </div>
   <button class="btn-refresh" id="btnRefresh" onclick="refreshData()">🔄 새로고침</button>
-  <span class="update-time">갱신: 2026-05-09 12:36</span>
+  <span class="update-time">갱신: 2026-05-09 12:44</span>
 </div>
+<div id="brNoticeBanner"></div>
 <div class="content" id="content">
   <div class="print-header" id="printHeader"></div>
   <div id="listSection">
@@ -1026,7 +1028,16 @@ function _submitPw() {
     </div>
     <div id="frTableArea"><div class="fr-empty">위 기간을 선택 후 조회하세요.</div></div>
   </div>
+
+  <!-- ═════════ 📢 공지사항 (지점) ═════════ -->
+  <div id="noticeSection" style="display:none">
+    <div class="br-notice-history">
+      <div class="br-notice-history-title">📢 최근 공지 (히스토리)</div>
+      <div id="brNoticeListArea"><div class="op-loading">⏳ 불러오는 중...</div></div>
+    </div>
+  </div>
 </div>
+<div id="brNoticeModal"></div>
 <div class="print-bar">
   <button class="btn-print" onclick="window.print()">🖨️ 인쇄</button>
   <span class="print-tip">세로(Portrait) A4로 인쇄하세요.</span>
@@ -1396,11 +1407,11 @@ let currentView = 'list'; // 'list' or 'calendar'
 
 function setView(v) {
   currentView = v;
-  ['btnList','btnCal','btnRes','btnClean','btnField'].forEach(id => {
+  ['btnList','btnCal','btnRes','btnClean','btnField','btnNotice','btnExpense','btnIssue'].forEach(id => {
     const el = document.getElementById(id);
     if (el) el.classList.remove('active');
   });
-  const activeBtn = {list:'btnList', calendar:'btnCal', rescal:'btnRes', clean:'btnClean', field:'btnField'}[v];
+  const activeBtn = {list:'btnList', calendar:'btnCal', rescal:'btnRes', clean:'btnClean', field:'btnField', notice:'btnNotice', expense:'btnExpense', issue:'btnIssue'}[v];
   if (activeBtn && document.getElementById(activeBtn))
     document.getElementById(activeBtn).classList.add('active');
 
@@ -1409,11 +1420,21 @@ function setView(v) {
   const resEl   = document.getElementById('resCalSection');
   const cleanEl = document.getElementById('cleanSection');
   const fieldEl = document.getElementById('fieldDashSection');
+  const noEl    = document.getElementById('noticeSection');
+  const exEl    = document.getElementById('expenseSection');
+  const isEl    = document.getElementById('issueSection');
   if (resEl)   resEl.style.display   = v === 'rescal' ? '' : 'none';
   if (cleanEl) cleanEl.style.display = v === 'clean'  ? '' : 'none';
   var clPrintBar = document.getElementById('clPrintBar');
   if (clPrintBar) clPrintBar.style.display = v === 'clean' ? 'flex' : 'none';
   if (fieldEl) fieldEl.style.display = v === 'field'  ? '' : 'none';
+  if (noEl) noEl.style.display = v === 'notice'  ? '' : 'none';
+  if (exEl) exEl.style.display = v === 'expense' ? '' : 'none';
+  if (isEl) isEl.style.display = v === 'issue'   ? '' : 'none';
+
+  // 운영확장 view 진입 시 지점 탭 그룹 숨김
+  var tabsEl = document.getElementById('tabs');
+  if (tabsEl) tabsEl.style.display = (v === 'notice' || v === 'expense' || v === 'issue') ? 'none' : '';
 
   if (v === 'calendar') renderCalendar();
   if (v === 'rescal') { renderResCal(); setupResCalDrag(); }
@@ -1422,6 +1443,9 @@ function setView(v) {
   }
   if (v === 'clean') { clLoadStatus(renderCleaningView); }
   if (v === 'field') { initFieldDash(); }
+  if (v === 'notice')  { if (typeof initNoticeDash  === 'function') initNoticeDash();  }
+  if (v === 'expense') { if (typeof initExpenseDash === 'function') initExpenseDash(); }
+  if (v === 'issue')   { if (typeof initIssueDash   === 'function') initIssueDash();   }
 }
 
 function getDayCount(dateStr) {
@@ -2491,6 +2515,112 @@ function clStartPolling() {
   }, 60000);
 }
 clStartPolling();
+
+// ─── 운영확장 — 공지 (지점) ─────
+var _brNoticeAll = [];
+
+function loadBranchNotices() {
+  if (!currentBranch) return;
+  fetch(GAS_ENDPOINT + "?action=getNotices&branch=" + encodeURIComponent(currentBranch))
+    .then(function(r){ return r.json(); })
+    .then(function(res){
+      if (!res || !res.ok) { _brNoticeAll = []; renderNoticeBanner([]); return; }
+      _brNoticeAll = res.data || [];
+      var unread = _brNoticeAll.filter(function(n){ return !n.isRead; });
+      renderNoticeBanner(unread);
+      if (typeof currentView !== 'undefined' && currentView === 'notice') renderNoticeHistory();
+    })
+    .catch(function(){ _brNoticeAll = []; });
+}
+
+function renderNoticeBanner(items) {
+  var bar = document.getElementById('brNoticeBanner');
+  if (!bar) return;
+  if (!items.length) { bar.innerHTML = ''; return; }
+  var prio = { '긴급': 3, '시스템': 2, '일반': 1 };
+  items.sort(function(a, b){ return (prio[b.type] || 0) - (prio[a.type] || 0); });
+  var head = items[0];
+  var typeClass = head.type === '긴급' ? 'notice-banner-urgent' : (head.type === '시스템' ? 'notice-banner-system' : 'notice-banner-normal');
+  bar.innerHTML = '<div class="notice-banner ' + typeClass + '" onclick="openNoticeModal(\'' + head.noticeId + '\')">' +
+    '<span>📢 ' + opEscapeHtml(head.title) + '</span>' +
+    (items.length > 1 ? '<span class="notice-banner-count">공지 ' + items.length + '건</span>' : '') +
+    '<span class="notice-banner-arrow">›</span>' +
+  '</div>';
+}
+
+function renderNoticeHistory() {
+  var area = document.getElementById('brNoticeListArea');
+  if (!area) return;
+  var items = _brNoticeAll;
+  if (!items.length) { area.innerHTML = '<div class="op-empty">최근 공지가 없습니다.</div>'; return; }
+  area.innerHTML = items.map(function(n){
+    var typeClass = n.type === '긴급' ? 'op-badge-urgent' : (n.type === '시스템' ? 'op-badge-system' : 'op-badge-normal');
+    var unreadCls = n.isRead ? '' : ' unread';
+    return '<div class="br-notice-row' + unreadCls + '" onclick="openNoticeModal(\'' + n.noticeId + '\')">' +
+      '<div class="br-notice-row-head">' +
+        '<span class="op-badge ' + typeClass + '">' + opEscapeHtml(n.type) + '</span>' +
+        '<span class="br-notice-row-title">' + opEscapeHtml(n.title) + '</span>' +
+        '<span class="br-notice-row-meta">' + opEscapeHtml(formatNoticeDate(n.createdAt)) + '</span>' +
+      '</div>' +
+      '<div class="br-notice-row-content">' + opEscapeHtml(n.content) + '</div>' +
+    '</div>';
+  }).join('');
+}
+
+function initNoticeDash() {
+  renderNoticeHistory();
+}
+
+function openNoticeModal(noticeId) {
+  var n = _brNoticeAll.filter(function(x){ return String(x.noticeId) === String(noticeId); })[0];
+  if (!n) return;
+  var modal = document.getElementById('brNoticeModal');
+  if (!modal) return;
+  modal.innerHTML = '<div class="notice-banner-modal-bg" onclick="closeNoticeModal(event)">' +
+    '<div class="notice-banner-modal" onclick="event.stopPropagation()">' +
+      '<h3>' + opEscapeHtml(n.title) + '</h3>' +
+      '<div class="notice-banner-modal-meta">' + opEscapeHtml(n.type) + ' · ' + opEscapeHtml(formatNoticeDate(n.createdAt)) + '</div>' +
+      '<div class="notice-banner-modal-content">' + opEscapeHtml(n.content) + '</div>' +
+      '<div class="notice-banner-modal-buttons">' +
+        '<button class="op-btn op-btn-primary" onclick="markRead(\'' + n.noticeId + '\')">확인</button>' +
+      '</div>' +
+    '</div>' +
+  '</div>';
+  modal.style.display = 'block';
+}
+
+function closeNoticeModal(e) {
+  if (e && e.target && e.target.classList && !e.target.classList.contains('notice-banner-modal-bg')) return;
+  var modal = document.getElementById('brNoticeModal');
+  if (modal) { modal.innerHTML = ''; modal.style.display = 'none'; }
+}
+
+function markRead(noticeId) {
+  fetch(GAS_ENDPOINT, { method:'POST', body: JSON.stringify({action:'markNoticeRead', noticeId:noticeId, branch:currentBranch}) })
+    .then(function(r){ return r.json(); })
+    .catch(function(){});
+  _brNoticeAll = _brNoticeAll.map(function(n){ if (String(n.noticeId) === String(noticeId)) n.isRead = true; return n; });
+  var modal = document.getElementById('brNoticeModal');
+  if (modal) { modal.innerHTML = ''; modal.style.display = 'none'; }
+  renderNoticeBanner(_brNoticeAll.filter(function(n){ return !n.isRead; }));
+  if (typeof currentView !== 'undefined' && currentView === 'notice') renderNoticeHistory();
+}
+
+function formatNoticeDate(s) {
+  if (!s) return '';
+  return String(s).slice(0, 16).replace('T', ' ');
+}
+
+function opEscapeHtml(s) {
+  return String(s == null ? '' : s)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
+loadBranchNotices();
 
 
 // 기본 뷰: 체크인 리스트

@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
 <meta http-equiv="refresh" content="1800">
 <title>글램독 체크인 리스트 (본사)</title>
-<!-- v2026-05-09 12:36 -->
+<!-- v2026-05-09 12:44 -->
 <style>
   :root {
     --navy: #1B3A5C;
@@ -910,13 +910,16 @@ function _submitPw() {
     <button class="btn-view active" id="btnList" onclick="setView('list')">📋 체크인 리스트</button>
     <button class="btn-view"        id="btnCal"  onclick="setView('calendar')">📅 월별 달력</button>
     <button class="btn-view"        id="btnField" onclick="setView('field')">💰 현장기록 대시보드</button>
+    <button class="btn-view"        id="btnNotice"  onclick="setView('notice')">📢 공지 관리</button>
+    <button class="btn-view"        id="btnExpense" onclick="setView('expense')">💸 지출 현황</button>
+    <button class="btn-view"        id="btnIssue"   onclick="setView('issue')">🔧 이슈 관리</button>
   </div>
   <button class="btn-refresh" id="btnRefresh" onclick="refreshData()">🔄 새로고침</button>
   <select id="resCalBranchSel" style="padding:5px 8px;border-radius:4px;font-size:13px;border:none;margin-left:8px">
     <option value="">🏠 예약현황 (지점 선택)</option>
     <option value="cl_6a85a13087.html">가평(가평점)</option><option value="cl_806a86626b.html">가평(청평점)</option><option value="cl_8eacf6d6c1.html">경주</option><option value="cl_a88bfd0a7f.html">영흥도</option><option value="cl_9edad9ddd2.html">양양</option><option value="cl_d3039f7a59.html">통영</option>
   </select>
-  <span class="update-time">갱신: 2026-05-09 12:36</span>
+  <span class="update-time">갱신: 2026-05-09 12:44</span>
 </div>
 <div class="tabs" id="tabs"></div>
 <div class="content" id="content">
@@ -937,6 +940,58 @@ function _submitPw() {
     <div id="fdBranchCards" class="fd-branch-cards"></div>
     <div id="fdDetailTitle" class="fd-detail-title" style="display:none"></div>
     <div id="fdDetailArea"></div>
+  </div>
+
+  <!-- ═════════ 📢 공지 관리 (HQ) ═════════ -->
+  <div id="noticeSection" style="display:none">
+    <div class="op-wrap">
+      <div class="op-grid">
+        <div class="op-card op-card-form">
+          <div class="op-card-title">📢 공지 작성</div>
+          <div class="op-form">
+            <label>제목</label>
+            <input type="text" id="noTitle" placeholder="공지 제목">
+            <label>내용</label>
+            <textarea id="noContent" rows="4" placeholder="공지 내용"></textarea>
+            <div class="op-form-row">
+              <div>
+                <label>유형</label>
+                <select id="noType">
+                  <option value="일반">일반</option>
+                  <option value="긴급">긴급</option>
+                  <option value="시스템">시스템</option>
+                </select>
+              </div>
+              <div>
+                <label>만료일 (선택 — 비우면 영구)</label>
+                <input type="date" id="noExpires">
+              </div>
+            </div>
+            <label>대상 지점</label>
+            <div id="noTargetWrap" class="op-checkbox-row">
+              <label><input type="checkbox" id="noTargetAll" checked onchange="onNoticeTargetAllChange()"> 전체 지점</label>
+              <span class="op-target-branches" id="noTargetBranchWrap" style="display:none"></span>
+            </div>
+            <button class="op-btn op-btn-primary" onclick="submitNotice()">📢 공지 등록</button>
+            <div id="noFormMsg" class="op-form-msg"></div>
+          </div>
+        </div>
+        <div class="op-card op-card-list">
+          <div class="op-card-title">📋 등록된 공지 (최신순)</div>
+          <div id="noticeListArea"><div class="op-loading">⏳ 불러오는 중...</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═════════ 💸 지출 현황 (HQ) — STEP 3에서 채워짐 ═════════ -->
+  <div id="expenseSection" style="display:none">
+    <div class="op-wrap"><div class="op-loading">지출 현황 — STEP 3 구현 예정</div></div>
+  </div>
+
+  <!-- ═════════ 🔧 이슈 관리 (HQ) — STEP 4에서 채워짐 ═════════ -->
+  <div id="issueSection" style="display:none">
+    <div class="op-wrap"><div class="op-loading">이슈 관리 — STEP 4 구현 예정</div></div>
   </div>
 </div>
 <div class="print-bar">
@@ -1318,11 +1373,11 @@ let currentView = 'list'; // 'list' or 'calendar'
 
 function setView(v) {
   currentView = v;
-  ['btnList','btnCal','btnRes','btnClean','btnField'].forEach(id => {
+  ['btnList','btnCal','btnRes','btnClean','btnField','btnNotice','btnExpense','btnIssue'].forEach(id => {
     const el = document.getElementById(id);
     if (el) el.classList.remove('active');
   });
-  const activeBtn = {list:'btnList', calendar:'btnCal', rescal:'btnRes', clean:'btnClean', field:'btnField'}[v];
+  const activeBtn = {list:'btnList', calendar:'btnCal', rescal:'btnRes', clean:'btnClean', field:'btnField', notice:'btnNotice', expense:'btnExpense', issue:'btnIssue'}[v];
   if (activeBtn && document.getElementById(activeBtn))
     document.getElementById(activeBtn).classList.add('active');
 
@@ -1331,11 +1386,21 @@ function setView(v) {
   const resEl   = document.getElementById('resCalSection');
   const cleanEl = document.getElementById('cleanSection');
   const fieldEl = document.getElementById('fieldDashSection');
+  const noEl    = document.getElementById('noticeSection');
+  const exEl    = document.getElementById('expenseSection');
+  const isEl    = document.getElementById('issueSection');
   if (resEl)   resEl.style.display   = v === 'rescal' ? '' : 'none';
   if (cleanEl) cleanEl.style.display = v === 'clean'  ? '' : 'none';
   var clPrintBar = document.getElementById('clPrintBar');
   if (clPrintBar) clPrintBar.style.display = v === 'clean' ? 'flex' : 'none';
   if (fieldEl) fieldEl.style.display = v === 'field'  ? '' : 'none';
+  if (noEl) noEl.style.display = v === 'notice'  ? '' : 'none';
+  if (exEl) exEl.style.display = v === 'expense' ? '' : 'none';
+  if (isEl) isEl.style.display = v === 'issue'   ? '' : 'none';
+
+  // 운영확장 view 진입 시 지점 탭 그룹 숨김
+  var tabsEl = document.getElementById('tabs');
+  if (tabsEl) tabsEl.style.display = (v === 'notice' || v === 'expense' || v === 'issue') ? 'none' : '';
 
   if (v === 'calendar') renderCalendar();
   if (v === 'rescal') { renderResCal(); setupResCalDrag(); }
@@ -1344,6 +1409,9 @@ function setView(v) {
   }
   if (v === 'clean') { clLoadStatus(renderCleaningView); }
   if (v === 'field') { initFieldDash(); }
+  if (v === 'notice')  { if (typeof initNoticeDash  === 'function') initNoticeDash();  }
+  if (v === 'expense') { if (typeof initExpenseDash === 'function') initExpenseDash(); }
+  if (v === 'issue')   { if (typeof initIssueDash   === 'function') initIssueDash();   }
 }
 
 function getDayCount(dateStr) {
@@ -1503,6 +1571,128 @@ function fdShowBranch(branch) {
   var thead='<thead><tr>'+(branch?'':'<th>지점</th>')+'<th>날짜</th><th>객실</th><th>예약자</th><th>내역</th><th>결제</th><th>금액</th></tr></thead>';
   document.getElementById("fdDetailArea").innerHTML='<table class="fd-table">'+thead+'<tbody>'+rows+'</tbody></table>'
     +'<div style="text-align:right;font-size:14px;font-weight:700;color:#1B3A5C;padding:10px 0">소계: '+subtotal.toLocaleString()+'원</div>';
+}
+
+// ─── 운영확장 — 공지 관리 (HQ) ─────
+function initNoticeDash() {
+  var wrap = document.getElementById('noTargetBranchWrap');
+  if (wrap && !wrap.dataset.populated) {
+    wrap.innerHTML = BRANCH_ORDER.map(function(b){
+      return '<label><input type="checkbox" class="no-tgt-br" value="' + b + '"> ' + b + '</label>';
+    }).join('');
+    wrap.dataset.populated = '1';
+  }
+  loadNoticeList();
+}
+
+function onNoticeTargetAllChange() {
+  var all = document.getElementById('noTargetAll').checked;
+  document.getElementById('noTargetBranchWrap').style.display = all ? 'none' : 'flex';
+}
+
+function loadNoticeList() {
+  var area = document.getElementById('noticeListArea');
+  if (!area) return;
+  area.innerHTML = '<div class="op-loading">⏳ 불러오는 중...</div>';
+  fetch(GAS_HQ + "?action=getAllNotices")
+    .then(function(r){ return r.json(); })
+    .then(function(res){
+      if (!res || !res.ok) { area.innerHTML = '<div class="op-empty">목록 불러오기 실패</div>'; return; }
+      renderNoticeList(res.data || []);
+    })
+    .catch(function(){ area.innerHTML = '<div class="op-empty">네트워크 오류</div>'; });
+}
+
+function renderNoticeList(items) {
+  var area = document.getElementById('noticeListArea');
+  if (!area) return;
+  if (!items.length) { area.innerHTML = '<div class="op-empty">등록된 공지가 없습니다.</div>'; return; }
+  area.innerHTML = items.map(function(it){
+    var typeBadgeClass = it.type === '긴급' ? 'op-badge-urgent' : (it.type === '시스템' ? 'op-badge-system' : 'op-badge-normal');
+    var inactiveClass  = it.isActive ? '' : ' inactive';
+    var expires = it.expiresAt || '영구';
+    var toggleLabel = it.isActive ? '비활성화' : '재활성화';
+    var toggleClass = it.isActive ? 'op-btn-danger' : 'op-btn-primary';
+    var nextActive  = it.isActive ? 'false' : 'true';
+    return '<div class="op-notice-item' + inactiveClass + '">' +
+      '<div class="op-notice-item-head">' +
+        '<span class="op-badge ' + typeBadgeClass + '">' + opEscapeHtml(it.type) + '</span>' +
+        '<span class="op-notice-item-title">' + opEscapeHtml(it.title) + '</span>' +
+        '<span class="op-notice-item-meta">' + opEscapeHtml(formatNoticeDate(it.createdAt)) + '</span>' +
+      '</div>' +
+      '<div class="op-notice-item-content">' + opEscapeHtml(it.content) + '</div>' +
+      '<div class="op-notice-item-foot">' +
+        '<span>대상: ' + opEscapeHtml(it.target) + ' · 만료: ' + opEscapeHtml(expires) + ' · 읽음 ' + (it.readCount || 0) + '/' + BRANCH_ORDER.length + '</span>' +
+        '<button class="op-btn ' + toggleClass + '" style="padding:4px 10px;font-size:11px;margin:0" onclick="toggleNoticeActive(\'' + it.noticeId + '\',' + nextActive + ')">' + toggleLabel + '</button>' +
+      '</div>' +
+    '</div>';
+  }).join('');
+}
+
+function submitNotice() {
+  var title   = (document.getElementById('noTitle').value || '').trim();
+  var content = (document.getElementById('noContent').value || '').trim();
+  var type    = document.getElementById('noType').value;
+  var expires = document.getElementById('noExpires').value || '';
+  var allChecked = document.getElementById('noTargetAll').checked;
+  var target;
+  if (allChecked) { target = '전체'; }
+  else {
+    var sel = Array.prototype.slice.call(document.querySelectorAll('.no-tgt-br:checked')).map(function(c){return c.value;});
+    if (!sel.length) { showFormMsg('대상 지점을 1개 이상 선택하세요.', 'error'); return; }
+    target = sel.join(',');
+  }
+  if (!title || !content) { showFormMsg('제목과 내용을 입력하세요.', 'error'); return; }
+  if (type === '긴급' && !confirm('긴급 공지로 등록하시겠습니까? 모든 지점에 빨간 배너가 표시됩니다.')) return;
+
+  showFormMsg('등록 중...', '');
+  fetch(GAS_HQ, { method:'POST', body: JSON.stringify({action:'createNotice', title:title, content:content, type:type, target:target, expiresAt:expires}) })
+    .then(function(r){ return r.json(); })
+    .then(function(res){
+      if (!res || !res.ok) { showFormMsg('등록 실패: ' + ((res && res.error) || '알 수 없는 오류'), 'error'); return; }
+      showFormMsg('✅ 등록 완료', 'success');
+      document.getElementById('noTitle').value = '';
+      document.getElementById('noContent').value = '';
+      document.getElementById('noExpires').value = '';
+      document.getElementById('noType').value = '일반';
+      document.getElementById('noTargetAll').checked = true;
+      onNoticeTargetAllChange();
+      Array.prototype.forEach.call(document.querySelectorAll('.no-tgt-br'), function(c){ c.checked = false; });
+      loadNoticeList();
+    })
+    .catch(function(){ showFormMsg('네트워크 오류', 'error'); });
+}
+
+function toggleNoticeActive(noticeId, makeActive) {
+  if (!confirm(makeActive ? '이 공지를 다시 활성화할까요?' : '이 공지를 비활성화할까요? (지점에서 더 이상 노출되지 않습니다)')) return;
+  fetch(GAS_HQ, { method:'POST', body: JSON.stringify({action:'updateNotice', noticeId:noticeId, isActive:makeActive}) })
+    .then(function(r){ return r.json(); })
+    .then(function(res){
+      if (!res || !res.ok) { alert('변경 실패: ' + ((res && res.error) || '오류')); return; }
+      loadNoticeList();
+    })
+    .catch(function(){ alert('네트워크 오류'); });
+}
+
+function showFormMsg(msg, kind) {
+  var el = document.getElementById('noFormMsg');
+  if (!el) return;
+  el.className = 'op-form-msg' + (kind ? ' ' + kind : '');
+  el.textContent = msg;
+}
+
+function formatNoticeDate(s) {
+  if (!s) return '';
+  return String(s).slice(0, 16).replace('T', ' ');
+}
+
+function opEscapeHtml(s) {
+  return String(s == null ? '' : s)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
 }
 
 loadWelcomeData(currentDate);
