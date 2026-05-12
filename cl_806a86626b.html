@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
 <meta http-equiv="refresh" content="1800">
 <title>글램독 가평(청평점) 체크인 리스트</title>
-<!-- v2026-05-11 21:03 -->
+<!-- v2026-05-12 11:52 -->
 <style>
   :root {
     --navy: #1B3A5C;
@@ -41,13 +41,6 @@
     border: none; cursor: pointer; background: rgba(255,255,255,0.15); color: white;
   }
   .btn-view.active { background: white; color: var(--navy); }
-  .btn-view .cnt {
-    display: inline-block; margin-left: 6px;
-    background: #c73838; color: white;
-    border-radius: 10px; padding: 1px 7px;
-    font-size: 11px; font-weight: 700; min-width: 18px; text-align: center;
-  }
-  .btn-view.has-unread { box-shadow: 0 0 0 2px rgba(232,116,12,0.7); }
 
   /* 달력 */
   .calendar-wrap { padding: 16px 20px; }
@@ -145,14 +138,14 @@
   /* 열 너비 */
   .col-no      { width: 3%;  text-align: center; color: #999; font-size: 12px; }
   .col-room    { width: 5%;  text-align: center; }
-  .col-guest   { width: 8%;  }
+  .col-guest   { width: 10%; }
   .col-stays   { width: 8%;  text-align: center; white-space: nowrap; }
   .col-arrive  { width: 5%;  text-align: center; }
   .col-bookdt  { width: 6%;  text-align: center; }
   .col-persons { width: 4%;  text-align: center; }
   .col-dog     { width: 9%;  }
   .col-bbq     { width: 6%;  text-align: center; }
-  .col-extra   { width: 11%; text-align: center; }
+  .col-extra   { width: 8%;  text-align: center; }
   .col-payment { width: 7%;  text-align: center; }
   .col-memo    { width: 22%; }
 
@@ -330,13 +323,13 @@
     /* 인쇄용 열 너비 재조정 (bookdt+payment 빠진 20% 재분배) */
     .col-no      { width: 3%; }
     .col-room    { width: 5%; }
-    .col-guest   { width: 8%; }
+    .col-guest   { width: 11%; }
     .col-stays   { width: 9%; }
     .col-arrive  { width: 5%; }
     .col-persons { width: 4%; }
     .col-dog     { width: 9%; }
     .col-bbq     { width: 6%; }
-    .col-extra   { width: 12%; }
+    .col-extra   { width: 8%; }
     .col-memo    { width: 22%; }
     /* 글꼴 크기 축소 */
     .room-name   { font-size: 11px; }
@@ -603,8 +596,9 @@
   /* 인쇄용 3단 레이아웃 (화면에서는 숨김) */
   .cl-print-wrap { display:none; }
   @media print {
-    @page { size: A4 portrait; margin: 10mm; }
-    .cl-topbar, .cl-sec, .cl-hint, .cl-reload-btn, .tab-bar, .btn-row, .top-bar, button { display:none !important; }
+    @page { size: A4 landscape; margin: 10mm; }
+    #cleanSection { display:block !important; }
+    .cl-topbar, .cl-sec, .cl-hint, .cl-reload-btn, .cl-wrap, .tab-bar, .btn-row, .top-bar, button { display:none !important; }
     body { background: white !important; }
     .cl-print-wrap {
       display:grid; grid-template-columns:1fr 1fr 1fr;
@@ -664,318 +658,6 @@
   }
   .toast.show { opacity: 1; }
   @media print { .fm-overlay, .toast { display: none !important; } }
-
-  /* ═════════ 운영확장 (operations) — 공지/지출/이슈 공통 ═════════ */
-  .op-wrap { padding: 20px; max-width: 1100px; margin: 0 auto; }
-  .op-grid { display: grid; grid-template-columns: 1fr 1.4fr; gap: 20px; }
-  @media (max-width: 800px) { .op-grid { grid-template-columns: 1fr; } }
-  .op-card {
-    background: white; border: 1px solid var(--border); border-radius: 8px;
-    padding: 16px; box-shadow: 0 1px 3px rgba(0,0,0,0.04);
-  }
-  .op-card-title {
-    font-size: 16px; font-weight: 700; color: var(--navy);
-    margin-bottom: 12px; padding-bottom: 8px;
-    border-bottom: 1px solid #e5e7eb;
-  }
-  .op-form { display: flex; flex-direction: column; gap: 8px; }
-  .op-form label {
-    font-size: 12px; font-weight: 600; color: #555; margin-top: 4px;
-  }
-  .op-form input[type=text],
-  .op-form input[type=date],
-  .op-form input[type=number],
-  .op-form select,
-  .op-form textarea {
-    padding: 7px 10px; border: 1px solid var(--border); border-radius: 4px;
-    font-size: 14px; font-family: inherit; width: 100%;
-  }
-  .op-form textarea { resize: vertical; min-height: 80px; }
-  .op-form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-  .op-checkbox-row {
-    display: flex; flex-wrap: wrap; gap: 8px 14px; align-items: center;
-  }
-  .op-checkbox-row label {
-    font-size: 13px; color: #333; margin: 0;
-    display: flex; align-items: center; gap: 4px; cursor: pointer;
-  }
-  .op-target-branches {
-    display: flex; flex-wrap: wrap; gap: 6px 12px;
-    padding: 8px 10px; border: 1px dashed #c7d2dc; border-radius: 4px;
-    background: #f7f9fc; width: 100%; margin-top: 4px;
-  }
-  .op-btn {
-    padding: 9px 16px; border: none; border-radius: 4px;
-    font-size: 14px; font-weight: 600; cursor: pointer; margin-top: 4px;
-    font-family: inherit;
-  }
-  .op-btn-primary { background: var(--navy); color: white; }
-  .op-btn-primary:hover { background: var(--blue); }
-  .op-btn-danger { background: #c73838; color: white; }
-  .op-btn-danger:hover { background: #a82c2c; }
-  .op-btn:disabled { background: #c0c0c0; cursor: not-allowed; }
-  .op-form-msg { font-size: 13px; margin-top: 6px; min-height: 18px; }
-  .op-form-msg.success { color: #15803d; }
-  .op-form-msg.error { color: #b91c1c; }
-  .op-loading, .op-empty {
-    text-align: center; color: #777; padding: 24px 12px; font-size: 13px;
-  }
-  .op-table { width: 100%; border-collapse: collapse; font-size: 13px; }
-  .op-table th, .op-table td {
-    padding: 8px 10px; border-bottom: 1px solid #e5e7eb; text-align: left;
-  }
-  .op-table th {
-    background: #f5f7fa; font-weight: 600; color: #555; font-size: 12px;
-  }
-  .op-table tr:hover td { background: #f9fafc; }
-  .op-badge {
-    display: inline-block; padding: 2px 8px; border-radius: 10px;
-    font-size: 11px; font-weight: 700; color: white;
-  }
-  .op-badge-urgent { background: #c73838; }
-  .op-badge-normal { background: var(--blue); }
-  .op-badge-system { background: #777; }
-
-  /* 공지 — 본사 등록 카드 / 등록 목록 */
-  .op-notice-item {
-    border: 1px solid #e5e7eb; border-radius: 6px;
-    padding: 10px 12px; margin-bottom: 8px; background: #fff;
-  }
-  .op-notice-item-head {
-    display: flex; align-items: center; gap: 8px; margin-bottom: 4px;
-  }
-  .op-notice-item-title {
-    font-weight: 700; color: var(--navy); font-size: 14px; flex: 1;
-  }
-  .op-notice-item-meta { font-size: 11px; color: #777; }
-  .op-notice-item-content {
-    font-size: 13px; color: #444; white-space: pre-wrap; margin: 6px 0;
-  }
-  .op-notice-item-foot {
-    display: flex; justify-content: space-between;
-    font-size: 11px; color: #888;
-  }
-  .op-notice-item.inactive { opacity: 0.55; background: #f5f5f5; }
-
-  /* 지점 — 공지 배너 + 모달 */
-  .notice-banner {
-    padding: 10px 16px; display: flex; align-items: center; gap: 10px;
-    font-size: 13px; font-weight: 600; cursor: pointer;
-    border-bottom: 1px solid rgba(255,255,255,0.2);
-  }
-  .notice-banner-urgent { background: #c73838; color: white; }
-  .notice-banner-normal { background: var(--blue); color: white; }
-  .notice-banner-system { background: #555; color: white; }
-  .notice-banner-count {
-    background: rgba(255,255,255,0.2); border-radius: 10px;
-    padding: 2px 8px; font-size: 11px; font-weight: 700;
-  }
-  .notice-banner-arrow { margin-left: auto; opacity: 0.7; }
-  .notice-banner-modal-bg {
-    position: fixed; inset: 0; background: rgba(0,0,0,0.55);
-    z-index: 999; display: flex; align-items: center; justify-content: center;
-    padding: 20px;
-  }
-  .notice-banner-modal {
-    background: white; border-radius: 8px; max-width: 520px; width: 100%;
-    max-height: 80vh; overflow-y: auto; padding: 20px;
-  }
-  .notice-banner-modal h3 {
-    font-size: 17px; color: var(--navy); margin-bottom: 4px;
-  }
-  .notice-banner-modal-meta { font-size: 11px; color: #888; margin-bottom: 12px; }
-  .notice-banner-modal-content {
-    font-size: 14px; color: #333; white-space: pre-wrap; margin-bottom: 16px;
-  }
-  .notice-banner-modal-buttons {
-    display: flex; gap: 8px; justify-content: flex-end;
-  }
-
-  /* 지점 — 공지 히스토리 (탭 내부) */
-  .br-notice-history { padding: 16px 20px; max-width: 900px; margin: 0 auto; }
-  .br-notice-history-title {
-    font-size: 15px; font-weight: 700; color: var(--navy); margin-bottom: 10px;
-  }
-  .br-notice-row {
-    border: 1px solid #e5e7eb; border-radius: 6px;
-    padding: 10px 12px; margin-bottom: 8px; background: #fff;
-    cursor: pointer;
-  }
-  .br-notice-row.unread { border-left: 3px solid var(--accent); }
-  .br-notice-row-head {
-    display: flex; align-items: center; gap: 8px; margin-bottom: 4px;
-  }
-  .br-notice-row-title { font-weight: 700; color: var(--navy); flex: 1; }
-  .br-notice-row-meta { font-size: 11px; color: #888; }
-  .br-notice-row-content {
-    font-size: 12px; color: #555;
-    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-  }
-
-  /* 첨부 (HQ 공지 작성) */
-  .op-btn-ghost {
-    background: transparent; color: var(--navy);
-    border: 1px solid var(--border);
-  }
-  .op-btn-ghost:hover { background: #f4f6f9; }
-  .op-upload-status {
-    color: var(--blue); font-size: 12px; margin-top: 4px; min-height: 16px;
-  }
-  .op-attachments {
-    display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px;
-  }
-  .op-attachment-chip {
-    display: inline-flex; align-items: center; gap: 6px;
-    border: 1px solid var(--border); border-radius: 6px;
-    padding: 6px 10px; font-size: 12px;
-    background: #fafafa;
-  }
-  .op-attachment-thumb {
-    width: 32px; height: 32px; object-fit: cover; border-radius: 4px;
-    background: #eee;
-  }
-  .op-attachment-icon {
-    width: 32px; height: 32px; display: flex; align-items: center; justify-content: center;
-    background: #eef2f7; border-radius: 4px; font-size: 16px;
-  }
-  .op-attachment-name {
-    max-width: 180px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
-  }
-  .op-attachment-remove {
-    color: #c00; cursor: pointer; font-size: 14px;
-    border: none; background: none; padding: 0 2px;
-  }
-  .op-attachment-remove:hover { color: #900; }
-
-  /* 공지 본문 안의 이미지/링크 (renderMarkdown 출력) */
-  .op-notice-item-content img,
-  .br-notice-row-content img,
-  .notice-banner-modal-content img {
-    max-width: 100%; border-radius: 6px; margin: 6px 0; display: block;
-  }
-  .op-notice-item-content a,
-  .br-notice-row-content a,
-  .notice-banner-modal-content a {
-    color: var(--blue); text-decoration: underline; word-break: break-all;
-  }
-
-  /* ═════════ 운영확장 — 지출/이슈 공통 ═════════ */
-  .op-filter-row {
-    display: flex; flex-wrap: wrap; gap: 8px; align-items: center;
-    margin-bottom: 16px;
-  }
-  .op-filter-row select,
-  .op-filter-row input[type=date] {
-    padding: 6px 10px; border: 1px solid var(--border); border-radius: 4px;
-    font-size: 13px; background: white;
-  }
-  .op-filter-row label {
-    font-size: 12px; color: #555; margin-right: 4px;
-  }
-  .op-summary-grid {
-    display: grid; grid-template-columns: repeat(4, 1fr);
-    gap: 12px; margin-bottom: 12px;
-  }
-  @media (max-width: 800px) {
-    .op-summary-grid { grid-template-columns: 1fr 1fr; }
-  }
-  .op-summary-card {
-    background: white; border: 1px solid var(--border); border-radius: 6px;
-    padding: 12px 14px;
-  }
-  .op-summary-label { font-size: 12px; color: #666; margin-bottom: 4px; }
-  .op-summary-value { font-size: 18px; font-weight: 700; color: var(--navy); }
-  .op-grand-total {
-    display: flex; justify-content: space-between; align-items: center;
-    padding: 12px 16px; background: var(--navy); color: white;
-    border-radius: 6px; font-size: 14px; font-weight: 700; margin-bottom: 12px;
-  }
-  .op-pager {
-    text-align: center; padding: 10px; color: #666; font-size: 12px;
-  }
-  .op-error {
-    color: #c00; padding: 16px; text-align: center; font-size: 13px;
-    background: #fff4f4; border: 1px solid #f5c2c2; border-radius: 6px;
-  }
-  .op-table tbody tr {
-    cursor: default;
-  }
-  .op-table.clickable tbody tr { cursor: pointer; }
-  .op-table.clickable tbody tr:hover td { background: #eef4fb; }
-
-  /* 이슈 상태 배지 */
-  .op-issue-status {
-    display: inline-block; padding: 2px 8px; border-radius: 10px;
-    font-size: 11px; font-weight: 700; color: white;
-  }
-  .op-issue-status-receive { background: #888; }
-  .op-issue-status-progress { background: #2D5F8A; }
-  .op-issue-status-ordered { background: #7B61FF; }
-  .op-issue-status-done { background: #2e8b57; }
-  .op-issue-status-hold { background: #d4a300; }
-  .op-issue-status-abandon { background: #c00; }
-
-  /* 우선순위 배지 */
-  .op-priority {
-    display: inline-block; padding: 1px 6px; border-radius: 8px;
-    font-size: 11px; font-weight: 600;
-    border: 1px solid var(--border); color: #333;
-  }
-  .op-priority-high   { background: #fff0f0; color: #c00;    border-color: #f5b8b8; }
-  .op-priority-mid    { background: #fff6e6; color: #b06b00; border-color: #f0d6a0; }
-  .op-priority-low    { background: #f3f7fc; color: #2D5F8A; border-color: #c6d8eb; }
-
-  /* 모달 (이슈 상세) */
-  .op-modal-bg {
-    position: fixed; inset: 0; background: rgba(0,0,0,0.55);
-    z-index: 1000; display: flex; align-items: center; justify-content: center;
-    padding: 20px;
-  }
-  .op-modal {
-    background: white; border-radius: 8px; max-width: 720px; width: 100%;
-    max-height: 88vh; overflow-y: auto;
-    display: flex; flex-direction: column;
-  }
-  .op-modal-head {
-    padding: 14px 20px; border-bottom: 1px solid #e5e7eb;
-    display: flex; align-items: center; gap: 10px;
-  }
-  .op-modal-title { flex: 1; font-size: 16px; font-weight: 700; color: var(--navy); }
-  .op-modal-close {
-    background: none; border: none; font-size: 22px; color: #888;
-    cursor: pointer; padding: 0 4px;
-  }
-  .op-modal-body { padding: 16px 20px; }
-  .op-modal-section { margin-bottom: 14px; }
-  .op-modal-section-label {
-    font-size: 11px; color: #666; margin-bottom: 4px; font-weight: 600;
-  }
-  .op-modal-section-content {
-    font-size: 14px; color: #333; white-space: pre-wrap; line-height: 1.5;
-  }
-
-  /* 댓글 스레드 */
-  .op-comment-list {
-    border: 1px solid #e5e7eb; border-radius: 6px; padding: 8px;
-    background: #fafafa; max-height: 280px; overflow-y: auto; margin-bottom: 8px;
-  }
-  .op-comment {
-    padding: 8px 10px; margin-bottom: 6px;
-    background: white; border-radius: 4px; border: 1px solid #e5e7eb;
-  }
-  .op-comment-head {
-    display: flex; gap: 8px; align-items: center; margin-bottom: 4px;
-  }
-  .op-comment-author { font-weight: 700; font-size: 12px; }
-  .op-comment-author.hq { color: var(--navy); }
-  .op-comment-author.branch { color: var(--accent); }
-  .op-comment-time { font-size: 11px; color: #888; }
-  .op-comment-content { font-size: 13px; color: #333; white-space: pre-wrap; }
-  .op-comment-form { display: flex; gap: 8px; }
-  .op-comment-form textarea {
-    flex: 1; padding: 7px 10px; border: 1px solid var(--border); border-radius: 4px;
-    font-size: 13px; font-family: inherit; resize: vertical; min-height: 50px;
-  }
 </style>
 </head>
 <body>
@@ -1125,14 +807,10 @@ function _submitPw() {
     <button class="btn-view"        id="btnRes"   onclick="setView('rescal')">🏠 예약현황</button>
     <button class="btn-view"        id="btnClean" onclick="setView('clean')">🧹 청소현황</button>
     <button class="btn-view"        id="btnField" onclick="setView('field')">💰 현장기록</button>
-    <button class="btn-view"        id="btnNotice"  onclick="setView('notice')">📢 공지사항</button>
-    <button class="btn-view"        id="btnExpense" onclick="setView('expense')">💰 지출 입력</button>
-    <button class="btn-view"        id="btnIssue"   onclick="setView('issue')">🔧 이슈 신고</button>
   </div>
   <button class="btn-refresh" id="btnRefresh" onclick="refreshData()">🔄 새로고침</button>
-  <span class="update-time">갱신: 2026-05-11 21:03</span>
+  <span class="update-time">갱신: 2026-05-12 11:52</span>
 </div>
-<div id="brNoticeBanner"></div>
 <div class="content" id="content">
   <div class="print-header" id="printHeader"></div>
   <div id="listSection">
@@ -1202,98 +880,13 @@ function _submitPw() {
     </div>
     <div id="frTableArea"><div class="fr-empty">위 기간을 선택 후 조회하세요.</div></div>
   </div>
-
-  <!-- ═════════ 📢 공지사항 (지점) ═════════ -->
-  <div id="noticeSection" style="display:none">
-    <div class="br-notice-history">
-      <div class="br-notice-history-title">📢 최근 공지 (히스토리)</div>
-      <div id="brNoticeListArea"><div class="op-loading">⏳ 불러오는 중...</div></div>
-    </div>
-  </div>
-
-  <!-- ═════════ 💰 지출 입력 (지점) ═════════ -->
-  <div id="expenseSection" style="display:none">
-    <div class="op-wrap">
-      <div class="op-grid">
-        <div class="op-card">
-          <div class="op-card-title">💰 지출 입력</div>
-          <div class="op-form">
-            <label>날짜</label>
-            <input type="date" id="exDate">
-            <label>구분</label>
-            <select id="exCategory">
-              <option value="현금지출">현금지출</option>
-              <option value="카드지출">카드지출</option>
-              <option value="청소용역">청소용역</option>
-              <option value="본사입금">본사입금</option>
-            </select>
-            <label>금액 (원)</label>
-            <input type="number" id="exAmount" min="0" step="1000" placeholder="0">
-            <label>비고</label>
-            <input type="text" id="exMemo" placeholder="선택">
-            <button class="op-btn op-btn-primary" onclick="submitBranchExpense()">💾 저장</button>
-            <div id="exFormMsg" class="op-form-msg"></div>
-          </div>
-        </div>
-        <div class="op-card">
-          <div class="op-card-title">📋 최근 30일 내역</div>
-          <div id="exHistoryArea"><div class="op-loading">⏳ 불러오는 중...</div></div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- ═════════ 🔧 이슈 신고 (지점) ═════════ -->
-  <div id="issueSection" style="display:none">
-    <div class="op-wrap">
-      <div class="op-grid">
-        <div class="op-card">
-          <div class="op-card-title">🔧 이슈 신고</div>
-          <div class="op-form">
-            <label>제목</label>
-            <input type="text" id="brIsTitle" placeholder="간략한 제목">
-            <label>카테고리</label>
-            <select id="brIsCategory">
-              <option value="시설">시설</option>
-              <option value="소모품">소모품</option>
-              <option value="청소">청소</option>
-              <option value="운영">운영</option>
-              <option value="기타">기타</option>
-            </select>
-            <label>우선순위</label>
-            <div class="op-checkbox-row">
-              <label><input type="radio" name="brIsPriority" value="높음"> 높음</label>
-              <label><input type="radio" name="brIsPriority" value="중간" checked> 중간</label>
-              <label><input type="radio" name="brIsPriority" value="낮음"> 낮음</label>
-            </div>
-            <label>상세 내용 (사진 paste/drag/첨부 가능)</label>
-            <textarea id="brIsContent" rows="4" placeholder="문제 상황·필요 조치 등"></textarea>
-            <div style="display:flex;align-items:center;gap:8px">
-              <button type="button" class="op-btn op-btn-ghost" onclick="document.getElementById('brIsFileInput').click()" style="padding:4px 10px;font-size:12px;margin:0">📎 첨부</button>
-              <input type="file" id="brIsFileInput" multiple accept="image/*,application/pdf,.doc,.docx,.xls,.xlsx,.txt" style="display:none">
-              <span id="brIsUploadStatus" class="op-upload-status" style="margin:0"></span>
-            </div>
-            <div id="brIsAttachments" class="op-attachments"></div>
-            <button class="op-btn op-btn-primary" onclick="submitBranchIssue()">📨 등록</button>
-            <div id="brIsFormMsg" class="op-form-msg"></div>
-          </div>
-        </div>
-        <div class="op-card">
-          <div class="op-card-title">📋 내 지점 이슈 (최신순)</div>
-          <div id="brIssueListArea"><div class="op-loading">⏳ 불러오는 중...</div></div>
-        </div>
-      </div>
-    </div>
-  </div>
 </div>
-<div id="brNoticeModal"></div>
-<div id="brIssueModal"></div>
 <div class="print-bar">
   <button class="btn-print" onclick="window.print()">🖨️ 인쇄</button>
   <span class="print-tip">세로(Portrait) A4로 인쇄하세요.</span>
 </div>
 <script>
-const ALL_RECORDS   = [{"branch": "가평(청평점)", "booking_no": "M2605081900481803c5", "guest": "고정은", "phone": "010-4166-4242", "channel": "수기", "room": "B101", "checkin": "2026-05-31", "checkout": "2026-06-01", "nights": 1, "stay_dates": ["2026-05-31"], "price": 1, "onsite": 0, "total": 1, "book_date": "05/08 19:00", "is_block": false}, {"branch": "가평(청평점)", "booking_no": "2605090966412918", "guest": "한승기", "phone": "103-012-5321", "channel": "야놀자", "room": "B103", "checkin": "2026-05-30", "checkout": "2026-05-31", "nights": 1, "stay_dates": ["2026-05-30"], "price": 109000, "onsite": 0, "total": 109000, "book_date": "05/09 10:00", "is_block": false}, {"branch": "가평(청평점)", "booking_no": "2605051766062227", "guest": "배진항", "phone": "010-8299-6739", "channel": "야놀자", "room": "A101", "checkin": "2026-05-30", "checkout": "2026-05-31", "nights": 1, "stay_dates": ["2026-05-30"], "price": 119000, "onsite": 0, "total": 119000, "book_date": "05/05 17:35", "is_block": false}, {"branch": "가평(청평점)", "booking_no": "M260505212202996f84", "guest": "신현준(여기어때)", "phone": "0502-1386-7655", "channel": "여기어때", "room": "A202", "checkin": "2026-05-30", "checkout": "2026-05-31", "nights": 1, "stay_dates": ["2026-05-30"], "price": 89100, "onsite": 0, "total": 89100, "book_date": "05/05 21:22", "is_block": false}, {"branch": "가평(청평점)", "booking_no": "2605052166085529", "guest": "이정헌", "phone": "010-9382-9152", "channel": "야놀자", "room": "A102", "checkin": "2026-05-30", "checkout": "2026-05-31", "nights": 1, "stay_dates": ["2026-05-30"], "price": 119000, "onsite": 0, "total": 119000, "book_date": "05/05 21:30", "is_block": false}, {"branch": "가평(청평점)", "booking_no": "M260508190105205cf8", "guest": "조장미(봄맞이숙박권이벤트)", "phone": "010-4951-0810", "channel": "수기", "room": "B101", "checkin": "2026-05-30", "checkout": "2026-05-31", "nights": 1, "stay_dates": ["2026-05-30"], "price": 1, "onsite": 0, "total": 1, "book_date": "05/08 19:01", "is_block": false}, {"branch": "가평(청평점)", "booking_no": "M260508190114687055", "guest": "신다혜(봄맞이숙박권이벤트)", "phone": "010-4423-7254", "channel": "수기", "room": "B102", "checkin": "2026-05-30", "checkout": "2026-05-31", "nights": 1, "stay_dates": ["2026-05-30"], "price": 1, "onsite": 0, "total": 1, "book_date": "05/08 19:01", "is_block": false}, {"branch": "가평(청평점)", "booking_no": "M260508190127706f7c", "guest": "조경아(봄맞이숙박권이벤트)", "phone": "010-7581-6968", "channel": "수기", "room": "B203", "checkin": "2026-05-29", "checkout": "2026-05-30", "nights": 1, "stay_dates": ["2026-05-29"], "price": 1, "onsite": 0, "total": 1, "book_date": "05/08 19:01", "is_block": false}, {"branch": "가평(청평점)", "booking_no": "M260508190142055813", "guest": "고정은", "phone": "-", "channel": "수기", "room": "B101", "checkin": "2026-05-29", "checkout": "2026-05-30", "nights": 1, "stay_dates": ["2026-05-29"], "price": 89000, "onsite": 0, "total": 89000, "book_date": "05/08 19:01", "is_block": false}, {"branch": "가평(청평점)", "booking_no": "M2605081901537156ae", "guest": "고정은", "phone": "-", "channel": "수기", "room": "B101", "checkin": "2026-05-28", "checkout": "2026-05-29", "nights": 1, "stay_dates": ["2026-05-28"], "price": 89000, "onsite": 0, "total": 89000, "book_date": "05/08 19:01", "is_block": false}, {"branch": "가평(청평점)", "booking_no": "M2605081901588272f2", "guest": "고정은", "phone": "-", "channel": "수기", "room": "B101", "checkin": "2026-05-27", "checkout": "2026-05-28", "nights": 1, "stay_dates": ["2026-05-27"], "price": 89000, "onsite": 0, "total": 89000, "book_date": "05/08 19:01", "is_block": false}, {"branch": "가평(청평점)", "booking_no": "M260508190205237067", "guest": "고정은", "phone": "-", "channel": "수기", "room": "B101", "checkin": "2026-05-26", "checkout": "2026-05-27", "nights": 1, "stay_dates": ["2026-05-26"], "price": 89000, "onsite": 0, "total": 89000, "book_date": "05/08 19:02", "is_block": false}, {"branch": "가평(청평점)", "booking_no": "M260508190209737adf", "guest": "고정은", "phone": "-", "channel": "수기", "room": "B101", "checkin": "2026-05-25", "checkout": "2026-05-26", "nights": 1, "stay_dates": ["2026-05-25"], "price": 89000, "onsite": 0, "total": 89000, "book_date": "05/08 19:02", "is_block": false}, {"branch": "가평(청평점)", "booking_no": "M260508190257800cf8", "guest": "고정은", "phone": "-", "channel": "수기", "room": "B101", "checkin": "2026-05-24", "checkout": "2026-05-25", "nights": 1, "stay_dates": ["2026-05-24"], "price": 149000, "onsite": 0, "total": 149000, "book_date": "05/08 19:02", "is_block": false}, {"branch": "가평(청평점)", "booking_no": "M260508190247594b88", "guest": "곽혜미", "phone": "-", "channel": "수기", "room": "B201", "checkin": "2026-05-24", "checkout": "2026-05-25", "nights": 1, "stay_dates": ["2026-05-24"], "price": 219000, "onsite": 0, "total": 219000, "book_date": "05/08 19:02", "is_block": false}, {"branch": "가평(청평점)", "booking_no": "M260508190240389f6a", "guest": "고정은", "phone": "-", "channel": "수기", "room": "B102", "checkin": "2026-05-24", "checkout": "2026-05-25", "nights": 1, "stay_dates": ["2026-05-24"], "price": 149000, "onsite": 0, "total": 149000, "book_date": "05/08 19:02", "is_block": false}, {"branch": "가평(청평점)", "booking_no": "M260508190226536365", "guest": "정미라(봄맞이숙박권이벤트)", "phone": "010-3926-8523", "channel": "수기", "room": "B203", "checkin": "2026-05-24", "checkout": "2026-05-25", "nights": 1, "stay_dates": ["2026-05-24"], "price": 1, "onsite": 0, "total": 1, "book_date": "05/08 19:02", "is_block": false}, {"branch": "가평(청평점)", "booking_no": "M260508190218826986", "guest": "차대익", "phone": "-", "channel": "수기", "room": "A101", "checkin": "2026-05-24", "checkout": "2026-05-25", "nights": 1, "stay_dates": ["2026-05-24"], "price": 159000, "onsite": 0, "total": 159000, "book_date": "05/08 19:02", "is_block": false}, {"branch": "가평(청평점)", "booking_no": "2605042265991959", "guest": "이건호", "phone": "010-8240-2312", "channel": "야놀자", "room": "B202", "checkin": "2026-05-24", "checkout": "2026-05-25", "nights": 1, "stay_dates": ["2026-05-24"], "price": 129000, "onsite": 0, "total": 129000, "book_date": "05/04 22:16", "is_block": false}, {"branch": "가평(청평점)", "booking_no": "2604231464711386", "guest": "장은교", "phone": "010-4145-1599", "channel": "야놀자", "room": "A102", "checkin": "2026-05-24", "checkout": "2026-05-25", "nights": 1, "stay_dates": ["2026-05-24"], "price": 129000, "onsite": 0, "total": 129000, "book_date": "04/23 15:04", "is_block": false}, {"branch": "가평(청평점)", "booking_no": "2605102114550044", "guest": "이푸름", "phone": "010-3141-1319", "channel": "야놀자", "room": "A203", "checkin": "2026-05-24", "checkout": "2026-05-25", "nights": 1, "stay_dates": ["2026-05-24"], "price": 129000, "onsite": 0, "total": 129000, "book_date": "05/10 21:14", "is_block": false}, {"branch": "가평(청평점)", "booking_no": "M260510210651693c75", "guest": "남정화(여기어때)", "phone": "0502-1387-5722", "channel": "여기어때", "room": "A202", "checkin": "2026-05-24", "checkout": "2026-05-25", "nights": 1, "stay_dates": ["2026-05-24"], "price": 116100, "onsite": 0, "total": 116100, "book_date": "05/10 21:06", "is_block": false}, {"branch": "가평(청평점)", "booking_no": "2605012121340139", "guest": "우현주", "phone": "010-6231-9074", "channel": "야놀자", "room": "A201", "checkin": "2026-05-23", "checkout": "2026-05-24", "nights": 1, "stay_dates": ["2026-05-23"], "price": 80100, "onsite": 0, "total": 80100, "book_date": "05/01 21:21", "is_block": false}, {"branch": "가평(청평점)", "booking_no": "M260508190341331ca7", "guest": "곽혜미", "phone": "-", "channel": "수기", "room": "B201", "checkin": "2026-05-23", "checkout": "2026-05-24", "nights": 1, "stay_dates": ["2026-05-23"], "price": 199000, "onsite": 0, "total": 199000, "book_date": "05/08 19:03", "is_block": false}, {"branch": "가평(청평점)", "booking_no": "M260508190333990ea8", "guest": "윤지현", "phone": "-", "channel": "수기", "room": "A203", "checkin": "2026-05-23", "checkout": "2026-05-24", "nights": 1, "stay_dates": ["2026-05-23"], "price": 119000, "onsite": 0, "total": 119000, "book_date": "05/08 19:03", "is_block": false}, {"branch": "가평(청평점)", "booking_no": "M260508190325135c36", "guest": "허정준", "phone": "-", "channel": "수기", "room": "A102", "checkin": "2026-05-23", "checkout": "2026-05-24", "nights": 1, "stay_dates": ["2026-05-23"], "price": 149000, "onsite": 0, "total": 149000, "book_date": "05/08 19:03", "is_block": false}, {"branch": "가평(청평점)", "booking_no": "M2605081903119359ab", "guest": "허정준", "phone": "-", "channel": "수기", "room": "A101", "checkin": "2026-05-23", "checkout": "2026-05-24", "nights": 1, "stay_dates": ["2026-05-23"], "price": 149000, "onsite": 0, "total": 149000, "book_date": "05/08 19:03", "is_block": false}, {"branch": "가평(청평점)", "booking_no": "2605051766064482", "guest": "장주영", "phone": "010-7686-3507", "channel": "야놀자", "room": "B103", "checkin": "2026-05-23", "checkout": "2026-05-24", "nights": 1, "stay_dates": ["2026-05-23"], "price": 139000, "onsite": 0, "total": 139000, "book_date": "05/05 17:55", "is_block": false}, {"branch": "가평(청평점)", "booking_no": "M2604270717591707d8", "guest": "김근한(여기어때)", "phone": "0504-4058-1026", "channel": "여기어때", "room": "A202", "checkin": "2026-05-23", "checkout": "2026-05-24", "nights": 1, "stay_dates": ["2026-05-23"], "price": 89100, "onsite": 0, "total": 89100, "book_date": "04/27 07:17", "is_block": false}, {"branch": "가평(청평점)", "booking_no": "M2604191228025835be", "guest": "김은성(여기어때)", "phone": "0504-4036-0435", "channel": "여기어때", "room": "B102", "checkin": "2026-05-23", "checkout": "2026-05-24", "nights": 1, "stay_dates": ["2026-05-23"], "price": 107100, "onsite": 0, "total": 107100, "book_date": "04/19 12:28", "is_block": false}, {"branch": "가평(청평점)", "booking_no": "2604140963745360", "guest": "김정은", "phone": "010-4147-5716", "channel": "야놀자", "room": "B202", "checkin": "2026-05-23", "checkout": "2026-05-24", "nights": 1, "stay_dates": ["2026-05-23"], "price": 89000, "onsite": 0, "total": 89000, "book_date": "04/14 09:29", "is_block": false}, {"branch": "가평(청평점)", "booking_no": "2604061562938707", "guest": "이동원", "phone": "010-8269-1459", "channel": "야놀자", "room": "B203", "checkin": "2026-05-23", "checkout": "2026-05-24", "nights": 1, "stay_dates": ["2026-05-23"], "price": 89000, "onsite": 0, "total": 89000, "book_date": "04/06 15:35", "is_block": false}, {"branch": "가평(청평점)", "booking_no": "2605050166006825", "guest": "정고은", "phone": "010-9723-3340", "channel": "야놀자", "room": "A102", "checkin": "2026-05-22", "checkout": "2026-05-23", "nights": 1, "stay_dates": ["2026-05-22"], "price": 99000, "onsite": 0, "total": 99000, "book_date": "05/05 01:07", "is_block": false}, {"branch": "가평(청평점)", "booking_no": "M2605081903591183a1", "guest": "곽혜미", "phone": "-", "channel": "수기", "room": "B201", "checkin": "2026-05-22", "checkout": "2026-05-23", "nights": 1, "stay_dates": ["2026-05-22"], "price": 139000, "onsite": 0, "total": 139000, "book_date": "05/08 19:03", "is_block": false}, {"branch": "가평(청평점)", "booking_no": "M260508190410112121", "guest": "박윤영(봄맞이이벤트)", "phone": "010-2632-1672", "channel": "수기", "room": "B102", "checkin": "2026-05-20", "checkout": "2026-05-21", "nights": 1, "stay_dates": ["2026-05-20"], "price": 1, "onsite": 0, "total": 1, "book_date": "05/08 19:04", "is_block": false}, {"branch": "가평(청평점)", "booking_no": "M2605082238523529ea", "guest": "인수정(평일할인이벤트)", "phone": "010-8898-0022", "channel": "수기", "room": "B203", "checkin": "2026-05-20", "checkout": "2026-05-21", "nights": 1, "stay_dates": ["2026-05-20"], "price": 54000, "onsite": 0, "total": 54000, "book_date": "05/08 22:38", "is_block": false}, {"branch": "가평(청평점)", "booking_no": "M260508190417997b3f", "guest": "추경석(다이클로)", "phone": "", "channel": "수기", "room": "A201", "checkin": "2026-05-19", "checkout": "2026-05-20", "nights": 1, "stay_dates": ["2026-05-19"], "price": 79000, "onsite": 0, "total": 79000, "book_date": "05/08 19:04", "is_block": false}, {"branch": "가평(청평점)", "booking_no": "2605091066417982", "guest": "김소연", "phone": "106-244-1219", "channel": "야놀자", "room": "B203", "checkin": "2026-05-18", "checkout": "2026-05-19", "nights": 1, "stay_dates": ["2026-05-18"], "price": 79000, "onsite": 0, "total": 79000, "book_date": "05/09 10:43", "is_block": false}, {"branch": "가평(청평점)", "booking_no": "2604272365198178", "guest": "신윤섭", "phone": "010-4226-3693", "channel": "야놀자", "room": "A202", "checkin": "2026-05-16", "checkout": "2026-05-17", "nights": 1, "stay_dates": ["2026-05-16"], "price": 89000, "onsite": 0, "total": 89000, "book_date": "04/27 23:29", "is_block": false}, {"branch": "가평(청평점)", "booking_no": "2605102059410085", "guest": "강하율", "phone": "010-4377-2905", "channel": "야놀자", "room": "A102", "checkin": "2026-05-16", "checkout": "2026-05-17", "nights": 1, "stay_dates": ["2026-05-16"], "price": 107100, "onsite": 0, "total": 107100, "book_date": "05/10 20:59", "is_block": false}, {"branch": "가평(청평점)", "booking_no": "M260508190457063f19", "guest": "윤소미(다이클로)", "phone": "-", "channel": "수기", "room": "B102", "checkin": "2026-05-16", "checkout": "2026-05-17", "nights": 1, "stay_dates": ["2026-05-16"], "price": 109000, "onsite": 0, "total": 109000, "book_date": "05/08 19:04", "is_block": false}, {"branch": "가평(청평점)", "booking_no": "2605061219630104", "guest": "이수영", "phone": "010-2620-0575", "channel": "야놀자", "room": "A203", "checkin": "2026-05-16", "checkout": "2026-05-17", "nights": 1, "stay_dates": ["2026-05-16"], "price": 80100, "onsite": 0, "total": 80100, "book_date": "05/06 12:19", "is_block": false}, {"branch": "가평(청평점)", "booking_no": "2604071947030068", "guest": "이연우", "phone": "010-6626-5923", "channel": "야놀자", "room": "A101", "checkin": "2026-05-16", "checkout": "2026-05-17", "nights": 1, "stay_dates": ["2026-05-16"], "price": 107100, "onsite": 0, "total": 107100, "book_date": "04/07 19:47", "is_block": false}, {"branch": "가평(청평점)", "booking_no": "2604221000622174", "guest": "전초롱", "phone": "010-5333-5230", "channel": "야놀자", "room": "B103", "checkin": "2026-05-16", "checkout": "2026-05-17", "nights": 1, "stay_dates": ["2026-05-16"], "price": 98100, "onsite": 0, "total": 98100, "book_date": "04/22 10:01", "is_block": false}, {"branch": "가평(청평점)", "booking_no": "2604081863165241", "guest": "홍정유", "phone": "010-2723-2960", "channel": "야놀자", "room": "B203", "checkin": "2026-05-16", "checkout": "2026-05-17", "nights": 1, "stay_dates": ["2026-05-16"], "price": 89000, "onsite": 0, "total": 89000, "book_date": "04/08 18:26", "is_block": false}, {"branch": "가평(청평점)", "booking_no": "2604081863165133", "guest": "홍정유", "phone": "010-2723-2960", "channel": "야놀자", "room": "B202", "checkin": "2026-05-16", "checkout": "2026-05-17", "nights": 1, "stay_dates": ["2026-05-16"], "price": 89000, "onsite": 0, "total": 89000, "book_date": "04/08 18:25", "is_block": false}, {"branch": "가평(청평점)", "booking_no": "2604181816120013", "guest": "심소연", "phone": "010-5097-2876", "channel": "야놀자", "room": "A201", "checkin": "2026-05-16", "checkout": "2026-05-17", "nights": 1, "stay_dates": ["2026-05-16"], "price": 89000, "onsite": 0, "total": 89000, "book_date": "04/18 18:16", "is_block": false}, {"branch": "가평(청평점)", "booking_no": "2605011265591272", "guest": "이희준", "phone": "010-8694-4378", "channel": "야놀자", "room": "B102", "checkin": "2026-05-13", "checkout": "2026-05-15", "nights": 2, "stay_dates": ["2026-05-13", "2026-05-14"], "price": 178000, "onsite": 0, "total": 178000, "book_date": "05/01 12:45", "is_block": false}, {"branch": "가평(청평점)", "booking_no": "2605081000462379", "guest": "이미림", "phone": "010-8250-1678", "channel": "야놀자", "room": "A102", "checkin": "2026-05-09", "checkout": "2026-05-10", "nights": 1, "stay_dates": ["2026-05-09"], "price": 107100, "onsite": 0, "total": 107100, "book_date": "05/08 10:01", "is_block": false}, {"branch": "가평(청평점)", "booking_no": "2605070213410006", "guest": "강하율", "phone": "010-4377-2905", "channel": "야놀자", "room": "B103", "checkin": "2026-05-09", "checkout": "2026-05-10", "nights": 1, "stay_dates": ["2026-05-09"], "price": 98100, "onsite": 0, "total": 98100, "book_date": "05/07 02:14", "is_block": false}, {"branch": "가평(청평점)", "booking_no": "2604261456170068", "guest": "강지구", "phone": "010-2414-7665", "channel": "야놀자", "room": "A202", "checkin": "2026-05-09", "checkout": "2026-05-10", "nights": 1, "stay_dates": ["2026-05-09"], "price": 80100, "onsite": 0, "total": 80100, "book_date": "04/26 14:57", "is_block": false}, {"branch": "가평(청평점)", "booking_no": "2604121863599842", "guest": "최선미", "phone": "010-9078-9469", "channel": "야놀자", "room": "B203", "checkin": "2026-05-09", "checkout": "2026-05-10", "nights": 1, "stay_dates": ["2026-05-09"], "price": 89000, "onsite": 0, "total": 89000, "book_date": "04/12 18:53", "is_block": false}, {"branch": "가평(청평점)", "booking_no": "M260508190547045f5c", "guest": "고정은", "phone": "-", "channel": "수기", "room": "B202", "checkin": "2026-05-09", "checkout": "2026-05-10", "nights": 1, "stay_dates": ["2026-05-09"], "price": 89000, "onsite": 0, "total": 89000, "book_date": "05/08 19:05", "is_block": false}, {"branch": "가평(청평점)", "booking_no": "2605042239580188", "guest": "장민혁", "phone": "010-7748-6906", "channel": "야놀자", "room": "B102", "checkin": "2026-05-09", "checkout": "2026-05-10", "nights": 1, "stay_dates": ["2026-05-09"], "price": 98100, "onsite": 0, "total": 98100, "book_date": "05/04 22:40", "is_block": false}, {"branch": "가평(청평점)", "booking_no": "M260508190538345328", "guest": "이영숙", "phone": "-", "channel": "수기", "room": "B201", "checkin": "2026-05-09", "checkout": "2026-05-10", "nights": 1, "stay_dates": ["2026-05-09"], "price": 169000, "onsite": 0, "total": 169000, "book_date": "05/08 19:05", "is_block": false}, {"branch": "가평(청평점)", "booking_no": "2604232264758652", "guest": "김현태", "phone": "010-6690-9399", "channel": "야놀자", "room": "B202", "checkin": "2026-05-08", "checkout": "2026-05-09", "nights": 1, "stay_dates": ["2026-05-08"], "price": 79000, "onsite": 0, "total": 79000, "book_date": "04/23 22:07", "is_block": false}, {"branch": "가평(청평점)", "booking_no": "M260426015858681061", "guest": "이현진(여기어때)", "phone": "0504-4004-8251", "channel": "여기어때", "room": "B202", "checkin": "2026-05-04", "checkout": "2026-05-05", "nights": 1, "stay_dates": ["2026-05-04"], "price": 89100, "onsite": 0, "total": 89100, "book_date": "04/26 01:58", "is_block": false}, {"branch": "가평(청평점)", "booking_no": "2604290032590055", "guest": "전연우", "phone": "010-4893-8299", "channel": "야놀자", "room": "B203", "checkin": "2026-05-04", "checkout": "2026-05-05", "nights": 1, "stay_dates": ["2026-05-04"], "price": 80100, "onsite": 0, "total": 80100, "book_date": "04/29 00:32", "is_block": false}, {"branch": "가평(청평점)", "booking_no": "M260427161214109720", "guest": "임예란(다이클로)", "phone": "010-9509-6607", "channel": "수기", "room": "A201", "checkin": "2026-05-04", "checkout": "2026-05-05", "nights": 1, "stay_dates": ["2026-05-04"], "price": 89000, "onsite": 0, "total": 89000, "book_date": "04/27 16:12", "is_block": false}, {"branch": "가평(청평점)", "booking_no": "M260427161235845530", "guest": "임예란(다이클로)", "phone": "010-9509-6607", "channel": "수기", "room": "A202", "checkin": "2026-05-04", "checkout": "2026-05-05", "nights": 1, "stay_dates": ["2026-05-04"], "price": 89000, "onsite": 0, "total": 89000, "book_date": "04/27 16:12", "is_block": false}, {"branch": "가평(청평점)", "booking_no": "2604152263928818", "guest": "Bit Han", "phone": "010-4923-4775", "channel": "야놀자", "room": "B201", "checkin": "2026-05-04", "checkout": "2026-05-05", "nights": 1, "stay_dates": ["2026-05-04"], "price": 169000, "onsite": 0, "total": 169000, "book_date": "04/15 22:29", "is_block": false}, {"branch": "가평(청평점)", "booking_no": "Y17409656", "guest": "위민영", "phone": "010-4505-7198", "channel": "직접예약", "room": "B102", "checkin": "2026-05-04", "checkout": "2026-05-05", "nights": 1, "stay_dates": ["2026-05-04"], "price": 109000, "onsite": 0, "total": 109000, "book_date": "04/23 14:17", "is_block": false}, {"branch": "가평(청평점)", "booking_no": "2604281944120127", "guest": "이경준", "phone": "010-8796-1804", "channel": "야놀자", "room": "A102", "checkin": "2026-05-04", "checkout": "2026-05-05", "nights": 1, "stay_dates": ["2026-05-04"], "price": 119000, "onsite": 0, "total": 119000, "book_date": "04/28 19:44", "is_block": false}, {"branch": "가평(청평점)", "booking_no": "2605040853110044", "guest": "김보영", "phone": "010-8757-9083", "channel": "야놀자", "room": "B103", "checkin": "2026-05-04", "checkout": "2026-05-05", "nights": 1, "stay_dates": ["2026-05-04"], "price": 98100, "onsite": 0, "total": 98100, "book_date": "05/04 08:53", "is_block": false}, {"branch": "가평(청평점)", "booking_no": "M260420001304299f3a", "guest": "김온유(여기어때)", "phone": "0502-4014-0632", "channel": "여기어때", "room": "A101", "checkin": "2026-05-04", "checkout": "2026-05-05", "nights": 1, "stay_dates": ["2026-05-04"], "price": 116100, "onsite": 0, "total": 116100, "book_date": "04/20 00:13", "is_block": false}, {"branch": "가평(청평점)", "booking_no": "M260406093206637917", "guest": "고정은", "phone": "010-4166-4242", "channel": "수기", "room": "B201", "checkin": "2026-05-03", "checkout": "2026-05-04", "nights": 1, "stay_dates": ["2026-05-03"], "price": 169000, "onsite": 0, "total": 169000, "book_date": "04/06 09:32", "is_block": false}, {"branch": "가평(청평점)", "booking_no": "2604221364595363", "guest": "권은서", "phone": "010-2167-3697", "channel": "야놀자", "room": "B102", "checkin": "2026-05-03", "checkout": "2026-05-04", "nights": 1, "stay_dates": ["2026-05-03"], "price": 104000, "onsite": 0, "total": 104000, "book_date": "04/22 13:16", "is_block": false}, {"branch": "가평(청평점)", "booking_no": "Y17410366", "guest": "이보민", "phone": "010-3661-3232", "channel": "직접예약", "room": "A203", "checkin": "2026-05-03", "checkout": "2026-05-05", "nights": 2, "stay_dates": ["2026-05-03", "2026-05-04"], "price": 213000, "onsite": 80000, "total": 293000, "book_date": "04/28 22:06", "is_block": false}, {"branch": "가평(청평점)", "booking_no": "2604281065222684", "guest": "서은전", "phone": "010-3242-3165", "channel": "야놀자", "room": "A102", "checkin": "2026-05-03", "checkout": "2026-05-04", "nights": 1, "stay_dates": ["2026-05-03"], "price": 114000, "onsite": 0, "total": 114000, "book_date": "04/28 10:35", "is_block": false}, {"branch": "가평(청평점)", "booking_no": "2604071001590343", "guest": "김민주", "phone": "010-3912-8571", "channel": "야놀자", "room": "B202", "checkin": "2026-05-03", "checkout": "2026-05-04", "nights": 1, "stay_dates": ["2026-05-03"], "price": 80100, "onsite": 0, "total": 80100, "book_date": "04/07 10:02", "is_block": false}, {"branch": "가평(청평점)", "booking_no": "M260501221036574d8f", "guest": "김효정", "phone": "010-2737-4537", "channel": "수기", "room": "A202", "checkin": "2026-05-03", "checkout": "2026-05-04", "nights": 1, "stay_dates": ["2026-05-03"], "price": 84000, "onsite": 0, "total": 84000, "book_date": "05/01 22:10", "is_block": false}, {"branch": "가평(청평점)", "booking_no": "M2604150015234195d9", "guest": "금혁(여기어때)", "phone": "0502-1396-5080", "channel": "여기어때", "room": "A101", "checkin": "2026-05-03", "checkout": "2026-05-04", "nights": 1, "stay_dates": ["2026-05-03"], "price": 143100, "onsite": 0, "total": 143100, "book_date": "04/15 00:15", "is_block": false}, {"branch": "가평(청평점)", "booking_no": "2604251000610019", "guest": "조장행", "phone": "010-4721-7277", "channel": "야놀자", "room": "A201", "checkin": "2026-05-03", "checkout": "2026-05-04", "nights": 1, "stay_dates": ["2026-05-03"], "price": 111600, "onsite": 0, "total": 111600, "book_date": "04/25 10:00", "is_block": false}, {"branch": "가평(청평점)", "booking_no": "M260414181300009d17", "guest": "고정은", "phone": "010-4166-4242", "channel": "수기", "room": "B103", "checkin": "2026-05-03", "checkout": "2026-05-04", "nights": 1, "stay_dates": ["2026-05-03"], "price": 129000, "onsite": 0, "total": 129000, "book_date": "04/14 18:13", "is_block": false}, {"branch": "가평(청평점)", "booking_no": "M2604060940166535f0", "guest": "고정은", "phone": "010-4166-4242", "channel": "수기", "room": "B103", "checkin": "2026-05-02", "checkout": "2026-05-03", "nights": 1, "stay_dates": ["2026-05-02"], "price": 129000, "onsite": 0, "total": 129000, "book_date": "04/06 09:40", "is_block": false}, {"branch": "가평(청평점)", "booking_no": "2604161363976222", "guest": "정예정", "phone": "010-3335-0335", "channel": "야놀자", "room": "A202", "checkin": "2026-05-02", "checkout": "2026-05-03", "nights": 1, "stay_dates": ["2026-05-02"], "price": 139000, "onsite": 0, "total": 139000, "book_date": "04/16 13:48", "is_block": false}, {"branch": "가평(청평점)", "booking_no": "M2604060924286846d1", "guest": "고정은", "phone": "010-4166-4242", "channel": "수기", "room": "B201", "checkin": "2026-05-02", "checkout": "2026-05-03", "nights": 1, "stay_dates": ["2026-05-02"], "price": 169000, "onsite": 0, "total": 169000, "book_date": "04/06 09:24", "is_block": false}, {"branch": "가평(청평점)", "booking_no": "2603301527260049", "guest": "김태형", "phone": "010-8182-3066", "channel": "야놀자", "room": "A101", "checkin": "2026-05-02", "checkout": "2026-05-03", "nights": 1, "stay_dates": ["2026-05-02"], "price": 107100, "onsite": 0, "total": 107100, "book_date": "03/30 15:29", "is_block": false}, {"branch": "가평(청평점)", "booking_no": "M260430160244108956", "guest": "임현진", "phone": "050718142817", "channel": "수기", "room": "B102", "checkin": "2026-05-02", "checkout": "2026-05-03", "nights": 1, "stay_dates": ["2026-05-02"], "price": 109000, "onsite": 0, "total": 109000, "book_date": "04/30 16:02", "is_block": false}, {"branch": "가평(청평점)", "booking_no": "2604071663042360", "guest": "이승기", "phone": "010-3302-9534", "channel": "야놀자", "room": "A203", "checkin": "2026-05-02", "checkout": "2026-05-03", "nights": 1, "stay_dates": ["2026-05-02"], "price": 119000, "onsite": 0, "total": 119000, "book_date": "04/07 16:16", "is_block": false}, {"branch": "가평(청평점)", "booking_no": "2604281065218182", "guest": "임현진", "phone": "010-8284-7154", "channel": "야놀자", "room": "B102", "checkin": "2026-05-02", "checkout": "2026-05-03", "nights": 1, "stay_dates": ["2026-05-02"], "price": 109000, "onsite": 0, "total": 109000, "book_date": "04/28 10:02", "is_block": false}, {"branch": "가평(청평점)", "booking_no": "M260427111157659876", "guest": "김소래", "phone": "010-8080-2184", "channel": "수기", "room": "B202", "checkin": "2026-05-02", "checkout": "2026-05-03", "nights": 1, "stay_dates": ["2026-05-02"], "price": 109000, "onsite": 0, "total": 109000, "book_date": "04/27 11:11", "is_block": false}, {"branch": "가평(청평점)", "booking_no": "2604071663042493", "guest": "이승기", "phone": "010-3302-9534", "channel": "야놀자", "room": "A201", "checkin": "2026-05-02", "checkout": "2026-05-03", "nights": 1, "stay_dates": ["2026-05-02"], "price": 119000, "onsite": 0, "total": 119000, "book_date": "04/07 16:18", "is_block": false}, {"branch": "가평(청평점)", "booking_no": "M260427110820563309", "guest": "고정은", "phone": "010-4166-4242", "channel": "수기", "room": "A102", "checkin": "2026-05-02", "checkout": "2026-05-03", "nights": 1, "stay_dates": ["2026-05-02"], "price": 119000, "onsite": 0, "total": 119000, "book_date": "04/27 11:08", "is_block": false}, {"branch": "가평(청평점)", "booking_no": "2604140763741522", "guest": "김경해", "phone": "010-7731-6071", "channel": "야놀자", "room": "A202", "checkin": "2026-05-01", "checkout": "2026-05-02", "nights": 1, "stay_dates": ["2026-05-01"], "price": 99000, "onsite": 0, "total": 99000, "book_date": "04/14 07:41", "is_block": false}, {"branch": "가평(청평점)", "booking_no": "M260404112325766dce", "guest": "한여준", "phone": "050240334931", "channel": "수기", "room": "A102", "checkin": "2026-05-01", "checkout": "2026-05-02", "nights": 1, "stay_dates": ["2026-05-01"], "price": 119000, "onsite": 0, "total": 119000, "book_date": "04/04 11:23", "is_block": false}, {"branch": "가평(청평점)", "booking_no": "2604271842340179", "guest": "김설화", "phone": "010-3648-5666", "channel": "야놀자", "room": "A201", "checkin": "2026-05-01", "checkout": "2026-05-02", "nights": 1, "stay_dates": ["2026-05-01"], "price": 159000, "onsite": 0, "total": 159000, "book_date": "04/27 18:43", "is_block": false}, {"branch": "가평(청평점)", "booking_no": "M260501143254205718", "guest": "윤지현", "phone": "010-8706-1733", "channel": "수기", "room": "A201", "checkin": "2026-05-01", "checkout": "2026-05-02", "nights": 1, "stay_dates": ["2026-05-01"], "price": 159000, "onsite": 0, "total": 159000, "book_date": "05/01 14:32", "is_block": false}, {"branch": "가평(청평점)", "booking_no": "M260427111144912899", "guest": "김소래", "phone": "010-8080-2184", "channel": "수기", "room": "B202", "checkin": "2026-05-01", "checkout": "2026-05-02", "nights": 1, "stay_dates": ["2026-05-01"], "price": 89000, "onsite": 0, "total": 89000, "book_date": "04/27 11:11", "is_block": false}, {"branch": "가평(청평점)", "booking_no": "M2604271107585740ff", "guest": "고정은", "phone": "010-4166-4242", "channel": "수기", "room": "A101", "checkin": "2026-05-01", "checkout": "2026-05-02", "nights": 1, "stay_dates": ["2026-05-01"], "price": 119000, "onsite": 0, "total": 119000, "book_date": "04/27 11:07", "is_block": false}, {"branch": "가평(청평점)", "booking_no": "M260406090323656a88", "guest": "고정은", "phone": "010-4166-4242", "channel": "수기", "room": "B201", "checkin": "2026-05-01", "checkout": "2026-05-02", "nights": 1, "stay_dates": ["2026-05-01"], "price": 169000, "onsite": 0, "total": 169000, "book_date": "04/06 09:03", "is_block": false}, {"branch": "가평(청평점)", "booking_no": "2604090102450004", "guest": "김가연", "phone": "010-2080-4461", "channel": "야놀자", "room": "B203", "checkin": "2026-05-01", "checkout": "2026-05-02", "nights": 1, "stay_dates": ["2026-05-01"], "price": 89100, "onsite": 0, "total": 89100, "book_date": "04/09 01:02", "is_block": false}, {"branch": "가평(청평점)", "booking_no": "M2604141443230988ac", "guest": "이종일(여기어때)", "phone": "0504-4038-1693", "channel": "여기어때", "room": "B102", "checkin": "2026-05-01", "checkout": "2026-05-02", "nights": 1, "stay_dates": ["2026-05-01"], "price": 143100, "onsite": 0, "total": 143100, "book_date": "04/14 14:43", "is_block": false}, {"branch": "가평(청평점)", "booking_no": "M260410080607047eae", "guest": "고정은", "phone": "010-4166-4242", "channel": "수기", "room": "B103", "checkin": "2026-05-01", "checkout": "2026-05-02", "nights": 1, "stay_dates": ["2026-05-01"], "price": 109000, "onsite": 0, "total": 109000, "book_date": "04/10 08:06", "is_block": false}, {"branch": "가평(청평점)", "booking_no": "2604191664307203", "guest": "강정호", "phone": "010-2909-4882", "channel": "야놀자", "room": "A203", "checkin": "2026-05-01", "checkout": "2026-05-02", "nights": 1, "stay_dates": ["2026-05-01"], "price": 129000, "onsite": 0, "total": 129000, "book_date": "04/19 16:49", "is_block": false}, {"branch": "가평(청평점)", "booking_no": "2604271000530518", "guest": "김유진", "phone": "010-4034-7253", "channel": "야놀자", "room": "B102", "checkin": "2026-04-30", "checkout": "2026-05-01", "nights": 1, "stay_dates": ["2026-04-30"], "price": 109000, "onsite": 0, "total": 109000, "book_date": "04/27 10:00", "is_block": false}, {"branch": "가평(청평점)", "booking_no": "M260422000302534d04", "guest": "김우석(여기어때)", "phone": "0502-1460-4431", "channel": "여기어때", "room": "A202", "checkin": "2026-04-30", "checkout": "2026-05-01", "nights": 1, "stay_dates": ["2026-04-30"], "price": 89100, "onsite": 0, "total": 89100, "book_date": "04/22 00:03", "is_block": false}, {"branch": "가평(청평점)", "booking_no": "2604161649270116", "guest": "안수연", "phone": "010-8298-7483", "channel": "야놀자", "room": "B102", "checkin": "2026-04-29", "checkout": "2026-04-30", "nights": 1, "stay_dates": ["2026-04-29"], "price": 80100, "onsite": 0, "total": 80100, "book_date": "04/16 16:49", "is_block": false}, {"branch": "가평(청평점)", "booking_no": "2604202064434769", "guest": "김수진", "phone": "010-8840-2153", "channel": "야놀자", "room": "B202", "checkin": "2026-04-29", "checkout": "2026-04-30", "nights": 1, "stay_dates": ["2026-04-29"], "price": 79000, "onsite": 0, "total": 79000, "book_date": "04/20 20:31", "is_block": false}, {"branch": "가평(청평점)", "booking_no": "M260420100411570d8f", "guest": "방막기", "phone": "0000000", "channel": "수기", "room": "A203", "checkin": "2026-04-28", "checkout": "2026-04-29", "nights": 1, "stay_dates": ["2026-04-28"], "price": 0, "onsite": 0, "total": 0, "book_date": "04/20 10:04", "is_block": true}, {"branch": "가평(청평점)", "booking_no": "M260401135556936d54", "guest": "정응구", "phone": "050440427120", "channel": "수기", "room": "A203", "checkin": "2026-04-26", "checkout": "2026-04-27", "nights": 1, "stay_dates": ["2026-04-26"], "price": 79000, "onsite": 0, "total": 79000, "book_date": "04/01 13:55", "is_block": false}, {"branch": "가평(청평점)", "booking_no": "2604240864782645", "guest": "신동수", "phone": "010-3626-7423", "channel": "야놀자", "room": "B103", "checkin": "2026-04-25", "checkout": "2026-04-26", "nights": 1, "stay_dates": ["2026-04-25"], "price": 139000, "onsite": 0, "total": 139000, "book_date": "04/24 08:31", "is_block": false}, {"branch": "가평(청평점)", "booking_no": "2604012162462287", "guest": "Okhyeon Ha", "phone": "010-2818-2662", "channel": "야놀자", "room": "A202", "checkin": "2026-04-25", "checkout": "2026-04-26", "nights": 1, "stay_dates": ["2026-04-25"], "price": 89000, "onsite": 0, "total": 89000, "book_date": "04/01 21:40", "is_block": false}, {"branch": "가평(청평점)", "booking_no": "Y17409342", "guest": "최유정", "phone": "010-5357-5762", "channel": "직접예약", "room": "A203", "checkin": "2026-04-25", "checkout": "2026-04-26", "nights": 1, "stay_dates": ["2026-04-25"], "price": 119000, "onsite": 0, "total": 119000, "book_date": "04/21 17:09", "is_block": false}, {"branch": "가평(청평점)", "booking_no": "M260418001705516651", "guest": "신규용(여기어때)", "phone": "0502-4041-7369", "channel": "여기어때", "room": "A201", "checkin": "2026-04-25", "checkout": "2026-04-26", "nights": 1, "stay_dates": ["2026-04-25"], "price": 89100, "onsite": 0, "total": 89100, "book_date": "04/18 00:17", "is_block": false}, {"branch": "가평(청평점)", "booking_no": "M2604151959232871b6", "guest": "송요한(여기어때)", "phone": "0504-4053-6662", "channel": "여기어때", "room": "B102", "checkin": "2026-04-25", "checkout": "2026-04-26", "nights": 1, "stay_dates": ["2026-04-25"], "price": 107100, "onsite": 0, "total": 107100, "book_date": "04/15 19:59", "is_block": false}, {"branch": "가평(청평점)", "booking_no": "2604081103540325", "guest": "강동현", "phone": "010-4487-5510", "channel": "야놀자", "room": "A102", "checkin": "2026-04-25", "checkout": "2026-04-27", "nights": 2, "stay_dates": ["2026-04-25", "2026-04-26"], "price": 196200, "onsite": 0, "total": 196200, "book_date": "04/08 11:04", "is_block": false}, {"branch": "가평(청평점)", "booking_no": "2604060062894221", "guest": "Hyerim Ko", "phone": "010-4651-1208", "channel": "야놀자", "room": "B203", "checkin": "2026-04-25", "checkout": "2026-04-26", "nights": 1, "stay_dates": ["2026-04-25"], "price": 89000, "onsite": 0, "total": 89000, "book_date": "04/06 00:31", "is_block": false}, {"branch": "가평(청평점)", "booking_no": "2604061562937412", "guest": "이종진", "phone": "010-6472-6115", "channel": "야놀자", "room": "B202", "checkin": "2026-04-25", "checkout": "2026-04-26", "nights": 1, "stay_dates": ["2026-04-25"], "price": 89000, "onsite": 0, "total": 89000, "book_date": "04/06 15:24", "is_block": false}, {"branch": "가평(청평점)", "booking_no": "M2604061306452856aa", "guest": "이민하", "phone": "050213774658", "channel": "수기", "room": "A101", "checkin": "2026-04-25", "checkout": "2026-04-26", "nights": 1, "stay_dates": ["2026-04-25"], "price": 119000, "onsite": 0, "total": 119000, "book_date": "04/06 13:06", "is_block": false}, {"branch": "가평(청평점)", "booking_no": "M260423222157839fe2", "guest": "정민석", "phone": "010-2933-8876", "channel": "수기", "room": "B202", "checkin": "2026-04-24", "checkout": "2026-04-25", "nights": 1, "stay_dates": ["2026-04-24"], "price": 69000, "onsite": 0, "total": 69000, "book_date": "04/23 22:21", "is_block": false}, {"branch": "가평(청평점)", "booking_no": "2604221953430258", "guest": "안재규", "phone": "010-6626-2699", "channel": "야놀자", "room": "A202", "checkin": "2026-04-24", "checkout": "2026-04-25", "nights": 1, "stay_dates": ["2026-04-24"], "price": 62100, "onsite": 0, "total": 62100, "book_date": "04/22 19:54", "is_block": false}, {"branch": "가평(청평점)", "booking_no": "M26042202420215759d", "guest": "장유리(여기어때)", "phone": "0504-4017-1590", "channel": "여기어때", "room": "A102", "checkin": "2026-04-24", "checkout": "2026-04-25", "nights": 1, "stay_dates": ["2026-04-24"], "price": 89100, "onsite": 0, "total": 89100, "book_date": "04/22 02:42", "is_block": false}, {"branch": "가평(청평점)", "booking_no": "M260421082402167ebf", "guest": "정다정(여기어때)", "phone": "0502-1385-7173", "channel": "여기어때", "room": "B203", "checkin": "2026-04-24", "checkout": "2026-04-25", "nights": 1, "stay_dates": ["2026-04-24"], "price": 71100, "onsite": 0, "total": 71100, "book_date": "04/21 08:24", "is_block": false}, {"branch": "가평(청평점)", "booking_no": "M260423222120272641", "guest": "정민석", "phone": "010-2933-8876", "channel": "수기", "room": "A203", "checkin": "2026-04-24", "checkout": "2026-04-25", "nights": 1, "stay_dates": ["2026-04-24"], "price": 69000, "onsite": 0, "total": 69000, "book_date": "04/23 22:21", "is_block": false}, {"branch": "가평(청평점)", "booking_no": "M260419011604140584", "guest": "박승영(여기어때)", "phone": "0504-4035-9828", "channel": "여기어때", "room": "B102", "checkin": "2026-04-24", "checkout": "2026-04-25", "nights": 1, "stay_dates": ["2026-04-24"], "price": 89100, "onsite": 0, "total": 89100, "book_date": "04/19 01:16", "is_block": false}, {"branch": "가평(청평점)", "booking_no": "2604091463246145", "guest": "김민재", "phone": "010-6350-1431", "channel": "야놀자", "room": "B201", "checkin": "2026-04-22", "checkout": "2026-04-24", "nights": 2, "stay_dates": ["2026-04-22", "2026-04-23"], "price": 278000, "onsite": 0, "total": 278000, "book_date": "04/09 14:02", "is_block": false}, {"branch": "가평(청평점)", "booking_no": "M2604171240222223ce", "guest": "도윤희(다이클로)", "phone": "010-3209-4154", "channel": "수기", "room": "B203", "checkin": "2026-04-21", "checkout": "2026-04-22", "nights": 1, "stay_dates": ["2026-04-21"], "price": 79000, "onsite": 0, "total": 79000, "book_date": "04/17 12:40", "is_block": false}, {"branch": "가평(청평점)", "booking_no": "M260410144541362f9d", "guest": "하인호(다이클로)", "phone": "010-5146-0414", "channel": "수기", "room": "B203", "checkin": "2026-04-20", "checkout": "2026-04-21", "nights": 1, "stay_dates": ["2026-04-20"], "price": 79000, "onsite": 0, "total": 79000, "book_date": "04/10 14:45", "is_block": false}, {"branch": "가평(청평점)", "booking_no": "2604101963395696", "guest": "김다인", "phone": "010-4666-6812", "channel": "야놀자", "room": "B102", "checkin": "2026-04-20", "checkout": "2026-04-21", "nights": 1, "stay_dates": ["2026-04-20"], "price": 89000, "onsite": 0, "total": 89000, "book_date": "04/10 19:52", "is_block": false}, {"branch": "가평(청평점)", "booking_no": "M2604101717220907e3", "guest": "염경미(다이클로)", "phone": "010-6724-0621", "channel": "수기", "room": "A203", "checkin": "2026-04-20", "checkout": "2026-04-22", "nights": 2, "stay_dates": ["2026-04-20", "2026-04-21"], "price": 158000, "onsite": 0, "total": 158000, "book_date": "04/10 17:17", "is_block": false}, {"branch": "가평(청평점)", "booking_no": "2604170964052069", "guest": "Mikyeong Lee", "phone": "010-2694-8660", "channel": "야놀자", "room": "B203", "checkin": "2026-04-19", "checkout": "2026-04-20", "nights": 1, "stay_dates": ["2026-04-19"], "price": 79000, "onsite": 0, "total": 79000, "book_date": "04/17 09:34", "is_block": false}, {"branch": "가평(청평점)", "booking_no": "2604162164024424", "guest": "최강민", "phone": "010-9179-7950", "channel": "야놀자", "room": "B102", "checkin": "2026-04-19", "checkout": "2026-04-20", "nights": 1, "stay_dates": ["2026-04-19"], "price": 89000, "onsite": 0, "total": 89000, "book_date": "04/16 21:37", "is_block": false}, {"branch": "가평(청평점)", "booking_no": "M260414164141718c6b", "guest": "김신형", "phone": "010-5721-2117", "channel": "수기", "room": "A102", "checkin": "2026-04-18", "checkout": "2026-04-19", "nights": 1, "stay_dates": ["2026-04-18"], "price": 119000, "onsite": 0, "total": 119000, "book_date": "04/14 16:41", "is_block": false}, {"branch": "가평(청평점)", "booking_no": "2604012119350018", "guest": "김혜린", "phone": "010-7162-5443", "channel": "야놀자", "room": "B203", "checkin": "2026-04-18", "checkout": "2026-04-19", "nights": 1, "stay_dates": ["2026-04-18"], "price": 80100, "onsite": 0, "total": 80100, "book_date": "04/01 21:19", "is_block": false}, {"branch": "가평(청평점)", "booking_no": "2604011562420204", "guest": "정영은", "phone": "010-2406-2617", "channel": "야놀자", "room": "B103", "checkin": "2026-04-18", "checkout": "2026-04-19", "nights": 1, "stay_dates": ["2026-04-18"], "price": 109000, "onsite": 0, "total": 109000, "book_date": "04/01 15:32", "is_block": false}, {"branch": "가평(청평점)", "booking_no": "2603232161592110", "guest": "최태한", "phone": "010-2170-9470", "channel": "야놀자", "room": "B202", "checkin": "2026-04-18", "checkout": "2026-04-19", "nights": 1, "stay_dates": ["2026-04-18"], "price": 89000, "onsite": 0, "total": 89000, "book_date": "03/23 21:49", "is_block": false}, {"branch": "가평(청평점)", "booking_no": "2604012262466899", "guest": "Onyoo Kim", "phone": "010-4910-2007", "channel": "야놀자", "room": "B102", "checkin": "2026-04-18", "checkout": "2026-04-19", "nights": 1, "stay_dates": ["2026-04-18"], "price": 109000, "onsite": 0, "total": 109000, "book_date": "04/01 22:21", "is_block": false}, {"branch": "가평(청평점)", "booking_no": "M260415115823391f88", "guest": "방기용(여기어때)", "phone": "0504-4059-6090", "channel": "여기어때", "room": "B201", "checkin": "2026-04-18", "checkout": "2026-04-19", "nights": 1, "stay_dates": ["2026-04-18"], "price": 161100, "onsite": 0, "total": 161100, "book_date": "04/15 11:58", "is_block": false}, {"branch": "가평(청평점)", "booking_no": "2604141163759458", "guest": "Hansang Lee", "phone": "010-5266-9801", "channel": "야놀자", "room": "A203", "checkin": "2026-04-18", "checkout": "2026-04-19", "nights": 1, "stay_dates": ["2026-04-18"], "price": 89000, "onsite": 0, "total": 89000, "book_date": "04/14 11:48", "is_block": false}, {"branch": "가평(청평점)", "booking_no": "M260411160922072148", "guest": "최종섭(여기어때)", "phone": "0502-1383-1146", "channel": "여기어때", "room": "A101", "checkin": "2026-04-18", "checkout": "2026-04-19", "nights": 1, "stay_dates": ["2026-04-18"], "price": 116100, "onsite": 0, "total": 116100, "book_date": "04/11 16:09", "is_block": false}, {"branch": "가평(청평점)", "booking_no": "M2604121626222707c3", "guest": "곽도연(여기어때)", "phone": "0504-4038-4635", "channel": "여기어때", "room": "A202", "checkin": "2026-04-18", "checkout": "2026-04-19", "nights": 1, "stay_dates": ["2026-04-18"], "price": 89100, "onsite": 0, "total": 89100, "book_date": "04/12 16:26", "is_block": false}, {"branch": "가평(청평점)", "booking_no": "M26041422343900964b", "guest": "장원욱(여기어때)", "phone": "0504-4064-2717", "channel": "여기어때", "room": "A201", "checkin": "2026-04-17", "checkout": "2026-04-19", "nights": 2, "stay_dates": ["2026-04-17", "2026-04-18"], "price": 169200, "onsite": 0, "total": 169200, "book_date": "04/14 22:34", "is_block": false}, {"branch": "가평(청평점)", "booking_no": "M260410203923170953", "guest": "현정(여기어때)", "phone": "0502-4017-0597", "channel": "여기어때", "room": "B202", "checkin": "2026-04-15", "checkout": "2026-04-16", "nights": 1, "stay_dates": ["2026-04-15"], "price": 80100, "onsite": 0, "total": 80100, "book_date": "04/10 20:39", "is_block": false}, {"branch": "가평(청평점)", "booking_no": "M260410192322023d04", "guest": "이정희(여기어때)", "phone": "0502-1477-6771", "channel": "여기어때", "room": "B203", "checkin": "2026-04-15", "checkout": "2026-04-16", "nights": 1, "stay_dates": ["2026-04-15"], "price": 80100, "onsite": 0, "total": 80100, "book_date": "04/10 19:23", "is_block": false}, {"branch": "가평(청평점)", "booking_no": "2603261861854337", "guest": "김소현", "phone": "010-8264-4719", "channel": "야놀자", "room": "B102", "checkin": "2026-04-15", "checkout": "2026-04-16", "nights": 1, "stay_dates": ["2026-04-15"], "price": 89000, "onsite": 0, "total": 89000, "book_date": "03/26 18:48", "is_block": false}, {"branch": "가평(청평점)", "booking_no": "2604120302160035", "guest": "이재민", "phone": "010-9020-6096", "channel": "야놀자", "room": "A202", "checkin": "2026-04-13", "checkout": "2026-04-14", "nights": 1, "stay_dates": ["2026-04-13"], "price": 71100, "onsite": 0, "total": 71100, "book_date": "04/12 03:03", "is_block": false}, {"branch": "가평(청평점)", "booking_no": "M260413130522914ec4", "guest": "김세림(여기어때)", "phone": "0504-4035-8771", "channel": "여기어때", "room": "B202", "checkin": "2026-04-13", "checkout": "2026-04-14", "nights": 1, "stay_dates": ["2026-04-13"], "price": 80100, "onsite": 0, "total": 80100, "book_date": "04/13 13:05", "is_block": false}, {"branch": "가평(청평점)", "booking_no": "2604072363087772", "guest": "Hanbyeol Wang", "phone": "010-6344-8613", "channel": "야놀자", "room": "A202", "checkin": "2026-04-11", "checkout": "2026-04-12", "nights": 1, "stay_dates": ["2026-04-11"], "price": 89000, "onsite": 0, "total": 89000, "book_date": "04/07 23:26", "is_block": false}, {"branch": "가평(청평점)", "booking_no": "M2604060950242110ae", "guest": "SUNGKYU WI", "phone": "1544-3812", "channel": "수기", "room": "A101", "checkin": "2026-04-11", "checkout": "2026-04-12", "nights": 1, "stay_dates": ["2026-04-11"], "price": 119000, "onsite": 0, "total": 119000, "book_date": "04/06 09:50", "is_block": false}, {"branch": "가평(청평점)", "booking_no": "M260408173422423480", "guest": "이종우(여기어때)", "phone": "0504-4060-2772", "channel": "여기어때", "room": "B201", "checkin": "2026-04-11", "checkout": "2026-04-12", "nights": 1, "stay_dates": ["2026-04-11"], "price": 161100, "onsite": 0, "total": 161100, "book_date": "04/08 17:34", "is_block": false}, {"branch": "가평(청평점)", "booking_no": "M2604060950052335bc", "guest": "유지혜", "phone": "010-9596-0980", "channel": "수기", "room": "B203", "checkin": "2026-04-11", "checkout": "2026-04-12", "nights": 1, "stay_dates": ["2026-04-11"], "price": 89000, "onsite": 0, "total": 89000, "book_date": "04/06 09:50", "is_block": false}, {"branch": "가평(청평점)", "booking_no": "2604052162880879", "guest": "Jihyeon Kim", "phone": "010-6314-4682", "channel": "야놀자", "room": "B202", "checkin": "2026-04-11", "checkout": "2026-04-12", "nights": 1, "stay_dates": ["2026-04-11"], "price": 89000, "onsite": 0, "total": 89000, "book_date": "04/05 21:45", "is_block": false}, {"branch": "가평(청평점)", "booking_no": "2603141454590209", "guest": "나다정", "phone": "010-2775-0971", "channel": "야놀자", "room": "A201", "checkin": "2026-04-11", "checkout": "2026-04-12", "nights": 1, "stay_dates": ["2026-04-11"], "price": 169000, "onsite": 0, "total": 169000, "book_date": "03/14 14:55", "is_block": false}, {"branch": "가평(청평점)", "booking_no": "2604072353590057", "guest": "김민솔", "phone": "010-4678-0283", "channel": "야놀자", "room": "B103", "checkin": "2026-04-11", "checkout": "2026-04-12", "nights": 1, "stay_dates": ["2026-04-11"], "price": 98100, "onsite": 0, "total": 98100, "book_date": "04/07 23:54", "is_block": false}, {"branch": "가평(청평점)", "booking_no": "2604071963062134", "guest": "배수지", "phone": "010-7446-7903", "channel": "야놀자", "room": "A102", "checkin": "2026-04-11", "checkout": "2026-04-12", "nights": 1, "stay_dates": ["2026-04-11"], "price": 119000, "onsite": 0, "total": 119000, "book_date": "04/07 19:09", "is_block": false}, {"branch": "가평(청평점)", "booking_no": "Y17405262", "guest": "오종석", "phone": "010-9151-7069", "channel": "직접예약", "room": "B102", "checkin": "2026-04-11", "checkout": "2026-04-12", "nights": 1, "stay_dates": ["2026-04-11"], "price": 109000, "onsite": 0, "total": 109000, "book_date": "03/24 22:28", "is_block": false}, {"branch": "가평(청평점)", "booking_no": "2604072342200012", "guest": "정지명", "phone": "010-7748-7316", "channel": "야놀자", "room": "A203", "checkin": "2026-04-10", "checkout": "2026-04-12", "nights": 2, "stay_dates": ["2026-04-10", "2026-04-11"], "price": 151200, "onsite": 0, "total": 151200, "book_date": "04/07 23:43", "is_block": false}, {"branch": "가평(청평점)", "booking_no": "M260406094947875e35", "guest": "천성희", "phone": "010-9412-7039", "channel": "수기", "room": "B203", "checkin": "2026-04-10", "checkout": "2026-04-11", "nights": 1, "stay_dates": ["2026-04-10"], "price": 79000, "onsite": 0, "total": 79000, "book_date": "04/06 09:49", "is_block": false}, {"branch": "가평(청평점)", "booking_no": "M260511171444672847", "guest": "1", "phone": "-", "channel": "수기", "room": "B203", "checkin": "2026-05-14", "checkout": "2026-05-15", "nights": 1, "stay_dates": ["2026-05-14"], "price": 79000, "onsite": 0, "total": 79000, "book_date": "05/11 17:14", "is_block": false}];
+const ALL_RECORDS   = [{"branch": "가평(청평점)", "booking_no": "M260511234353287cf2", "guest": "김가영(여기어때)", "phone": "0502-4039-4911", "channel": "여기어때", "room": "B101", "checkin": "2026-06-06", "checkout": "2026-06-07", "nights": 1, "stay_dates": ["2026-06-06"], "price": 170100, "onsite": 0, "total": 170100, "book_date": "05/11 23:43", "is_block": false}, {"branch": "가평(청평점)", "booking_no": "M2605081900481803c5", "guest": "고정은", "phone": "010-4166-4242", "channel": "수기", "room": "B101", "checkin": "2026-05-31", "checkout": "2026-06-01", "nights": 1, "stay_dates": ["2026-05-31"], "price": 1, "onsite": 0, "total": 1, "book_date": "05/08 19:00", "is_block": false}, {"branch": "가평(청평점)", "booking_no": "M260505212202996f84", "guest": "신현준(여기어때)", "phone": "0502-1386-7655", "channel": "여기어때", "room": "A202", "checkin": "2026-05-30", "checkout": "2026-05-31", "nights": 1, "stay_dates": ["2026-05-30"], "price": 89100, "onsite": 0, "total": 89100, "book_date": "05/05 21:22", "is_block": false}, {"branch": "가평(청평점)", "booking_no": "M260508190114687055", "guest": "신다혜(봄맞이숙박권이벤트)", "phone": "010-4423-7254", "channel": "수기", "room": "B102", "checkin": "2026-05-30", "checkout": "2026-05-31", "nights": 1, "stay_dates": ["2026-05-30"], "price": 1, "onsite": 0, "total": 1, "book_date": "05/08 19:01", "is_block": false}, {"branch": "가평(청평점)", "booking_no": "M260508190105205cf8", "guest": "조장미(봄맞이숙박권이벤트)", "phone": "010-4951-0810", "channel": "수기", "room": "B101", "checkin": "2026-05-30", "checkout": "2026-05-31", "nights": 1, "stay_dates": ["2026-05-30"], "price": 1, "onsite": 0, "total": 1, "book_date": "05/08 19:01", "is_block": false}, {"branch": "가평(청평점)", "booking_no": "2605052166085529", "guest": "이정헌", "phone": "010-9382-9152", "channel": "야놀자", "room": "A102", "checkin": "2026-05-30", "checkout": "2026-05-31", "nights": 1, "stay_dates": ["2026-05-30"], "price": 119000, "onsite": 0, "total": 119000, "book_date": "05/05 21:30", "is_block": false}, {"branch": "가평(청평점)", "booking_no": "2605090966412918", "guest": "한승기", "phone": "010-3012-5321", "channel": "야놀자", "room": "B103", "checkin": "2026-05-30", "checkout": "2026-05-31", "nights": 1, "stay_dates": ["2026-05-30"], "price": 109000, "onsite": 0, "total": 109000, "book_date": "05/09 10:00", "is_block": false}, {"branch": "가평(청평점)", "booking_no": "2605051766062227", "guest": "배진항", "phone": "010-8299-6739", "channel": "야놀자", "room": "A101", "checkin": "2026-05-30", "checkout": "2026-05-31", "nights": 1, "stay_dates": ["2026-05-30"], "price": 119000, "onsite": 0, "total": 119000, "book_date": "05/05 17:35", "is_block": false}, {"branch": "가평(청평점)", "booking_no": "M260508190142055813", "guest": "고정은", "phone": "-", "channel": "수기", "room": "B101", "checkin": "2026-05-29", "checkout": "2026-05-30", "nights": 1, "stay_dates": ["2026-05-29"], "price": 89000, "onsite": 0, "total": 89000, "book_date": "05/08 19:01", "is_block": false}, {"branch": "가평(청평점)", "booking_no": "M260508190127706f7c", "guest": "조경아(봄맞이숙박권이벤트)", "phone": "010-7581-6968", "channel": "수기", "room": "B203", "checkin": "2026-05-29", "checkout": "2026-05-30", "nights": 1, "stay_dates": ["2026-05-29"], "price": 1, "onsite": 0, "total": 1, "book_date": "05/08 19:01", "is_block": false}, {"branch": "가평(청평점)", "booking_no": "M2605081901537156ae", "guest": "고정은", "phone": "-", "channel": "수기", "room": "B101", "checkin": "2026-05-28", "checkout": "2026-05-29", "nights": 1, "stay_dates": ["2026-05-28"], "price": 89000, "onsite": 0, "total": 89000, "book_date": "05/08 19:01", "is_block": false}, {"branch": "가평(청평점)", "booking_no": "M2605081901588272f2", "guest": "고정은", "phone": "-", "channel": "수기", "room": "B101", "checkin": "2026-05-27", "checkout": "2026-05-28", "nights": 1, "stay_dates": ["2026-05-27"], "price": 89000, "onsite": 0, "total": 89000, "book_date": "05/08 19:01", "is_block": false}, {"branch": "가평(청평점)", "booking_no": "M260508190205237067", "guest": "고정은", "phone": "-", "channel": "수기", "room": "B101", "checkin": "2026-05-26", "checkout": "2026-05-27", "nights": 1, "stay_dates": ["2026-05-26"], "price": 89000, "onsite": 0, "total": 89000, "book_date": "05/08 19:02", "is_block": false}, {"branch": "가평(청평점)", "booking_no": "M260508190209737adf", "guest": "고정은", "phone": "-", "channel": "수기", "room": "B101", "checkin": "2026-05-25", "checkout": "2026-05-26", "nights": 1, "stay_dates": ["2026-05-25"], "price": 89000, "onsite": 0, "total": 89000, "book_date": "05/08 19:02", "is_block": false}, {"branch": "가평(청평점)", "booking_no": "M260510210651693c75", "guest": "남정화(여기어때)", "phone": "0502-1387-5722", "channel": "여기어때", "room": "A202", "checkin": "2026-05-24", "checkout": "2026-05-25", "nights": 1, "stay_dates": ["2026-05-24"], "price": 116100, "onsite": 0, "total": 116100, "book_date": "05/10 21:06", "is_block": false}, {"branch": "가평(청평점)", "booking_no": "M260508190257800cf8", "guest": "고정은", "phone": "-", "channel": "수기", "room": "B101", "checkin": "2026-05-24", "checkout": "2026-05-25", "nights": 1, "stay_dates": ["2026-05-24"], "price": 149000, "onsite": 0, "total": 149000, "book_date": "05/08 19:02", "is_block": false}, {"branch": "가평(청평점)", "booking_no": "M260508190240389f6a", "guest": "고정은", "phone": "-", "channel": "수기", "room": "B102", "checkin": "2026-05-24", "checkout": "2026-05-25", "nights": 1, "stay_dates": ["2026-05-24"], "price": 149000, "onsite": 0, "total": 149000, "book_date": "05/08 19:02", "is_block": false}, {"branch": "가평(청평점)", "booking_no": "M260508190226536365", "guest": "정미라(봄맞이숙박권이벤트)", "phone": "010-3926-8523", "channel": "수기", "room": "B203", "checkin": "2026-05-24", "checkout": "2026-05-25", "nights": 1, "stay_dates": ["2026-05-24"], "price": 1, "onsite": 0, "total": 1, "book_date": "05/08 19:02", "is_block": false}, {"branch": "가평(청평점)", "booking_no": "M260508190218826986", "guest": "차대익", "phone": "-", "channel": "수기", "room": "A101", "checkin": "2026-05-24", "checkout": "2026-05-25", "nights": 1, "stay_dates": ["2026-05-24"], "price": 159000, "onsite": 0, "total": 159000, "book_date": "05/08 19:02", "is_block": false}, {"branch": "가평(청평점)", "booking_no": "2605042265991959", "guest": "이건호", "phone": "010-8240-2312", "channel": "야놀자", "room": "B202", "checkin": "2026-05-24", "checkout": "2026-05-25", "nights": 1, "stay_dates": ["2026-05-24"], "price": 129000, "onsite": 0, "total": 129000, "book_date": "05/04 22:16", "is_block": false}, {"branch": "가평(청평점)", "booking_no": "2604231464711386", "guest": "장은교", "phone": "010-4145-1599", "channel": "야놀자", "room": "A102", "checkin": "2026-05-24", "checkout": "2026-05-25", "nights": 1, "stay_dates": ["2026-05-24"], "price": 129000, "onsite": 0, "total": 129000, "book_date": "04/23 15:04", "is_block": false}, {"branch": "가평(청평점)", "booking_no": "2605102114550044", "guest": "이푸름", "phone": "010-3141-1319", "channel": "야놀자", "room": "A203", "checkin": "2026-05-24", "checkout": "2026-05-25", "nights": 1, "stay_dates": ["2026-05-24"], "price": 129000, "onsite": 0, "total": 129000, "book_date": "05/10 21:14", "is_block": false}, {"branch": "가평(청평점)", "booking_no": "M260508190333990ea8", "guest": "윤지현", "phone": "-", "channel": "수기", "room": "A203", "checkin": "2026-05-23", "checkout": "2026-05-24", "nights": 1, "stay_dates": ["2026-05-23"], "price": 119000, "onsite": 0, "total": 119000, "book_date": "05/08 19:03", "is_block": false}, {"branch": "가평(청평점)", "booking_no": "M260508190325135c36", "guest": "허정준", "phone": "-", "channel": "수기", "room": "A102", "checkin": "2026-05-23", "checkout": "2026-05-24", "nights": 1, "stay_dates": ["2026-05-23"], "price": 149000, "onsite": 0, "total": 149000, "book_date": "05/08 19:03", "is_block": false}, {"branch": "가평(청평점)", "booking_no": "M2605081903119359ab", "guest": "허정준", "phone": "-", "channel": "수기", "room": "A101", "checkin": "2026-05-23", "checkout": "2026-05-24", "nights": 1, "stay_dates": ["2026-05-23"], "price": 149000, "onsite": 0, "total": 149000, "book_date": "05/08 19:03", "is_block": false}, {"branch": "가평(청평점)", "booking_no": "2605051766064482", "guest": "장주영", "phone": "010-7686-3507", "channel": "야놀자", "room": "B103", "checkin": "2026-05-23", "checkout": "2026-05-24", "nights": 1, "stay_dates": ["2026-05-23"], "price": 139000, "onsite": 0, "total": 139000, "book_date": "05/05 17:55", "is_block": false}, {"branch": "가평(청평점)", "booking_no": "2605012121340139", "guest": "우현주", "phone": "010-6231-9074", "channel": "야놀자", "room": "A201", "checkin": "2026-05-23", "checkout": "2026-05-24", "nights": 1, "stay_dates": ["2026-05-23"], "price": 80100, "onsite": 0, "total": 80100, "book_date": "05/01 21:21", "is_block": false}, {"branch": "가평(청평점)", "booking_no": "M2604270717591707d8", "guest": "김근한(여기어때)", "phone": "0504-4058-1026", "channel": "여기어때", "room": "A202", "checkin": "2026-05-23", "checkout": "2026-05-24", "nights": 1, "stay_dates": ["2026-05-23"], "price": 89100, "onsite": 0, "total": 89100, "book_date": "04/27 07:17", "is_block": false}, {"branch": "가평(청평점)", "booking_no": "M2604191228025835be", "guest": "김은성(여기어때)", "phone": "0504-4036-0435", "channel": "여기어때", "room": "B102", "checkin": "2026-05-23", "checkout": "2026-05-24", "nights": 1, "stay_dates": ["2026-05-23"], "price": 107100, "onsite": 0, "total": 107100, "book_date": "04/19 12:28", "is_block": false}, {"branch": "가평(청평점)", "booking_no": "2604140963745360", "guest": "김정은", "phone": "010-4147-5716", "channel": "야놀자", "room": "B202", "checkin": "2026-05-23", "checkout": "2026-05-24", "nights": 1, "stay_dates": ["2026-05-23"], "price": 89000, "onsite": 0, "total": 89000, "book_date": "04/14 09:29", "is_block": false}, {"branch": "가평(청평점)", "booking_no": "2604061562938707", "guest": "이동원", "phone": "010-8269-1459", "channel": "야놀자", "room": "B203", "checkin": "2026-05-23", "checkout": "2026-05-24", "nights": 1, "stay_dates": ["2026-05-23"], "price": 89000, "onsite": 0, "total": 89000, "book_date": "04/06 15:35", "is_block": false}, {"branch": "가평(청평점)", "booking_no": "2605050166006825", "guest": "정고은", "phone": "010-9723-3340", "channel": "야놀자", "room": "A102", "checkin": "2026-05-22", "checkout": "2026-05-23", "nights": 1, "stay_dates": ["2026-05-22"], "price": 99000, "onsite": 0, "total": 99000, "book_date": "05/05 01:07", "is_block": false}, {"branch": "가평(청평점)", "booking_no": "M260508190410112121", "guest": "박윤영(봄맞이이벤트)", "phone": "010-2632-1672", "channel": "수기", "room": "B102", "checkin": "2026-05-20", "checkout": "2026-05-21", "nights": 1, "stay_dates": ["2026-05-20"], "price": 1, "onsite": 0, "total": 1, "book_date": "05/08 19:04", "is_block": false}, {"branch": "가평(청평점)", "booking_no": "M2605082238523529ea", "guest": "인수정(평일할인이벤트)", "phone": "010-8898-0022", "channel": "수기", "room": "B203", "checkin": "2026-05-20", "checkout": "2026-05-21", "nights": 1, "stay_dates": ["2026-05-20"], "price": 54000, "onsite": 0, "total": 54000, "book_date": "05/08 22:38", "is_block": false}, {"branch": "가평(청평점)", "booking_no": "M260508190417997b3f", "guest": "추경석(다이클로)", "phone": "", "channel": "수기", "room": "A201", "checkin": "2026-05-19", "checkout": "2026-05-20", "nights": 1, "stay_dates": ["2026-05-19"], "price": 79000, "onsite": 0, "total": 79000, "book_date": "05/08 19:04", "is_block": false}, {"branch": "가평(청평점)", "booking_no": "2605112166690631", "guest": "김소연", "phone": "010-6244-1219", "channel": "야놀자", "room": "B203", "checkin": "2026-05-18", "checkout": "2026-05-19", "nights": 1, "stay_dates": ["2026-05-18"], "price": 79000, "onsite": 0, "total": 79000, "book_date": "05/11 21:30", "is_block": false}, {"branch": "가평(청평점)", "booking_no": "2604221000622174", "guest": "전초롱", "phone": "010-5333-5230", "channel": "야놀자", "room": "B103", "checkin": "2026-05-16", "checkout": "2026-05-17", "nights": 1, "stay_dates": ["2026-05-16"], "price": 98100, "onsite": 0, "total": 98100, "book_date": "04/22 10:01", "is_block": false}, {"branch": "가평(청평점)", "booking_no": "2605102059410085", "guest": "강하율", "phone": "010-4377-2905", "channel": "야놀자", "room": "A102", "checkin": "2026-05-16", "checkout": "2026-05-17", "nights": 1, "stay_dates": ["2026-05-16"], "price": 107100, "onsite": 0, "total": 107100, "book_date": "05/10 20:59", "is_block": false}, {"branch": "가평(청평점)", "booking_no": "M260508190457063f19", "guest": "윤소미(다이클로)", "phone": "-", "channel": "수기", "room": "B102", "checkin": "2026-05-16", "checkout": "2026-05-17", "nights": 1, "stay_dates": ["2026-05-16"], "price": 109000, "onsite": 0, "total": 109000, "book_date": "05/08 19:04", "is_block": false}, {"branch": "가평(청평점)", "booking_no": "2605061219630104", "guest": "이수영", "phone": "010-2620-0575", "channel": "야놀자", "room": "A203", "checkin": "2026-05-16", "checkout": "2026-05-17", "nights": 1, "stay_dates": ["2026-05-16"], "price": 80100, "onsite": 0, "total": 80100, "book_date": "05/06 12:19", "is_block": false}, {"branch": "가평(청평점)", "booking_no": "2604272365198178", "guest": "신윤섭", "phone": "010-4226-3693", "channel": "야놀자", "room": "A202", "checkin": "2026-05-16", "checkout": "2026-05-17", "nights": 1, "stay_dates": ["2026-05-16"], "price": 89000, "onsite": 0, "total": 89000, "book_date": "04/27 23:29", "is_block": false}, {"branch": "가평(청평점)", "booking_no": "2604181816120013", "guest": "심소연", "phone": "010-5097-2876", "channel": "야놀자", "room": "A201", "checkin": "2026-05-16", "checkout": "2026-05-17", "nights": 1, "stay_dates": ["2026-05-16"], "price": 89000, "onsite": 0, "total": 89000, "book_date": "04/18 18:16", "is_block": false}, {"branch": "가평(청평점)", "booking_no": "2604081863165241", "guest": "홍정유", "phone": "010-2723-2960", "channel": "야놀자", "room": "B203", "checkin": "2026-05-16", "checkout": "2026-05-17", "nights": 1, "stay_dates": ["2026-05-16"], "price": 89000, "onsite": 0, "total": 89000, "book_date": "04/08 18:26", "is_block": false}, {"branch": "가평(청평점)", "booking_no": "2604081863165133", "guest": "홍정유", "phone": "010-2723-2960", "channel": "야놀자", "room": "B202", "checkin": "2026-05-16", "checkout": "2026-05-17", "nights": 1, "stay_dates": ["2026-05-16"], "price": 89000, "onsite": 0, "total": 89000, "book_date": "04/08 18:25", "is_block": false}, {"branch": "가평(청평점)", "booking_no": "2604071947030068", "guest": "이연우", "phone": "010-6626-5923", "channel": "야놀자", "room": "A101", "checkin": "2026-05-16", "checkout": "2026-05-17", "nights": 1, "stay_dates": ["2026-05-16"], "price": 107100, "onsite": 0, "total": 107100, "book_date": "04/07 19:47", "is_block": false}, {"branch": "가평(청평점)", "booking_no": "2605011265591272", "guest": "이희준", "phone": "010-8694-4378", "channel": "야놀자", "room": "B102", "checkin": "2026-05-13", "checkout": "2026-05-15", "nights": 2, "stay_dates": ["2026-05-13", "2026-05-14"], "price": 178000, "onsite": 0, "total": 178000, "book_date": "05/01 12:45", "is_block": false}, {"branch": "가평(청평점)", "booking_no": "M260506135930529cb6", "guest": "고정은", "phone": "010-4166-4242", "channel": "수기", "room": "B202", "checkin": "2026-05-09", "checkout": "2026-05-10", "nights": 1, "stay_dates": ["2026-05-09"], "price": 89000, "onsite": 0, "total": 89000, "book_date": "05/06 13:59", "is_block": false}, {"branch": "가평(청평점)", "booking_no": "2605070213410006", "guest": "강하율", "phone": "010-4377-2905", "channel": "야놀자", "room": "B103", "checkin": "2026-05-09", "checkout": "2026-05-10", "nights": 1, "stay_dates": ["2026-05-09"], "price": 98100, "onsite": 0, "total": 98100, "book_date": "05/07 02:14", "is_block": false}, {"branch": "가평(청평점)", "booking_no": "2605042239580188", "guest": "장민혁", "phone": "010-7748-6906", "channel": "야놀자", "room": "B102", "checkin": "2026-05-09", "checkout": "2026-05-10", "nights": 1, "stay_dates": ["2026-05-09"], "price": 98100, "onsite": 0, "total": 98100, "book_date": "05/04 22:40", "is_block": false}, {"branch": "가평(청평점)", "booking_no": "M260503160259721301", "guest": "이영숙", "phone": "010-4983-6464", "channel": "수기", "room": "B201", "checkin": "2026-05-09", "checkout": "2026-05-10", "nights": 1, "stay_dates": ["2026-05-09"], "price": 220000, "onsite": 0, "total": 220000, "book_date": "05/03 16:03", "is_block": false}, {"branch": "가평(청평점)", "booking_no": "M2605021513099779fb", "guest": "한예지(여기어때)", "phone": "0504-4018-9536", "channel": "여기어때", "room": "A201", "checkin": "2026-05-09", "checkout": "2026-05-10", "nights": 1, "stay_dates": ["2026-05-09"], "price": 89100, "onsite": 0, "total": 89100, "book_date": "05/02 15:13", "is_block": false}, {"branch": "가평(청평점)", "booking_no": "M260502151306709ddd", "guest": "최원석(여기어때)", "phone": "0504-4025-8132", "channel": "여기어때", "room": "A203", "checkin": "2026-05-09", "checkout": "2026-05-10", "nights": 1, "stay_dates": ["2026-05-09"], "price": 89100, "onsite": 0, "total": 89100, "book_date": "05/02 15:13", "is_block": false}, {"branch": "가평(청평점)", "booking_no": "2604261456170068", "guest": "강지구", "phone": "010-2414-7665", "channel": "야놀자", "room": "A202", "checkin": "2026-05-09", "checkout": "2026-05-10", "nights": 1, "stay_dates": ["2026-05-09"], "price": 80100, "onsite": 0, "total": 80100, "book_date": "04/26 14:57", "is_block": false}, {"branch": "가평(청평점)", "booking_no": "2604121863599842", "guest": "최선미", "phone": "010-9078-9469", "channel": "야놀자", "room": "B203", "checkin": "2026-05-09", "checkout": "2026-05-10", "nights": 1, "stay_dates": ["2026-05-09"], "price": 89000, "onsite": 0, "total": 89000, "book_date": "04/12 18:53", "is_block": false}, {"branch": "가평(청평점)", "booking_no": "2604232264758652", "guest": "김현태", "phone": "010-6690-9399", "channel": "야놀자", "room": "B202", "checkin": "2026-05-08", "checkout": "2026-05-09", "nights": 1, "stay_dates": ["2026-05-08"], "price": 79000, "onsite": 0, "total": 79000, "book_date": "04/23 22:07", "is_block": false}, {"branch": "가평(청평점)", "booking_no": "2604281944120127", "guest": "이경준", "phone": "010-8796-1804", "channel": "야놀자", "room": "A102", "checkin": "2026-05-04", "checkout": "2026-05-05", "nights": 1, "stay_dates": ["2026-05-04"], "price": 119000, "onsite": 0, "total": 119000, "book_date": "04/28 19:44", "is_block": false}, {"branch": "가평(청평점)", "booking_no": "2604290032590055", "guest": "전연우", "phone": "010-4893-8299", "channel": "야놀자", "room": "B203", "checkin": "2026-05-04", "checkout": "2026-05-05", "nights": 1, "stay_dates": ["2026-05-04"], "price": 80100, "onsite": 0, "total": 80100, "book_date": "04/29 00:32", "is_block": false}, {"branch": "가평(청평점)", "booking_no": "M260427161214109720", "guest": "임예란(다이클로)", "phone": "010-9509-6607", "channel": "수기", "room": "A201", "checkin": "2026-05-04", "checkout": "2026-05-05", "nights": 1, "stay_dates": ["2026-05-04"], "price": 89000, "onsite": 0, "total": 89000, "book_date": "04/27 16:12", "is_block": false}, {"branch": "가평(청평점)", "booking_no": "M260420001304299f3a", "guest": "김온유(여기어때)", "phone": "0502-4014-0632", "channel": "여기어때", "room": "A101", "checkin": "2026-05-04", "checkout": "2026-05-05", "nights": 1, "stay_dates": ["2026-05-04"], "price": 116100, "onsite": 0, "total": 116100, "book_date": "04/20 00:13", "is_block": false}, {"branch": "가평(청평점)", "booking_no": "M260427161235845530", "guest": "임예란(다이클로)", "phone": "010-9509-6607", "channel": "수기", "room": "A202", "checkin": "2026-05-04", "checkout": "2026-05-05", "nights": 1, "stay_dates": ["2026-05-04"], "price": 89000, "onsite": 0, "total": 89000, "book_date": "04/27 16:12", "is_block": false}, {"branch": "가평(청평점)", "booking_no": "M260426015858681061", "guest": "이현진(여기어때)", "phone": "0504-4004-8251", "channel": "여기어때", "room": "B202", "checkin": "2026-05-04", "checkout": "2026-05-05", "nights": 1, "stay_dates": ["2026-05-04"], "price": 89100, "onsite": 0, "total": 89100, "book_date": "04/26 01:58", "is_block": false}, {"branch": "가평(청평점)", "booking_no": "2604152263928818", "guest": "Bit Han", "phone": "010-4923-4775", "channel": "야놀자", "room": "B201", "checkin": "2026-05-04", "checkout": "2026-05-05", "nights": 1, "stay_dates": ["2026-05-04"], "price": 169000, "onsite": 0, "total": 169000, "book_date": "04/15 22:29", "is_block": false}, {"branch": "가평(청평점)", "booking_no": "2605040853110044", "guest": "김보영", "phone": "010-8757-9083", "channel": "야놀자", "room": "B103", "checkin": "2026-05-04", "checkout": "2026-05-05", "nights": 1, "stay_dates": ["2026-05-04"], "price": 98100, "onsite": 0, "total": 98100, "book_date": "05/04 08:53", "is_block": false}, {"branch": "가평(청평점)", "booking_no": "Y17409656", "guest": "위민영", "phone": "010-4505-7198", "channel": "직접예약", "room": "B102", "checkin": "2026-05-04", "checkout": "2026-05-05", "nights": 1, "stay_dates": ["2026-05-04"], "price": 109000, "onsite": 0, "total": 109000, "book_date": "04/23 14:17", "is_block": false}, {"branch": "가평(청평점)", "booking_no": "2604251000610019", "guest": "조장행", "phone": "010-4721-7277", "channel": "야놀자", "room": "A201", "checkin": "2026-05-03", "checkout": "2026-05-04", "nights": 1, "stay_dates": ["2026-05-03"], "price": 111600, "onsite": 0, "total": 111600, "book_date": "04/25 10:00", "is_block": false}, {"branch": "가평(청평점)", "booking_no": "2604221364595363", "guest": "권은서", "phone": "010-2167-3697", "channel": "야놀자", "room": "B102", "checkin": "2026-05-03", "checkout": "2026-05-04", "nights": 1, "stay_dates": ["2026-05-03"], "price": 104000, "onsite": 0, "total": 104000, "book_date": "04/22 13:16", "is_block": false}, {"branch": "가평(청평점)", "booking_no": "M260414181300009d17", "guest": "고정은", "phone": "010-4166-4242", "channel": "수기", "room": "B103", "checkin": "2026-05-03", "checkout": "2026-05-04", "nights": 1, "stay_dates": ["2026-05-03"], "price": 129000, "onsite": 0, "total": 129000, "book_date": "04/14 18:13", "is_block": false}, {"branch": "가평(청평점)", "booking_no": "2604071001590343", "guest": "김민주", "phone": "010-3912-8571", "channel": "야놀자", "room": "B202", "checkin": "2026-05-03", "checkout": "2026-05-04", "nights": 1, "stay_dates": ["2026-05-03"], "price": 80100, "onsite": 0, "total": 80100, "book_date": "04/07 10:02", "is_block": false}, {"branch": "가평(청평점)", "booking_no": "Y17410366", "guest": "이보민", "phone": "010-3661-3232", "channel": "직접예약", "room": "A203", "checkin": "2026-05-03", "checkout": "2026-05-05", "nights": 2, "stay_dates": ["2026-05-03", "2026-05-04"], "price": 213000, "onsite": 80000, "total": 293000, "book_date": "04/28 22:06", "is_block": false}, {"branch": "가평(청평점)", "booking_no": "M2604150015234195d9", "guest": "금혁(여기어때)", "phone": "0502-1396-5080", "channel": "여기어때", "room": "A101", "checkin": "2026-05-03", "checkout": "2026-05-04", "nights": 1, "stay_dates": ["2026-05-03"], "price": 143100, "onsite": 0, "total": 143100, "book_date": "04/15 00:15", "is_block": false}, {"branch": "가평(청평점)", "booking_no": "2604281065222684", "guest": "서은전", "phone": "010-3242-3165", "channel": "야놀자", "room": "A102", "checkin": "2026-05-03", "checkout": "2026-05-04", "nights": 1, "stay_dates": ["2026-05-03"], "price": 114000, "onsite": 0, "total": 114000, "book_date": "04/28 10:35", "is_block": false}, {"branch": "가평(청평점)", "booking_no": "M260406093206637917", "guest": "고정은", "phone": "010-4166-4242", "channel": "수기", "room": "B201", "checkin": "2026-05-03", "checkout": "2026-05-04", "nights": 1, "stay_dates": ["2026-05-03"], "price": 169000, "onsite": 0, "total": 169000, "book_date": "04/06 09:32", "is_block": false}, {"branch": "가평(청평점)", "booking_no": "M260501221036574d8f", "guest": "김효정", "phone": "010-2737-4537", "channel": "수기", "room": "A202", "checkin": "2026-05-03", "checkout": "2026-05-04", "nights": 1, "stay_dates": ["2026-05-03"], "price": 84000, "onsite": 0, "total": 84000, "book_date": "05/01 22:10", "is_block": false}, {"branch": "가평(청평점)", "booking_no": "M260427110820563309", "guest": "고정은", "phone": "010-4166-4242", "channel": "수기", "room": "A102", "checkin": "2026-05-02", "checkout": "2026-05-03", "nights": 1, "stay_dates": ["2026-05-02"], "price": 119000, "onsite": 0, "total": 119000, "book_date": "04/27 11:08", "is_block": false}, {"branch": "가평(청평점)", "booking_no": "M260427111157659876", "guest": "김소래", "phone": "010-8080-2184", "channel": "수기", "room": "B202", "checkin": "2026-05-02", "checkout": "2026-05-03", "nights": 1, "stay_dates": ["2026-05-02"], "price": 109000, "onsite": 0, "total": 109000, "book_date": "04/27 11:11", "is_block": false}, {"branch": "가평(청평점)", "booking_no": "2604281065218182", "guest": "임현진", "phone": "010-8284-7154", "channel": "야놀자", "room": "B102", "checkin": "2026-05-02", "checkout": "2026-05-03", "nights": 1, "stay_dates": ["2026-05-02"], "price": 109000, "onsite": 0, "total": 109000, "book_date": "04/28 10:02", "is_block": false}, {"branch": "가평(청평점)", "booking_no": "M2604060940166535f0", "guest": "고정은", "phone": "010-4166-4242", "channel": "수기", "room": "B103", "checkin": "2026-05-02", "checkout": "2026-05-03", "nights": 1, "stay_dates": ["2026-05-02"], "price": 129000, "onsite": 0, "total": 129000, "book_date": "04/06 09:40", "is_block": false}, {"branch": "가평(청평점)", "booking_no": "2604161363976222", "guest": "정예정", "phone": "010-3335-0335", "channel": "야놀자", "room": "A202", "checkin": "2026-05-02", "checkout": "2026-05-03", "nights": 1, "stay_dates": ["2026-05-02"], "price": 139000, "onsite": 0, "total": 139000, "book_date": "04/16 13:48", "is_block": false}, {"branch": "가평(청평점)", "booking_no": "2603301527260049", "guest": "김태형", "phone": "010-8182-3066", "channel": "야놀자", "room": "A101", "checkin": "2026-05-02", "checkout": "2026-05-03", "nights": 1, "stay_dates": ["2026-05-02"], "price": 107100, "onsite": 0, "total": 107100, "book_date": "03/30 15:29", "is_block": false}, {"branch": "가평(청평점)", "booking_no": "2604071663042493", "guest": "이승기", "phone": "010-3302-9534", "channel": "야놀자", "room": "A201", "checkin": "2026-05-02", "checkout": "2026-05-03", "nights": 1, "stay_dates": ["2026-05-02"], "price": 119000, "onsite": 0, "total": 119000, "book_date": "04/07 16:18", "is_block": false}, {"branch": "가평(청평점)", "booking_no": "M2604060924286846d1", "guest": "고정은", "phone": "010-4166-4242", "channel": "수기", "room": "B201", "checkin": "2026-05-02", "checkout": "2026-05-03", "nights": 1, "stay_dates": ["2026-05-02"], "price": 169000, "onsite": 0, "total": 169000, "book_date": "04/06 09:24", "is_block": false}, {"branch": "가평(청평점)", "booking_no": "M260430160244108956", "guest": "임현진", "phone": "050718142817", "channel": "수기", "room": "B102", "checkin": "2026-05-02", "checkout": "2026-05-03", "nights": 1, "stay_dates": ["2026-05-02"], "price": 109000, "onsite": 0, "total": 109000, "book_date": "04/30 16:02", "is_block": false}, {"branch": "가평(청평점)", "booking_no": "2604071663042360", "guest": "이승기", "phone": "010-3302-9534", "channel": "야놀자", "room": "A203", "checkin": "2026-05-02", "checkout": "2026-05-03", "nights": 1, "stay_dates": ["2026-05-02"], "price": 119000, "onsite": 0, "total": 119000, "book_date": "04/07 16:16", "is_block": false}, {"branch": "가평(청평점)", "booking_no": "M2604141443230988ac", "guest": "이종일(여기어때)", "phone": "0504-4038-1693", "channel": "여기어때", "room": "B102", "checkin": "2026-05-01", "checkout": "2026-05-02", "nights": 1, "stay_dates": ["2026-05-01"], "price": 143100, "onsite": 0, "total": 143100, "book_date": "04/14 14:43", "is_block": false}, {"branch": "가평(청평점)", "booking_no": "M260410080607047eae", "guest": "고정은", "phone": "010-4166-4242", "channel": "수기", "room": "B103", "checkin": "2026-05-01", "checkout": "2026-05-02", "nights": 1, "stay_dates": ["2026-05-01"], "price": 109000, "onsite": 0, "total": 109000, "book_date": "04/10 08:06", "is_block": false}, {"branch": "가평(청평점)", "booking_no": "M260427111144912899", "guest": "김소래", "phone": "010-8080-2184", "channel": "수기", "room": "B202", "checkin": "2026-05-01", "checkout": "2026-05-02", "nights": 1, "stay_dates": ["2026-05-01"], "price": 89000, "onsite": 0, "total": 89000, "book_date": "04/27 11:11", "is_block": false}, {"branch": "가평(청평점)", "booking_no": "2604140763741522", "guest": "김경해", "phone": "010-7731-6071", "channel": "야놀자", "room": "A202", "checkin": "2026-05-01", "checkout": "2026-05-02", "nights": 1, "stay_dates": ["2026-05-01"], "price": 99000, "onsite": 0, "total": 99000, "book_date": "04/14 07:41", "is_block": false}, {"branch": "가평(청평점)", "booking_no": "M260404112325766dce", "guest": "한여준", "phone": "050240334931", "channel": "수기", "room": "A102", "checkin": "2026-05-01", "checkout": "2026-05-02", "nights": 1, "stay_dates": ["2026-05-01"], "price": 119000, "onsite": 0, "total": 119000, "book_date": "04/04 11:23", "is_block": false}, {"branch": "가평(청평점)", "booking_no": "2604271842340179", "guest": "김설화", "phone": "010-3648-5666", "channel": "야놀자", "room": "A201", "checkin": "2026-05-01", "checkout": "2026-05-02", "nights": 1, "stay_dates": ["2026-05-01"], "price": 159000, "onsite": 0, "total": 159000, "book_date": "04/27 18:43", "is_block": false}, {"branch": "가평(청평점)", "booking_no": "M260501143254205718", "guest": "윤지현", "phone": "010-8706-1733", "channel": "수기", "room": "A201", "checkin": "2026-05-01", "checkout": "2026-05-02", "nights": 1, "stay_dates": ["2026-05-01"], "price": 159000, "onsite": 0, "total": 159000, "book_date": "05/01 14:32", "is_block": false}, {"branch": "가평(청평점)", "booking_no": "2604191664307203", "guest": "강정호", "phone": "010-2909-4882", "channel": "야놀자", "room": "A203", "checkin": "2026-05-01", "checkout": "2026-05-02", "nights": 1, "stay_dates": ["2026-05-01"], "price": 129000, "onsite": 0, "total": 129000, "book_date": "04/19 16:49", "is_block": false}, {"branch": "가평(청평점)", "booking_no": "M2604271107585740ff", "guest": "고정은", "phone": "010-4166-4242", "channel": "수기", "room": "A101", "checkin": "2026-05-01", "checkout": "2026-05-02", "nights": 1, "stay_dates": ["2026-05-01"], "price": 119000, "onsite": 0, "total": 119000, "book_date": "04/27 11:07", "is_block": false}, {"branch": "가평(청평점)", "booking_no": "M260406090323656a88", "guest": "고정은", "phone": "010-4166-4242", "channel": "수기", "room": "B201", "checkin": "2026-05-01", "checkout": "2026-05-02", "nights": 1, "stay_dates": ["2026-05-01"], "price": 169000, "onsite": 0, "total": 169000, "book_date": "04/06 09:03", "is_block": false}, {"branch": "가평(청평점)", "booking_no": "2604090102450004", "guest": "김가연", "phone": "010-2080-4461", "channel": "야놀자", "room": "B203", "checkin": "2026-05-01", "checkout": "2026-05-02", "nights": 1, "stay_dates": ["2026-05-01"], "price": 89100, "onsite": 0, "total": 89100, "book_date": "04/09 01:02", "is_block": false}, {"branch": "가평(청평점)", "booking_no": "2604271000530518", "guest": "김유진", "phone": "010-4034-7253", "channel": "야놀자", "room": "B102", "checkin": "2026-04-30", "checkout": "2026-05-01", "nights": 1, "stay_dates": ["2026-04-30"], "price": 109000, "onsite": 0, "total": 109000, "book_date": "04/27 10:00", "is_block": false}, {"branch": "가평(청평점)", "booking_no": "M260422000302534d04", "guest": "김우석(여기어때)", "phone": "0502-1460-4431", "channel": "여기어때", "room": "A202", "checkin": "2026-04-30", "checkout": "2026-05-01", "nights": 1, "stay_dates": ["2026-04-30"], "price": 89100, "onsite": 0, "total": 89100, "book_date": "04/22 00:03", "is_block": false}, {"branch": "가평(청평점)", "booking_no": "2604202064434769", "guest": "김수진", "phone": "010-8840-2153", "channel": "야놀자", "room": "B202", "checkin": "2026-04-29", "checkout": "2026-04-30", "nights": 1, "stay_dates": ["2026-04-29"], "price": 79000, "onsite": 0, "total": 79000, "book_date": "04/20 20:31", "is_block": false}, {"branch": "가평(청평점)", "booking_no": "2604161649270116", "guest": "안수연", "phone": "010-8298-7483", "channel": "야놀자", "room": "B102", "checkin": "2026-04-29", "checkout": "2026-04-30", "nights": 1, "stay_dates": ["2026-04-29"], "price": 80100, "onsite": 0, "total": 80100, "book_date": "04/16 16:49", "is_block": false}, {"branch": "가평(청평점)", "booking_no": "M260420100411570d8f", "guest": "방막기", "phone": "0000000", "channel": "수기", "room": "B202", "checkin": "2026-04-28", "checkout": "2026-04-29", "nights": 1, "stay_dates": ["2026-04-28"], "price": 0, "onsite": 0, "total": 0, "book_date": "04/20 10:04", "is_block": true}, {"branch": "가평(청평점)", "booking_no": "M260401135556936d54", "guest": "정응구", "phone": "050440427120", "channel": "수기", "room": "A203", "checkin": "2026-04-26", "checkout": "2026-04-27", "nights": 1, "stay_dates": ["2026-04-26"], "price": 79000, "onsite": 0, "total": 79000, "book_date": "04/01 13:55", "is_block": false}, {"branch": "가평(청평점)", "booking_no": "Y17409342", "guest": "최유정", "phone": "010-5357-5762", "channel": "직접예약", "room": "A203", "checkin": "2026-04-25", "checkout": "2026-04-26", "nights": 1, "stay_dates": ["2026-04-25"], "price": 119000, "onsite": 0, "total": 119000, "book_date": "04/21 17:09", "is_block": false}, {"branch": "가평(청평점)", "booking_no": "2604061562937412", "guest": "이종진", "phone": "010-6472-6115", "channel": "야놀자", "room": "B202", "checkin": "2026-04-25", "checkout": "2026-04-26", "nights": 1, "stay_dates": ["2026-04-25"], "price": 89000, "onsite": 0, "total": 89000, "book_date": "04/06 15:24", "is_block": false}, {"branch": "가평(청평점)", "booking_no": "M260418001705516651", "guest": "신규용(여기어때)", "phone": "0502-4041-7369", "channel": "여기어때", "room": "A201", "checkin": "2026-04-25", "checkout": "2026-04-26", "nights": 1, "stay_dates": ["2026-04-25"], "price": 89100, "onsite": 0, "total": 89100, "book_date": "04/18 00:17", "is_block": false}, {"branch": "가평(청평점)", "booking_no": "M2604151959232871b6", "guest": "송요한(여기어때)", "phone": "0504-4053-6662", "channel": "여기어때", "room": "B102", "checkin": "2026-04-25", "checkout": "2026-04-26", "nights": 1, "stay_dates": ["2026-04-25"], "price": 107100, "onsite": 0, "total": 107100, "book_date": "04/15 19:59", "is_block": false}, {"branch": "가평(청평점)", "booking_no": "2604060062894221", "guest": "Hyerim Ko", "phone": "010-4651-1208", "channel": "야놀자", "room": "B203", "checkin": "2026-04-25", "checkout": "2026-04-26", "nights": 1, "stay_dates": ["2026-04-25"], "price": 89000, "onsite": 0, "total": 89000, "book_date": "04/06 00:31", "is_block": false}, {"branch": "가평(청평점)", "booking_no": "2604081103540325", "guest": "강동현", "phone": "010-4487-5510", "channel": "야놀자", "room": "A102", "checkin": "2026-04-25", "checkout": "2026-04-27", "nights": 2, "stay_dates": ["2026-04-25", "2026-04-26"], "price": 196200, "onsite": 0, "total": 196200, "book_date": "04/08 11:04", "is_block": false}, {"branch": "가평(청평점)", "booking_no": "2604240864782645", "guest": "신동수", "phone": "010-3626-7423", "channel": "야놀자", "room": "B103", "checkin": "2026-04-25", "checkout": "2026-04-26", "nights": 1, "stay_dates": ["2026-04-25"], "price": 139000, "onsite": 0, "total": 139000, "book_date": "04/24 08:31", "is_block": false}, {"branch": "가평(청평점)", "booking_no": "M2604061306452856aa", "guest": "이민하", "phone": "050213774658", "channel": "수기", "room": "A101", "checkin": "2026-04-25", "checkout": "2026-04-26", "nights": 1, "stay_dates": ["2026-04-25"], "price": 119000, "onsite": 0, "total": 119000, "book_date": "04/06 13:06", "is_block": false}, {"branch": "가평(청평점)", "booking_no": "2604012162462287", "guest": "Okhyeon Ha", "phone": "010-2818-2662", "channel": "야놀자", "room": "A202", "checkin": "2026-04-25", "checkout": "2026-04-26", "nights": 1, "stay_dates": ["2026-04-25"], "price": 89000, "onsite": 0, "total": 89000, "book_date": "04/01 21:40", "is_block": false}, {"branch": "가평(청평점)", "booking_no": "M260423222157839fe2", "guest": "정민석", "phone": "010-2933-8876", "channel": "수기", "room": "B202", "checkin": "2026-04-24", "checkout": "2026-04-25", "nights": 1, "stay_dates": ["2026-04-24"], "price": 69000, "onsite": 0, "total": 69000, "book_date": "04/23 22:21", "is_block": false}, {"branch": "가평(청평점)", "booking_no": "M26042202420215759d", "guest": "장유리(여기어때)", "phone": "0504-4017-1590", "channel": "여기어때", "room": "A102", "checkin": "2026-04-24", "checkout": "2026-04-25", "nights": 1, "stay_dates": ["2026-04-24"], "price": 89100, "onsite": 0, "total": 89100, "book_date": "04/22 02:42", "is_block": false}, {"branch": "가평(청평점)", "booking_no": "M260421082402167ebf", "guest": "정다정(여기어때)", "phone": "0502-1385-7173", "channel": "여기어때", "room": "B203", "checkin": "2026-04-24", "checkout": "2026-04-25", "nights": 1, "stay_dates": ["2026-04-24"], "price": 71100, "onsite": 0, "total": 71100, "book_date": "04/21 08:24", "is_block": false}, {"branch": "가평(청평점)", "booking_no": "2604221953430258", "guest": "안재규", "phone": "010-6626-2699", "channel": "야놀자", "room": "A202", "checkin": "2026-04-24", "checkout": "2026-04-25", "nights": 1, "stay_dates": ["2026-04-24"], "price": 62100, "onsite": 0, "total": 62100, "book_date": "04/22 19:54", "is_block": false}, {"branch": "가평(청평점)", "booking_no": "M260423222120272641", "guest": "정민석", "phone": "010-2933-8876", "channel": "수기", "room": "A203", "checkin": "2026-04-24", "checkout": "2026-04-25", "nights": 1, "stay_dates": ["2026-04-24"], "price": 69000, "onsite": 0, "total": 69000, "book_date": "04/23 22:21", "is_block": false}, {"branch": "가평(청평점)", "booking_no": "M260419011604140584", "guest": "박승영(여기어때)", "phone": "0504-4035-9828", "channel": "여기어때", "room": "B102", "checkin": "2026-04-24", "checkout": "2026-04-25", "nights": 1, "stay_dates": ["2026-04-24"], "price": 89100, "onsite": 0, "total": 89100, "book_date": "04/19 01:16", "is_block": false}, {"branch": "가평(청평점)", "booking_no": "2604091463246145", "guest": "김민재", "phone": "010-6350-1431", "channel": "야놀자", "room": "B201", "checkin": "2026-04-22", "checkout": "2026-04-24", "nights": 2, "stay_dates": ["2026-04-22", "2026-04-23"], "price": 278000, "onsite": 0, "total": 278000, "book_date": "04/09 14:02", "is_block": false}, {"branch": "가평(청평점)", "booking_no": "M2604171240222223ce", "guest": "도윤희(다이클로)", "phone": "010-3209-4154", "channel": "수기", "room": "B203", "checkin": "2026-04-21", "checkout": "2026-04-22", "nights": 1, "stay_dates": ["2026-04-21"], "price": 79000, "onsite": 0, "total": 79000, "book_date": "04/17 12:40", "is_block": false}, {"branch": "가평(청평점)", "booking_no": "M260410144541362f9d", "guest": "하인호(다이클로)", "phone": "010-5146-0414", "channel": "수기", "room": "B203", "checkin": "2026-04-20", "checkout": "2026-04-21", "nights": 1, "stay_dates": ["2026-04-20"], "price": 79000, "onsite": 0, "total": 79000, "book_date": "04/10 14:45", "is_block": false}, {"branch": "가평(청평점)", "booking_no": "M2604101717220907e3", "guest": "염경미(다이클로)", "phone": "010-6724-0621", "channel": "수기", "room": "A203", "checkin": "2026-04-20", "checkout": "2026-04-22", "nights": 2, "stay_dates": ["2026-04-20", "2026-04-21"], "price": 158000, "onsite": 0, "total": 158000, "book_date": "04/10 17:17", "is_block": false}, {"branch": "가평(청평점)", "booking_no": "2604101963395696", "guest": "김다인", "phone": "010-4666-6812", "channel": "야놀자", "room": "B102", "checkin": "2026-04-20", "checkout": "2026-04-21", "nights": 1, "stay_dates": ["2026-04-20"], "price": 89000, "onsite": 0, "total": 89000, "book_date": "04/10 19:52", "is_block": false}, {"branch": "가평(청평점)", "booking_no": "2604162164024424", "guest": "최강민", "phone": "010-9179-7950", "channel": "야놀자", "room": "B102", "checkin": "2026-04-19", "checkout": "2026-04-20", "nights": 1, "stay_dates": ["2026-04-19"], "price": 89000, "onsite": 0, "total": 89000, "book_date": "04/16 21:37", "is_block": false}, {"branch": "가평(청평점)", "booking_no": "2604170964052069", "guest": "Mikyeong Lee", "phone": "010-2694-8660", "channel": "야놀자", "room": "B203", "checkin": "2026-04-19", "checkout": "2026-04-20", "nights": 1, "stay_dates": ["2026-04-19"], "price": 79000, "onsite": 0, "total": 79000, "book_date": "04/17 09:34", "is_block": false}, {"branch": "가평(청평점)", "booking_no": "2603232161592110", "guest": "최태한", "phone": "010-2170-9470", "channel": "야놀자", "room": "B202", "checkin": "2026-04-18", "checkout": "2026-04-19", "nights": 1, "stay_dates": ["2026-04-18"], "price": 89000, "onsite": 0, "total": 89000, "book_date": "03/23 21:49", "is_block": false}, {"branch": "가평(청평점)", "booking_no": "2604012119350018", "guest": "김혜린", "phone": "010-7162-5443", "channel": "야놀자", "room": "B203", "checkin": "2026-04-18", "checkout": "2026-04-19", "nights": 1, "stay_dates": ["2026-04-18"], "price": 80100, "onsite": 0, "total": 80100, "book_date": "04/01 21:19", "is_block": false}, {"branch": "가평(청평점)", "booking_no": "2604141163759458", "guest": "Hansang Lee", "phone": "010-5266-9801", "channel": "야놀자", "room": "A203", "checkin": "2026-04-18", "checkout": "2026-04-19", "nights": 1, "stay_dates": ["2026-04-18"], "price": 89000, "onsite": 0, "total": 89000, "book_date": "04/14 11:48", "is_block": false}, {"branch": "가평(청평점)", "booking_no": "M260414164141718c6b", "guest": "김신형", "phone": "010-5721-2117", "channel": "수기", "room": "A102", "checkin": "2026-04-18", "checkout": "2026-04-19", "nights": 1, "stay_dates": ["2026-04-18"], "price": 119000, "onsite": 0, "total": 119000, "book_date": "04/14 16:41", "is_block": false}, {"branch": "가평(청평점)", "booking_no": "M260411160922072148", "guest": "최종섭(여기어때)", "phone": "0502-1383-1146", "channel": "여기어때", "room": "A101", "checkin": "2026-04-18", "checkout": "2026-04-19", "nights": 1, "stay_dates": ["2026-04-18"], "price": 116100, "onsite": 0, "total": 116100, "book_date": "04/11 16:09", "is_block": false}, {"branch": "가평(청평점)", "booking_no": "M260415115823391f88", "guest": "방기용(여기어때)", "phone": "0504-4059-6090", "channel": "여기어때", "room": "B201", "checkin": "2026-04-18", "checkout": "2026-04-19", "nights": 1, "stay_dates": ["2026-04-18"], "price": 161100, "onsite": 0, "total": 161100, "book_date": "04/15 11:58", "is_block": false}, {"branch": "가평(청평점)", "booking_no": "2604012262466899", "guest": "Onyoo Kim", "phone": "010-4910-2007", "channel": "야놀자", "room": "B102", "checkin": "2026-04-18", "checkout": "2026-04-19", "nights": 1, "stay_dates": ["2026-04-18"], "price": 109000, "onsite": 0, "total": 109000, "book_date": "04/01 22:21", "is_block": false}, {"branch": "가평(청평점)", "booking_no": "2604011562420204", "guest": "정영은", "phone": "010-2406-2617", "channel": "야놀자", "room": "B103", "checkin": "2026-04-18", "checkout": "2026-04-19", "nights": 1, "stay_dates": ["2026-04-18"], "price": 109000, "onsite": 0, "total": 109000, "book_date": "04/01 15:32", "is_block": false}, {"branch": "가평(청평점)", "booking_no": "M2604121626222707c3", "guest": "곽도연(여기어때)", "phone": "0504-4038-4635", "channel": "여기어때", "room": "A202", "checkin": "2026-04-18", "checkout": "2026-04-19", "nights": 1, "stay_dates": ["2026-04-18"], "price": 89100, "onsite": 0, "total": 89100, "book_date": "04/12 16:26", "is_block": false}, {"branch": "가평(청평점)", "booking_no": "M26041422343900964b", "guest": "장원욱(여기어때)", "phone": "0504-4064-2717", "channel": "여기어때", "room": "A201", "checkin": "2026-04-17", "checkout": "2026-04-19", "nights": 2, "stay_dates": ["2026-04-17", "2026-04-18"], "price": 169200, "onsite": 0, "total": 169200, "book_date": "04/14 22:34", "is_block": false}, {"branch": "가평(청평점)", "booking_no": "2603261861854337", "guest": "김소현", "phone": "010-8264-4719", "channel": "야놀자", "room": "B102", "checkin": "2026-04-15", "checkout": "2026-04-16", "nights": 1, "stay_dates": ["2026-04-15"], "price": 89000, "onsite": 0, "total": 89000, "book_date": "03/26 18:48", "is_block": false}, {"branch": "가평(청평점)", "booking_no": "M260410192322023d04", "guest": "이정희(여기어때)", "phone": "0502-1477-6771", "channel": "여기어때", "room": "B203", "checkin": "2026-04-15", "checkout": "2026-04-16", "nights": 1, "stay_dates": ["2026-04-15"], "price": 80100, "onsite": 0, "total": 80100, "book_date": "04/10 19:23", "is_block": false}, {"branch": "가평(청평점)", "booking_no": "M260410203923170953", "guest": "현정(여기어때)", "phone": "0502-4017-0597", "channel": "여기어때", "room": "B202", "checkin": "2026-04-15", "checkout": "2026-04-16", "nights": 1, "stay_dates": ["2026-04-15"], "price": 80100, "onsite": 0, "total": 80100, "book_date": "04/10 20:39", "is_block": false}, {"branch": "가평(청평점)", "booking_no": "2604120302160035", "guest": "이재민", "phone": "010-9020-6096", "channel": "야놀자", "room": "A202", "checkin": "2026-04-13", "checkout": "2026-04-14", "nights": 1, "stay_dates": ["2026-04-13"], "price": 71100, "onsite": 0, "total": 71100, "book_date": "04/12 03:03", "is_block": false}, {"branch": "가평(청평점)", "booking_no": "M260413130522914ec4", "guest": "김세림(여기어때)", "phone": "0504-4035-8771", "channel": "여기어때", "room": "B202", "checkin": "2026-04-13", "checkout": "2026-04-14", "nights": 1, "stay_dates": ["2026-04-13"], "price": 80100, "onsite": 0, "total": 80100, "book_date": "04/13 13:05", "is_block": false}, {"branch": "가평(청평점)", "booking_no": "M260408173422423480", "guest": "이종우(여기어때)", "phone": "0504-4060-2772", "channel": "여기어때", "room": "B201", "checkin": "2026-04-11", "checkout": "2026-04-12", "nights": 1, "stay_dates": ["2026-04-11"], "price": 161100, "onsite": 0, "total": 161100, "book_date": "04/08 17:34", "is_block": false}, {"branch": "가평(청평점)", "booking_no": "2604072363087772", "guest": "Hanbyeol Wang", "phone": "010-6344-8613", "channel": "야놀자", "room": "A202", "checkin": "2026-04-11", "checkout": "2026-04-12", "nights": 1, "stay_dates": ["2026-04-11"], "price": 89000, "onsite": 0, "total": 89000, "book_date": "04/07 23:26", "is_block": false}, {"branch": "가평(청평점)", "booking_no": "2604052162880879", "guest": "Jihyeon Kim", "phone": "010-6314-4682", "channel": "야놀자", "room": "B202", "checkin": "2026-04-11", "checkout": "2026-04-12", "nights": 1, "stay_dates": ["2026-04-11"], "price": 89000, "onsite": 0, "total": 89000, "book_date": "04/05 21:45", "is_block": false}, {"branch": "가평(청평점)", "booking_no": "M2604060950242110ae", "guest": "SUNGKYU WI", "phone": "1544-3812", "channel": "수기", "room": "A101", "checkin": "2026-04-11", "checkout": "2026-04-12", "nights": 1, "stay_dates": ["2026-04-11"], "price": 119000, "onsite": 0, "total": 119000, "book_date": "04/06 09:50", "is_block": false}, {"branch": "가평(청평점)", "booking_no": "2604071963062134", "guest": "배수지", "phone": "010-7446-7903", "channel": "야놀자", "room": "A102", "checkin": "2026-04-11", "checkout": "2026-04-12", "nights": 1, "stay_dates": ["2026-04-11"], "price": 119000, "onsite": 0, "total": 119000, "book_date": "04/07 19:09", "is_block": false}, {"branch": "가평(청평점)", "booking_no": "M2604060950052335bc", "guest": "유지혜", "phone": "010-9596-0980", "channel": "수기", "room": "B203", "checkin": "2026-04-11", "checkout": "2026-04-12", "nights": 1, "stay_dates": ["2026-04-11"], "price": 89000, "onsite": 0, "total": 89000, "book_date": "04/06 09:50", "is_block": false}, {"branch": "가평(청평점)", "booking_no": "2603141454590209", "guest": "나다정", "phone": "010-2775-0971", "channel": "야놀자", "room": "A201", "checkin": "2026-04-11", "checkout": "2026-04-12", "nights": 1, "stay_dates": ["2026-04-11"], "price": 169000, "onsite": 0, "total": 169000, "book_date": "03/14 14:55", "is_block": false}, {"branch": "가평(청평점)", "booking_no": "2604072353590057", "guest": "김민솔", "phone": "010-4678-0283", "channel": "야놀자", "room": "B103", "checkin": "2026-04-11", "checkout": "2026-04-12", "nights": 1, "stay_dates": ["2026-04-11"], "price": 98100, "onsite": 0, "total": 98100, "book_date": "04/07 23:54", "is_block": false}, {"branch": "가평(청평점)", "booking_no": "Y17405262", "guest": "오종석", "phone": "010-9151-7069", "channel": "직접예약", "room": "B102", "checkin": "2026-04-11", "checkout": "2026-04-12", "nights": 1, "stay_dates": ["2026-04-11"], "price": 109000, "onsite": 0, "total": 109000, "book_date": "03/24 22:28", "is_block": false}, {"branch": "가평(청평점)", "booking_no": "2604072342200012", "guest": "정지명", "phone": "010-7748-7316", "channel": "야놀자", "room": "A203", "checkin": "2026-04-10", "checkout": "2026-04-12", "nights": 2, "stay_dates": ["2026-04-10", "2026-04-11"], "price": 151200, "onsite": 0, "total": 151200, "book_date": "04/07 23:43", "is_block": false}, {"branch": "가평(청평점)", "booking_no": "M260406094947875e35", "guest": "천성희", "phone": "010-9412-7039", "channel": "수기", "room": "B203", "checkin": "2026-04-10", "checkout": "2026-04-11", "nights": 1, "stay_dates": ["2026-04-10"], "price": 79000, "onsite": 0, "total": 79000, "book_date": "04/06 09:49", "is_block": false}, {"branch": "가평(청평점)", "booking_no": "2603300862187688", "guest": "김현", "phone": "010-8031-1606", "channel": "야놀자", "room": "A202", "checkin": "2026-04-04", "checkout": "2026-04-05", "nights": 1, "stay_dates": ["2026-04-04"], "price": 89000, "onsite": 0, "total": 89000, "book_date": "03/30 08:18", "is_block": false}, {"branch": "가평(청평점)", "booking_no": "2604021862545830", "guest": "이명진", "phone": "010-3546-0628", "channel": "야놀자", "room": "B201", "checkin": "2026-04-04", "checkout": "2026-04-05", "nights": 1, "stay_dates": ["2026-04-04"], "price": 169000, "onsite": 0, "total": 169000, "book_date": "04/02 18:35", "is_block": false}, {"branch": "가평(청평점)", "booking_no": "2603162160920489", "guest": "박주혜", "phone": "010-2259-2007", "channel": "야놀자", "room": "B202", "checkin": "2026-04-04", "checkout": "2026-04-05", "nights": 1, "stay_dates": ["2026-04-04"], "price": 89000, "onsite": 0, "total": 89000, "book_date": "03/16 21:35", "is_block": false}, {"branch": "가평(청평점)", "booking_no": "M260403163936058b8e", "guest": "박선욱 여기어때", "phone": "0000000", "channel": "여기어때", "room": "A102", "checkin": "2026-04-04", "checkout": "2026-04-05", "nights": 1, "stay_dates": ["2026-04-04"], "price": 116100, "onsite": 0, "total": 116100, "book_date": "04/03 16:39", "is_block": false}, {"branch": "가평(청평점)", "booking_no": "2603300862187671", "guest": "김현", "phone": "010-8031-1606", "channel": "야놀자", "room": "A203", "checkin": "2026-04-04", "checkout": "2026-04-05", "nights": 1, "stay_dates": ["2026-04-04"], "price": 89000, "onsite": 0, "total": 89000, "book_date": "03/30 08:17", "is_block": false}, {"branch": "가평(청평점)", "booking_no": "2604021562526080", "guest": "최상은", "phone": "010-3717-3508", "channel": "야놀자", "room": "A101", "checkin": "2026-04-04", "checkout": "2026-04-05", "nights": 1, "stay_dates": ["2026-04-04"], "price": 119000, "onsite": 0, "total": 119000, "book_date": "04/02 15:43", "is_block": false}, {"branch": "가평(청평점)", "booking_no": "M2604011047449040c8", "guest": "김민지 여기어때", "phone": "010-9154-9380", "channel": "여기어때", "room": "A201", "checkin": "2026-04-03", "checkout": "2026-04-05", "nights": 2, "stay_dates": ["2026-04-03", "2026-04-04"], "price": 168000, "onsite": 0, "total": 168000, "book_date": "04/01 10:47", "is_block": false}, {"branch": "가평(청평점)", "booking_no": "2603311962337739", "guest": "김효정", "phone": "010-2737-4537", "channel": "야놀자", "room": "B203", "checkin": "2026-04-03", "checkout": "2026-04-04", "nights": 1, "stay_dates": ["2026-04-03"], "price": 79000, "onsite": 0, "total": 79000, "book_date": "03/31 19:50", "is_block": false}, {"branch": "가평(청평점)", "booking_no": "M260329103812074358", "guest": "방막기", "phone": "00***0000", "channel": "수기", "room": "A203", "checkin": "2026-03-29", "checkout": "2026-03-30", "nights": 1, "stay_dates": ["2026-03-29"], "price": 0, "onsite": 0, "total": 0, "book_date": "03/29 10:38", "is_block": true}, {"branch": "가평(청평점)", "booking_no": "2603252161775213", "guest": "이다솔", "phone": "010****3518", "channel": "야놀자", "room": "A102", "checkin": "2026-03-28", "checkout": "2026-03-29", "nights": 1, "stay_dates": ["2026-03-28"], "price": 119000, "onsite": 0, "total": 119000, "book_date": "03/25 21:29", "is_block": false}, {"branch": "가평(청평점)", "booking_no": "2603262004120041", "guest": "이새미나", "phone": "010****9836", "channel": "야놀자", "room": "B201", "checkin": "2026-03-28", "checkout": "2026-03-29", "nights": 1, "stay_dates": ["2026-03-28"], "price": 152100, "onsite": 0, "total": 152100, "book_date": "03/26 20:04", "is_block": false}, {"branch": "가평(청평점)", "booking_no": "2603231461550089", "guest": "최보미", "phone": "010****6341", "channel": "야놀자", "room": "B202", "checkin": "2026-03-28", "checkout": "2026-03-29", "nights": 1, "stay_dates": ["2026-03-28"], "price": 89000, "onsite": 0, "total": 89000, "book_date": "03/23 14:52", "is_block": false}, {"branch": "가평(청평점)", "booking_no": "2603260039430014", "guest": "오동원", "phone": "010****4315", "channel": "야놀자", "room": "B203", "checkin": "2026-03-28", "checkout": "2026-03-29", "nights": 1, "stay_dates": ["2026-03-28"], "price": 89000, "onsite": 0, "total": 89000, "book_date": "03/26 00:39", "is_block": false}, {"branch": "가평(청평점)", "booking_no": "2603281806090002", "guest": "허준영", "phone": "010****5385", "channel": "야놀자", "room": "A201", "checkin": "2026-03-28", "checkout": "2026-03-29", "nights": 1, "stay_dates": ["2026-03-28"], "price": 80100, "onsite": 0, "total": 80100, "book_date": "03/28 18:08", "is_block": false}, {"branch": "가평(청평점)", "booking_no": "2603160860848203", "guest": "이영민", "phone": "010****1977", "channel": "야놀자", "room": "A202", "checkin": "2026-03-27", "checkout": "2026-03-28", "nights": 1, "stay_dates": ["2026-03-27"], "price": 79000, "onsite": 0, "total": 79000, "book_date": "03/16 08:35", "is_block": false}, {"branch": "가평(청평점)", "booking_no": "2603161730320100", "guest": "조용혁", "phone": "010****4856", "channel": "야놀자", "room": "B203", "checkin": "2026-03-21", "checkout": "2026-03-22", "nights": 1, "stay_dates": ["2026-03-21"], "price": 89000, "onsite": 0, "total": 89000, "book_date": "03/16 17:31", "is_block": false}, {"branch": "가평(청평점)", "booking_no": "2603202361312631", "guest": "Inhui Kim", "phone": "010****3078", "channel": "야놀자", "room": "B102", "checkin": "2026-03-21", "checkout": "2026-03-22", "nights": 1, "stay_dates": ["2026-03-21"], "price": 109000, "onsite": 0, "total": 109000, "book_date": "03/20 23:54", "is_block": false}, {"branch": "가평(청평점)", "booking_no": "2603131502450173", "guest": "박용범", "phone": "010****4445", "channel": "야놀자", "room": "B202", "checkin": "2026-03-14", "checkout": "2026-03-15", "nights": 1, "stay_dates": ["2026-03-14"], "price": 89000, "onsite": 0, "total": 89000, "book_date": "03/13 15:03", "is_block": false}];
 var _welcomeData  = {};   // 실시간 GAS fetch — 날짜 변경 시마다 갱신
 var _welcomeCache = {};   // 캐시 {dateStr: {room: data}}
 // 한국 로컬 날짜로 datePicker 및 기간 입력란 초기화
@@ -1336,67 +929,40 @@ function writeLine() {
 }
 
 // ── 웰컴 등록 데이터 조회 ──────────────────────────────────
-// _welcomeData: { "2026-04-20": { "지점|||객실명": {...}, ... }, ... }
-function getWelcomeEntry(dateStr, branch, room) {
+// _welcomeData: { "2026-04-20": { "A101": {...}, ... }, ... }
+function getWelcomeEntry(dateStr, room) {
   if (typeof _welcomeData === 'undefined') return null;
   var day = _welcomeData[dateStr];
   if (!day) return null;
-  // 정확한 키 매칭
-  var key = (branch || '') + '|||' + room;
-  if (day[key]) return day[key];
   // 객실명 정규화 매칭 (공백/특수문자 차이 허용)
-  var normRoom = room.replace(/\s+/g, '').toLowerCase();
-  var normBr   = (branch || '').replace(/\s+/g, '').toLowerCase();
+  if (day[room]) return day[room];
+  var norm = room.replace(/\s+/g, '').toLowerCase();
   for (var k in day) {
-    var parts = k.split('|||');
-    var kBr   = (parts[0] || '').replace(/\s+/g, '').toLowerCase();
-    var kRm   = (parts[1] || '').replace(/\s+/g, '').toLowerCase();
-    if (kBr === normBr && kRm === normRoom) return day[k];
+    if (k.replace(/\s+/g, '').toLowerCase() === norm) return day[k];
   }
   return null;
-}
-
-// dogs는 GAS에서 JSON 문자열로 올 수도 있음 — 안전하게 array로 정규화
-function parseDogs(wd) {
-  var dogs = wd && wd.dogs;
-  if (typeof dogs === 'string') {
-    try { dogs = JSON.parse(dogs); } catch(e) { dogs = []; }
-  }
-  return Array.isArray(dogs) ? dogs : [];
 }
 
 function dogInfoHtml(wd) {
   if (!wd) return '<div class="write-lines">' + writeLine() + writeLine() + '</div>';
   if (wd.dogCount === 0) return '<div style="font-size:12px;color:#aaa;text-align:center">—</div>';
-  var dogs = parseDogs(wd);
+  var dogs = wd.dogs || [];
   if (dogs.length === 0 && wd.dogCount > 0) {
     return '<div style="font-size:12px;color:#555;text-align:center">' + wd.dogCount + '마리</div>';
   }
-  var parts = dogs.map(function(d, i) {
-    var nm = d.name
-      ? '<b style="color:#1B3A5C">' + d.name + '</b>'
-      : '<span style="color:#aaa">강아지 ' + (i + 1) + '</span>';
-    var br = d.breed  ? ' <span style="color:#777;font-size:10px">' + d.breed + '</span>' : '';
-    var wt = d.weight ? '<br><span style="color:#666;font-size:10px;padding-left:4px">(' + d.weight + ')</span>' : '';
+  var parts = dogs.map(function(d) {
+    var nm = d.name ? '<b>' + d.name + '</b>' : '';
+    var br = d.breed ? ' <span style="color:#777">' + d.breed + '</span>' : '';
+    var wt = d.weight ? ' <span style="color:#aaa;font-size:10px">(' + d.weight + ')</span>' : '';
     return nm + br + wt;
   });
-  return '<div style="font-size:12px;line-height:1.6">' + parts.join('<br>') + '</div>';
-}
-
-// HH:MM 추출 — JS Date toString("Sat Dec 30 1899 16:00:00 GMT+0827")이나 ISO 등 어떤 포맷에서도 시각만 뽑음
-function fmtTime(t) {
-  if (!t) return '';
-  var s = String(t).trim();
-  if (/^\d{1,2}:\d{2}$/.test(s)) return s;
-  var m = s.match(/(\d{1,2}):(\d{2})/);
-  if (m) return ('0' + m[1]).slice(-2) + ':' + m[2];
-  return s;
+  return '<div style="font-size:11px;line-height:1.8">' + parts.join('<br>') + '</div>';
 }
 
 function bbqHtml(wd) {
   if (!wd) return '<div class="bbq-box">□</div>';
   if (wd.bbq === 'yes') {
-    var t = fmtTime(wd.bbqTime) || '시간미정';
+    var t = wd.bbqTime ? wd.bbqTime : '시간미정';
     return '<div style="text-align:center;line-height:1.6">✅<br>'
       + '<b style="font-size:14px;color:#2d6a4f">' + t + '</b></div>';
   }
@@ -1405,8 +971,7 @@ function bbqHtml(wd) {
 
 function arriveHtml(wd) {
   if (!wd || !wd.arrivalTime) return '<div class="write-lines">' + writeLine() + '</div>';
-  var t = fmtTime(wd.arrivalTime) || wd.arrivalTime;
-  return '<div style="font-size:14px;font-weight:700;color:#1B3A5C;text-align:center">' + t + '</div>';
+  return '<div style="font-size:14px;font-weight:700;color:#1B3A5C;text-align:center">' + wd.arrivalTime + '</div>';
 }
 
 function memoHtml(wd) {
@@ -1421,56 +986,19 @@ function personsHtml(wd) {
 }
 
 function extraHtml(bno, wd) {
-  // 현장기록 있으면 실제 결제된 금액 우선 표시
+  // 현장기록 있으면 실제 금액 표시
   if (typeof _fieldEntries !== 'undefined' && bno && _fieldEntries[bno]) {
     var e = _fieldEntries[bno];
     return '<div style="text-align:center;font-size:13px;font-weight:700;color:#e65100">'
       + Number(e.total).toLocaleString() + '원</div>';
   }
   if (!wd) return '<div style="color:#ddd;text-align:center;font-size:11px">—</div>';
-
-  // 단가
-  var FEE_PERSON = 20000;   // 인원 1명 추가
-  var FEE_DOG    = 10000;   // 강아지 1마리 추가
-  var FEE_BIG    = 10000;   // 대형견 1마리 추가
-  var FEE_BBQ    = 20000;   // BBQ
-
-  // 인원 추가 (2명 초과)
-  var pExtra = (wd.persons && wd.persons > 2) ? (wd.persons - 2) : 0;
-  var pAmt   = pExtra * FEE_PERSON;
-
-  // 강아지 추가 (1마리 초과)
-  var dExtra = (wd.dogCount && wd.dogCount > 1) ? (wd.dogCount - 1) : 0;
-  var dAmt   = dExtra * FEE_DOG;
-
-  // 대형견 (welcome.html 옵션: "5kg 미만" / "5-10kg" / "10-15kg" → 10kg 이상을 대형으로 카운트)
-  var dogs = parseDogs(wd);
-  var bigCount = dogs.filter(function(d) {
-    if (!d.weight) return false;
-    return /10-15kg|10kg\s*이상|10kg\+|15kg|20kg/i.test(d.weight);
-  }).length;
-  var bAmt = bigCount * FEE_BIG;
-
-  var bbqOn  = (wd.bbq === 'yes');
-  var bbqAmt = bbqOn ? FEE_BBQ : 0;
-  var total  = pAmt + dAmt + bAmt + bbqAmt;
-
-  if (total === 0) {
-    return '<div style="color:#ddd;text-align:center;font-size:11px">—</div>';
-  }
-
   var lines = [];
-  if (pExtra > 0)   lines.push('인원+' + pExtra + '명');
-  if (dExtra > 0)   lines.push('강아지+' + dExtra + '마리');
-  if (bigCount > 0) lines.push('대형견 ' + bigCount + '마리');
-  if (bbqOn)        lines.push('BBQ');
-
-  var html = '<div style="font-size:10px;line-height:1.6;text-align:center;color:#555">';
-  if (lines.length) html += lines.join('<br>');
-  html += (lines.length ? '<div style="border-top:1px dashed #ccc;margin-top:3px;padding-top:3px"></div>' : '')
-       +  '<span style="font-size:12px;color:#333">합 ' + total.toLocaleString() + '원</span>';
-  html += '</div>';
-  return html;
+  if (wd.persons && wd.persons > 2) lines.push((wd.persons-2) + '명 추가');
+  if (wd.dogCount && wd.dogCount > 1) lines.push('강아지 ' + (wd.dogCount-1) + '마리 추가');
+  if (wd.bbq === 'yes') lines.push('BBQ');
+  if (!lines.length) return '<div style="color:#ddd;text-align:center;font-size:11px">—</div>';
+  return '<div style="font-size:11px;line-height:1.7;text-align:center;color:#888">' + lines.join('<br>') + '</div>';
 }
 
 function roomSortKey(room) {
@@ -1516,7 +1044,7 @@ function renderTable() {
     const fldBtn = (typeof _fieldEntries !== 'undefined')
       ? `<td class="col-field"><button class="field-btn${hasRec?' has-record':''}" data-bno="${bno}" data-room="${r.room}" data-guest="${r.guest}" onclick="openFM(this)">${hasRec ? '✏️ '+Number(_fieldEntries[bno].total).toLocaleString()+'원 (수정)' : '+ 현장기록'}</button></td>`
       : '';
-    const wd = getWelcomeEntry(currentDate, r.branch, r.room);
+    const wd = getWelcomeEntry(currentDate, r.room);
     const welcomeCheck = wd
       ? ' <span style="color:#16a34a;font-weight:900;font-size:15px;vertical-align:middle" title="웰컴등록완료">✓</span>'
       : '';
@@ -1525,8 +1053,7 @@ function renderTable() {
       <td class="col-no">${idx + 1}</td>
       <td class="col-room"><span class="room-name">${r.room}</span></td>
       <td class="col-guest">
-        <div class="guest-name">${r.guest}${welcomeCheck}</div>
-        <div class="guest-phone">${r.phone}</div>
+        <div class="guest-name" style="white-space:nowrap">${r.guest}${welcomeCheck} <span style="font-weight:400;font-size:12px;color:#555">${r.phone}</span></div>
         ${channelBadge(r.channel)}
       </td>
       <td class="col-stays">${staysLabel(r)}</td>
@@ -1613,7 +1140,7 @@ function loadWelcomeData(dateStr) {
       var dayData = {};
       if (res && res.ok && res.data) {
         res.data.forEach(function(e) {
-          if (e.room) dayData[(e.branch||currentBranch)+'|||'+e.room] = e;
+          if (e.room) dayData[e.room] = e;
         });
       }
       var map = {}; map[dateStr] = dayData;
@@ -1656,11 +1183,11 @@ let currentView = 'list'; // 'list' or 'calendar'
 
 function setView(v) {
   currentView = v;
-  ['btnList','btnCal','btnRes','btnClean','btnField','btnNotice','btnExpense','btnIssue'].forEach(id => {
+  ['btnList','btnCal','btnRes','btnClean','btnField'].forEach(id => {
     const el = document.getElementById(id);
     if (el) el.classList.remove('active');
   });
-  const activeBtn = {list:'btnList', calendar:'btnCal', rescal:'btnRes', clean:'btnClean', field:'btnField', notice:'btnNotice', expense:'btnExpense', issue:'btnIssue'}[v];
+  const activeBtn = {list:'btnList', calendar:'btnCal', rescal:'btnRes', clean:'btnClean', field:'btnField'}[v];
   if (activeBtn && document.getElementById(activeBtn))
     document.getElementById(activeBtn).classList.add('active');
 
@@ -1669,21 +1196,11 @@ function setView(v) {
   const resEl   = document.getElementById('resCalSection');
   const cleanEl = document.getElementById('cleanSection');
   const fieldEl = document.getElementById('fieldDashSection');
-  const noEl    = document.getElementById('noticeSection');
-  const exEl    = document.getElementById('expenseSection');
-  const isEl    = document.getElementById('issueSection');
   if (resEl)   resEl.style.display   = v === 'rescal' ? '' : 'none';
   if (cleanEl) cleanEl.style.display = v === 'clean'  ? '' : 'none';
   var clPrintBar = document.getElementById('clPrintBar');
   if (clPrintBar) clPrintBar.style.display = v === 'clean' ? 'flex' : 'none';
   if (fieldEl) fieldEl.style.display = v === 'field'  ? '' : 'none';
-  if (noEl) noEl.style.display = v === 'notice'  ? '' : 'none';
-  if (exEl) exEl.style.display = v === 'expense' ? '' : 'none';
-  if (isEl) isEl.style.display = v === 'issue'   ? '' : 'none';
-
-  // 운영확장 view 진입 시 지점 탭 그룹 숨김
-  var tabsEl = document.getElementById('tabs');
-  if (tabsEl) tabsEl.style.display = (v === 'notice' || v === 'expense' || v === 'issue') ? 'none' : '';
 
   if (v === 'calendar') renderCalendar();
   if (v === 'rescal') { renderResCal(); setupResCalDrag(); }
@@ -1692,9 +1209,6 @@ function setView(v) {
   }
   if (v === 'clean') { clLoadStatus(renderCleaningView); }
   if (v === 'field') { initFieldDash(); }
-  if (v === 'notice')  { if (typeof initNoticeDash  === 'function') initNoticeDash();  }
-  if (v === 'expense') { if (typeof initExpenseDash === 'function') initExpenseDash(); }
-  if (v === 'issue')   { if (typeof initIssueDash   === 'function') initIssueDash();   }
 }
 
 function getDayCount(dateStr) {
@@ -2764,524 +2278,6 @@ function clStartPolling() {
   }, 60000);
 }
 clStartPolling();
-
-// ─── 운영확장 — 공지 (지점) ─────
-var _brNoticeAll = [];
-
-function loadBranchNotices() {
-  if (!currentBranch) return;
-  fetch(GAS_ENDPOINT + "?action=getNotices&branch=" + encodeURIComponent(currentBranch))
-    .then(function(r){ return r.json(); })
-    .then(function(res){
-      if (!res || !res.ok) { _brNoticeAll = []; renderNoticeBanner([]); return; }
-      _brNoticeAll = res.data || [];
-      var unread = _brNoticeAll.filter(function(n){ return !n.isRead; });
-      renderNoticeBanner(unread);
-      updateNoticeBadge(_brNoticeAll);
-      if (typeof currentView !== 'undefined' && currentView === 'notice') renderNoticeHistory();
-    })
-    .catch(function(){ _brNoticeAll = []; });
-}
-
-function renderNoticeBanner(items) {
-  var bar = document.getElementById('brNoticeBanner');
-  if (!bar) return;
-  if (!items.length) { bar.innerHTML = ''; return; }
-  var prio = { '긴급': 3, '시스템': 2, '일반': 1 };
-  items.sort(function(a, b){ return (prio[b.type] || 0) - (prio[a.type] || 0); });
-  var head = items[0];
-  var typeClass = head.type === '긴급' ? 'notice-banner-urgent' : (head.type === '시스템' ? 'notice-banner-system' : 'notice-banner-normal');
-  bar.innerHTML = '<div class="notice-banner ' + typeClass + '" onclick="openNoticeModal(\'' + head.noticeId + '\')">' +
-    '<span>📢 ' + opEscapeHtml(head.title) + '</span>' +
-    (items.length > 1 ? '<span class="notice-banner-count">공지 ' + items.length + '건</span>' : '') +
-    '<span class="notice-banner-arrow">›</span>' +
-  '</div>';
-}
-
-function renderNoticeHistory() {
-  var area = document.getElementById('brNoticeListArea');
-  if (!area) return;
-  var items = _brNoticeAll;
-  if (!items.length) { area.innerHTML = '<div class="op-empty">최근 공지가 없습니다.</div>'; return; }
-  area.innerHTML = items.map(function(n){
-    var typeClass = n.type === '긴급' ? 'op-badge-urgent' : (n.type === '시스템' ? 'op-badge-system' : 'op-badge-normal');
-    var unreadCls = n.isRead ? '' : ' unread';
-    return '<div class="br-notice-row' + unreadCls + '" onclick="openNoticeModal(\'' + n.noticeId + '\')">' +
-      '<div class="br-notice-row-head">' +
-        '<span class="op-badge ' + typeClass + '">' + opEscapeHtml(n.type) + '</span>' +
-        '<span class="br-notice-row-title">' + opEscapeHtml(n.title) + '</span>' +
-        '<span class="br-notice-row-meta">' + opEscapeHtml(formatNoticeDate(n.createdAt)) + '</span>' +
-      '</div>' +
-      '<div class="br-notice-row-content">' + renderMarkdown(n.content) + '</div>' +
-    '</div>';
-  }).join('');
-}
-
-function initNoticeDash() {
-  renderNoticeHistory();
-}
-
-function openNoticeModal(noticeId) {
-  var n = _brNoticeAll.filter(function(x){ return String(x.noticeId) === String(noticeId); })[0];
-  if (!n) return;
-  var modal = document.getElementById('brNoticeModal');
-  if (!modal) return;
-  modal.innerHTML = '<div class="notice-banner-modal-bg" onclick="closeNoticeModal(event)">' +
-    '<div class="notice-banner-modal" onclick="event.stopPropagation()">' +
-      '<h3>' + opEscapeHtml(n.title) + '</h3>' +
-      '<div class="notice-banner-modal-meta">' + opEscapeHtml(n.type) + ' · ' + opEscapeHtml(formatNoticeDate(n.createdAt)) + '</div>' +
-      '<div class="notice-banner-modal-content">' + renderMarkdown(n.content) + '</div>' +
-      '<div class="notice-banner-modal-buttons">' +
-        '<button class="op-btn op-btn-primary" onclick="markRead(\'' + n.noticeId + '\')">확인</button>' +
-      '</div>' +
-    '</div>' +
-  '</div>';
-  modal.style.display = 'block';
-}
-
-function closeNoticeModal(e) {
-  if (e && e.target && e.target.classList && !e.target.classList.contains('notice-banner-modal-bg')) return;
-  var modal = document.getElementById('brNoticeModal');
-  if (modal) { modal.innerHTML = ''; modal.style.display = 'none'; }
-}
-
-function markRead(noticeId) {
-  fetch(GAS_ENDPOINT, { method:'POST', body: JSON.stringify({action:'markNoticeRead', noticeId:noticeId, branch:currentBranch}) })
-    .then(function(r){ return r.json(); })
-    .catch(function(){});
-  _brNoticeAll = _brNoticeAll.map(function(n){ if (String(n.noticeId) === String(noticeId)) n.isRead = true; return n; });
-  var modal = document.getElementById('brNoticeModal');
-  if (modal) { modal.innerHTML = ''; modal.style.display = 'none'; }
-  renderNoticeBanner(_brNoticeAll.filter(function(n){ return !n.isRead; }));
-  updateNoticeBadge(_brNoticeAll);
-  if (typeof currentView !== 'undefined' && currentView === 'notice') renderNoticeHistory();
-}
-
-function formatNoticeDate(s) {
-  if (!s) return '';
-  return String(s).slice(0, 16).replace('T', ' ');
-}
-
-function opEscapeHtml(s) {
-  return String(s == null ? '' : s)
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#39;');
-}
-
-function renderMarkdown(text) {
-  var s = String(text == null ? '' : text)
-    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-  s = s.replace(/!\[([^\]]*)\]\(([^)]+)\)/g, function(_m, alt, url){
-    if (!/^https:\/\/(drive\.google\.com|lh\d+\.googleusercontent\.com)/.test(url)) return '';
-    return '<img src="' + url + '" alt="' + alt + '" loading="lazy">';
-  });
-  s = s.replace(/\[([^\]]+)\]\(([^)]+)\)/g, function(_m, txt, url){
-    if (!/^https?:\/\//.test(url)) return txt;
-    return '<a href="' + url + '" target="_blank" rel="noopener">' + txt + '</a>';
-  });
-  s = s.replace(/\n/g, '<br>');
-  return s;
-}
-
-// ─── 운영확장 — 첨부 위젯 (공통) ─────
-function bindAttachWidget(opts) {
-  var ta = document.getElementById(opts.textareaId);
-  var fi = document.getElementById(opts.fileInputId);
-  var st = document.getElementById(opts.statusId);
-  var aw = document.getElementById(opts.attachmentsId);
-  if (!ta || ta.dataset.attachBound) return;
-  ta.dataset.attachBound = '1';
-
-  function handle(files, mode) {
-    if (!files.length) return;
-    mode = mode || 'append';
-    var done = 0;
-    if (st) st.textContent = '📤 업로드 중... (0/' + files.length + ')';
-    Array.prototype.forEach.call(files, function(file){
-      var reader = new FileReader();
-      reader.onload = function() {
-        var b64 = String(reader.result || '').split(',')[1] || '';
-        fetch(opts.gasUrl, { method:'POST', body: JSON.stringify({
-          action:'uploadAttachment', filename:file.name, mimeType:file.type, base64:b64
-        }) })
-        .then(function(r){ return r.json(); })
-        .then(function(res){
-          done++;
-          if (res && res.ok) { insertSnippet(res, mode); addChip(res); }
-          else if (st) { st.textContent = '❌ 업로드 실패: ' + ((res && res.error) || file.name); }
-          if (st) {
-            if (done === files.length) {
-              st.textContent = '✅ 업로드 완료';
-              setTimeout(function(){ st.textContent = ''; }, 2000);
-            } else {
-              st.textContent = '📤 업로드 중... (' + done + '/' + files.length + ')';
-            }
-          }
-        })
-        .catch(function(){ done++; if (st) st.textContent = '❌ 네트워크 오류'; });
-      };
-      reader.readAsDataURL(file);
-    });
-  }
-
-  function insertSnippet(res, mode) {
-    var snippet = res.isImage
-      ? '![' + (res.filename || 'image') + '](' + res.url + ')'
-      : '[📎 ' + (res.filename || 'file') + '](' + res.url + ')';
-    if (mode === 'cursor') {
-      var pad = '\n' + snippet + '\n';
-      var start = (typeof ta.selectionStart === 'number') ? ta.selectionStart : ta.value.length;
-      var end   = (typeof ta.selectionEnd   === 'number') ? ta.selectionEnd   : ta.value.length;
-      ta.value = ta.value.slice(0, start) + pad + ta.value.slice(end);
-      var cursor = start + pad.length;
-      try { ta.selectionStart = ta.selectionEnd = cursor; ta.focus(); } catch(e) {}
-    } else {
-      var base = ta.value.replace(/\s+$/, '');
-      ta.value = (base ? base + '\n' : '') + snippet + '\n';
-      var endPos = ta.value.length;
-      try { ta.selectionStart = ta.selectionEnd = endPos; } catch(e) {}
-    }
-  }
-
-  function addChip(res) {
-    if (!aw) return;
-    var chip = document.createElement('div');
-    chip.className = 'op-attachment-chip';
-    chip.dataset.url = res.url;
-    var thumb = res.isImage
-      ? ('<img class="op-attachment-thumb" src="' + res.url + '" alt="">')
-      : ('<span class="op-attachment-icon">📎</span>');
-    chip.innerHTML = thumb +
-      '<span class="op-attachment-name" title="' + opEscapeHtml(res.filename) + '">' + opEscapeHtml(res.filename) + '</span>' +
-      '<button type="button" class="op-attachment-remove" title="본문에서 제거">×</button>';
-    chip.querySelector('.op-attachment-remove').addEventListener('click', function(){
-      var lines = ta.value.split('\n');
-      var kept = lines.filter(function(line){ return line.indexOf(res.url) < 0; });
-      ta.value = kept.join('\n');
-      chip.remove();
-    });
-    aw.appendChild(chip);
-  }
-
-  ta.addEventListener('paste', function(e){
-    var items = (e.clipboardData || {}).items || [];
-    var files = [];
-    for (var i = 0; i < items.length; i++) {
-      if (items[i].kind === 'file') { var f = items[i].getAsFile(); if (f) files.push(f); }
-    }
-    if (files.length) { e.preventDefault(); handle(files, 'cursor'); }
-  });
-  ta.addEventListener('dragover', function(e){ e.preventDefault(); });
-  ta.addEventListener('drop', function(e){
-    var files = (e.dataTransfer && e.dataTransfer.files) ? Array.prototype.slice.call(e.dataTransfer.files) : [];
-    if (files.length) { e.preventDefault(); handle(files, 'cursor'); }
-  });
-  if (fi) {
-    fi.addEventListener('change', function(){
-      if (!fi.files || !fi.files.length) return;
-      handle(Array.prototype.slice.call(fi.files), 'append');
-      fi.value = '';
-    });
-  }
-
-  ta._attachReset = function() {
-    if (st) st.textContent = '';
-    if (aw) aw.innerHTML = '';
-    if (fi) fi.value = '';
-  };
-}
-
-// ─── 운영확장 — 지출 입력 (지점) ─────
-function _padN(n) { return n < 10 ? '0' + n : '' + n; }
-function _ymd(dt) { return dt.getFullYear() + '-' + _padN(dt.getMonth()+1) + '-' + _padN(dt.getDate()); }
-
-function initExpenseDash() {
-  var d = document.getElementById('exDate');
-  if (d && !d.value) d.value = _ymd(new Date());
-  loadBranchExpenses();
-}
-
-function loadBranchExpenses() {
-  var area = document.getElementById('exHistoryArea');
-  if (!area) return;
-  area.innerHTML = '<div class="op-loading">⏳ 불러오는 중...</div>';
-  var to = new Date();
-  var from = new Date(); from.setDate(to.getDate() - 30);
-  fetch(GAS_ENDPOINT + '?action=getExpenses&branch=' + encodeURIComponent(currentBranch) +
-        '&fromDate=' + _ymd(from) + '&toDate=' + _ymd(to))
-    .then(function(r){ return r.json(); })
-    .then(function(res){
-      if (!res || !res.ok) { area.innerHTML = '<div class="op-error">조회 실패</div>'; return; }
-      renderBranchExpenseHistory(res.data || []);
-    })
-    .catch(function(){ area.innerHTML = '<div class="op-error">네트워크 오류</div>'; });
-}
-
-function renderBranchExpenseHistory(rows) {
-  var area = document.getElementById('exHistoryArea');
-  if (!rows.length) { area.innerHTML = '<div class="op-empty">아직 등록된 지출이 없습니다.</div>'; return; }
-  rows.sort(function(a, b){ return a.date < b.date ? 1 : (a.date > b.date ? -1 : 0); });
-  var thead = '<thead><tr><th>날짜</th><th>구분</th><th style="text-align:right">금액</th><th>비고</th></tr></thead>';
-  var tbody = '<tbody>' + rows.map(function(r){
-    return '<tr>' +
-      '<td>' + opEscapeHtml(r.date) + '</td>' +
-      '<td>' + opEscapeHtml(r.category) + '</td>' +
-      '<td style="text-align:right;font-weight:600">' + (Number(r.amount)||0).toLocaleString() + '원</td>' +
-      '<td>' + opEscapeHtml(r.memo || '') + '</td>' +
-    '</tr>';
-  }).join('') + '</tbody>';
-  area.innerHTML = '<table class="op-table">' + thead + tbody + '</table>';
-}
-
-function submitBranchExpense() {
-  var date     = document.getElementById('exDate').value;
-  var category = document.getElementById('exCategory').value;
-  var amount   = Number(document.getElementById('exAmount').value) || 0;
-  var memo     = document.getElementById('exMemo').value || '';
-  if (!date)       { showExMsg('날짜를 선택하세요.', 'error'); return; }
-  if (amount <= 0) { showExMsg('금액을 입력하세요.', 'error'); return; }
-  showExMsg('저장 중...', '');
-  fetch(GAS_ENDPOINT, { method:'POST', body: JSON.stringify({
-    action:'addExpense', branch:currentBranch, date:date, category:category,
-    amount:amount, memo:memo, registeredBy:currentBranch
-  }) })
-  .then(function(r){ return r.json(); })
-  .then(function(res){
-    if (!res || !res.ok) { showExMsg('저장 실패: ' + ((res && res.error) || '오류'), 'error'); return; }
-    showExMsg('✅ 저장 완료', 'success');
-    document.getElementById('exAmount').value = '';
-    document.getElementById('exMemo').value = '';
-    loadBranchExpenses();
-  })
-  .catch(function(){ showExMsg('네트워크 오류', 'error'); });
-}
-
-function showExMsg(text, kind) {
-  var el = document.getElementById('exFormMsg');
-  if (!el) return;
-  el.className = 'op-form-msg' + (kind ? ' ' + kind : '');
-  el.textContent = text;
-}
-
-// ─── 운영확장 — 이슈 신고 (지점) ─────
-function statusBadgeClass(s) {
-  return ({'접수됨':'op-issue-status-receive','처리중':'op-issue-status-progress',
-    '주문완료':'op-issue-status-ordered','완료':'op-issue-status-done',
-    '보류':'op-issue-status-hold','포기':'op-issue-status-abandon'})[s] || 'op-issue-status-receive';
-}
-function priorityBadgeClass(p) {
-  return ({'높음':'op-priority-high','중간':'op-priority-mid','낮음':'op-priority-low'})[p] || 'op-priority-mid';
-}
-
-var _brIssueCache = {};
-
-function initIssueDash() {
-  bindAttachWidget({ textareaId:'brIsContent', fileInputId:'brIsFileInput', statusId:'brIsUploadStatus', attachmentsId:'brIsAttachments', gasUrl: GAS_ENDPOINT });
-  loadBranchIssues();
-}
-
-function loadBranchIssues() {
-  var area = document.getElementById('brIssueListArea');
-  if (!area) return;
-  area.innerHTML = '<div class="op-loading">⏳ 불러오는 중...</div>';
-  fetch(GAS_ENDPOINT + '?action=getIssues&branch=' + encodeURIComponent(currentBranch) + '&status=전체')
-    .then(function(r){ return r.json(); })
-    .then(function(res){
-      if (!res || !res.ok) { area.innerHTML = '<div class="op-error">조회 실패</div>'; return; }
-      var rows = res.data || [];
-      renderBranchIssues(rows);
-      updateIssueBadge(rows);
-    })
-    .catch(function(){ area.innerHTML = '<div class="op-error">네트워크 오류</div>'; });
-}
-
-function updateIssueBadge(issues) {
-  var unseen = (issues || []).reduce(function(s, it){ return s + (it.newHqCommentCount || 0); }, 0);
-  var btn = document.getElementById('btnIssue');
-  if (!btn) return;
-  var oldCnt = btn.querySelector('.cnt');
-  if (oldCnt) oldCnt.remove();
-  if (unseen > 0) {
-    var span = document.createElement('span');
-    span.className = 'cnt';
-    span.textContent = unseen;
-    btn.appendChild(span);
-    btn.classList.add('has-unread');
-  } else {
-    btn.classList.remove('has-unread');
-  }
-}
-
-function updateNoticeBadge(notices) {
-  var unread = (notices || []).filter(function(n){ return !n.isRead; }).length;
-  var btn = document.getElementById('btnNotice');
-  if (!btn) return;
-  var oldCnt = btn.querySelector('.cnt');
-  if (oldCnt) oldCnt.remove();
-  if (unread > 0) {
-    var span = document.createElement('span');
-    span.className = 'cnt';
-    span.textContent = unread;
-    btn.appendChild(span);
-    btn.classList.add('has-unread');
-  } else {
-    btn.classList.remove('has-unread');
-  }
-}
-
-function renderBranchIssues(rows) {
-  var area = document.getElementById('brIssueListArea');
-  if (!rows.length) { area.innerHTML = '<div class="op-empty">아직 등록한 이슈가 없습니다.</div>'; return; }
-  rows.sort(function(a, b){ return a.createdAt < b.createdAt ? 1 : (a.createdAt > b.createdAt ? -1 : 0); });
-  _brIssueCache = {};
-  rows.forEach(function(it){ _brIssueCache[String(it.issueId)] = it; });
-  area.innerHTML = rows.map(function(it){
-    return '<div class="br-notice-row" onclick="openBranchIssue(\'' + it.issueId + '\')">' +
-      '<div class="br-notice-row-head">' +
-        '<span class="op-issue-status ' + statusBadgeClass(it.status) + '">' + opEscapeHtml(it.status) + '</span>' +
-        '<span class="op-priority ' + priorityBadgeClass(it.priority) + '">' + opEscapeHtml(it.priority) + '</span>' +
-        '<span class="br-notice-row-title">' + opEscapeHtml(it.title) + '</span>' +
-        '<span class="br-notice-row-meta">' + opEscapeHtml((it.createdAt||'').slice(0,10)) + '</span>' +
-      '</div>' +
-      '<div class="br-notice-row-content">' + opEscapeHtml(it.category) + ' · 댓글 ' + (it.commentCount||0) + '</div>' +
-    '</div>';
-  }).join('');
-}
-
-function submitBranchIssue() {
-  var title = (document.getElementById('brIsTitle').value || '').trim();
-  var cat = document.getElementById('brIsCategory').value;
-  var prios = document.querySelectorAll('input[name="brIsPriority"]:checked');
-  var priority = prios.length ? prios[0].value : '중간';
-  var content = (document.getElementById('brIsContent').value || '').trim();
-  if (!title || !content) { showBrIsMsg('제목과 내용을 입력하세요.', 'error'); return; }
-  showBrIsMsg('등록 중...', '');
-  fetch(GAS_ENDPOINT, { method:'POST', body: JSON.stringify({
-    action:'createIssue', branch:currentBranch, title:title, description:content, category:cat, priority:priority
-  }) })
-  .then(function(r){ return r.json(); })
-  .then(function(res){
-    if (!res || !res.ok) { showBrIsMsg('등록 실패: ' + ((res && res.error) || '오류'), 'error'); return; }
-    showBrIsMsg('✅ 등록 완료', 'success');
-    document.getElementById('brIsTitle').value = '';
-    document.getElementById('brIsContent').value = '';
-    var _brIsTa = document.getElementById('brIsContent');
-    if (_brIsTa && _brIsTa._attachReset) _brIsTa._attachReset();
-    loadBranchIssues();
-  })
-  .catch(function(){ showBrIsMsg('네트워크 오류', 'error'); });
-}
-
-function openBranchIssue(issueId) {
-  var it = _brIssueCache[String(issueId)];
-  if (!it) return;
-  var modal = document.getElementById('brIssueModal');
-  if (!modal) return;
-  modal.innerHTML = '<div class="op-modal-bg" onclick="closeBranchIssueModal(event)">' +
-    '<div class="op-modal" onclick="event.stopPropagation()">' +
-      '<div class="op-modal-head">' +
-        '<span class="op-issue-status ' + statusBadgeClass(it.status) + '">' + opEscapeHtml(it.status) + '</span>' +
-        '<span class="op-priority ' + priorityBadgeClass(it.priority) + '">' + opEscapeHtml(it.priority) + '</span>' +
-        '<div class="op-modal-title">' + opEscapeHtml(it.title) + '</div>' +
-        '<button class="op-modal-close" onclick="closeBranchIssueModal()">×</button>' +
-      '</div>' +
-      '<div class="op-modal-body">' +
-        '<div class="op-modal-section">' +
-          '<div class="op-modal-section-label">카테고리 · 등록일</div>' +
-          '<div class="op-modal-section-content">' + opEscapeHtml(it.category) + ' · ' + opEscapeHtml(it.createdAt || '') + '</div>' +
-        '</div>' +
-        '<div class="op-modal-section">' +
-          '<div class="op-modal-section-label">상세 내용</div>' +
-          '<div class="op-modal-section-content">' + renderMarkdown(it.description || '') + '</div>' +
-        '</div>' +
-        '<div class="op-modal-section">' +
-          '<div class="op-modal-section-label">댓글 스레드</div>' +
-          '<div id="brCommentList" class="op-comment-list"><div class="op-loading">⏳</div></div>' +
-          '<div class="op-comment-form">' +
-            '<textarea id="brCommentInput" placeholder="지점 댓글 (사진 paste/drag/첨부 가능)"></textarea>' +
-            '<button class="op-btn op-btn-primary" style="align-self:flex-end;margin:0;padding:8px 14px" onclick="submitBranchComment(\'' + it.issueId + '\')">작성</button>' +
-          '</div>' +
-          '<div style="display:flex;align-items:center;gap:8px;margin-top:6px">' +
-            '<button type="button" class="op-btn op-btn-ghost" onclick="document.getElementById(\'brCmtFile\').click()" style="padding:4px 10px;font-size:12px;margin:0">📎 첨부</button>' +
-            '<input type="file" id="brCmtFile" multiple accept="image/*,application/pdf,.doc,.docx,.xls,.xlsx,.txt" style="display:none">' +
-            '<span id="brCmtUploadStatus" class="op-upload-status" style="margin:0"></span>' +
-          '</div>' +
-          '<div id="brCmtAttachments" class="op-attachments"></div>' +
-        '</div>' +
-      '</div>' +
-    '</div>' +
-  '</div>';
-  modal.style.display = 'block';
-  loadBranchComments(it.issueId);
-  bindAttachWidget({ textareaId:'brCommentInput', fileInputId:'brCmtFile', statusId:'brCmtUploadStatus', attachmentsId:'brCmtAttachments', gasUrl: GAS_ENDPOINT });
-  fetch(GAS_ENDPOINT, { method:'POST', body: JSON.stringify({action:'markIssueSeen', issueId:it.issueId, branch:currentBranch}) })
-    .then(function(r){ return r.json(); })
-    .then(function(res){ if (res && res.ok) loadBranchIssues(); })
-    .catch(function(){});
-}
-
-function closeBranchIssueModal(e) {
-  if (e && e.target && e.target.classList && !e.target.classList.contains('op-modal-bg')) return;
-  var modal = document.getElementById('brIssueModal');
-  if (modal) { modal.innerHTML = ''; modal.style.display = 'none'; }
-}
-
-function loadBranchComments(issueId) {
-  var list = document.getElementById('brCommentList');
-  if (!list) return;
-  list.innerHTML = '<div class="op-loading">⏳</div>';
-  fetch(GAS_ENDPOINT + '?action=getComments&issueId=' + encodeURIComponent(issueId))
-    .then(function(r){ return r.json(); })
-    .then(function(res){
-      if (!res || !res.ok) { list.innerHTML = '<div class="op-error">댓글 불러오기 실패</div>'; return; }
-      renderComments(list, res.data || []);
-    })
-    .catch(function(){ list.innerHTML = '<div class="op-error">네트워크 오류</div>'; });
-}
-
-function renderComments(list, rows) {
-  if (!rows.length) { list.innerHTML = '<div class="op-empty" style="padding:8px">아직 댓글이 없습니다.</div>'; return; }
-  rows.sort(function(a, b){ return a.createdAt < b.createdAt ? -1 : (a.createdAt > b.createdAt ? 1 : 0); });
-  list.innerHTML = rows.map(function(c){
-    var cls = c.authorType === '본사' ? 'hq' : 'branch';
-    return '<div class="op-comment">' +
-      '<div class="op-comment-head">' +
-        '<span class="op-comment-author ' + cls + '">' + opEscapeHtml(c.author || c.authorType) + '</span>' +
-        '<span class="op-comment-time">' + opEscapeHtml(c.createdAt || '') + '</span>' +
-      '</div>' +
-      '<div class="op-comment-content">' + renderMarkdown(c.content || '') + '</div>' +
-    '</div>';
-  }).join('');
-}
-
-function submitBranchComment(issueId) {
-  var ta = document.getElementById('brCommentInput');
-  if (!ta) return;
-  var content = (ta.value || '').trim();
-  if (!content) return;
-  fetch(GAS_ENDPOINT, { method:'POST', body: JSON.stringify({action:'addComment', issueId:issueId, authorType:'지점', author:currentBranch, content:content}) })
-    .then(function(r){ return r.json(); })
-    .then(function(res){
-      if (!res || !res.ok) { alert('댓글 작성 실패: ' + ((res && res.error) || '오류')); return; }
-      ta.value = '';
-      if (ta._attachReset) ta._attachReset();
-      loadBranchComments(issueId);
-      loadBranchIssues();
-    })
-    .catch(function(){ alert('네트워크 오류'); });
-}
-
-function showBrIsMsg(text, kind) {
-  var el = document.getElementById('brIsFormMsg');
-  if (!el) return;
-  el.className = 'op-form-msg' + (kind ? ' ' + kind : '');
-  el.textContent = text;
-}
-
-loadBranchNotices();
 
 
 // 기본 뷰: 체크인 리스트
