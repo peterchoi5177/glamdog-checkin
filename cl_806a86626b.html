@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
 <meta http-equiv="refresh" content="1800">
 <title>글램독 가평(청평점) 체크인 리스트</title>
-<!-- v2026-05-13 22:44 -->
+<!-- v2026-05-13 23:40 -->
 <style>
   :root {
     --navy: #1B3A5C;
@@ -809,7 +809,7 @@ function _submitPw() {
     <button class="btn-view"        id="btnField" onclick="setView('field')">💰 현장기록</button>
   </div>
   <button class="btn-refresh" id="btnRefresh" onclick="refreshData()">🔄 새로고침</button>
-  <span class="update-time">갱신: 2026-05-13 22:44</span>
+  <span class="update-time">갱신: 2026-05-13 23:40</span>
 </div>
 <div class="content" id="content">
   <div class="print-header" id="printHeader"></div>
@@ -971,7 +971,11 @@ function bbqHtml(wd) {
 
 function arriveHtml(wd) {
   if (!wd || !wd.arrivalTime) return '<div class="write-lines">' + writeLine() + '</div>';
-  return '<div style="font-size:14px;font-weight:700;color:#1B3A5C;text-align:center">' + wd.arrivalTime + '</div>';
+  var t = String(wd.arrivalTime);
+  // "Sat Dec 30 1899 15:00:00 GMT+..." 같은 Date 문자열에서 HH:MM만 추출
+  var m = t.match(/(\d{1,2}):(\d{2})(?::\d{2})?/);
+  if (m) t = ('0' + m[1]).slice(-2) + ':' + m[2];
+  return '<div style="font-size:14px;font-weight:700;color:#1B3A5C;text-align:center">' + t + '</div>';
 }
 
 function memoHtml(wd) {
