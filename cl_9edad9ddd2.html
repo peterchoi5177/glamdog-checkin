@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
 <meta http-equiv="refresh" content="1800">
 <title>글램독 양양 체크인 리스트</title>
-<!-- v2026-05-13 23:40 -->
+<!-- v2026-05-14 00:53 -->
 <style>
   :root {
     --navy: #1B3A5C;
@@ -809,7 +809,7 @@ function _submitPw() {
     <button class="btn-view"        id="btnField" onclick="setView('field')">💰 현장기록</button>
   </div>
   <button class="btn-refresh" id="btnRefresh" onclick="refreshData()">🔄 새로고침</button>
-  <span class="update-time">갱신: 2026-05-13 23:40</span>
+  <span class="update-time">갱신: 2026-05-14 00:53</span>
 </div>
 <div class="content" id="content">
   <div class="print-header" id="printHeader"></div>
@@ -962,7 +962,12 @@ function dogInfoHtml(wd) {
 function bbqHtml(wd) {
   if (!wd) return '<div class="bbq-box">□</div>';
   if (wd.bbq === 'yes') {
-    var t = wd.bbqTime ? wd.bbqTime : '시간미정';
+    var raw = wd.bbqTime ? String(wd.bbqTime) : '';
+    var t = '시간미정';
+    if (raw) {
+      var m = raw.match(/(\d{1,2}):(\d{2})(?::\d{2})?/);
+      t = m ? ('0' + m[1]).slice(-2) + ':' + m[2] : raw;
+    }
     return '<div style="text-align:center;line-height:1.6">✅<br>'
       + '<b style="font-size:14px;color:#2d6a4f">' + t + '</b></div>';
   }
