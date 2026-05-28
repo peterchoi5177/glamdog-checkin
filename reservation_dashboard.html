@@ -116,9 +116,10 @@ tr:hover td{background:rgba(91,127,255,.05)}
       <a href="reservation_dashboard.html" class="nav-btn active">📅 예약현황</a>
       <a href="pricing_dashboard.html" class="nav-btn">💰 가격전략</a>
       <a href="marketing_calendar.html" class="nav-btn">📣 마케팅</a>
+      <a href="rm_dashboard.html" class="nav-btn">📈 RM</a>
       <a href="https://peterchoi5177.github.io/glamdog-checkin/checkin_sheet.html" target="_blank" class="nav-btn">📋 체크인 리스트</a>
     </div>
-    <div class="updated">마지막 업데이트: 2026-05-28 06:34</div>
+    <div class="updated">마지막 업데이트: 2026-05-28 06:40</div>
   </div>
 </header>
 <div class="filters">
@@ -353,14 +354,23 @@ function renderBookingIntake() {
   var prevWeekStart = new Date(weekStart); prevWeekStart.setDate(weekStart.getDate()-7);
   var prevWeekEnd   = new Date(weekStart); prevWeekEnd.setDate(weekStart.getDate()-1);
 
-  function bookDate(r) { return r.book_date ? new Date(r.book_date.substring(0,10)) : null; }
+  // [버그수정 2026-05-28] new Date("YYYY-MM-DD")는 UTC 자정으로 파싱돼 KST에서는 09:00가 됨.
+  // 자정 기준 비교(today, weekStart 등)와 충돌하여 같은 날짜 데이터가 비교 결과에서 어긋날 수 있음.
+  // 연/월/일 인자 생성자는 로컬 시각이므로 자정 기준 비교가 일관됨.
+  function bookDate(r) {
+    if (!r.book_date) return null;
+    var p = r.book_date.substring(0,10).split('-');
+    return new Date(+p[0], +p[1]-1, +p[2]);
+  }
 
   // 전체 RAW 데이터 기준 (기간 필터 무관 — 언제 예약을 했는지)
   var todayEnd     = new Date(today.getTime()+86400000);
   var todayRecs    = RAW.filter(function(r){ var d=bookDate(r); return d && d>=today && d<todayEnd; });
   var yestRecs     = RAW.filter(function(r){ var d=bookDate(r); return d && d>=yesterday && d<today; });
   var weekRecs     = RAW.filter(function(r){ var d=bookDate(r); return d && d>=weekStart && d<todayEnd; });
-  var prevWeekRecs = RAW.filter(function(r){ var d=bookDate(r); return d && d>=prevWeekStart && d<=prevWeekEnd; });
+  // [버그수정 2026-05-28] inclusive 비교(d<=prevWeekEnd)는 prevWeekEnd 자정 기준이라
+  // 같은 날짜 데이터가 시각 차이로 어긋날 위험. weekStart exclusive로 통일.
+  var prevWeekRecs = RAW.filter(function(r){ var d=bookDate(r); return d && d>=prevWeekStart && d<weekStart; });
 
   // 저번주 같은 요일까지만 비교 (공정 비교)
   // 예) 오늘 수요일 → 이번주 월~수 vs 저번주 월~수
@@ -481,9 +491,12 @@ function renderAlerts() {
     var total = ROOMS[br];
     var upcoming7 = conf.filter(function(r){
       if (r.branch!==br) return false;
-      var ci=new Date(r.checkin); var co=new Date(r.checkout);
-      var t7=new Date(today); t7.setDate(t7.getDate()+7);
-      return ci>=today && ci<=t7;
+      // [버그수정 2026-05-28] checkin 문자열을 로컬 자정으로 파싱 + 비교 구간을 exclusive 끝으로 변경.
+      // 기존 new Date(r.checkin)은 UTC 자정=KST 09:00로 파싱돼 t7(KST 자정) 비교에서 같은 날도 ci>t7 처리됨.
+      var p = r.checkin.substring(0,10).split('-');
+      var ci = new Date(+p[0], +p[1]-1, +p[2]);
+      var t8 = new Date(today); t8.setDate(t8.getDate()+8); // 7일 후까지 포함 = 8일 자정 미만
+      return ci>=today && ci<t8;
     });
     var occ = upcoming7.length / (total*7) * 100;
     if (occ < 20) alerts.push('⚠️ '+br+' 향후 7일 OCC '+occ.toFixed(0)+'% — 프로모션 검토 필요');
