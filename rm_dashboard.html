@@ -1,0 +1,876 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>📈 글램독 RM 대시보드</title>
+<style>
+:root {
+  --bg:#0f1117; --card:#1a1d27; --card2:#21243a;
+  --accent:#5b7fff; --a2:#ff6b6b; --a3:#4ecdc4; --a4:#ffe66d;
+  --green:#43e97b; --orange:#fa8231; --purple:#a29bfe; --pink:#fd79a8;
+  --text:#e8eaf6; --muted:#8892b0; --border:#2d3561;
+}
+* { box-sizing: border-box; }
+body {
+  margin:0; background:var(--bg); color:var(--text);
+  font-family:'Apple SD Gothic Neo','Malgun Gothic','Pretendard',sans-serif;
+  font-size:14px; line-height:1.5;
+}
+header { padding:18px 24px; border-bottom:1px solid var(--border); background:var(--card); }
+header h1 { margin:0 0 12px 0; font-size:20px; font-weight:700; }
+.badge { font-size:11px; padding:2px 8px; background:var(--green); color:#000; border-radius:4px; margin-left:8px; }
+.nav-btns { display:flex; gap:8px; align-items:center; flex-wrap:wrap; }
+.nav-btn {
+  display:inline-flex; align-items:center; gap:6px;
+  padding:7px 14px; border-radius:8px; border:1px solid var(--border);
+  background:var(--card2); color:var(--text); text-decoration:none; font-size:13px;
+}
+.nav-btn:hover { border-color:var(--accent); color:#fff; background:#2d3561; }
+.nav-btn.active { background:var(--accent); border-color:var(--accent); color:#fff; }
+.updated { font-size:12px; color:var(--muted); margin-left:12px; }
+.container { padding:24px; max-width:1600px; margin:0 auto; }
+
+/* KPI */
+.kpi-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(260px,1fr)); gap:16px; margin-bottom:24px; }
+.kpi-card { background:var(--card); border:1px solid var(--border); border-radius:12px; padding:18px; }
+.kpi-label { font-size:12px; color:var(--muted); margin-bottom:6px; }
+.kpi-value { font-size:24px; font-weight:700; color:var(--text); }
+.kpi-sub { font-size:11px; color:var(--muted); margin-top:4px; }
+
+/* Matrix */
+.matrix-section { background:var(--card); border:1px solid var(--border); border-radius:12px; margin-bottom:22px; padding:20px; }
+.section-title { font-size:16px; font-weight:700; margin:0 0 14px 0; }
+.range { font-size:12px; color:var(--muted); font-weight:400; margin-left:6px; }
+.matrix-scroll { overflow-x:auto; }
+.matrix { border-collapse:collapse; width:100%; }
+.matrix th, .matrix td { padding:8px 6px; text-align:center; border:1px solid var(--border); }
+.matrix th { background:var(--card2); color:var(--muted); font-weight:600; font-size:11px; }
+.matrix th.fri { color:var(--a4); }
+.matrix th.sat { color:var(--a2); }
+.matrix th.sun { color:var(--a3); }
+.matrix th.day-col .dow { font-size:10px; margin-top:2px; }
+.matrix th.branch-col { width:90px; text-align:left; padding-left:12px; }
+.branch-name { font-weight:700; text-align:left; padding-left:12px; background:var(--card2); }
+.branch-name .rooms { font-weight:400; color:var(--muted); font-size:11px; margin-left:4px; }
+
+.cell { min-width:60px; cursor:pointer; transition:background 0.15s; }
+.cell:hover { background:#2d3561; }
+.cell-occ { font-size:15px; font-weight:700; }
+.cell-sub { font-size:10px; color:var(--muted); margin-top:2px; }
+.cell-diff { margin-left:4px; font-weight:600; }
+.sig-up    { background:rgba(67,233,123,0.10); color:var(--green); }
+.sig-up .cell-diff { color:var(--green); }
+.sig-hold  { background:rgba(250,130,49,0.08); color:var(--a4); }
+.sig-hold .cell-diff { color:var(--orange); }
+.sig-down  { background:rgba(255,107,107,0.10); color:var(--a2); }
+.sig-down .cell-diff { color:var(--a2); }
+.cell.empty { color:var(--muted); }
+
+/* Channel */
+.ch-row { display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:12px; }
+.ch-card { background:var(--card2); border:1px solid var(--border); border-radius:10px; padding:14px; }
+.ch-name { font-size:13px; font-weight:700; color:var(--text); }
+.ch-rate { font-size:22px; font-weight:700; color:var(--text); margin-top:4px; }
+.ch-bar-bg { background:var(--border); border-radius:4px; height:6px; margin-top:8px; overflow:hidden; }
+.ch-bar { height:100%; border-radius:4px; }
+.ch-detail { font-size:11px; color:var(--muted); margin-top:6px; }
+.ch-status { font-size:11px; margin-top:4px; }
+
+/* Password Overlay */
+#pwOverlay {
+  position:fixed; top:0; left:0; width:100%; height:100%;
+  background:rgba(10,12,20,0.98);
+  display:flex; align-items:center; justify-content:center; z-index:9999;
+}
+#pwOverlay .box {
+  background:var(--card); border:1px solid var(--border); border-radius:16px;
+  padding:44px 40px; text-align:center; width:340px;
+}
+#pwInput {
+  width:100%; padding:11px 14px; border-radius:8px; border:1px solid var(--border);
+  background:var(--bg); color:var(--text); font-size:15px; margin-bottom:10px; outline:none; box-sizing:border-box;
+}
+#pwBtn {
+  width:100%; padding:11px; background:var(--accent); color:#fff;
+  border:none; border-radius:8px; font-size:15px; font-weight:700; cursor:pointer;
+}
+.legend { display:flex; gap:14px; font-size:12px; color:var(--muted); margin-bottom:18px; flex-wrap:wrap; }
+.legend .item { display:inline-flex; align-items:center; gap:5px; }
+.dot { width:10px; height:10px; border-radius:50%; }
+.dot.up { background:var(--green); }
+.dot.hold { background:var(--orange); }
+.dot.down { background:var(--a2); }
+
+/* 모달 */
+#detailModal {
+  position:fixed; top:0; left:0; width:100%; height:100%;
+  background:rgba(10,12,20,0.85); z-index:9000;
+  display:none; align-items:center; justify-content:center; padding:24px;
+}
+#detailModal.open { display:flex; }
+#detailModal .modal-box {
+  background:var(--card); border:1px solid var(--border); border-radius:14px;
+  width:100%; max-width:880px; max-height:90vh; overflow:auto;
+  padding:24px 28px; box-shadow:0 24px 60px rgba(0,0,0,0.6);
+}
+.modal-head { display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:18px; }
+.modal-head .title { font-size:20px; font-weight:700; }
+.modal-head .meta { font-size:12px; color:var(--muted); margin-top:4px; }
+.modal-close {
+  background:none; border:1px solid var(--border); color:var(--muted);
+  border-radius:8px; padding:6px 12px; cursor:pointer; font-size:13px;
+}
+.modal-close:hover { border-color:var(--accent); color:#fff; background:#2d3561; }
+.modal-grid { display:grid; grid-template-columns:1fr 1fr; gap:14px; margin-bottom:16px; }
+.modal-block { background:var(--card2); border-radius:10px; padding:14px; }
+.modal-block h3 { font-size:12px; color:var(--muted); margin:0 0 8px 0; font-weight:600; }
+.modal-block .big { font-size:22px; font-weight:700; }
+.modal-block .row { display:flex; justify-content:space-between; padding:3px 0; font-size:13px; }
+.modal-block .row .lbl { color:var(--muted); }
+.modal-list { width:100%; border-collapse:collapse; font-size:12px; margin-top:8px; }
+.modal-list th { background:var(--bg); text-align:left; padding:6px 8px; color:var(--muted); font-weight:600; border-bottom:1px solid var(--border); }
+.modal-list td { padding:6px 8px; border-bottom:1px solid var(--border); }
+.modal-list tr:last-child td { border-bottom:none; }
+.ch-badge { display:inline-block; padding:1px 6px; border-radius:4px; font-size:10px; background:var(--card); color:var(--muted); }
+.ch-badge.NOL { background:#5b7fff20; color:#8aa5ff; }
+.ch-badge.YGY { background:#fa823120; color:#ffb96a; }
+.ch-badge.NAVER { background:#43e97b20; color:#7ff5a8; }
+.ch-badge.DIRECT { background:#a29bfe20; color:#c5bfff; }
+.cell { cursor:pointer; }
+</style>
+</head>
+<body>
+
+<div id="pwOverlay">
+  <div class="box">
+    <div style="font-size:52px;margin-bottom:14px">🐾</div>
+    <h2 style="margin-bottom:6px">글램독 RM 시스템</h2>
+    <p style="color:var(--muted);font-size:13px;margin-bottom:24px">비밀번호를 입력하세요</p>
+    <input type="password" id="pwInput" placeholder="비밀번호 입력"
+           onkeydown="if(event.key==='Enter')_submitPw()">
+    <div id="pwError" style="color:#f87171;font-size:12px;margin-bottom:10px;display:none">비밀번호가 틀렸습니다</div>
+    <button id="pwBtn" onclick="_submitPw()">확인</button>
+  </div>
+</div>
+
+<header>
+  <h1>📈 글램독 RM 대시보드 <span class="badge">LIVE</span></h1>
+  <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap;">
+    <div class="nav-btns">
+      <a href="reservation_dashboard.html" class="nav-btn">📅 예약현황</a>
+      <a href="pricing_dashboard.html" class="nav-btn">💰 가격전략</a>
+      <a href="marketing_calendar.html" class="nav-btn">📣 마케팅</a>
+      <a href="rm_dashboard.html" class="nav-btn active">📈 RM</a>
+      <a href="https://peterchoi5177.github.io/glamdog-checkin/checkin_sheet.html" target="_blank" class="nav-btn">📋 체크인 리스트</a>
+    </div>
+    <div class="updated">마지막 업데이트: 2026-05-30 02:39 | 기준일 2026-05-30 | STLY 베이스라인 [2023, 2024]</div>
+  </div>
+</header>
+
+<div class="container">
+  
+    <div class="kpi-grid">
+      <div class="kpi-card">
+        <div class="kpi-label">이번달 매출 진행</div>
+        <div class="kpi-value">8117만</div>
+        <div class="kpi-sub">vs 작년 2025년 동월 1.3억 (64%)</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">이번달 점유박</div>
+        <div class="kpi-value">805박</div>
+        <div class="kpi-sub">5지점 합계</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">가격 시그널</div>
+        <div class="kpi-value">
+          <span class="sig-up">🟢 2</span> ·
+          <span class="sig-hold">🟡 119</span> ·
+          <span class="sig-down">🔴 39</span>
+        </div>
+        <div class="kpi-sub">총 160셀 (5지점 × 32일)</div>
+      </div>
+    </div>
+
+  <div class="legend">
+    <span class="item"><span class="dot up"></span>🟢 인상 시그널 (STLY +15%p 이상)</span>
+    <span class="item"><span class="dot hold"></span>🟡 유지 (±15%p 이내)</span>
+    <span class="item"><span class="dot down"></span>🔴 인하 시그널 (STLY -15%p 이하)</span>
+    <span class="item" style="color:var(--muted)">셀 호버: STLY/RevPAR/ADR 상세</span>
+  </div>
+
+  
+    <section class="matrix-section">
+      <h2 class="section-title">이번주 <span class="range">(5/30 ~ 5/31)</span></h2>
+      <div class="matrix-scroll">
+        <table class="matrix">
+          <thead><tr><th class="branch-col">지점</th><th class="day-col sat"><div>5/30</div><div class="dow">토</div></th><th class="day-col sun"><div>5/31</div><div class="dow">일</div></th></tr></thead>
+          <tbody><tr><td class="branch-name">청평점 <span class="rooms">11실</span></td><td class="cell sig-hold" data-cell="0" onclick="showCellDetail(0)">
+      <div class="cell-occ">100%</div>
+      <div class="cell-sub">11/11<span class="cell-diff">-5p</span></div>
+    </td><td class="cell sig-hold" data-cell="5" onclick="showCellDetail(5)">
+      <div class="cell-occ">36%</div>
+      <div class="cell-sub">4/11<span class="cell-diff">-14p</span></div>
+    </td></tr><tr><td class="branch-name">경주 <span class="rooms">19실</span></td><td class="cell sig-down" data-cell="1" onclick="showCellDetail(1)">
+      <div class="cell-occ">32%</div>
+      <div class="cell-sub">6/19<span class="cell-diff">-24p</span></div>
+    </td><td class="cell sig-down" data-cell="6" onclick="showCellDetail(6)">
+      <div class="cell-occ">11%</div>
+      <div class="cell-sub">2/19<span class="cell-diff">-53p</span></div>
+    </td></tr><tr><td class="branch-name">영흥도 <span class="rooms">14실</span></td><td class="cell sig-hold" data-cell="2" onclick="showCellDetail(2)">
+      <div class="cell-occ">93%</div>
+      <div class="cell-sub">13/14<span class="cell-diff">-4p</span></div>
+    </td><td class="cell sig-hold" data-cell="7" onclick="showCellDetail(7)">
+      <div class="cell-occ">71%</div>
+      <div class="cell-sub">10/14<span class="cell-diff">-4p</span></div>
+    </td></tr><tr><td class="branch-name">양양 <span class="rooms">31실</span></td><td class="cell sig-down" data-cell="3" onclick="showCellDetail(3)">
+      <div class="cell-occ">48%</div>
+      <div class="cell-sub">15/31<span class="cell-diff">-39p</span></div>
+    </td><td class="cell sig-down" data-cell="8" onclick="showCellDetail(8)">
+      <div class="cell-occ">23%</div>
+      <div class="cell-sub">7/31<span class="cell-diff">-23p</span></div>
+    </td></tr><tr><td class="branch-name">통영 <span class="rooms">18실</span></td><td class="cell sig-down" data-cell="4" onclick="showCellDetail(4)">
+      <div class="cell-occ">61%</div>
+      <div class="cell-sub">11/18<span class="cell-diff">-31p</span></div>
+    </td><td class="cell sig-down" data-cell="9" onclick="showCellDetail(9)">
+      <div class="cell-occ">44%</div>
+      <div class="cell-sub">8/18<span class="cell-diff">-22p</span></div>
+    </td></tr></tbody>
+        </table>
+      </div>
+    </section>
+    
+    <section class="matrix-section">
+      <h2 class="section-title">다음주 <span class="range">(6/1 ~ 6/7)</span></h2>
+      <div class="matrix-scroll">
+        <table class="matrix">
+          <thead><tr><th class="branch-col">지점</th><th class="day-col weekday"><div>6/1</div><div class="dow">월</div></th><th class="day-col weekday"><div>6/2</div><div class="dow">화</div></th><th class="day-col weekday"><div>6/3</div><div class="dow">수</div></th><th class="day-col weekday"><div>6/4</div><div class="dow">목</div></th><th class="day-col fri"><div>6/5</div><div class="dow">금</div></th><th class="day-col sat"><div>6/6</div><div class="dow">토</div></th><th class="day-col sun"><div>6/7</div><div class="dow">일</div></th></tr></thead>
+          <tbody><tr><td class="branch-name">청평점 <span class="rooms">11실</span></td><td class="cell sig-down" data-cell="10" onclick="showCellDetail(10)">
+      <div class="cell-occ">9%</div>
+      <div class="cell-sub">1/11<span class="cell-diff">-41p</span></div>
+    </td><td class="cell sig-hold" data-cell="15" onclick="showCellDetail(15)">
+      <div class="cell-occ">0%</div>
+      <div class="cell-sub">0/11<span class="cell-diff">-14p</span></div>
+    </td><td class="cell sig-down" data-cell="20" onclick="showCellDetail(20)">
+      <div class="cell-occ">0%</div>
+      <div class="cell-sub">0/11<span class="cell-diff">-27p</span></div>
+    </td><td class="cell sig-down" data-cell="25" onclick="showCellDetail(25)">
+      <div class="cell-occ">0%</div>
+      <div class="cell-sub">0/11<span class="cell-diff">-77p</span></div>
+    </td><td class="cell sig-down" data-cell="30" onclick="showCellDetail(30)">
+      <div class="cell-occ">0%</div>
+      <div class="cell-sub">0/11<span class="cell-diff">-36p</span></div>
+    </td><td class="cell sig-hold" data-cell="35" onclick="showCellDetail(35)">
+      <div class="cell-occ">27%</div>
+      <div class="cell-sub">3/11<span class="cell-diff">+5p</span></div>
+    </td><td class="cell sig-down" data-cell="40" onclick="showCellDetail(40)">
+      <div class="cell-occ">0%</div>
+      <div class="cell-sub">0/11<span class="cell-diff">-50p</span></div>
+    </td></tr><tr><td class="branch-name">경주 <span class="rooms">19실</span></td><td class="cell sig-hold" data-cell="11" onclick="showCellDetail(11)">
+      <div class="cell-occ">0%</div>
+      <div class="cell-sub">0/19<span class="cell-diff">-5p</span></div>
+    </td><td class="cell sig-hold" data-cell="16" onclick="showCellDetail(16)">
+      <div class="cell-occ">0%</div>
+      <div class="cell-sub">0/19<span class="cell-diff">-8p</span></div>
+    </td><td class="cell sig-down" data-cell="21" onclick="showCellDetail(21)">
+      <div class="cell-occ">0%</div>
+      <div class="cell-sub">0/19<span class="cell-diff">-16p</span></div>
+    </td><td class="cell sig-down" data-cell="26" onclick="showCellDetail(26)">
+      <div class="cell-occ">0%</div>
+      <div class="cell-sub">0/19<span class="cell-diff">-34p</span></div>
+    </td><td class="cell sig-down" data-cell="31" onclick="showCellDetail(31)">
+      <div class="cell-occ">5%</div>
+      <div class="cell-sub">1/19<span class="cell-diff">-39p</span></div>
+    </td><td class="cell sig-down" data-cell="36" onclick="showCellDetail(36)">
+      <div class="cell-occ">32%</div>
+      <div class="cell-sub">6/19<span class="cell-diff">-16p</span></div>
+    </td><td class="cell sig-hold" data-cell="41" onclick="showCellDetail(41)">
+      <div class="cell-occ">11%</div>
+      <div class="cell-sub">2/19<span class="cell-diff">+0p</span></div>
+    </td></tr><tr><td class="branch-name">영흥도 <span class="rooms">14실</span></td><td class="cell sig-down" data-cell="12" onclick="showCellDetail(12)">
+      <div class="cell-occ">7%</div>
+      <div class="cell-sub">1/14<span class="cell-diff">-21p</span></div>
+    </td><td class="cell sig-hold" data-cell="17" onclick="showCellDetail(17)">
+      <div class="cell-occ">14%</div>
+      <div class="cell-sub">2/14<span class="cell-diff">+7p</span></div>
+    </td><td class="cell sig-hold" data-cell="22" onclick="showCellDetail(22)">
+      <div class="cell-occ">29%</div>
+      <div class="cell-sub">4/14<span class="cell-diff">-14p</span></div>
+    </td><td class="cell sig-down" data-cell="27" onclick="showCellDetail(27)">
+      <div class="cell-occ">0%</div>
+      <div class="cell-sub">0/14<span class="cell-diff">-36p</span></div>
+    </td><td class="cell sig-down" data-cell="32" onclick="showCellDetail(32)">
+      <div class="cell-occ">14%</div>
+      <div class="cell-sub">2/14<span class="cell-diff">-29p</span></div>
+    </td><td class="cell sig-down" data-cell="37" onclick="showCellDetail(37)">
+      <div class="cell-occ">36%</div>
+      <div class="cell-sub">5/14<span class="cell-diff">-25p</span></div>
+    </td><td class="cell sig-hold" data-cell="42" onclick="showCellDetail(42)">
+      <div class="cell-occ">7%</div>
+      <div class="cell-sub">1/14<span class="cell-diff">-11p</span></div>
+    </td></tr><tr><td class="branch-name">양양 <span class="rooms">31실</span></td><td class="cell sig-down" data-cell="13" onclick="showCellDetail(13)">
+      <div class="cell-occ">0%</div>
+      <div class="cell-sub">0/31<span class="cell-diff">-24p</span></div>
+    </td><td class="cell sig-hold" data-cell="18" onclick="showCellDetail(18)">
+      <div class="cell-occ">0%</div>
+      <div class="cell-sub">0/31<span class="cell-diff">-10p</span></div>
+    </td><td class="cell sig-down" data-cell="23" onclick="showCellDetail(23)">
+      <div class="cell-occ">0%</div>
+      <div class="cell-sub">0/31<span class="cell-diff">-21p</span></div>
+    </td><td class="cell sig-down" data-cell="28" onclick="showCellDetail(28)">
+      <div class="cell-occ">6%</div>
+      <div class="cell-sub">2/31<span class="cell-diff">-84p</span></div>
+    </td><td class="cell sig-down" data-cell="33" onclick="showCellDetail(33)">
+      <div class="cell-occ">13%</div>
+      <div class="cell-sub">4/31<span class="cell-diff">-24p</span></div>
+    </td><td class="cell sig-down" data-cell="38" onclick="showCellDetail(38)">
+      <div class="cell-occ">3%</div>
+      <div class="cell-sub">1/31<span class="cell-diff">-48p</span></div>
+    </td><td class="cell sig-down" data-cell="43" onclick="showCellDetail(43)">
+      <div class="cell-occ">13%</div>
+      <div class="cell-sub">4/31<span class="cell-diff">-26p</span></div>
+    </td></tr><tr><td class="branch-name">통영 <span class="rooms">18실</span></td><td class="cell sig-down" data-cell="14" onclick="showCellDetail(14)">
+      <div class="cell-occ">6%</div>
+      <div class="cell-sub">1/18<span class="cell-diff">-17p</span></div>
+    </td><td class="cell sig-down" data-cell="19" onclick="showCellDetail(19)">
+      <div class="cell-occ">0%</div>
+      <div class="cell-sub">0/18<span class="cell-diff">-19p</span></div>
+    </td><td class="cell sig-down" data-cell="24" onclick="showCellDetail(24)">
+      <div class="cell-occ">0%</div>
+      <div class="cell-sub">0/18<span class="cell-diff">-19p</span></div>
+    </td><td class="cell sig-down" data-cell="29" onclick="showCellDetail(29)">
+      <div class="cell-occ">6%</div>
+      <div class="cell-sub">1/18<span class="cell-diff">-61p</span></div>
+    </td><td class="cell sig-down" data-cell="34" onclick="showCellDetail(34)">
+      <div class="cell-occ">0%</div>
+      <div class="cell-sub">0/18<span class="cell-diff">-25p</span></div>
+    </td><td class="cell sig-down" data-cell="39" onclick="showCellDetail(39)">
+      <div class="cell-occ">0%</div>
+      <div class="cell-sub">0/18<span class="cell-diff">-39p</span></div>
+    </td><td class="cell sig-hold" data-cell="44" onclick="showCellDetail(44)">
+      <div class="cell-occ">6%</div>
+      <div class="cell-sub">1/18<span class="cell-diff">-11p</span></div>
+    </td></tr></tbody>
+        </table>
+      </div>
+    </section>
+    
+    <section class="matrix-section">
+      <h2 class="section-title">다다음주 <span class="range">(6/8 ~ 6/14)</span></h2>
+      <div class="matrix-scroll">
+        <table class="matrix">
+          <thead><tr><th class="branch-col">지점</th><th class="day-col weekday"><div>6/8</div><div class="dow">월</div></th><th class="day-col weekday"><div>6/9</div><div class="dow">화</div></th><th class="day-col weekday"><div>6/10</div><div class="dow">수</div></th><th class="day-col weekday"><div>6/11</div><div class="dow">목</div></th><th class="day-col fri"><div>6/12</div><div class="dow">금</div></th><th class="day-col sat"><div>6/13</div><div class="dow">토</div></th><th class="day-col sun"><div>6/14</div><div class="dow">일</div></th></tr></thead>
+          <tbody><tr><td class="branch-name">청평점 <span class="rooms">11실</span></td><td class="cell sig-down" data-cell="45" onclick="showCellDetail(45)">
+      <div class="cell-occ">0%</div>
+      <div class="cell-sub">0/11<span class="cell-diff">-36p</span></div>
+    </td><td class="cell sig-hold" data-cell="50" onclick="showCellDetail(50)">
+      <div class="cell-occ">0%</div>
+      <div class="cell-sub">0/11<span class="cell-diff">-14p</span></div>
+    </td><td class="cell sig-down" data-cell="55" onclick="showCellDetail(55)">
+      <div class="cell-occ">0%</div>
+      <div class="cell-sub">0/11<span class="cell-diff">-18p</span></div>
+    </td><td class="cell sig-hold" data-cell="60" onclick="showCellDetail(60)">
+      <div class="cell-occ">0%</div>
+      <div class="cell-sub">0/11<span class="cell-diff">+0p</span></div>
+    </td><td class="cell sig-hold" data-cell="65" onclick="showCellDetail(65)">
+      <div class="cell-occ">0%</div>
+      <div class="cell-sub">0/11<span class="cell-diff">+0p</span></div>
+    </td><td class="cell sig-hold" data-cell="70" onclick="showCellDetail(70)">
+      <div class="cell-occ">18%</div>
+      <div class="cell-sub">2/11<span class="cell-diff">-5p</span></div>
+    </td><td class="cell sig-hold" data-cell="75" onclick="showCellDetail(75)">
+      <div class="cell-occ">0%</div>
+      <div class="cell-sub">0/11<span class="cell-diff">-14p</span></div>
+    </td></tr><tr><td class="branch-name">경주 <span class="rooms">19실</span></td><td class="cell sig-down" data-cell="46" onclick="showCellDetail(46)">
+      <div class="cell-occ">0%</div>
+      <div class="cell-sub">0/19<span class="cell-diff">-21p</span></div>
+    </td><td class="cell sig-hold" data-cell="51" onclick="showCellDetail(51)">
+      <div class="cell-occ">0%</div>
+      <div class="cell-sub">0/19<span class="cell-diff">+0p</span></div>
+    </td><td class="cell sig-hold" data-cell="56" onclick="showCellDetail(56)">
+      <div class="cell-occ">11%</div>
+      <div class="cell-sub">2/19<span class="cell-diff">+11p</span></div>
+    </td><td class="cell sig-hold" data-cell="61" onclick="showCellDetail(61)">
+      <div class="cell-occ">0%</div>
+      <div class="cell-sub">0/19<span class="cell-diff">+0p</span></div>
+    </td><td class="cell sig-hold" data-cell="66" onclick="showCellDetail(66)">
+      <div class="cell-occ">0%</div>
+      <div class="cell-sub">0/19<span class="cell-diff">-5p</span></div>
+    </td><td class="cell sig-down" data-cell="71" onclick="showCellDetail(71)">
+      <div class="cell-occ">0%</div>
+      <div class="cell-sub">0/19<span class="cell-diff">-24p</span></div>
+    </td><td class="cell sig-hold" data-cell="76" onclick="showCellDetail(76)">
+      <div class="cell-occ">11%</div>
+      <div class="cell-sub">2/19<span class="cell-diff">+5p</span></div>
+    </td></tr><tr><td class="branch-name">영흥도 <span class="rooms">14실</span></td><td class="cell sig-hold" data-cell="47" onclick="showCellDetail(47)">
+      <div class="cell-occ">0%</div>
+      <div class="cell-sub">0/14<span class="cell-diff">-14p</span></div>
+    </td><td class="cell sig-hold" data-cell="52" onclick="showCellDetail(52)">
+      <div class="cell-occ">0%</div>
+      <div class="cell-sub">0/14<span class="cell-diff">+0p</span></div>
+    </td><td class="cell sig-hold" data-cell="57" onclick="showCellDetail(57)">
+      <div class="cell-occ">0%</div>
+      <div class="cell-sub">0/14<span class="cell-diff">-4p</span></div>
+    </td><td class="cell sig-hold" data-cell="62" onclick="showCellDetail(62)">
+      <div class="cell-occ">0%</div>
+      <div class="cell-sub">0/14<span class="cell-diff">+0p</span></div>
+    </td><td class="cell sig-up" data-cell="67" onclick="showCellDetail(67)">
+      <div class="cell-occ">29%</div>
+      <div class="cell-sub">4/14<span class="cell-diff">+25p</span></div>
+    </td><td class="cell sig-hold" data-cell="72" onclick="showCellDetail(72)">
+      <div class="cell-occ">21%</div>
+      <div class="cell-sub">3/14<span class="cell-diff">-11p</span></div>
+    </td><td class="cell sig-hold" data-cell="77" onclick="showCellDetail(77)">
+      <div class="cell-occ">7%</div>
+      <div class="cell-sub">1/14<span class="cell-diff">-7p</span></div>
+    </td></tr><tr><td class="branch-name">양양 <span class="rooms">31실</span></td><td class="cell sig-hold" data-cell="48" onclick="showCellDetail(48)">
+      <div class="cell-occ">6%</div>
+      <div class="cell-sub">2/31<span class="cell-diff">-10p</span></div>
+    </td><td class="cell sig-hold" data-cell="53" onclick="showCellDetail(53)">
+      <div class="cell-occ">0%</div>
+      <div class="cell-sub">0/31<span class="cell-diff">-10p</span></div>
+    </td><td class="cell sig-hold" data-cell="58" onclick="showCellDetail(58)">
+      <div class="cell-occ">0%</div>
+      <div class="cell-sub">0/31<span class="cell-diff">-6p</span></div>
+    </td><td class="cell sig-hold" data-cell="63" onclick="showCellDetail(63)">
+      <div class="cell-occ">3%</div>
+      <div class="cell-sub">1/31<span class="cell-diff">+3p</span></div>
+    </td><td class="cell sig-hold" data-cell="68" onclick="showCellDetail(68)">
+      <div class="cell-occ">13%</div>
+      <div class="cell-sub">4/31<span class="cell-diff">+8p</span></div>
+    </td><td class="cell sig-hold" data-cell="73" onclick="showCellDetail(73)">
+      <div class="cell-occ">6%</div>
+      <div class="cell-sub">2/31<span class="cell-diff">-5p</span></div>
+    </td><td class="cell sig-hold" data-cell="78" onclick="showCellDetail(78)">
+      <div class="cell-occ">0%</div>
+      <div class="cell-sub">0/31<span class="cell-diff">-3p</span></div>
+    </td></tr><tr><td class="branch-name">통영 <span class="rooms">18실</span></td><td class="cell sig-down" data-cell="49" onclick="showCellDetail(49)">
+      <div class="cell-occ">0%</div>
+      <div class="cell-sub">0/18<span class="cell-diff">-17p</span></div>
+    </td><td class="cell sig-hold" data-cell="54" onclick="showCellDetail(54)">
+      <div class="cell-occ">0%</div>
+      <div class="cell-sub">0/18<span class="cell-diff">-6p</span></div>
+    </td><td class="cell sig-hold" data-cell="59" onclick="showCellDetail(59)">
+      <div class="cell-occ">0%</div>
+      <div class="cell-sub">0/18<span class="cell-diff">+0p</span></div>
+    </td><td class="cell sig-hold" data-cell="64" onclick="showCellDetail(64)">
+      <div class="cell-occ">0%</div>
+      <div class="cell-sub">0/18<span class="cell-diff">-3p</span></div>
+    </td><td class="cell sig-hold" data-cell="69" onclick="showCellDetail(69)">
+      <div class="cell-occ">6%</div>
+      <div class="cell-sub">1/18<span class="cell-diff">-8p</span></div>
+    </td><td class="cell sig-hold" data-cell="74" onclick="showCellDetail(74)">
+      <div class="cell-occ">6%</div>
+      <div class="cell-sub">1/18<span class="cell-diff">-3p</span></div>
+    </td><td class="cell sig-hold" data-cell="79" onclick="showCellDetail(79)">
+      <div class="cell-occ">11%</div>
+      <div class="cell-sub">2/18<span class="cell-diff">+3p</span></div>
+    </td></tr></tbody>
+        </table>
+      </div>
+    </section>
+    
+    <section class="matrix-section">
+      <h2 class="section-title">다음달 <span class="range">(6/15 ~ 6/30)</span></h2>
+      <div class="matrix-scroll">
+        <table class="matrix">
+          <thead><tr><th class="branch-col">지점</th><th class="day-col weekday"><div>6/15</div><div class="dow">월</div></th><th class="day-col weekday"><div>6/16</div><div class="dow">화</div></th><th class="day-col weekday"><div>6/17</div><div class="dow">수</div></th><th class="day-col weekday"><div>6/18</div><div class="dow">목</div></th><th class="day-col fri"><div>6/19</div><div class="dow">금</div></th><th class="day-col sat"><div>6/20</div><div class="dow">토</div></th><th class="day-col sun"><div>6/21</div><div class="dow">일</div></th><th class="day-col weekday"><div>6/22</div><div class="dow">월</div></th><th class="day-col weekday"><div>6/23</div><div class="dow">화</div></th><th class="day-col weekday"><div>6/24</div><div class="dow">수</div></th><th class="day-col weekday"><div>6/25</div><div class="dow">목</div></th><th class="day-col fri"><div>6/26</div><div class="dow">금</div></th><th class="day-col sat"><div>6/27</div><div class="dow">토</div></th><th class="day-col sun"><div>6/28</div><div class="dow">일</div></th><th class="day-col weekday"><div>6/29</div><div class="dow">월</div></th><th class="day-col weekday"><div>6/30</div><div class="dow">화</div></th></tr></thead>
+          <tbody><tr><td class="branch-name">청평점 <span class="rooms">11실</span></td><td class="cell sig-hold" data-cell="80" onclick="showCellDetail(80)">
+      <div class="cell-occ">0%</div>
+      <div class="cell-sub">0/11<span class="cell-diff">-5p</span></div>
+    </td><td class="cell sig-hold" data-cell="85" onclick="showCellDetail(85)">
+      <div class="cell-occ">0%</div>
+      <div class="cell-sub">0/11<span class="cell-diff">-5p</span></div>
+    </td><td class="cell sig-hold" data-cell="90" onclick="showCellDetail(90)">
+      <div class="cell-occ">0%</div>
+      <div class="cell-sub">0/11<span class="cell-diff">-9p</span></div>
+    </td><td class="cell sig-hold" data-cell="95" onclick="showCellDetail(95)">
+      <div class="cell-occ">0%</div>
+      <div class="cell-sub">0/11<span class="cell-diff">-5p</span></div>
+    </td><td class="cell sig-hold" data-cell="100" onclick="showCellDetail(100)">
+      <div class="cell-occ">0%</div>
+      <div class="cell-sub">0/11<span class="cell-diff">-9p</span></div>
+    </td><td class="cell sig-down" data-cell="105" onclick="showCellDetail(105)">
+      <div class="cell-occ">0%</div>
+      <div class="cell-sub">0/11<span class="cell-diff">-18p</span></div>
+    </td><td class="cell sig-hold" data-cell="110" onclick="showCellDetail(110)">
+      <div class="cell-occ">0%</div>
+      <div class="cell-sub">0/11<span class="cell-diff">-14p</span></div>
+    </td><td class="cell sig-hold" data-cell="115" onclick="showCellDetail(115)">
+      <div class="cell-occ">0%</div>
+      <div class="cell-sub">0/11<span class="cell-diff">-14p</span></div>
+    </td><td class="cell sig-hold" data-cell="120" onclick="showCellDetail(120)">
+      <div class="cell-occ">0%</div>
+      <div class="cell-sub">0/11<span class="cell-diff">+0p</span></div>
+    </td><td class="cell sig-hold" data-cell="125" onclick="showCellDetail(125)">
+      <div class="cell-occ">0%</div>
+      <div class="cell-sub">0/11<span class="cell-diff">+0p</span></div>
+    </td><td class="cell sig-hold" data-cell="130" onclick="showCellDetail(130)">
+      <div class="cell-occ">0%</div>
+      <div class="cell-sub">0/11<span class="cell-diff">-5p</span></div>
+    </td><td class="cell sig-hold" data-cell="135" onclick="showCellDetail(135)">
+      <div class="cell-occ">9%</div>
+      <div class="cell-sub">1/11<span class="cell-diff">+0p</span></div>
+    </td><td class="cell sig-up" data-cell="140" onclick="showCellDetail(140)">
+      <div class="cell-occ">27%</div>
+      <div class="cell-sub">3/11<span class="cell-diff">+18p</span></div>
+    </td><td class="cell sig-hold" data-cell="145" onclick="showCellDetail(145)">
+      <div class="cell-occ">0%</div>
+      <div class="cell-sub">0/11<span class="cell-diff">+0p</span></div>
+    </td><td class="cell sig-hold" data-cell="150" onclick="showCellDetail(150)">
+      <div class="cell-occ">0%</div>
+      <div class="cell-sub">0/11<span class="cell-diff">+0p</span></div>
+    </td><td class="cell sig-hold" data-cell="155" onclick="showCellDetail(155)">
+      <div class="cell-occ">0%</div>
+      <div class="cell-sub">0/11<span class="cell-diff">+0p</span></div>
+    </td></tr><tr><td class="branch-name">경주 <span class="rooms">19실</span></td><td class="cell sig-hold" data-cell="81" onclick="showCellDetail(81)">
+      <div class="cell-occ">0%</div>
+      <div class="cell-sub">0/19<span class="cell-diff">-5p</span></div>
+    </td><td class="cell sig-hold" data-cell="86" onclick="showCellDetail(86)">
+      <div class="cell-occ">0%</div>
+      <div class="cell-sub">0/19<span class="cell-diff">+0p</span></div>
+    </td><td class="cell sig-hold" data-cell="91" onclick="showCellDetail(91)">
+      <div class="cell-occ">0%</div>
+      <div class="cell-sub">0/19<span class="cell-diff">+0p</span></div>
+    </td><td class="cell sig-hold" data-cell="96" onclick="showCellDetail(96)">
+      <div class="cell-occ">0%</div>
+      <div class="cell-sub">0/19<span class="cell-diff">-5p</span></div>
+    </td><td class="cell sig-hold" data-cell="101" onclick="showCellDetail(101)">
+      <div class="cell-occ">0%</div>
+      <div class="cell-sub">0/19<span class="cell-diff">-11p</span></div>
+    </td><td class="cell sig-down" data-cell="106" onclick="showCellDetail(106)">
+      <div class="cell-occ">0%</div>
+      <div class="cell-sub">0/19<span class="cell-diff">-24p</span></div>
+    </td><td class="cell sig-hold" data-cell="111" onclick="showCellDetail(111)">
+      <div class="cell-occ">0%</div>
+      <div class="cell-sub">0/19<span class="cell-diff">-11p</span></div>
+    </td><td class="cell sig-hold" data-cell="116" onclick="showCellDetail(116)">
+      <div class="cell-occ">0%</div>
+      <div class="cell-sub">0/19<span class="cell-diff">-8p</span></div>
+    </td><td class="cell sig-hold" data-cell="121" onclick="showCellDetail(121)">
+      <div class="cell-occ">0%</div>
+      <div class="cell-sub">0/19<span class="cell-diff">-5p</span></div>
+    </td><td class="cell sig-hold" data-cell="126" onclick="showCellDetail(126)">
+      <div class="cell-occ">0%</div>
+      <div class="cell-sub">0/19<span class="cell-diff">+0p</span></div>
+    </td><td class="cell sig-hold" data-cell="131" onclick="showCellDetail(131)">
+      <div class="cell-occ">0%</div>
+      <div class="cell-sub">0/19<span class="cell-diff">+0p</span></div>
+    </td><td class="cell sig-hold" data-cell="136" onclick="showCellDetail(136)">
+      <div class="cell-occ">0%</div>
+      <div class="cell-sub">0/19<span class="cell-diff">-8p</span></div>
+    </td><td class="cell sig-hold" data-cell="141" onclick="showCellDetail(141)">
+      <div class="cell-occ">0%</div>
+      <div class="cell-sub">0/19<span class="cell-diff">-5p</span></div>
+    </td><td class="cell sig-hold" data-cell="146" onclick="showCellDetail(146)">
+      <div class="cell-occ">0%</div>
+      <div class="cell-sub">0/19<span class="cell-diff">+0p</span></div>
+    </td><td class="cell sig-hold" data-cell="151" onclick="showCellDetail(151)">
+      <div class="cell-occ">0%</div>
+      <div class="cell-sub">0/19<span class="cell-diff">+0p</span></div>
+    </td><td class="cell sig-hold" data-cell="156" onclick="showCellDetail(156)">
+      <div class="cell-occ">0%</div>
+      <div class="cell-sub">0/19<span class="cell-diff">-8p</span></div>
+    </td></tr><tr><td class="branch-name">영흥도 <span class="rooms">14실</span></td><td class="cell sig-hold" data-cell="82" onclick="showCellDetail(82)">
+      <div class="cell-occ">0%</div>
+      <div class="cell-sub">0/14<span class="cell-diff">+0p</span></div>
+    </td><td class="cell sig-hold" data-cell="87" onclick="showCellDetail(87)">
+      <div class="cell-occ">0%</div>
+      <div class="cell-sub">0/14<span class="cell-diff">+0p</span></div>
+    </td><td class="cell sig-hold" data-cell="92" onclick="showCellDetail(92)">
+      <div class="cell-occ">0%</div>
+      <div class="cell-sub">0/14<span class="cell-diff">+0p</span></div>
+    </td><td class="cell sig-hold" data-cell="97" onclick="showCellDetail(97)">
+      <div class="cell-occ">0%</div>
+      <div class="cell-sub">0/14<span class="cell-diff">-11p</span></div>
+    </td><td class="cell sig-hold" data-cell="102" onclick="showCellDetail(102)">
+      <div class="cell-occ">7%</div>
+      <div class="cell-sub">1/14<span class="cell-diff">-7p</span></div>
+    </td><td class="cell sig-hold" data-cell="107" onclick="showCellDetail(107)">
+      <div class="cell-occ">21%</div>
+      <div class="cell-sub">3/14<span class="cell-diff">+14p</span></div>
+    </td><td class="cell sig-hold" data-cell="112" onclick="showCellDetail(112)">
+      <div class="cell-occ">0%</div>
+      <div class="cell-sub">0/14<span class="cell-diff">+0p</span></div>
+    </td><td class="cell sig-hold" data-cell="117" onclick="showCellDetail(117)">
+      <div class="cell-occ">0%</div>
+      <div class="cell-sub">0/14<span class="cell-diff">+0p</span></div>
+    </td><td class="cell sig-hold" data-cell="122" onclick="showCellDetail(122)">
+      <div class="cell-occ">0%</div>
+      <div class="cell-sub">0/14<span class="cell-diff">+0p</span></div>
+    </td><td class="cell sig-hold" data-cell="127" onclick="showCellDetail(127)">
+      <div class="cell-occ">7%</div>
+      <div class="cell-sub">1/14<span class="cell-diff">+7p</span></div>
+    </td><td class="cell sig-hold" data-cell="132" onclick="showCellDetail(132)">
+      <div class="cell-occ">0%</div>
+      <div class="cell-sub">0/14<span class="cell-diff">+0p</span></div>
+    </td><td class="cell sig-hold" data-cell="137" onclick="showCellDetail(137)">
+      <div class="cell-occ">0%</div>
+      <div class="cell-sub">0/14<span class="cell-diff">+0p</span></div>
+    </td><td class="cell sig-hold" data-cell="142" onclick="showCellDetail(142)">
+      <div class="cell-occ">21%</div>
+      <div class="cell-sub">3/14<span class="cell-diff">+14p</span></div>
+    </td><td class="cell sig-hold" data-cell="147" onclick="showCellDetail(147)">
+      <div class="cell-occ">0%</div>
+      <div class="cell-sub">0/14<span class="cell-diff">+0p</span></div>
+    </td><td class="cell sig-hold" data-cell="152" onclick="showCellDetail(152)">
+      <div class="cell-occ">0%</div>
+      <div class="cell-sub">0/14<span class="cell-diff">+0p</span></div>
+    </td><td class="cell sig-hold" data-cell="157" onclick="showCellDetail(157)">
+      <div class="cell-occ">0%</div>
+      <div class="cell-sub">0/14<span class="cell-diff">+0p</span></div>
+    </td></tr><tr><td class="branch-name">양양 <span class="rooms">31실</span></td><td class="cell sig-hold" data-cell="83" onclick="showCellDetail(83)">
+      <div class="cell-occ">0%</div>
+      <div class="cell-sub">0/31<span class="cell-diff">-11p</span></div>
+    </td><td class="cell sig-hold" data-cell="88" onclick="showCellDetail(88)">
+      <div class="cell-occ">0%</div>
+      <div class="cell-sub">0/31<span class="cell-diff">+0p</span></div>
+    </td><td class="cell sig-hold" data-cell="93" onclick="showCellDetail(93)">
+      <div class="cell-occ">0%</div>
+      <div class="cell-sub">0/31<span class="cell-diff">+0p</span></div>
+    </td><td class="cell sig-hold" data-cell="98" onclick="showCellDetail(98)">
+      <div class="cell-occ">0%</div>
+      <div class="cell-sub">0/31<span class="cell-diff">-10p</span></div>
+    </td><td class="cell sig-hold" data-cell="103" onclick="showCellDetail(103)">
+      <div class="cell-occ">3%</div>
+      <div class="cell-sub">1/31<span class="cell-diff">-3p</span></div>
+    </td><td class="cell sig-hold" data-cell="108" onclick="showCellDetail(108)">
+      <div class="cell-occ">0%</div>
+      <div class="cell-sub">0/31<span class="cell-diff">-11p</span></div>
+    </td><td class="cell sig-down" data-cell="113" onclick="showCellDetail(113)">
+      <div class="cell-occ">3%</div>
+      <div class="cell-sub">1/31<span class="cell-diff">-19p</span></div>
+    </td><td class="cell sig-hold" data-cell="118" onclick="showCellDetail(118)">
+      <div class="cell-occ">0%</div>
+      <div class="cell-sub">0/31<span class="cell-diff">-6p</span></div>
+    </td><td class="cell sig-hold" data-cell="123" onclick="showCellDetail(123)">
+      <div class="cell-occ">0%</div>
+      <div class="cell-sub">0/31<span class="cell-diff">-3p</span></div>
+    </td><td class="cell sig-hold" data-cell="128" onclick="showCellDetail(128)">
+      <div class="cell-occ">0%</div>
+      <div class="cell-sub">0/31<span class="cell-diff">+0p</span></div>
+    </td><td class="cell sig-hold" data-cell="133" onclick="showCellDetail(133)">
+      <div class="cell-occ">10%</div>
+      <div class="cell-sub">3/31<span class="cell-diff">-3p</span></div>
+    </td><td class="cell sig-hold" data-cell="138" onclick="showCellDetail(138)">
+      <div class="cell-occ">0%</div>
+      <div class="cell-sub">0/31<span class="cell-diff">-2p</span></div>
+    </td><td class="cell sig-hold" data-cell="143" onclick="showCellDetail(143)">
+      <div class="cell-occ">0%</div>
+      <div class="cell-sub">0/31<span class="cell-diff">-8p</span></div>
+    </td><td class="cell sig-hold" data-cell="148" onclick="showCellDetail(148)">
+      <div class="cell-occ">0%</div>
+      <div class="cell-sub">0/31<span class="cell-diff">-2p</span></div>
+    </td><td class="cell sig-hold" data-cell="153" onclick="showCellDetail(153)">
+      <div class="cell-occ">0%</div>
+      <div class="cell-sub">0/31<span class="cell-diff">+0p</span></div>
+    </td><td class="cell sig-hold" data-cell="158" onclick="showCellDetail(158)">
+      <div class="cell-occ">0%</div>
+      <div class="cell-sub">0/31<span class="cell-diff">-5p</span></div>
+    </td></tr><tr><td class="branch-name">통영 <span class="rooms">18실</span></td><td class="cell sig-hold" data-cell="84" onclick="showCellDetail(84)">
+      <div class="cell-occ">0%</div>
+      <div class="cell-sub">0/18<span class="cell-diff">-3p</span></div>
+    </td><td class="cell sig-hold" data-cell="89" onclick="showCellDetail(89)">
+      <div class="cell-occ">0%</div>
+      <div class="cell-sub">0/18<span class="cell-diff">-3p</span></div>
+    </td><td class="cell sig-hold" data-cell="94" onclick="showCellDetail(94)">
+      <div class="cell-occ">0%</div>
+      <div class="cell-sub">0/18<span class="cell-diff">+0p</span></div>
+    </td><td class="cell sig-hold" data-cell="99" onclick="showCellDetail(99)">
+      <div class="cell-occ">0%</div>
+      <div class="cell-sub">0/18<span class="cell-diff">+0p</span></div>
+    </td><td class="cell sig-hold" data-cell="104" onclick="showCellDetail(104)">
+      <div class="cell-occ">6%</div>
+      <div class="cell-sub">1/18<span class="cell-diff">-8p</span></div>
+    </td><td class="cell sig-hold" data-cell="109" onclick="showCellDetail(109)">
+      <div class="cell-occ">17%</div>
+      <div class="cell-sub">3/18<span class="cell-diff">+8p</span></div>
+    </td><td class="cell sig-hold" data-cell="114" onclick="showCellDetail(114)">
+      <div class="cell-occ">0%</div>
+      <div class="cell-sub">0/18<span class="cell-diff">+0p</span></div>
+    </td><td class="cell sig-hold" data-cell="119" onclick="showCellDetail(119)">
+      <div class="cell-occ">0%</div>
+      <div class="cell-sub">0/18<span class="cell-diff">-6p</span></div>
+    </td><td class="cell sig-hold" data-cell="124" onclick="showCellDetail(124)">
+      <div class="cell-occ">11%</div>
+      <div class="cell-sub">2/18<span class="cell-diff">+11p</span></div>
+    </td><td class="cell sig-hold" data-cell="129" onclick="showCellDetail(129)">
+      <div class="cell-occ">0%</div>
+      <div class="cell-sub">0/18<span class="cell-diff">+0p</span></div>
+    </td><td class="cell sig-hold" data-cell="134" onclick="showCellDetail(134)">
+      <div class="cell-occ">0%</div>
+      <div class="cell-sub">0/18<span class="cell-diff">+0p</span></div>
+    </td><td class="cell sig-hold" data-cell="139" onclick="showCellDetail(139)">
+      <div class="cell-occ">0%</div>
+      <div class="cell-sub">0/18<span class="cell-diff">-8p</span></div>
+    </td><td class="cell sig-hold" data-cell="144" onclick="showCellDetail(144)">
+      <div class="cell-occ">6%</div>
+      <div class="cell-sub">1/18<span class="cell-diff">+0p</span></div>
+    </td><td class="cell sig-hold" data-cell="149" onclick="showCellDetail(149)">
+      <div class="cell-occ">0%</div>
+      <div class="cell-sub">0/18<span class="cell-diff">-6p</span></div>
+    </td><td class="cell sig-hold" data-cell="154" onclick="showCellDetail(154)">
+      <div class="cell-occ">0%</div>
+      <div class="cell-sub">0/18<span class="cell-diff">+0p</span></div>
+    </td><td class="cell sig-hold" data-cell="159" onclick="showCellDetail(159)">
+      <div class="cell-occ">0%</div>
+      <div class="cell-sub">0/18<span class="cell-diff">+0p</span></div>
+    </td></tr></tbody>
+        </table>
+      </div>
+    </section>
+    
+
+  <section class="matrix-section">
+    <h2 class="section-title">📡 채널별 회복 추세 <span class="range">최근 28일 vs 작년 동기 28일</span></h2>
+    <div class="ch-row">
+        <div class="ch-card">
+          <div class="ch-name">NOL</div>
+          <div class="ch-rate">346%</div>
+          <div class="ch-bar-bg"><div class="ch-bar" style="width:100.0%;background:var(--green)"></div></div>
+          <div class="ch-detail">463박 vs 134박 (작년 동기 28일)</div>
+          <div class="ch-status">🚀 폭발</div>
+        </div>
+        <div class="ch-card">
+          <div class="ch-name">NAVER</div>
+          <div class="ch-rate">1%</div>
+          <div class="ch-bar-bg"><div class="ch-bar" style="width:0.22792022792022792%;background:var(--a2)"></div></div>
+          <div class="ch-detail">2박 vs 351박 (작년 동기 28일)</div>
+          <div class="ch-status">🔥 거의 죽음</div>
+        </div>
+        <div class="ch-card">
+          <div class="ch-name">YGY</div>
+          <div class="ch-rate">22%</div>
+          <div class="ch-bar-bg"><div class="ch-bar" style="width:8.757396449704142%;background:var(--a2)"></div></div>
+          <div class="ch-detail">74박 vs 338박 (작년 동기 28일)</div>
+          <div class="ch-status">🔴 부진</div>
+        </div>
+        <div class="ch-card">
+          <div class="ch-name">DIRECT</div>
+          <div class="ch-rate">999%</div>
+          <div class="ch-bar-bg"><div class="ch-bar" style="width:100.0%;background:var(--green)"></div></div>
+          <div class="ch-detail">101박 vs 0박 (작년 동기 28일)</div>
+          <div class="ch-status">🚀 폭발</div>
+        </div>
+        <div class="ch-card">
+          <div class="ch-name">ONDA</div>
+          <div class="ch-rate">20%</div>
+          <div class="ch-bar-bg"><div class="ch-bar" style="width:8.148148148148149%;background:var(--a2)"></div></div>
+          <div class="ch-detail">11박 vs 54박 (작년 동기 28일)</div>
+          <div class="ch-status">🔴 부진</div>
+        </div></div>
+  </section>
+</div>
+
+<!-- 셀 디테일 모달 -->
+<div id="detailModal" onclick="if(event.target===this)closeModal()">
+  <div class="modal-box" id="modalBody"></div>
+</div>
+
+<script>
+const PW = "glamdog2025!";
+function _submitPw(){
+  const v = document.getElementById('pwInput').value;
+  if (v === PW) {
+    document.getElementById('pwOverlay').style.display='none';
+    sessionStorage.setItem('rm_pw_ok','1');
+  } else {
+    document.getElementById('pwError').style.display='block';
+  }
+}
+if (sessionStorage.getItem('rm_pw_ok')==='1') {
+  document.getElementById('pwOverlay').style.display='none';
+}
+
+// 셀 디테일 데이터
+const CELLS = [{"branch": "청평점", "date": "2026-05-30", "dow": "토", "rooms": 11, "current": {"sold": 11, "occ": 100.0, "rev": 1020400.0, "adr": 113378, "revpar": 92764}, "stly": {"avg_occ": 104.5, "paces": [{"year": 2023, "date": "2023-05-27", "dow": "토", "as_of": "2023-05-27", "sold": 12, "occ": 109.1, "rev": 3398000.0, "adr": 283167}, {"year": 2024, "date": "2024-06-01", "dow": "토", "as_of": "2024-06-01", "sold": 11, "occ": 100.0, "rev": 2041000.0, "adr": 185545}]}, "signal": {"icon": "🟡", "action": "hold", "diff_pp": -4.5}, "days_before": 0, "bookings": [{"name": "배진항", "channel": "NOL", "room": "A101", "price": 119000.0, "nights": 1, "status": "COMPLETED", "rtype": "NOL 예약", "booking_dt": "2026-05-05"}, {"name": "이정헌", "channel": "NOL", "room": "A102", "price": 119000.0, "nights": 1, "status": "COMPLETED", "rtype": "NOL 예약", "booking_dt": "2026-05-05"}, {"name": "이준혁", "channel": "NOL", "room": "A201", "price": 98100.0, "nights": 1, "status": "COMPLETED", "rtype": "NOL 예약", "booking_dt": "2026-05-29"}, {"name": "신현준(여기어때)", "channel": "YGY", "room": "A202", "price": 89100.0, "nights": 1, "status": "COMPLETED", "rtype": "수기 예약", "booking_dt": "2026-05-05"}, {"name": "이현규", "channel": "DIRECT", "room": "A203", "price": 109000.0, "nights": 1, "status": "COMPLETED", "rtype": "수기 예약", "booking_dt": "2026-05-29"}, {"name": " 조장미(봄맞이숙박권이벤트)", "channel": "DIRECT", "room": "B101", "price": 1.0, "nights": 1, "status": "COMPLETED", "rtype": "수기 예약", "booking_dt": "2026-05-08"}, {"name": " 신다혜(봄맞이숙박권이벤트)", "channel": "DIRECT", "room": "B102", "price": 1.0, "nights": 1, "status": "COMPLETED", "rtype": "수기 예약", "booking_dt": "2026-05-08"}, {"name": "한승기", "channel": "NOL", "room": "B103", "price": 109000.0, "nights": 1, "status": "COMPLETED", "rtype": "NOL 예약", "booking_dt": "2026-05-09"}, {"name": "신주혜", "channel": "NOL", "room": "B201", "price": 170100.0, "nights": 1, "status": "COMPLETED", "rtype": "NOL 예약", "booking_dt": "2026-05-27"}, {"name": "김현경", "channel": "DIRECT", "room": "B202", "price": 109000.0, "nights": 1, "status": "COMPLETED", "rtype": "수기 예약", "booking_dt": "2026-05-25"}, {"name": "유지연", "channel": "NOL", "room": "B203", "price": 98100.0, "nights": 1, "status": "COMPLETED", "rtype": "NOL 예약", "booking_dt": "2026-05-20"}]}, {"branch": "경주", "date": "2026-05-30", "dow": "토", "rooms": 19, "current": {"sold": 6, "occ": 31.6, "rev": 668200.0, "adr": 111367, "revpar": 35168}, "stly": {"avg_occ": 55.3, "paces": [{"year": 2023, "date": "2023-05-27", "dow": "토", "as_of": "2023-05-27", "sold": 14, "occ": 73.7, "rev": 3086000.0, "adr": 220429}, {"year": 2024, "date": "2024-06-01", "dow": "토", "as_of": "2024-06-01", "sold": 7, "occ": 36.8, "rev": 1185000.0, "adr": 169286}]}, "signal": {"icon": "🔴", "action": "down", "diff_pp": -23.7}, "days_before": 0, "bookings": [{"name": "장명성(여기어때)", "channel": "YGY", "room": "A101", "price": 134100.0, "nights": 1, "status": "COMPLETED", "rtype": "수기 예약", "booking_dt": "2026-05-30"}, {"name": "황현식", "channel": "NOL", "room": "A201", "price": 109000.0, "nights": 1, "status": "COMPLETED", "rtype": "NOL 예약", "booking_dt": "2026-05-17"}, {"name": "이태길", "channel": "NOL", "room": "A202", "price": 109000.0, "nights": 1, "status": "COMPLETED", "rtype": "NOL 예약", "booking_dt": "2026-05-26"}, {"name": "배미연", "channel": "NOL", "room": "B201", "price": 98100.0, "nights": 1, "status": "COMPLETED", "rtype": "NOL 예약", "booking_dt": "2026-04-24"}, {"name": "이유진", "channel": "DIRECT", "room": "B203", "price": 109000.0, "nights": 1, "status": "COMPLETED", "rtype": "수기 예약", "booking_dt": "2026-05-28"}, {"name": "이유진", "channel": "NOL", "room": "C203", "price": 109000.0, "nights": 1, "status": "COMPLETED", "rtype": "NOL 예약", "booking_dt": "2026-05-27"}]}, {"branch": "영흥도", "date": "2026-05-30", "dow": "토", "rooms": 14, "current": {"sold": 13, "occ": 92.9, "rev": 1692900.0, "adr": 130223, "revpar": 120921}, "stly": {"avg_occ": 96.4, "paces": [{"year": 2023, "date": "2023-05-27", "dow": "토", "as_of": "2023-05-27", "sold": 13, "occ": 92.9, "rev": 3067000.0, "adr": 235923}, {"year": 2024, "date": "2024-06-01", "dow": "토", "as_of": "2024-06-01", "sold": 14, "occ": 100.0, "rev": 2199000.0, "adr": 157071}]}, "signal": {"icon": "🟡", "action": "hold", "diff_pp": -3.6}, "days_before": 0, "bookings": [{"name": "이정은", "channel": "NOL", "room": "101", "price": 179100.0, "nights": 1, "status": "COMPLETED", "rtype": "NOL 예약", "booking_dt": "2026-05-19"}, {"name": "김옥엽", "channel": "NOL", "room": "102", "price": 134100.0, "nights": 1, "status": "COMPLETED", "rtype": "NOL 예약", "booking_dt": "2026-04-30"}, {"name": "김아리", "channel": "NOL", "room": "103", "price": 116100.0, "nights": 1, "status": "COMPLETED", "rtype": "NOL 예약", "booking_dt": "2026-04-22"}, {"name": "한혜림", "channel": "NOL", "room": "104", "price": 116100.0, "nights": 1, "status": "COMPLETED", "rtype": "NOL 예약", "booking_dt": "2026-04-22"}, {"name": "장한별", "channel": "NOL", "room": "201", "price": 149000.0, "nights": 1, "status": "COMPLETED", "rtype": "NOL 예약", "booking_dt": "2026-05-27"}, {"name": "김원빈", "channel": "NOL", "room": "203", "price": 125100.0, "nights": 1, "status": "COMPLETED", "rtype": "NOL 예약", "booking_dt": "2026-05-15"}, {"name": "이주연", "channel": "NOL", "room": "204", "price": 139000.0, "nights": 1, "status": "COMPLETED", "rtype": "NOL 예약", "booking_dt": "2026-05-15"}, {"name": "김동진(여기어때)", "channel": "YGY", "room": "205", "price": 134100.0, "nights": 1, "status": "COMPLETED", "rtype": "수기 예약", "booking_dt": "2026-05-20"}, {"name": "하윤호(온다)", "channel": "ONDA", "room": "301", "price": 149000.0, "nights": 1, "status": "COMPLETED", "rtype": "수기 예약", "booking_dt": "2026-05-14"}, {"name": "신재훈", "channel": "NOL", "room": "302", "price": 125100.0, "nights": 1, "status": "COMPLETED", "rtype": "NOL 예약", "booking_dt": "2026-05-27"}, {"name": "전희준", "channel": "NOL", "room": "303", "price": 139000.0, "nights": 1, "status": "COMPLETED", "rtype": "NOL 예약", "booking_dt": "2026-05-27"}, {"name": "김미랑(여기어때)", "channel": "YGY", "room": "304", "price": 98100.0, "nights": 1, "status": "COMPLETED", "rtype": "수기 예약", "booking_dt": "2026-04-13"}, {"name": "상희", "channel": "NOL", "room": "305", "price": 89100.0, "nights": 1, "status": "COMPLETED", "rtype": "NOL 예약", "booking_dt": "2026-04-13"}]}, {"branch": "양양", "date": "2026-05-30", "dow": "토", "rooms": 31, "current": {"sold": 15, "occ": 48.4, "rev": 1297800.0, "adr": 86520, "revpar": 41865}, "stly": {"avg_occ": 87.1, "paces": [{"year": 2023, "date": "2023-05-27", "dow": "토", "as_of": "2023-05-27", "sold": 29, "occ": 93.5, "rev": 6160000.0, "adr": 212414}, {"year": 2024, "date": "2024-06-01", "dow": "토", "as_of": "2024-06-01", "sold": 25, "occ": 80.6, "rev": 3110790.0, "adr": 124432}]}, "signal": {"icon": "🔴", "action": "down", "diff_pp": -38.7}, "days_before": 0, "bookings": [{"name": "한민영", "channel": "NOL", "room": "일반형 305", "price": 71100.0, "nights": 1, "status": "COMPLETED", "rtype": "NOL 예약", "booking_dt": "2026-05-18"}, {"name": "배원기", "channel": "NOL", "room": "일반형 306", "price": 71100.0, "nights": 1, "status": "COMPLETED", "rtype": "NOL 예약", "booking_dt": "2026-05-27"}, {"name": "박규리", "channel": "NOL", "room": "일반형 307", "price": 79000.0, "nights": 1, "status": "COMPLETED", "rtype": "NOL 예약", "booking_dt": "2026-05-28"}, {"name": "임미영(여기어때)", "channel": "YGY", "room": "일반형 308", "price": 80100.0, "nights": 1, "status": "COMPLETED", "rtype": "수기 예약", "booking_dt": "2026-05-29"}, {"name": "김훈정", "channel": "NOL", "room": "일반형 309", "price": 79000.0, "nights": 1, "status": "COMPLETED", "rtype": "NOL 예약", "booking_dt": "2026-05-22"}, {"name": "정희진", "channel": "NOL", "room": "일반형 502", "price": 89000.0, "nights": 1, "status": "COMPLETED", "rtype": "NOL 예약", "booking_dt": "2026-05-29"}, {"name": "허창수", "channel": "DIRECT", "room": "일반형 503", "price": 89000.0, "nights": 1, "status": "COMPLETED", "rtype": "수기 예약", "booking_dt": "2026-05-27"}, {"name": "최현영", "channel": "NOL", "room": "일반형 505", "price": 89000.0, "nights": 1, "status": "COMPLETED", "rtype": "NOL 예약", "booking_dt": "2026-05-29"}, {"name": "조주영", "channel": "DIRECT", "room": "일반형 510", "price": 89000.0, "nights": 1, "status": "COMPLETED", "rtype": "수기 예약", "booking_dt": "2026-05-28"}, {"name": "minjung son(손민정)온다", "channel": "ONDA", "room": "일반형 601", "price": 89000.0, "nights": 1, "status": "COMPLETED", "rtype": "수기 예약", "booking_dt": "2026-05-30"}, {"name": "우종률(여기어때)", "channel": "YGY", "room": "일반형 603", "price": 89100.0, "nights": 1, "status": "COMPLETED", "rtype": "수기 예약", "booking_dt": "2026-05-15"}, {"name": "우종율(여기어때)", "channel": "YGY", "room": "일반형 605", "price": 98100.0, "nights": 1, "status": "COMPLETED", "rtype": "수기 예약", "booking_dt": "2026-05-28"}, {"name": "변혜림(여기어때)", "channel": "YGY", "room": "일반형 609", "price": 89100.0, "nights": 1, "status": "COMPLETED", "rtype": "수기 예약", "booking_dt": "2026-05-29"}, {"name": "정진희(여기어때)", "channel": "YGY", "room": "일반형 610", "price": 89100.0, "nights": 1, "status": "COMPLETED", "rtype": "수기 예약", "booking_dt": "2026-05-14"}, {"name": "축복이엄마(여기어때)", "channel": "YGY", "room": "테라스형 203", "price": 107100.0, "nights": 1, "status": "COMPLETED", "rtype": "수기 예약", "booking_dt": "2026-05-23"}]}, {"branch": "통영", "date": "2026-05-30", "dow": "토", "rooms": 18, "current": {"sold": 11, "occ": 61.1, "rev": 1241400.0, "adr": 112855, "revpar": 68967}, "stly": {"avg_occ": 91.7, "paces": [{"year": 2023, "date": "2023-05-27", "dow": "토", "as_of": "2023-05-27", "sold": 16, "occ": 88.9, "rev": 4420000.0, "adr": 276250}, {"year": 2024, "date": "2024-06-01", "dow": "토", "as_of": "2024-06-01", "sold": 17, "occ": 94.4, "rev": 2921000.0, "adr": 171824}]}, "signal": {"icon": "🔴", "action": "down", "diff_pp": -30.6}, "days_before": 0, "bookings": [{"name": "박현준(여기어때)", "channel": "YGY", "room": "201", "price": 116100.0, "nights": 1, "status": "COMPLETED", "rtype": "수기 예약", "booking_dt": "2026-05-03"}, {"name": "우정아", "channel": "NOL", "room": "202", "price": 109000.0, "nights": 1, "status": "COMPLETED", "rtype": "NOL 예약", "booking_dt": "2026-05-16"}, {"name": "김인영", "channel": "NOL", "room": "204", "price": 98100.0, "nights": 1, "status": "COMPLETED", "rtype": "NOL 예약", "booking_dt": "2026-05-16"}, {"name": "명지은", "channel": "DIRECT", "room": "205", "price": 119000.0, "nights": 1, "status": "COMPLETED", "rtype": "수기 예약", "booking_dt": "2026-05-08"}, {"name": "유지연", "channel": "NOL", "room": "301", "price": 107100.0, "nights": 1, "status": "COMPLETED", "rtype": "NOL 예약", "booking_dt": "2026-04-30"}, {"name": "정의성(여기어때)", "channel": "YGY", "room": "302", "price": 119000.0, "nights": 1, "status": "COMPLETED", "rtype": "수기 예약", "booking_dt": "2026-05-26"}, {"name": "이선화", "channel": "DIRECT", "room": "303", "price": 109000.0, "nights": 1, "status": "COMPLETED", "rtype": "수기 예약", "booking_dt": "2026-05-19"}, {"name": "조은애(여기어때)", "channel": "YGY", "room": "304", "price": 119000.0, "nights": 1, "status": "COMPLETED", "rtype": "수기 예약", "booking_dt": "2026-05-28"}, {"name": "이종화", "channel": "DIRECT", "room": "305", "price": 119000.0, "nights": 1, "status": "COMPLETED", "rtype": "수기 예약", "booking_dt": "2026-05-08"}, {"name": "류인혁", "channel": "NOL", "room": "308", "price": 107100.0, "nights": 1, "status": "COMPLETED", "rtype": "NOL 예약", "booking_dt": "2026-05-29"}, {"name": "조승하", "channel": "DIRECT", "room": "309", "price": 119000.0, "nights": 1, "status": "COMPLETED", "rtype": "수기 예약", "booking_dt": "2026-05-24"}]}, {"branch": "청평점", "date": "2026-05-31", "dow": "일", "rooms": 11, "current": {"sold": 4, "occ": 36.4, "rev": 347200.0, "adr": 86800, "revpar": 31564}, "stly": {"avg_occ": 50.0, "paces": [{"year": 2023, "date": "2023-05-28", "dow": "일", "as_of": "2023-05-27", "sold": 9, "occ": 81.8, "rev": 2271000.0, "adr": 252333}, {"year": 2024, "date": "2024-06-02", "dow": "일", "as_of": "2024-06-01", "sold": 2, "occ": 18.2, "rev": 229000.0, "adr": 114500}]}, "signal": {"icon": "🟡", "action": "hold", "diff_pp": -13.6}, "days_before": 1, "bookings": [{"name": "이송화", "channel": "DIRECT", "room": "A101", "price": 99000.0, "nights": 1, "status": "COMPLETED", "rtype": "수기 예약", "booking_dt": "2026-05-27"}, {"name": "김정은", "channel": "DIRECT", "room": "A201", "price": 79000.0, "nights": 1, "status": "COMPLETED", "rtype": "수기 예약", "booking_dt": "2026-05-28"}, {"name": "이시연", "channel": "NOL", "room": "B102", "price": 169200.0, "nights": 2, "status": "COMPLETED", "rtype": "NOL 예약", "booking_dt": "2026-05-16"}]}, {"branch": "경주", "date": "2026-05-31", "dow": "일", "rooms": 19, "current": {"sold": 2, "occ": 10.5, "rev": 130100.0, "adr": 65050, "revpar": 6847}, "stly": {"avg_occ": 63.2, "paces": [{"year": 2023, "date": "2023-05-28", "dow": "일", "as_of": "2023-05-27", "sold": 15, "occ": 78.9, "rev": 2786000.0, "adr": 185733}, {"year": 2024, "date": "2024-06-02", "dow": "일", "as_of": "2024-06-01", "sold": 9, "occ": 47.4, "rev": 593270.0, "adr": 65919}]}, "signal": {"icon": "🔴", "action": "down", "diff_pp": -52.6}, "days_before": 1, "bookings": [{"name": "김지훈", "channel": "NOL", "room": "A101", "price": 71100.0, "nights": 1, "status": "COMPLETED", "rtype": "NOL 예약", "booking_dt": "2026-05-26"}, {"name": "이은경", "channel": "NOL", "room": "A201", "price": 59000.0, "nights": 1, "status": "COMPLETED", "rtype": "NOL 예약", "booking_dt": "2026-05-29"}]}, {"branch": "영흥도", "date": "2026-05-31", "dow": "일", "rooms": 14, "current": {"sold": 10, "occ": 71.4, "rev": 808900.0, "adr": 80890, "revpar": 57779}, "stly": {"avg_occ": 75.0, "paces": [{"year": 2023, "date": "2023-05-28", "dow": "일", "as_of": "2023-05-27", "sold": 14, "occ": 100.0, "rev": 2996000.0, "adr": 214000}, {"year": 2024, "date": "2024-06-02", "dow": "일", "as_of": "2024-06-01", "sold": 7, "occ": 50.0, "rev": 586000.0, "adr": 83714}]}, "signal": {"icon": "🟡", "action": "hold", "diff_pp": -3.6}, "days_before": 1, "bookings": [{"name": "한채희", "channel": "NOL", "room": "101", "price": 107100.0, "nights": 1, "status": "COMPLETED", "rtype": "NOL 예약", "booking_dt": "2026-05-29"}, {"name": "권애진(여기어때)", "channel": "YGY", "room": "103", "price": 205200.0, "nights": 2, "status": "COMPLETED", "rtype": "수기 예약", "booking_dt": "2026-05-28"}, {"name": "최여진(여기어때)", "channel": "YGY", "room": "104", "price": 98100.0, "nights": 1, "status": "COMPLETED", "rtype": "수기 예약", "booking_dt": "2026-05-27"}, {"name": "정혁진", "channel": "NOL", "room": "201", "price": 79000.0, "nights": 1, "status": "COMPLETED", "rtype": "NOL 예약", "booking_dt": "2026-05-29"}, {"name": "최호민", "channel": "NOL", "room": "202", "price": 124200.0, "nights": 2, "status": "COMPLETED", "rtype": "NOL 예약", "booking_dt": "2026-05-28"}, {"name": "최호민", "channel": "NOL", "room": "203", "price": 124200.0, "nights": 2, "status": "COMPLETED", "rtype": "NOL 예약", "booking_dt": "2026-05-29"}, {"name": "방성현(여기어때)", "channel": "YGY", "room": "302", "price": 71100.0, "nights": 1, "status": "COMPLETED", "rtype": "수기 예약", "booking_dt": "2026-05-28"}]}, {"branch": "양양", "date": "2026-05-31", "dow": "일", "rooms": 31, "current": {"sold": 7, "occ": 22.6, "rev": 603400.0, "adr": 86200, "revpar": 19465}, "stly": {"avg_occ": 45.2, "paces": [{"year": 2023, "date": "2023-05-28", "dow": "일", "as_of": "2023-05-27", "sold": 20, "occ": 64.5, "rev": 3960000.0, "adr": 198000}, {"year": 2024, "date": "2024-06-02", "dow": "일", "as_of": "2024-06-01", "sold": 8, "occ": 25.8, "rev": 727410.0, "adr": 90926}]}, "signal": {"icon": "🔴", "action": "down", "diff_pp": -22.6}, "days_before": 1, "bookings": [{"name": "한기호", "channel": "NOL", "room": "일반형 303", "price": 123000.0, "nights": 2, "status": "COMPLETED", "rtype": "NOL 예약", "booking_dt": "2026-05-28"}, {"name": "Seonrye Jeon", "channel": "NOL", "room": "테라스형 203", "price": 79000.0, "nights": 1, "status": "COMPLETED", "rtype": "NOL 예약", "booking_dt": "2026-05-22"}, {"name": "백가희", "channel": "NOL", "room": "펜션형 301", "price": 214200.0, "nights": 2, "status": "COMPLETED", "rtype": "NOL 예약", "booking_dt": "2026-04-19"}, {"name": "오창남", "channel": "NOL", "room": "펜션형 302", "price": 187200.0, "nights": 2, "status": "COMPLETED", "rtype": "NOL 예약", "booking_dt": "2026-05-22"}]}, {"branch": "통영", "date": "2026-05-31", "dow": "일", "rooms": 18, "current": {"sold": 8, "occ": 44.4, "rev": 733400.0, "adr": 91675, "revpar": 40744}, "stly": {"avg_occ": 66.7, "paces": [{"year": 2023, "date": "2023-05-28", "dow": "일", "as_of": "2023-05-27", "sold": 17, "occ": 94.4, "rev": 3052000.0, "adr": 179529}, {"year": 2024, "date": "2024-06-02", "dow": "일", "as_of": "2024-06-01", "sold": 7, "occ": 38.9, "rev": 595000.0, "adr": 85000}]}, "signal": {"icon": "🔴", "action": "down", "diff_pp": -22.2}, "days_before": 1, "bookings": [{"name": "박선영", "channel": "NOL", "room": "201", "price": 89100.0, "nights": 1, "status": "COMPLETED", "rtype": "NOL 예약", "booking_dt": "2026-05-09"}, {"name": "박주옥", "channel": "DIRECT", "room": "202", "price": 178000.0, "nights": 2, "status": "COMPLETED", "rtype": "수기 예약", "booking_dt": "2026-05-28"}, {"name": "박정인", "channel": "NOL", "room": "203", "price": 160200.0, "nights": 2, "status": "COMPLETED", "rtype": "NOL 예약", "booking_dt": "2026-05-27"}, {"name": "김태희(여기어때)", "channel": "YGY", "room": "204", "price": 109000.0, "nights": 1, "status": "COMPLETED", "rtype": "수기 예약", "booking_dt": "2026-05-30"}, {"name": " 명지은", "channel": "DIRECT", "room": "205", "price": 99000.0, "nights": 1, "status": "COMPLETED", "rtype": "수기 예약", "booking_dt": "2026-05-08"}, {"name": "박채원(여기어때)", "channel": "YGY", "room": "305", "price": 98100.0, "nights": 1, "status": "COMPLETED", "rtype": "수기 예약", "booking_dt": "2026-05-26"}]}, {"branch": "청평점", "date": "2026-06-01", "dow": "월", "rooms": 11, "current": {"sold": 1, "occ": 9.1, "rev": 109000.0, "adr": 109000, "revpar": 9909}, "stly": {"avg_occ": 50.0, "paces": [{"year": 2023, "date": "2023-05-29", "dow": "월", "as_of": "2023-05-27", "sold": 10, "occ": 90.9, "rev": 950000.0, "adr": 95000}, {"year": 2024, "date": "2024-06-03", "dow": "월", "as_of": "2024-06-01", "sold": 1, "occ": 9.1, "rev": 69000.0, "adr": 69000}]}, "signal": {"icon": "🔴", "action": "down", "diff_pp": -40.9}, "days_before": 2, "bookings": [{"name": "이송화", "channel": "DIRECT", "room": "A101", "price": 109000.0, "nights": 1, "status": "COMPLETED", "rtype": "수기 예약", "booking_dt": "2026-05-27"}]}, {"branch": "경주", "date": "2026-06-01", "dow": "월", "rooms": 19, "current": {"sold": 0, "occ": 0.0, "rev": 0, "adr": 0, "revpar": 0}, "stly": {"avg_occ": 5.3, "paces": [{"year": 2023, "date": "2023-05-29", "dow": "월", "as_of": "2023-05-27", "sold": 1, "occ": 5.3, "rev": 79000.0, "adr": 79000}, {"year": 2024, "date": "2024-06-03", "dow": "월", "as_of": "2024-06-01", "sold": 1, "occ": 5.3, "rev": 59000.0, "adr": 59000}]}, "signal": {"icon": "🟡", "action": "hold", "diff_pp": -5.3}, "days_before": 2, "bookings": []}, {"branch": "영흥도", "date": "2026-06-01", "dow": "월", "rooms": 14, "current": {"sold": 1, "occ": 7.1, "rev": 119000.0, "adr": 119000, "revpar": 8500}, "stly": {"avg_occ": 28.6, "paces": [{"year": 2023, "date": "2023-05-29", "dow": "월", "as_of": "2023-05-27", "sold": 4, "occ": 28.6, "rev": 326000.0, "adr": 81500}, {"year": 2024, "date": "2024-06-03", "dow": "월", "as_of": "2024-06-01", "sold": 4, "occ": 28.6, "rev": 349050.0, "adr": 87262}]}, "signal": {"icon": "🔴", "action": "down", "diff_pp": -21.4}, "days_before": 2, "bookings": [{"name": "고은지", "channel": "NOL", "room": "104", "price": 119000.0, "nights": 1, "status": "COMPLETED", "rtype": "NOL 예약", "booking_dt": "2026-05-08"}]}, {"branch": "양양", "date": "2026-06-01", "dow": "월", "rooms": 31, "current": {"sold": 0, "occ": 0.0, "rev": 0, "adr": 0, "revpar": 0}, "stly": {"avg_occ": 24.2, "paces": [{"year": 2023, "date": "2023-05-29", "dow": "월", "as_of": "2023-05-27", "sold": 11, "occ": 35.5, "rev": 1018000.0, "adr": 92545}, {"year": 2024, "date": "2024-06-03", "dow": "월", "as_of": "2024-06-01", "sold": 4, "occ": 12.9, "rev": 219750.0, "adr": 54938}]}, "signal": {"icon": "🔴", "action": "down", "diff_pp": -24.2}, "days_before": 2, "bookings": []}, {"branch": "통영", "date": "2026-06-01", "dow": "월", "rooms": 18, "current": {"sold": 1, "occ": 5.6, "rev": 79000.0, "adr": 79000, "revpar": 4389}, "stly": {"avg_occ": 22.2, "paces": [{"year": 2023, "date": "2023-05-29", "dow": "월", "as_of": "2023-05-27", "sold": 5, "occ": 27.8, "rev": 435000.0, "adr": 87000}, {"year": 2024, "date": "2024-06-03", "dow": "월", "as_of": "2024-06-01", "sold": 3, "occ": 16.7, "rev": 236000.0, "adr": 78667}]}, "signal": {"icon": "🔴", "action": "down", "diff_pp": -16.7}, "days_before": 2, "bookings": [{"name": " 명지은", "channel": "DIRECT", "room": "205", "price": 79000.0, "nights": 1, "status": "COMPLETED", "rtype": "수기 예약", "booking_dt": "2026-05-08"}]}, {"branch": "청평점", "date": "2026-06-02", "dow": "화", "rooms": 11, "current": {"sold": 0, "occ": 0.0, "rev": 0, "adr": 0, "revpar": 0}, "stly": {"avg_occ": 13.6, "paces": [{"year": 2023, "date": "2023-05-30", "dow": "화", "as_of": "2023-05-27", "sold": 1, "occ": 9.1, "rev": 79000.0, "adr": 79000}, {"year": 2024, "date": "2024-06-04", "dow": "화", "as_of": "2024-06-01", "sold": 2, "occ": 18.2, "rev": 124200.0, "adr": 62100}]}, "signal": {"icon": "🟡", "action": "hold", "diff_pp": -13.6}, "days_before": 3, "bookings": []}, {"branch": "경주", "date": "2026-06-02", "dow": "화", "rooms": 19, "current": {"sold": 0, "occ": 0.0, "rev": 0, "adr": 0, "revpar": 0}, "stly": {"avg_occ": 7.9, "paces": [{"year": 2023, "date": "2023-05-30", "dow": "화", "as_of": "2023-05-27", "sold": 0, "occ": 0.0, "rev": 0, "adr": 0}, {"year": 2024, "date": "2024-06-04", "dow": "화", "as_of": "2024-06-01", "sold": 3, "occ": 15.8, "rev": 257000.0, "adr": 85667}]}, "signal": {"icon": "🟡", "action": "hold", "diff_pp": -7.9}, "days_before": 3, "bookings": []}, {"branch": "영흥도", "date": "2026-06-02", "dow": "화", "rooms": 14, "current": {"sold": 2, "occ": 14.3, "rev": 223200.0, "adr": 111600, "revpar": 15943}, "stly": {"avg_occ": 7.1, "paces": [{"year": 2023, "date": "2023-05-30", "dow": "화", "as_of": "2023-05-27", "sold": 2, "occ": 14.3, "rev": 258000.0, "adr": 129000}, {"year": 2024, "date": "2024-06-04", "dow": "화", "as_of": "2024-06-01", "sold": 0, "occ": 0.0, "rev": 0, "adr": 0}]}, "signal": {"icon": "🟡", "action": "hold", "diff_pp": 7.1}, "days_before": 3, "bookings": [{"name": "류지석(여기어때)", "channel": "YGY", "room": "201", "price": 223200.0, "nights": 2, "status": "COMPLETED", "rtype": "수기 예약", "booking_dt": "2026-05-26"}]}, {"branch": "양양", "date": "2026-06-02", "dow": "화", "rooms": 31, "current": {"sold": 0, "occ": 0.0, "rev": 0, "adr": 0, "revpar": 0}, "stly": {"avg_occ": 9.7, "paces": [{"year": 2023, "date": "2023-05-30", "dow": "화", "as_of": "2023-05-27", "sold": 1, "occ": 3.2, "rev": 79000.0, "adr": 79000}, {"year": 2024, "date": "2024-06-04", "dow": "화", "as_of": "2024-06-01", "sold": 5, "occ": 16.1, "rev": 309100.0, "adr": 61820}]}, "signal": {"icon": "🟡", "action": "hold", "diff_pp": -9.7}, "days_before": 3, "bookings": []}, {"branch": "통영", "date": "2026-06-02", "dow": "화", "rooms": 18, "current": {"sold": 0, "occ": 0.0, "rev": 0, "adr": 0, "revpar": 0}, "stly": {"avg_occ": 19.4, "paces": [{"year": 2023, "date": "2023-05-30", "dow": "화", "as_of": "2023-05-27", "sold": 7, "occ": 38.9, "rev": 623000.0, "adr": 89000}, {"year": 2024, "date": "2024-06-04", "dow": "화", "as_of": "2024-06-01", "sold": 0, "occ": 0.0, "rev": 0, "adr": 0}]}, "signal": {"icon": "🔴", "action": "down", "diff_pp": -19.4}, "days_before": 3, "bookings": []}, {"branch": "청평점", "date": "2026-06-03", "dow": "수", "rooms": 11, "current": {"sold": 0, "occ": 0.0, "rev": 0, "adr": 0, "revpar": 0}, "stly": {"avg_occ": 27.3, "paces": [{"year": 2023, "date": "2023-05-31", "dow": "수", "as_of": "2023-05-27", "sold": 3, "occ": 27.3, "rev": 307000.0, "adr": 102333}, {"year": 2024, "date": "2024-06-05", "dow": "수", "as_of": "2024-06-01", "sold": 3, "occ": 27.3, "rev": 247000.0, "adr": 82333}]}, "signal": {"icon": "🔴", "action": "down", "diff_pp": -27.3}, "days_before": 4, "bookings": []}, {"branch": "경주", "date": "2026-06-03", "dow": "수", "rooms": 19, "current": {"sold": 0, "occ": 0.0, "rev": 0, "adr": 0, "revpar": 0}, "stly": {"avg_occ": 15.8, "paces": [{"year": 2023, "date": "2023-05-31", "dow": "수", "as_of": "2023-05-27", "sold": 2, "occ": 10.5, "rev": 198000.0, "adr": 99000}, {"year": 2024, "date": "2024-06-05", "dow": "수", "as_of": "2024-06-01", "sold": 4, "occ": 21.1, "rev": 327000.0, "adr": 81750}]}, "signal": {"icon": "🔴", "action": "down", "diff_pp": -15.8}, "days_before": 4, "bookings": []}, {"branch": "영흥도", "date": "2026-06-03", "dow": "수", "rooms": 14, "current": {"sold": 4, "occ": 28.6, "rev": 282200.0, "adr": 70550, "revpar": 20157}, "stly": {"avg_occ": 42.9, "paces": [{"year": 2023, "date": "2023-05-31", "dow": "수", "as_of": "2023-05-27", "sold": 1, "occ": 7.1, "rev": 79000.0, "adr": 79000}, {"year": 2024, "date": "2024-06-05", "dow": "수", "as_of": "2024-06-01", "sold": 11, "occ": 78.6, "rev": 1074950.0, "adr": 97723}]}, "signal": {"icon": "🟡", "action": "hold", "diff_pp": -14.3}, "days_before": 4, "bookings": [{"name": "김종훈", "channel": "NOL", "room": "202", "price": 124200.0, "nights": 2, "status": "COMPLETED", "rtype": "NOL 예약", "booking_dt": "2026-05-28"}, {"name": "홍성택", "channel": "NOL", "room": "301", "price": 79000.0, "nights": 1, "status": "COMPLETED", "rtype": "NOL 예약", "booking_dt": "2026-05-28"}, {"name": "문현지", "channel": "NOL", "room": "303", "price": 79000.0, "nights": 1, "status": "COMPLETED", "rtype": "NOL 예약", "booking_dt": "2026-05-16"}]}, {"branch": "양양", "date": "2026-06-03", "dow": "수", "rooms": 31, "current": {"sold": 0, "occ": 0.0, "rev": 0, "adr": 0, "revpar": 0}, "stly": {"avg_occ": 21.0, "paces": [{"year": 2023, "date": "2023-05-31", "dow": "수", "as_of": "2023-05-27", "sold": 9, "occ": 29.0, "rev": 681000.0, "adr": 75667}, {"year": 2024, "date": "2024-06-05", "dow": "수", "as_of": "2024-06-01", "sold": 4, "occ": 12.9, "rev": 304720.0, "adr": 76180}]}, "signal": {"icon": "🔴", "action": "down", "diff_pp": -21.0}, "days_before": 4, "bookings": []}, {"branch": "통영", "date": "2026-06-03", "dow": "수", "rooms": 18, "current": {"sold": 0, "occ": 0.0, "rev": 0, "adr": 0, "revpar": 0}, "stly": {"avg_occ": 19.4, "paces": [{"year": 2023, "date": "2023-05-31", "dow": "수", "as_of": "2023-05-27", "sold": 0, "occ": 0.0, "rev": 0, "adr": 0}, {"year": 2024, "date": "2024-06-05", "dow": "수", "as_of": "2024-06-01", "sold": 7, "occ": 38.9, "rev": 413000.0, "adr": 59000}]}, "signal": {"icon": "🔴", "action": "down", "diff_pp": -19.4}, "days_before": 4, "bookings": []}, {"branch": "청평점", "date": "2026-06-04", "dow": "목", "rooms": 11, "current": {"sold": 0, "occ": 0.0, "rev": 0, "adr": 0, "revpar": 0}, "stly": {"avg_occ": 77.3, "paces": [{"year": 2023, "date": "2023-06-01", "dow": "목", "as_of": "2023-05-27", "sold": 2, "occ": 18.2, "rev": 258000.0, "adr": 129000}, {"year": 2024, "date": "2024-06-06", "dow": "목", "as_of": "2024-06-01", "sold": 15, "occ": 136.4, "rev": 1910210.0, "adr": 127347}]}, "signal": {"icon": "🔴", "action": "down", "diff_pp": -77.3}, "days_before": 5, "bookings": []}, {"branch": "경주", "date": "2026-06-04", "dow": "목", "rooms": 19, "current": {"sold": 0, "occ": 0.0, "rev": 0, "adr": 0, "revpar": 0}, "stly": {"avg_occ": 34.2, "paces": [{"year": 2023, "date": "2023-06-01", "dow": "목", "as_of": "2023-05-27", "sold": 1, "occ": 5.3, "rev": 99000.0, "adr": 99000}, {"year": 2024, "date": "2024-06-06", "dow": "목", "as_of": "2024-06-01", "sold": 12, "occ": 63.2, "rev": 1556460.0, "adr": 129705}]}, "signal": {"icon": "🔴", "action": "down", "diff_pp": -34.2}, "days_before": 5, "bookings": []}, {"branch": "영흥도", "date": "2026-06-04", "dow": "목", "rooms": 14, "current": {"sold": 0, "occ": 0.0, "rev": 0, "adr": 0, "revpar": 0}, "stly": {"avg_occ": 35.7, "paces": [{"year": 2023, "date": "2023-06-01", "dow": "목", "as_of": "2023-05-27", "sold": 0, "occ": 0.0, "rev": 0, "adr": 0}, {"year": 2024, "date": "2024-06-06", "dow": "목", "as_of": "2024-06-01", "sold": 10, "occ": 71.4, "rev": 1120420.0, "adr": 112042}]}, "signal": {"icon": "🔴", "action": "down", "diff_pp": -35.7}, "days_before": 5, "bookings": []}, {"branch": "양양", "date": "2026-06-04", "dow": "목", "rooms": 31, "current": {"sold": 2, "occ": 6.5, "rev": 142200.0, "adr": 71100, "revpar": 4587}, "stly": {"avg_occ": 90.3, "paces": [{"year": 2023, "date": "2023-06-01", "dow": "목", "as_of": "2023-05-27", "sold": 7, "occ": 22.6, "rev": 583000.0, "adr": 83286}, {"year": 2024, "date": "2024-06-06", "dow": "목", "as_of": "2024-06-01", "sold": 49, "occ": 158.1, "rev": 5107000.0, "adr": 104224}]}, "signal": {"icon": "🔴", "action": "down", "diff_pp": -83.9}, "days_before": 5, "bookings": [{"name": "박혜성", "channel": "NOL", "room": "일반형 303", "price": 142200.0, "nights": 2, "status": "COMPLETED", "rtype": "NOL 예약", "booking_dt": "2026-05-13"}]}, {"branch": "통영", "date": "2026-06-04", "dow": "목", "rooms": 18, "current": {"sold": 1, "occ": 5.6, "rev": 71100.0, "adr": 71100, "revpar": 3950}, "stly": {"avg_occ": 66.7, "paces": [{"year": 2023, "date": "2023-06-01", "dow": "목", "as_of": "2023-05-27", "sold": 0, "occ": 0.0, "rev": 0, "adr": 0}, {"year": 2024, "date": "2024-06-06", "dow": "목", "as_of": "2024-06-01", "sold": 24, "occ": 133.3, "rev": 2291000.0, "adr": 95458}]}, "signal": {"icon": "🔴", "action": "down", "diff_pp": -61.1}, "days_before": 5, "bookings": [{"name": "김대웅", "channel": "NOL", "room": "205", "price": 71100.0, "nights": 1, "status": "COMPLETED", "rtype": "NOL 예약", "booking_dt": "2026-05-26"}]}, {"branch": "청평점", "date": "2026-06-05", "dow": "금", "rooms": 11, "current": {"sold": 0, "occ": 0.0, "rev": 0, "adr": 0, "revpar": 0}, "stly": {"avg_occ": 36.4, "paces": [{"year": 2023, "date": "2023-06-02", "dow": "금", "as_of": "2023-05-27", "sold": 2, "occ": 18.2, "rev": 408000.0, "adr": 204000}, {"year": 2024, "date": "2024-06-07", "dow": "금", "as_of": "2024-06-01", "sold": 6, "occ": 54.5, "rev": 746000.0, "adr": 124333}]}, "signal": {"icon": "🔴", "action": "down", "diff_pp": -36.4}, "days_before": 6, "bookings": []}, {"branch": "경주", "date": "2026-06-05", "dow": "금", "rooms": 19, "current": {"sold": 1, "occ": 5.3, "rev": 99000.0, "adr": 99000, "revpar": 5211}, "stly": {"avg_occ": 44.7, "paces": [{"year": 2023, "date": "2023-06-02", "dow": "금", "as_of": "2023-05-27", "sold": 6, "occ": 31.6, "rev": 874000.0, "adr": 145667}, {"year": 2024, "date": "2024-06-07", "dow": "금", "as_of": "2024-06-01", "sold": 11, "occ": 57.9, "rev": 1426750.0, "adr": 129705}]}, "signal": {"icon": "🔴", "action": "down", "diff_pp": -39.5}, "days_before": 6, "bookings": [{"name": " 메텔", "channel": "DIRECT", "room": "A202", "price": 99000.0, "nights": 1, "status": "COMPLETED", "rtype": "수기 예약", "booking_dt": "2026-05-08"}]}, {"branch": "영흥도", "date": "2026-06-05", "dow": "금", "rooms": 14, "current": {"sold": 2, "occ": 14.3, "rev": 196200.0, "adr": 98100, "revpar": 14014}, "stly": {"avg_occ": 42.9, "paces": [{"year": 2023, "date": "2023-06-02", "dow": "금", "as_of": "2023-05-27", "sold": 1, "occ": 7.1, "rev": 179000.0, "adr": 179000}, {"year": 2024, "date": "2024-06-07", "dow": "금", "as_of": "2024-06-01", "sold": 11, "occ": 78.6, "rev": 1262110.0, "adr": 114737}]}, "signal": {"icon": "🔴", "action": "down", "diff_pp": -28.6}, "days_before": 6, "bookings": [{"name": "박종민", "channel": "NOL", "room": "202", "price": 196200.0, "nights": 2, "status": "COMPLETED", "rtype": "NOL 예약", "booking_dt": "2026-05-26"}]}, {"branch": "양양", "date": "2026-06-05", "dow": "금", "rooms": 31, "current": {"sold": 4, "occ": 12.9, "rev": 365400.0, "adr": 91350, "revpar": 11787}, "stly": {"avg_occ": 37.1, "paces": [{"year": 2023, "date": "2023-06-02", "dow": "금", "as_of": "2023-05-27", "sold": 8, "occ": 25.8, "rev": 1032000.0, "adr": 129000}, {"year": 2024, "date": "2024-06-07", "dow": "금", "as_of": "2024-06-01", "sold": 15, "occ": 48.4, "rev": 1731200.0, "adr": 115413}]}, "signal": {"icon": "🔴", "action": "down", "diff_pp": -24.2}, "days_before": 6, "bookings": [{"name": "박주연", "channel": "NOL", "room": "일반형 305", "price": 80100.0, "nights": 1, "status": "COMPLETED", "rtype": "NOL 예약", "booking_dt": "2026-05-27"}, {"name": "박주연", "channel": "NOL", "room": "일반형 307", "price": 80100.0, "nights": 1, "status": "COMPLETED", "rtype": "NOL 예약", "booking_dt": "2026-05-27"}, {"name": "moonhyeopsong(여기어때)", "channel": "YGY", "room": "일반형 308", "price": 205200.0, "nights": 2, "status": "COMPLETED", "rtype": "수기 예약", "booking_dt": "2026-05-16"}]}, {"branch": "통영", "date": "2026-06-05", "dow": "금", "rooms": 18, "current": {"sold": 0, "occ": 0.0, "rev": 0, "adr": 0, "revpar": 0}, "stly": {"avg_occ": 25.0, "paces": [{"year": 2023, "date": "2023-06-02", "dow": "금", "as_of": "2023-05-27", "sold": 0, "occ": 0.0, "rev": 0, "adr": 0}, {"year": 2024, "date": "2024-06-07", "dow": "금", "as_of": "2024-06-01", "sold": 9, "occ": 50.0, "rev": 1155000.0, "adr": 128333}]}, "signal": {"icon": "🔴", "action": "down", "diff_pp": -25.0}, "days_before": 6, "bookings": []}, {"branch": "청평점", "date": "2026-06-06", "dow": "토", "rooms": 11, "current": {"sold": 3, "occ": 27.3, "rev": 393300.0, "adr": 131100, "revpar": 35755}, "stly": {"avg_occ": 22.7, "paces": [{"year": 2023, "date": "2023-06-03", "dow": "토", "as_of": "2023-05-27", "sold": 4, "occ": 36.4, "rev": 1166000.0, "adr": 291500}, {"year": 2024, "date": "2024-06-08", "dow": "토", "as_of": "2024-06-01", "sold": 1, "occ": 9.1, "rev": 159000.0, "adr": 159000}]}, "signal": {"icon": "🟡", "action": "hold", "diff_pp": 4.5}, "days_before": 7, "bookings": [{"name": "곽세령", "channel": "NOL", "room": "A201", "price": 125100.0, "nights": 1, "status": "COMPLETED", "rtype": "NOL 예약", "booking_dt": "2026-05-28"}, {"name": "최성택", "channel": "NOL", "room": "B101", "price": 134100.0, "nights": 1, "status": "COMPLETED", "rtype": "NOL 예약", "booking_dt": "2026-05-19"}, {"name": "김가영", "channel": "DIRECT", "room": "B102", "price": 134100.0, "nights": 1, "status": "COMPLETED", "rtype": "수기 예약", "booking_dt": "2026-05-14"}]}, {"branch": "경주", "date": "2026-06-06", "dow": "토", "rooms": 19, "current": {"sold": 6, "occ": 31.6, "rev": 1284200.0, "adr": 214033, "revpar": 67589}, "stly": {"avg_occ": 47.4, "paces": [{"year": 2023, "date": "2023-06-03", "dow": "토", "as_of": "2023-05-27", "sold": 11, "occ": 57.9, "rev": 2309000.0, "adr": 209909}, {"year": 2024, "date": "2024-06-08", "dow": "토", "as_of": "2024-06-01", "sold": 7, "occ": 36.8, "rev": 1292160.0, "adr": 184594}]}, "signal": {"icon": "🔴", "action": "down", "diff_pp": -15.8}, "days_before": 7, "bookings": [{"name": "손수지", "channel": "NOL", "room": "A101", "price": 215100.0, "nights": 1, "status": "COMPLETED", "rtype": "NOL 예약", "booking_dt": "2026-05-28"}, {"name": " 9818", "channel": "DIRECT", "room": "A103", "price": 239000.0, "nights": 1, "status": "COMPLETED", "rtype": "수기 예약", "booking_dt": "2026-05-08"}, {"name": " 정명식", "channel": "DIRECT", "room": "A201", "price": 179000.0, "nights": 1, "status": "COMPLETED", "rtype": "수기 예약", "booking_dt": "2026-05-08"}, {"name": " 메텔", "channel": "DIRECT", "room": "A202", "price": 179000.0, "nights": 1, "status": "COMPLETED", "rtype": "수기 예약", "booking_dt": "2026-05-08"}, {"name": " 9819", "channel": "DIRECT", "room": "B101", "price": 239000.0, "nights": 1, "status": "COMPLETED", "rtype": "수기 예약", "booking_dt": "2026-05-08"}, {"name": "이찬희", "channel": "NOL", "room": "B102", "price": 233100.0, "nights": 1, "status": "COMPLETED", "rtype": "NOL 예약", "booking_dt": "2026-05-26"}]}, {"branch": "영흥도", "date": "2026-06-06", "dow": "토", "rooms": 14, "current": {"sold": 5, "occ": 35.7, "rev": 816300.0, "adr": 163260, "revpar": 58307}, "stly": {"avg_occ": 60.7, "paces": [{"year": 2023, "date": "2023-06-03", "dow": "토", "as_of": "2023-05-27", "sold": 11, "occ": 78.6, "rev": 2200000.0, "adr": 220000}, {"year": 2024, "date": "2024-06-08", "dow": "토", "as_of": "2024-06-01", "sold": 6, "occ": 42.9, "rev": 1088000.0, "adr": 181333}]}, "signal": {"icon": "🔴", "action": "down", "diff_pp": -25.0}, "days_before": 7, "bookings": [{"name": "강동화", "channel": "NOL", "room": "101", "price": 199000.0, "nights": 1, "status": "COMPLETED", "rtype": "NOL 예약", "booking_dt": "2026-05-18"}, {"name": "김지영(여기어때)", "channel": "YGY", "room": "102", "price": 134100.0, "nights": 1, "status": "COMPLETED", "rtype": "수기 예약", "booking_dt": "2026-05-08"}, {"name": "강채원", "channel": "NOL", "room": "103", "price": 179000.0, "nights": 1, "status": "COMPLETED", "rtype": "NOL 예약", "booking_dt": "2026-05-24"}, {"name": "이명준(여기어때)", "channel": "YGY", "room": "104", "price": 170100.0, "nights": 1, "status": "COMPLETED", "rtype": "수기 예약", "booking_dt": "2026-05-20"}, {"name": "장지현", "channel": "NOL", "room": "201", "price": 134100.0, "nights": 1, "status": "COMPLETED", "rtype": "NOL 예약", "booking_dt": "2026-05-24"}]}, {"branch": "양양", "date": "2026-06-06", "dow": "토", "rooms": 31, "current": {"sold": 1, "occ": 3.2, "rev": 149000.0, "adr": 149000, "revpar": 4806}, "stly": {"avg_occ": 51.6, "paces": [{"year": 2023, "date": "2023-06-03", "dow": "토", "as_of": "2023-05-27", "sold": 23, "occ": 74.2, "rev": 3517000.0, "adr": 152913}, {"year": 2024, "date": "2024-06-08", "dow": "토", "as_of": "2024-06-01", "sold": 9, "occ": 29.0, "rev": 1306120.0, "adr": 145124}]}, "signal": {"icon": "🔴", "action": "down", "diff_pp": -48.4}, "days_before": 7, "bookings": [{"name": "김도환", "channel": "NOL", "room": "일반형 309", "price": 149000.0, "nights": 1, "status": "COMPLETED", "rtype": "NOL 예약", "booking_dt": "2026-04-16"}]}, {"branch": "통영", "date": "2026-06-06", "dow": "토", "rooms": 18, "current": {"sold": 0, "occ": 0.0, "rev": 0, "adr": 0, "revpar": 0}, "stly": {"avg_occ": 38.9, "paces": [{"year": 2023, "date": "2023-06-03", "dow": "토", "as_of": "2023-05-27", "sold": 6, "occ": 33.3, "rev": 1403000.0, "adr": 233833}, {"year": 2024, "date": "2024-06-08", "dow": "토", "as_of": "2024-06-01", "sold": 8, "occ": 44.4, "rev": 1376000.0, "adr": 172000}]}, "signal": {"icon": "🔴", "action": "down", "diff_pp": -38.9}, "days_before": 7, "bookings": []}, {"branch": "청평점", "date": "2026-06-07", "dow": "일", "rooms": 11, "current": {"sold": 0, "occ": 0.0, "rev": 0, "adr": 0, "revpar": 0}, "stly": {"avg_occ": 50.0, "paces": [{"year": 2023, "date": "2023-06-04", "dow": "일", "as_of": "2023-05-27", "sold": 4, "occ": 36.4, "rev": 1156000.0, "adr": 289000}, {"year": 2024, "date": "2024-06-09", "dow": "일", "as_of": "2024-06-01", "sold": 7, "occ": 63.6, "rev": 508260.0, "adr": 72609}]}, "signal": {"icon": "🔴", "action": "down", "diff_pp": -50.0}, "days_before": 8, "bookings": []}, {"branch": "경주", "date": "2026-06-07", "dow": "일", "rooms": 19, "current": {"sold": 2, "occ": 10.5, "rev": 198000.0, "adr": 99000, "revpar": 10421}, "stly": {"avg_occ": 10.5, "paces": [{"year": 2023, "date": "2023-06-04", "dow": "일", "as_of": "2023-05-27", "sold": 1, "occ": 5.3, "rev": 179000.0, "adr": 179000}, {"year": 2024, "date": "2024-06-09", "dow": "일", "as_of": "2024-06-01", "sold": 3, "occ": 15.8, "rev": 267000.0, "adr": 89000}]}, "signal": {"icon": "🟡", "action": "hold", "diff_pp": 0.0}, "days_before": 8, "bookings": [{"name": " 9818", "channel": "DIRECT", "room": "A103", "price": 99000.0, "nights": 1, "status": "COMPLETED", "rtype": "수기 예약", "booking_dt": "2026-05-08"}, {"name": " 9819", "channel": "DIRECT", "room": "B101", "price": 99000.0, "nights": 1, "status": "COMPLETED", "rtype": "수기 예약", "booking_dt": "2026-05-08"}]}, {"branch": "영흥도", "date": "2026-06-07", "dow": "일", "rooms": 14, "current": {"sold": 1, "occ": 7.1, "rev": 71100.0, "adr": 71100, "revpar": 5079}, "stly": {"avg_occ": 17.9, "paces": [{"year": 2023, "date": "2023-06-04", "dow": "일", "as_of": "2023-05-27", "sold": 3, "occ": 21.4, "rev": 667000.0, "adr": 222333}, {"year": 2024, "date": "2024-06-09", "dow": "일", "as_of": "2024-06-01", "sold": 2, "occ": 14.3, "rev": 265000.0, "adr": 132500}]}, "signal": {"icon": "🟡", "action": "hold", "diff_pp": -10.7}, "days_before": 8, "bookings": [{"name": "오지현(여기어때)", "channel": "YGY", "room": "203", "price": 71100.0, "nights": 1, "status": "COMPLETED", "rtype": "수기 예약", "booking_dt": "2026-05-29"}]}, {"branch": "양양", "date": "2026-06-07", "dow": "일", "rooms": 31, "current": {"sold": 4, "occ": 12.9, "rev": 276000.0, "adr": 69000, "revpar": 8903}, "stly": {"avg_occ": 38.7, "paces": [{"year": 2023, "date": "2023-06-04", "dow": "일", "as_of": "2023-05-27", "sold": 19, "occ": 61.3, "rev": 3091000.0, "adr": 162684}, {"year": 2024, "date": "2024-06-09", "dow": "일", "as_of": "2024-06-01", "sold": 5, "occ": 16.1, "rev": 295820.0, "adr": 59164}]}, "signal": {"icon": "🔴", "action": "down", "diff_pp": -25.8}, "days_before": 8, "bookings": [{"name": "이아름", "channel": "DIRECT", "room": "일반형 303", "price": 69000.0, "nights": 1, "status": "COMPLETED", "rtype": "수기 예약", "booking_dt": "2026-05-28"}, {"name": "Albertyn Charissa", "channel": "NOL", "room": "일반형 308", "price": 207000.0, "nights": 3, "status": "COMPLETED", "rtype": "NOL 예약", "booking_dt": "2026-05-30"}]}, {"branch": "통영", "date": "2026-06-07", "dow": "일", "rooms": 18, "current": {"sold": 1, "occ": 5.6, "rev": 79000.0, "adr": 79000, "revpar": 4389}, "stly": {"avg_occ": 16.7, "paces": [{"year": 2023, "date": "2023-06-04", "dow": "일", "as_of": "2023-05-27", "sold": 2, "occ": 11.1, "rev": 338000.0, "adr": 169000}, {"year": 2024, "date": "2024-06-09", "dow": "일", "as_of": "2024-06-01", "sold": 4, "occ": 22.2, "rev": 287000.0, "adr": 71750}]}, "signal": {"icon": "🟡", "action": "hold", "diff_pp": -11.1}, "days_before": 8, "bookings": [{"name": " 이세훈(다이클로)", "channel": "DAILY", "room": "201", "price": 79000.0, "nights": 1, "status": "COMPLETED", "rtype": "수기 예약", "booking_dt": "2026-05-08"}]}, {"branch": "청평점", "date": "2026-06-08", "dow": "월", "rooms": 11, "current": {"sold": 0, "occ": 0.0, "rev": 0, "adr": 0, "revpar": 0}, "stly": {"avg_occ": 36.4, "paces": [{"year": 2023, "date": "2023-06-05", "dow": "월", "as_of": "2023-05-27", "sold": 3, "occ": 27.3, "rev": 567000.0, "adr": 189000}, {"year": 2024, "date": "2024-06-10", "dow": "월", "as_of": "2024-06-01", "sold": 5, "occ": 45.5, "rev": 498000.0, "adr": 99600}]}, "signal": {"icon": "🔴", "action": "down", "diff_pp": -36.4}, "days_before": 9, "bookings": []}, {"branch": "경주", "date": "2026-06-08", "dow": "월", "rooms": 19, "current": {"sold": 0, "occ": 0.0, "rev": 0, "adr": 0, "revpar": 0}, "stly": {"avg_occ": 21.1, "paces": [{"year": 2023, "date": "2023-06-05", "dow": "월", "as_of": "2023-05-27", "sold": 6, "occ": 31.6, "rev": 784000.0, "adr": 130667}, {"year": 2024, "date": "2024-06-10", "dow": "월", "as_of": "2024-06-01", "sold": 2, "occ": 10.5, "rev": 178000.0, "adr": 89000}]}, "signal": {"icon": "🔴", "action": "down", "diff_pp": -21.1}, "days_before": 9, "bookings": []}, {"branch": "영흥도", "date": "2026-06-08", "dow": "월", "rooms": 14, "current": {"sold": 0, "occ": 0.0, "rev": 0, "adr": 0, "revpar": 0}, "stly": {"avg_occ": 14.3, "paces": [{"year": 2023, "date": "2023-06-05", "dow": "월", "as_of": "2023-05-27", "sold": 4, "occ": 28.6, "rev": 617000.0, "adr": 205667}, {"year": 2024, "date": "2024-06-10", "dow": "월", "as_of": "2024-06-01", "sold": 0, "occ": 0.0, "rev": 0, "adr": 0}]}, "signal": {"icon": "🟡", "action": "hold", "diff_pp": -14.3}, "days_before": 9, "bookings": []}, {"branch": "양양", "date": "2026-06-08", "dow": "월", "rooms": 31, "current": {"sold": 2, "occ": 6.5, "rev": 158000.0, "adr": 79000, "revpar": 5097}, "stly": {"avg_occ": 16.1, "paces": [{"year": 2023, "date": "2023-06-05", "dow": "월", "as_of": "2023-05-27", "sold": 6, "occ": 19.4, "rev": 824000.0, "adr": 137333}, {"year": 2024, "date": "2024-06-10", "dow": "월", "as_of": "2024-06-01", "sold": 4, "occ": 12.9, "rev": 278000.0, "adr": 69500}]}, "signal": {"icon": "🟡", "action": "hold", "diff_pp": -9.7}, "days_before": 9, "bookings": [{"name": "임수본", "channel": "NOL", "room": "일반형 603", "price": 158000.0, "nights": 2, "status": "COMPLETED", "rtype": "NOL 예약", "booking_dt": "2026-05-21"}]}, {"branch": "통영", "date": "2026-06-08", "dow": "월", "rooms": 18, "current": {"sold": 0, "occ": 0.0, "rev": 0, "adr": 0, "revpar": 0}, "stly": {"avg_occ": 16.7, "paces": [{"year": 2023, "date": "2023-06-05", "dow": "월", "as_of": "2023-05-27", "sold": 5, "occ": 27.8, "rev": 695000.0, "adr": 139000}, {"year": 2024, "date": "2024-06-10", "dow": "월", "as_of": "2024-06-01", "sold": 1, "occ": 5.6, "rev": 59000.0, "adr": 59000}]}, "signal": {"icon": "🔴", "action": "down", "diff_pp": -16.7}, "days_before": 9, "bookings": []}, {"branch": "청평점", "date": "2026-06-09", "dow": "화", "rooms": 11, "current": {"sold": 0, "occ": 0.0, "rev": 0, "adr": 0, "revpar": 0}, "stly": {"avg_occ": 13.6, "paces": [{"year": 2023, "date": "2023-06-06", "dow": "화", "as_of": "2023-05-27", "sold": 3, "occ": 27.3, "rev": 437000.0, "adr": 145667}, {"year": 2024, "date": "2024-06-11", "dow": "화", "as_of": "2024-06-01", "sold": 0, "occ": 0.0, "rev": 0, "adr": 0}]}, "signal": {"icon": "🟡", "action": "hold", "diff_pp": -13.6}, "days_before": 10, "bookings": []}, {"branch": "경주", "date": "2026-06-09", "dow": "화", "rooms": 19, "current": {"sold": 0, "occ": 0.0, "rev": 0, "adr": 0, "revpar": 0}, "stly": {"avg_occ": 0.0, "paces": [{"year": 2023, "date": "2023-06-06", "dow": "화", "as_of": "2023-05-27", "sold": 0, "occ": 0.0, "rev": 0, "adr": 0}, {"year": 2024, "date": "2024-06-11", "dow": "화", "as_of": "2024-06-01", "sold": 0, "occ": 0.0, "rev": 0, "adr": 0}]}, "signal": {"icon": "🟡", "action": "hold", "diff_pp": 0.0}, "days_before": 10, "bookings": []}, {"branch": "영흥도", "date": "2026-06-09", "dow": "화", "rooms": 14, "current": {"sold": 0, "occ": 0.0, "rev": 0, "adr": 0, "revpar": 0}, "stly": {"avg_occ": 0.0, "paces": [{"year": 2023, "date": "2023-06-06", "dow": "화", "as_of": "2023-05-27", "sold": 0, "occ": 0.0, "rev": 0, "adr": 0}, {"year": 2024, "date": "2024-06-11", "dow": "화", "as_of": "2024-06-01", "sold": 0, "occ": 0.0, "rev": 0, "adr": 0}]}, "signal": {"icon": "🟡", "action": "hold", "diff_pp": 0.0}, "days_before": 10, "bookings": []}, {"branch": "양양", "date": "2026-06-09", "dow": "화", "rooms": 31, "current": {"sold": 0, "occ": 0.0, "rev": 0, "adr": 0, "revpar": 0}, "stly": {"avg_occ": 9.7, "paces": [{"year": 2023, "date": "2023-06-06", "dow": "화", "as_of": "2023-05-27", "sold": 5, "occ": 16.1, "rev": 525000.0, "adr": 105000}, {"year": 2024, "date": "2024-06-11", "dow": "화", "as_of": "2024-06-01", "sold": 1, "occ": 3.2, "rev": 59000.0, "adr": 59000}]}, "signal": {"icon": "🟡", "action": "hold", "diff_pp": -9.7}, "days_before": 10, "bookings": []}, {"branch": "통영", "date": "2026-06-09", "dow": "화", "rooms": 18, "current": {"sold": 0, "occ": 0.0, "rev": 0, "adr": 0, "revpar": 0}, "stly": {"avg_occ": 5.6, "paces": [{"year": 2023, "date": "2023-06-06", "dow": "화", "as_of": "2023-05-27", "sold": 0, "occ": 0.0, "rev": 0, "adr": 0}, {"year": 2024, "date": "2024-06-11", "dow": "화", "as_of": "2024-06-01", "sold": 2, "occ": 11.1, "rev": 118000.0, "adr": 59000}]}, "signal": {"icon": "🟡", "action": "hold", "diff_pp": -5.6}, "days_before": 10, "bookings": []}, {"branch": "청평점", "date": "2026-06-10", "dow": "수", "rooms": 11, "current": {"sold": 0, "occ": 0.0, "rev": 0, "adr": 0, "revpar": 0}, "stly": {"avg_occ": 18.2, "paces": [{"year": 2023, "date": "2023-06-07", "dow": "수", "as_of": "2023-05-27", "sold": 0, "occ": 0.0, "rev": 0, "adr": 0}, {"year": 2024, "date": "2024-06-12", "dow": "수", "as_of": "2024-06-01", "sold": 4, "occ": 36.4, "rev": 316000.0, "adr": 79000}]}, "signal": {"icon": "🔴", "action": "down", "diff_pp": -18.2}, "days_before": 11, "bookings": []}, {"branch": "경주", "date": "2026-06-10", "dow": "수", "rooms": 19, "current": {"sold": 2, "occ": 10.5, "rev": 158000.0, "adr": 79000, "revpar": 8316}, "stly": {"avg_occ": 0.0, "paces": [{"year": 2023, "date": "2023-06-07", "dow": "수", "as_of": "2023-05-27", "sold": 0, "occ": 0.0, "rev": 0, "adr": 0}, {"year": 2024, "date": "2024-06-12", "dow": "수", "as_of": "2024-06-01", "sold": 0, "occ": 0.0, "rev": 0, "adr": 0}]}, "signal": {"icon": "🟡", "action": "hold", "diff_pp": 10.5}, "days_before": 11, "bookings": [{"name": "최송이", "channel": "NOL", "room": "A201", "price": 158000.0, "nights": 2, "status": "COMPLETED", "rtype": "NOL 예약", "booking_dt": "2026-03-31"}]}, {"branch": "영흥도", "date": "2026-06-10", "dow": "수", "rooms": 14, "current": {"sold": 0, "occ": 0.0, "rev": 0, "adr": 0, "revpar": 0}, "stly": {"avg_occ": 3.6, "paces": [{"year": 2023, "date": "2023-06-07", "dow": "수", "as_of": "2023-05-27", "sold": 1, "occ": 7.1, "rev": 179000.0, "adr": 179000}, {"year": 2024, "date": "2024-06-12", "dow": "수", "as_of": "2024-06-01", "sold": 0, "occ": 0.0, "rev": 0, "adr": 0}]}, "signal": {"icon": "🟡", "action": "hold", "diff_pp": -3.6}, "days_before": 11, "bookings": []}, {"branch": "양양", "date": "2026-06-10", "dow": "수", "rooms": 31, "current": {"sold": 0, "occ": 0.0, "rev": 0, "adr": 0, "revpar": 0}, "stly": {"avg_occ": 6.5, "paces": [{"year": 2023, "date": "2023-06-07", "dow": "수", "as_of": "2023-05-27", "sold": 0, "occ": 0.0, "rev": 0, "adr": 0}, {"year": 2024, "date": "2024-06-12", "dow": "수", "as_of": "2024-06-01", "sold": 4, "occ": 12.9, "rev": 478000.0, "adr": 119500}]}, "signal": {"icon": "🟡", "action": "hold", "diff_pp": -6.5}, "days_before": 11, "bookings": []}, {"branch": "통영", "date": "2026-06-10", "dow": "수", "rooms": 18, "current": {"sold": 0, "occ": 0.0, "rev": 0, "adr": 0, "revpar": 0}, "stly": {"avg_occ": 0.0, "paces": [{"year": 2023, "date": "2023-06-07", "dow": "수", "as_of": "2023-05-27", "sold": 0, "occ": 0.0, "rev": 0, "adr": 0}, {"year": 2024, "date": "2024-06-12", "dow": "수", "as_of": "2024-06-01", "sold": 0, "occ": 0.0, "rev": 0, "adr": 0}]}, "signal": {"icon": "🟡", "action": "hold", "diff_pp": 0.0}, "days_before": 11, "bookings": []}, {"branch": "청평점", "date": "2026-06-11", "dow": "목", "rooms": 11, "current": {"sold": 0, "occ": 0.0, "rev": 0, "adr": 0, "revpar": 0}, "stly": {"avg_occ": 0.0, "paces": [{"year": 2023, "date": "2023-06-08", "dow": "목", "as_of": "2023-05-27", "sold": 0, "occ": 0.0, "rev": 0, "adr": 0}, {"year": 2024, "date": "2024-06-13", "dow": "목", "as_of": "2024-06-01", "sold": 0, "occ": 0.0, "rev": 0, "adr": 0}]}, "signal": {"icon": "🟡", "action": "hold", "diff_pp": 0.0}, "days_before": 12, "bookings": []}, {"branch": "경주", "date": "2026-06-11", "dow": "목", "rooms": 19, "current": {"sold": 0, "occ": 0.0, "rev": 0, "adr": 0, "revpar": 0}, "stly": {"avg_occ": 0.0, "paces": [{"year": 2023, "date": "2023-06-08", "dow": "목", "as_of": "2023-05-27", "sold": 0, "occ": 0.0, "rev": 0, "adr": 0}, {"year": 2024, "date": "2024-06-13", "dow": "목", "as_of": "2024-06-01", "sold": 0, "occ": 0.0, "rev": 0, "adr": 0}]}, "signal": {"icon": "🟡", "action": "hold", "diff_pp": 0.0}, "days_before": 12, "bookings": []}, {"branch": "영흥도", "date": "2026-06-11", "dow": "목", "rooms": 14, "current": {"sold": 0, "occ": 0.0, "rev": 0, "adr": 0, "revpar": 0}, "stly": {"avg_occ": 0.0, "paces": [{"year": 2023, "date": "2023-06-08", "dow": "목", "as_of": "2023-05-27", "sold": 0, "occ": 0.0, "rev": 0, "adr": 0}, {"year": 2024, "date": "2024-06-13", "dow": "목", "as_of": "2024-06-01", "sold": 0, "occ": 0.0, "rev": 0, "adr": 0}]}, "signal": {"icon": "🟡", "action": "hold", "diff_pp": 0.0}, "days_before": 12, "bookings": []}, {"branch": "양양", "date": "2026-06-11", "dow": "목", "rooms": 31, "current": {"sold": 1, "occ": 3.2, "rev": 69000.0, "adr": 69000, "revpar": 2226}, "stly": {"avg_occ": 0.0, "paces": [{"year": 2023, "date": "2023-06-08", "dow": "목", "as_of": "2023-05-27", "sold": 0, "occ": 0.0, "rev": 0, "adr": 0}, {"year": 2024, "date": "2024-06-13", "dow": "목", "as_of": "2024-06-01", "sold": 0, "occ": 0.0, "rev": 0, "adr": 0}]}, "signal": {"icon": "🟡", "action": "hold", "diff_pp": 3.2}, "days_before": 12, "bookings": [{"name": "jung hwa lee", "channel": "DIRECT", "room": "일반형 307", "price": 69000.0, "nights": 1, "status": "COMPLETED", "rtype": "수기 예약", "booking_dt": "2026-05-26"}]}, {"branch": "통영", "date": "2026-06-11", "dow": "목", "rooms": 18, "current": {"sold": 0, "occ": 0.0, "rev": 0, "adr": 0, "revpar": 0}, "stly": {"avg_occ": 2.8, "paces": [{"year": 2023, "date": "2023-06-08", "dow": "목", "as_of": "2023-05-27", "sold": 0, "occ": 0.0, "rev": 0, "adr": 0}, {"year": 2024, "date": "2024-06-13", "dow": "목", "as_of": "2024-06-01", "sold": 1, "occ": 5.6, "rev": 59000.0, "adr": 59000}]}, "signal": {"icon": "🟡", "action": "hold", "diff_pp": -2.8}, "days_before": 12, "bookings": []}, {"branch": "청평점", "date": "2026-06-12", "dow": "금", "rooms": 11, "current": {"sold": 0, "occ": 0.0, "rev": 0, "adr": 0, "revpar": 0}, "stly": {"avg_occ": 0.0, "paces": [{"year": 2023, "date": "2023-06-09", "dow": "금", "as_of": "2023-05-27", "sold": 0, "occ": 0.0, "rev": 0, "adr": 0}, {"year": 2024, "date": "2024-06-14", "dow": "금", "as_of": "2024-06-01", "sold": 0, "occ": 0.0, "rev": 0, "adr": 0}]}, "signal": {"icon": "🟡", "action": "hold", "diff_pp": 0.0}, "days_before": 13, "bookings": []}, {"branch": "경주", "date": "2026-06-12", "dow": "금", "rooms": 19, "current": {"sold": 0, "occ": 0.0, "rev": 0, "adr": 0, "revpar": 0}, "stly": {"avg_occ": 5.3, "paces": [{"year": 2023, "date": "2023-06-09", "dow": "금", "as_of": "2023-05-27", "sold": 0, "occ": 0.0, "rev": 0, "adr": 0}, {"year": 2024, "date": "2024-06-14", "dow": "금", "as_of": "2024-06-01", "sold": 2, "occ": 10.5, "rev": 178000.0, "adr": 89000}]}, "signal": {"icon": "🟡", "action": "hold", "diff_pp": -5.3}, "days_before": 13, "bookings": []}, {"branch": "영흥도", "date": "2026-06-12", "dow": "금", "rooms": 14, "current": {"sold": 4, "occ": 28.6, "rev": 387200.0, "adr": 96800, "revpar": 27657}, "stly": {"avg_occ": 3.6, "paces": [{"year": 2023, "date": "2023-06-09", "dow": "금", "as_of": "2023-05-27", "sold": 0, "occ": 0.0, "rev": 0, "adr": 0}, {"year": 2024, "date": "2024-06-14", "dow": "금", "as_of": "2024-06-01", "sold": 1, "occ": 7.1, "rev": 90000.0, "adr": 90000}]}, "signal": {"icon": "🟢", "action": "up", "diff_pp": 25.0}, "days_before": 13, "bookings": [{"name": "안혜영", "channel": "NOL", "room": "102", "price": 109000.0, "nights": 1, "status": "COMPLETED", "rtype": "NOL 예약", "booking_dt": "2026-05-26"}, {"name": "이주하", "channel": "NOL", "room": "104", "price": 109000.0, "nights": 1, "status": "COMPLETED", "rtype": "NOL 예약", "booking_dt": "2026-05-18"}, {"name": "박서정(여기어때)", "channel": "YGY", "room": "202", "price": 98100.0, "nights": 1, "status": "COMPLETED", "rtype": "수기 예약", "booking_dt": "2026-05-05"}, {"name": "배우리", "channel": "NOL", "room": "204", "price": 71100.0, "nights": 1, "status": "COMPLETED", "rtype": "NOL 예약", "booking_dt": "2026-05-19"}]}, {"branch": "양양", "date": "2026-06-12", "dow": "금", "rooms": 31, "current": {"sold": 4, "occ": 12.9, "rev": 562200.0, "adr": 140550, "revpar": 18135}, "stly": {"avg_occ": 4.8, "paces": [{"year": 2023, "date": "2023-06-09", "dow": "금", "as_of": "2023-05-27", "sold": 0, "occ": 0.0, "rev": 0, "adr": 0}, {"year": 2024, "date": "2024-06-14", "dow": "금", "as_of": "2024-06-01", "sold": 3, "occ": 9.7, "rev": 221250.0, "adr": 73750}]}, "signal": {"icon": "🟡", "action": "hold", "diff_pp": 8.1}, "days_before": 13, "bookings": [{"name": "정혜진", "channel": "NOL", "room": "테라스형 203", "price": 119000.0, "nights": 1, "status": "COMPLETED", "rtype": "NOL 예약", "booking_dt": "2026-05-27"}, {"name": "김하승(여기어때)", "channel": "YGY", "room": "펜션형 301", "price": 304200.0, "nights": 2, "status": "COMPLETED", "rtype": "수기 예약", "booking_dt": "2026-05-08"}, {"name": "박소영", "channel": "NOL", "room": "펜션형 302", "price": 139000.0, "nights": 1, "status": "COMPLETED", "rtype": "NOL 예약", "booking_dt": "2026-05-16"}]}, {"branch": "통영", "date": "2026-06-12", "dow": "금", "rooms": 18, "current": {"sold": 1, "occ": 5.6, "rev": 99000.0, "adr": 99000, "revpar": 5500}, "stly": {"avg_occ": 13.9, "paces": [{"year": 2023, "date": "2023-06-09", "dow": "금", "as_of": "2023-05-27", "sold": 2, "occ": 11.1, "rev": 278000.0, "adr": 139000}, {"year": 2024, "date": "2024-06-14", "dow": "금", "as_of": "2024-06-01", "sold": 3, "occ": 16.7, "rev": 237000.0, "adr": 79000}]}, "signal": {"icon": "🟡", "action": "hold", "diff_pp": -8.3}, "days_before": 13, "bookings": [{"name": "sewon chu", "channel": "DIRECT", "room": "309", "price": 99000.0, "nights": 1, "status": "COMPLETED", "rtype": "수기 예약", "booking_dt": "2026-05-24"}]}, {"branch": "청평점", "date": "2026-06-13", "dow": "토", "rooms": 11, "current": {"sold": 2, "occ": 18.2, "rev": 338100.0, "adr": 169050, "revpar": 30736}, "stly": {"avg_occ": 22.7, "paces": [{"year": 2023, "date": "2023-06-10", "dow": "토", "as_of": "2023-05-27", "sold": 3, "occ": 27.3, "rev": 967000.0, "adr": 322333}, {"year": 2024, "date": "2024-06-15", "dow": "토", "as_of": "2024-06-01", "sold": 2, "occ": 18.2, "rev": 600000.0, "adr": 300000}]}, "signal": {"icon": "🟡", "action": "hold", "diff_pp": -4.5}, "days_before": 14, "bookings": [{"name": "이재영(여기어때)", "channel": "YGY", "room": "A101", "price": 179100.0, "nights": 1, "status": "COMPLETED", "rtype": "수기 예약", "booking_dt": "2026-05-06"}, {"name": "이현지", "channel": "NOL", "room": "A102", "price": 159000.0, "nights": 1, "status": "COMPLETED", "rtype": "NOL 예약", "booking_dt": "2026-05-26"}]}, {"branch": "경주", "date": "2026-06-13", "dow": "토", "rooms": 19, "current": {"sold": 0, "occ": 0.0, "rev": 0, "adr": 0, "revpar": 0}, "stly": {"avg_occ": 23.7, "paces": [{"year": 2023, "date": "2023-06-10", "dow": "토", "as_of": "2023-05-27", "sold": 5, "occ": 26.3, "rev": 935000.0, "adr": 187000}, {"year": 2024, "date": "2024-06-15", "dow": "토", "as_of": "2024-06-01", "sold": 4, "occ": 21.1, "rev": 637000.0, "adr": 159250}]}, "signal": {"icon": "🔴", "action": "down", "diff_pp": -23.7}, "days_before": 14, "bookings": []}, {"branch": "영흥도", "date": "2026-06-13", "dow": "토", "rooms": 14, "current": {"sold": 3, "occ": 21.4, "rev": 737000.0, "adr": 245667, "revpar": 52643}, "stly": {"avg_occ": 32.1, "paces": [{"year": 2023, "date": "2023-06-10", "dow": "토", "as_of": "2023-05-27", "sold": 5, "occ": 35.7, "rev": 1115000.0, "adr": 223000}, {"year": 2024, "date": "2024-06-15", "dow": "토", "as_of": "2024-06-01", "sold": 4, "occ": 28.6, "rev": 857000.0, "adr": 214250}]}, "signal": {"icon": "🟡", "action": "hold", "diff_pp": -10.7}, "days_before": 14, "bookings": [{"name": "진지연", "channel": "NOL", "room": "101", "price": 259000.0, "nights": 1, "status": "COMPLETED", "rtype": "NOL 예약", "booking_dt": "2026-05-02"}, {"name": "진지연", "channel": "NOL", "room": "102", "price": 239000.0, "nights": 1, "status": "COMPLETED", "rtype": "NOL 예약", "booking_dt": "2026-05-02"}, {"name": "진지연", "channel": "NOL", "room": "103", "price": 239000.0, "nights": 1, "status": "COMPLETED", "rtype": "NOL 예약", "booking_dt": "2026-05-02"}]}, {"branch": "양양", "date": "2026-06-13", "dow": "토", "rooms": 31, "current": {"sold": 2, "occ": 6.5, "rev": 278000.0, "adr": 139000, "revpar": 8968}, "stly": {"avg_occ": 11.3, "paces": [{"year": 2023, "date": "2023-06-10", "dow": "토", "as_of": "2023-05-27", "sold": 3, "occ": 9.7, "rev": 387000.0, "adr": 129000}, {"year": 2024, "date": "2024-06-15", "dow": "토", "as_of": "2024-06-01", "sold": 4, "occ": 12.9, "rev": 462000.0, "adr": 115500}]}, "signal": {"icon": "🟡", "action": "hold", "diff_pp": -4.8}, "days_before": 14, "bookings": [{"name": "오원석", "channel": "NOL", "room": "펜션형 302", "price": 278000.0, "nights": 2, "status": "COMPLETED", "rtype": "NOL 예약", "booking_dt": "2026-05-25"}]}, {"branch": "통영", "date": "2026-06-13", "dow": "토", "rooms": 18, "current": {"sold": 1, "occ": 5.6, "rev": 149000.0, "adr": 149000, "revpar": 8278}, "stly": {"avg_occ": 8.3, "paces": [{"year": 2023, "date": "2023-06-10", "dow": "토", "as_of": "2023-05-27", "sold": 0, "occ": 0.0, "rev": 0, "adr": 0}, {"year": 2024, "date": "2024-06-15", "dow": "토", "as_of": "2024-06-01", "sold": 3, "occ": 16.7, "rev": 637000.0, "adr": 212333}]}, "signal": {"icon": "🟡", "action": "hold", "diff_pp": -2.8}, "days_before": 14, "bookings": [{"name": "박진익", "channel": "DIRECT", "room": "205", "price": 149000.0, "nights": 1, "status": "COMPLETED", "rtype": "수기 예약", "booking_dt": "2026-05-26"}]}, {"branch": "청평점", "date": "2026-06-14", "dow": "일", "rooms": 11, "current": {"sold": 0, "occ": 0.0, "rev": 0, "adr": 0, "revpar": 0}, "stly": {"avg_occ": 13.6, "paces": [{"year": 2023, "date": "2023-06-11", "dow": "일", "as_of": "2023-05-27", "sold": 1, "occ": 9.1, "rev": 209000.0, "adr": 209000}, {"year": 2024, "date": "2024-06-16", "dow": "일", "as_of": "2024-06-01", "sold": 2, "occ": 18.2, "rev": 219000.0, "adr": 109500}]}, "signal": {"icon": "🟡", "action": "hold", "diff_pp": -13.6}, "days_before": 15, "bookings": []}, {"branch": "경주", "date": "2026-06-14", "dow": "일", "rooms": 19, "current": {"sold": 2, "occ": 10.5, "rev": 178000.0, "adr": 89000, "revpar": 9368}, "stly": {"avg_occ": 5.3, "paces": [{"year": 2023, "date": "2023-06-11", "dow": "일", "as_of": "2023-05-27", "sold": 1, "occ": 5.3, "rev": 109000.0, "adr": 109000}, {"year": 2024, "date": "2024-06-16", "dow": "일", "as_of": "2024-06-01", "sold": 1, "occ": 5.3, "rev": 97010.0, "adr": 97010}]}, "signal": {"icon": "🟡", "action": "hold", "diff_pp": 5.3}, "days_before": 15, "bookings": [{"name": "구아람", "channel": "NOL", "room": "B101", "price": 178000.0, "nights": 2, "status": "COMPLETED", "rtype": "NOL 예약", "booking_dt": "2026-05-29"}]}, {"branch": "영흥도", "date": "2026-06-14", "dow": "일", "rooms": 14, "current": {"sold": 1, "occ": 7.1, "rev": 109000.0, "adr": 109000, "revpar": 7786}, "stly": {"avg_occ": 14.3, "paces": [{"year": 2023, "date": "2023-06-11", "dow": "일", "as_of": "2023-05-27", "sold": 3, "occ": 21.4, "rev": 427000.0, "adr": 142333}, {"year": 2024, "date": "2024-06-16", "dow": "일", "as_of": "2024-06-01", "sold": 1, "occ": 7.1, "rev": 89000.0, "adr": 89000}]}, "signal": {"icon": "🟡", "action": "hold", "diff_pp": -7.1}, "days_before": 15, "bookings": [{"name": "김수연", "channel": "NOL", "room": "103", "price": 109000.0, "nights": 1, "status": "COMPLETED", "rtype": "NOL 예약", "booking_dt": "2026-05-26"}]}, {"branch": "양양", "date": "2026-06-14", "dow": "일", "rooms": 31, "current": {"sold": 0, "occ": 0.0, "rev": 0, "adr": 0, "revpar": 0}, "stly": {"avg_occ": 3.2, "paces": [{"year": 2023, "date": "2023-06-11", "dow": "일", "as_of": "2023-05-27", "sold": 1, "occ": 3.2, "rev": 178000.0, "adr": 178000}, {"year": 2024, "date": "2024-06-16", "dow": "일", "as_of": "2024-06-01", "sold": 1, "occ": 3.2, "rev": 65000.0, "adr": 65000}]}, "signal": {"icon": "🟡", "action": "hold", "diff_pp": -3.2}, "days_before": 15, "bookings": []}, {"branch": "통영", "date": "2026-06-14", "dow": "일", "rooms": 18, "current": {"sold": 2, "occ": 11.1, "rev": 158000.0, "adr": 79000, "revpar": 8778}, "stly": {"avg_occ": 8.3, "paces": [{"year": 2023, "date": "2023-06-11", "dow": "일", "as_of": "2023-05-27", "sold": 2, "occ": 11.1, "rev": 218000.0, "adr": 109000}, {"year": 2024, "date": "2024-06-16", "dow": "일", "as_of": "2024-06-01", "sold": 1, "occ": 5.6, "rev": 69000.0, "adr": 69000}]}, "signal": {"icon": "🟡", "action": "hold", "diff_pp": 2.8}, "days_before": 15, "bookings": [{"name": "Chaewon Kim", "channel": "NOL", "room": "305", "price": 158000.0, "nights": 2, "status": "COMPLETED", "rtype": "NOL 예약", "booking_dt": "2026-05-23"}]}, {"branch": "청평점", "date": "2026-06-15", "dow": "월", "rooms": 11, "current": {"sold": 0, "occ": 0.0, "rev": 0, "adr": 0, "revpar": 0}, "stly": {"avg_occ": 4.5, "paces": [{"year": 2023, "date": "2023-06-12", "dow": "월", "as_of": "2023-05-27", "sold": 1, "occ": 9.1, "rev": 139000.0, "adr": 139000}, {"year": 2024, "date": "2024-06-17", "dow": "월", "as_of": "2024-06-01", "sold": 0, "occ": 0.0, "rev": 0, "adr": 0}]}, "signal": {"icon": "🟡", "action": "hold", "diff_pp": -4.5}, "days_before": 16, "bookings": []}, {"branch": "경주", "date": "2026-06-15", "dow": "월", "rooms": 19, "current": {"sold": 0, "occ": 0.0, "rev": 0, "adr": 0, "revpar": 0}, "stly": {"avg_occ": 5.3, "paces": [{"year": 2023, "date": "2023-06-12", "dow": "월", "as_of": "2023-05-27", "sold": 0, "occ": 0.0, "rev": 0, "adr": 0}, {"year": 2024, "date": "2024-06-17", "dow": "월", "as_of": "2024-06-01", "sold": 2, "occ": 10.5, "rev": 166050.0, "adr": 83025}]}, "signal": {"icon": "🟡", "action": "hold", "diff_pp": -5.3}, "days_before": 16, "bookings": []}, {"branch": "영흥도", "date": "2026-06-15", "dow": "월", "rooms": 14, "current": {"sold": 0, "occ": 0.0, "rev": 0, "adr": 0, "revpar": 0}, "stly": {"avg_occ": 0.0, "paces": [{"year": 2023, "date": "2023-06-12", "dow": "월", "as_of": "2023-05-27", "sold": 0, "occ": 0.0, "rev": 0, "adr": 0}, {"year": 2024, "date": "2024-06-17", "dow": "월", "as_of": "2024-06-01", "sold": 0, "occ": 0.0, "rev": 0, "adr": 0}]}, "signal": {"icon": "🟡", "action": "hold", "diff_pp": 0.0}, "days_before": 16, "bookings": []}, {"branch": "양양", "date": "2026-06-15", "dow": "월", "rooms": 31, "current": {"sold": 0, "occ": 0.0, "rev": 0, "adr": 0, "revpar": 0}, "stly": {"avg_occ": 11.3, "paces": [{"year": 2023, "date": "2023-06-12", "dow": "월", "as_of": "2023-05-27", "sold": 5, "occ": 16.1, "rev": 715000.0, "adr": 143000}, {"year": 2024, "date": "2024-06-17", "dow": "월", "as_of": "2024-06-01", "sold": 2, "occ": 6.5, "rev": 178200.0, "adr": 89100}]}, "signal": {"icon": "🟡", "action": "hold", "diff_pp": -11.3}, "days_before": 16, "bookings": []}, {"branch": "통영", "date": "2026-06-15", "dow": "월", "rooms": 18, "current": {"sold": 0, "occ": 0.0, "rev": 0, "adr": 0, "revpar": 0}, "stly": {"avg_occ": 2.8, "paces": [{"year": 2023, "date": "2023-06-12", "dow": "월", "as_of": "2023-05-27", "sold": 0, "occ": 0.0, "rev": 0, "adr": 0}, {"year": 2024, "date": "2024-06-17", "dow": "월", "as_of": "2024-06-01", "sold": 1, "occ": 5.6, "rev": 59000.0, "adr": 59000}]}, "signal": {"icon": "🟡", "action": "hold", "diff_pp": -2.8}, "days_before": 16, "bookings": []}, {"branch": "청평점", "date": "2026-06-16", "dow": "화", "rooms": 11, "current": {"sold": 0, "occ": 0.0, "rev": 0, "adr": 0, "revpar": 0}, "stly": {"avg_occ": 4.5, "paces": [{"year": 2023, "date": "2023-06-13", "dow": "화", "as_of": "2023-05-27", "sold": 1, "occ": 9.1, "rev": 129000.0, "adr": 129000}, {"year": 2024, "date": "2024-06-18", "dow": "화", "as_of": "2024-06-01", "sold": 0, "occ": 0.0, "rev": 0, "adr": 0}]}, "signal": {"icon": "🟡", "action": "hold", "diff_pp": -4.5}, "days_before": 17, "bookings": []}, {"branch": "경주", "date": "2026-06-16", "dow": "화", "rooms": 19, "current": {"sold": 0, "occ": 0.0, "rev": 0, "adr": 0, "revpar": 0}, "stly": {"avg_occ": 0.0, "paces": [{"year": 2023, "date": "2023-06-13", "dow": "화", "as_of": "2023-05-27", "sold": 0, "occ": 0.0, "rev": 0, "adr": 0}, {"year": 2024, "date": "2024-06-18", "dow": "화", "as_of": "2024-06-01", "sold": 0, "occ": 0.0, "rev": 0, "adr": 0}]}, "signal": {"icon": "🟡", "action": "hold", "diff_pp": 0.0}, "days_before": 17, "bookings": []}, {"branch": "영흥도", "date": "2026-06-16", "dow": "화", "rooms": 14, "current": {"sold": 0, "occ": 0.0, "rev": 0, "adr": 0, "revpar": 0}, "stly": {"avg_occ": 0.0, "paces": [{"year": 2023, "date": "2023-06-13", "dow": "화", "as_of": "2023-05-27", "sold": 0, "occ": 0.0, "rev": 0, "adr": 0}, {"year": 2024, "date": "2024-06-18", "dow": "화", "as_of": "2024-06-01", "sold": 0, "occ": 0.0, "rev": 0, "adr": 0}]}, "signal": {"icon": "🟡", "action": "hold", "diff_pp": 0.0}, "days_before": 17, "bookings": []}, {"branch": "양양", "date": "2026-06-16", "dow": "화", "rooms": 31, "current": {"sold": 0, "occ": 0.0, "rev": 0, "adr": 0, "revpar": 0}, "stly": {"avg_occ": 0.0, "paces": [{"year": 2023, "date": "2023-06-13", "dow": "화", "as_of": "2023-05-27", "sold": 0, "occ": 0.0, "rev": 0, "adr": 0}, {"year": 2024, "date": "2024-06-18", "dow": "화", "as_of": "2024-06-01", "sold": 0, "occ": 0.0, "rev": 0, "adr": 0}]}, "signal": {"icon": "🟡", "action": "hold", "diff_pp": 0.0}, "days_before": 17, "bookings": []}, {"branch": "통영", "date": "2026-06-16", "dow": "화", "rooms": 18, "current": {"sold": 0, "occ": 0.0, "rev": 0, "adr": 0, "revpar": 0}, "stly": {"avg_occ": 2.8, "paces": [{"year": 2023, "date": "2023-06-13", "dow": "화", "as_of": "2023-05-27", "sold": 1, "occ": 5.6, "rev": 99000.0, "adr": 99000}, {"year": 2024, "date": "2024-06-18", "dow": "화", "as_of": "2024-06-01", "sold": 0, "occ": 0.0, "rev": 0, "adr": 0}]}, "signal": {"icon": "🟡", "action": "hold", "diff_pp": -2.8}, "days_before": 17, "bookings": []}, {"branch": "청평점", "date": "2026-06-17", "dow": "수", "rooms": 11, "current": {"sold": 0, "occ": 0.0, "rev": 0, "adr": 0, "revpar": 0}, "stly": {"avg_occ": 9.1, "paces": [{"year": 2023, "date": "2023-06-14", "dow": "수", "as_of": "2023-05-27", "sold": 2, "occ": 18.2, "rev": 258000.0, "adr": 129000}, {"year": 2024, "date": "2024-06-19", "dow": "수", "as_of": "2024-06-01", "sold": 0, "occ": 0.0, "rev": 0, "adr": 0}]}, "signal": {"icon": "🟡", "action": "hold", "diff_pp": -9.1}, "days_before": 18, "bookings": []}, {"branch": "경주", "date": "2026-06-17", "dow": "수", "rooms": 19, "current": {"sold": 0, "occ": 0.0, "rev": 0, "adr": 0, "revpar": 0}, "stly": {"avg_occ": 0.0, "paces": [{"year": 2023, "date": "2023-06-14", "dow": "수", "as_of": "2023-05-27", "sold": 0, "occ": 0.0, "rev": 0, "adr": 0}, {"year": 2024, "date": "2024-06-19", "dow": "수", "as_of": "2024-06-01", "sold": 0, "occ": 0.0, "rev": 0, "adr": 0}]}, "signal": {"icon": "🟡", "action": "hold", "diff_pp": 0.0}, "days_before": 18, "bookings": []}, {"branch": "영흥도", "date": "2026-06-17", "dow": "수", "rooms": 14, "current": {"sold": 0, "occ": 0.0, "rev": 0, "adr": 0, "revpar": 0}, "stly": {"avg_occ": 0.0, "paces": [{"year": 2023, "date": "2023-06-14", "dow": "수", "as_of": "2023-05-27", "sold": 0, "occ": 0.0, "rev": 0, "adr": 0}, {"year": 2024, "date": "2024-06-19", "dow": "수", "as_of": "2024-06-01", "sold": 0, "occ": 0.0, "rev": 0, "adr": 0}]}, "signal": {"icon": "🟡", "action": "hold", "diff_pp": 0.0}, "days_before": 18, "bookings": []}, {"branch": "양양", "date": "2026-06-17", "dow": "수", "rooms": 31, "current": {"sold": 0, "occ": 0.0, "rev": 0, "adr": 0, "revpar": 0}, "stly": {"avg_occ": 0.0, "paces": [{"year": 2023, "date": "2023-06-14", "dow": "수", "as_of": "2023-05-27", "sold": 0, "occ": 0.0, "rev": 0, "adr": 0}, {"year": 2024, "date": "2024-06-19", "dow": "수", "as_of": "2024-06-01", "sold": 0, "occ": 0.0, "rev": 0, "adr": 0}]}, "signal": {"icon": "🟡", "action": "hold", "diff_pp": 0.0}, "days_before": 18, "bookings": []}, {"branch": "통영", "date": "2026-06-17", "dow": "수", "rooms": 18, "current": {"sold": 0, "occ": 0.0, "rev": 0, "adr": 0, "revpar": 0}, "stly": {"avg_occ": 0.0, "paces": [{"year": 2023, "date": "2023-06-14", "dow": "수", "as_of": "2023-05-27", "sold": 0, "occ": 0.0, "rev": 0, "adr": 0}, {"year": 2024, "date": "2024-06-19", "dow": "수", "as_of": "2024-06-01", "sold": 0, "occ": 0.0, "rev": 0, "adr": 0}]}, "signal": {"icon": "🟡", "action": "hold", "diff_pp": 0.0}, "days_before": 18, "bookings": []}, {"branch": "청평점", "date": "2026-06-18", "dow": "목", "rooms": 11, "current": {"sold": 0, "occ": 0.0, "rev": 0, "adr": 0, "revpar": 0}, "stly": {"avg_occ": 4.5, "paces": [{"year": 2023, "date": "2023-06-15", "dow": "목", "as_of": "2023-05-27", "sold": 1, "occ": 9.1, "rev": 189000.0, "adr": 189000}, {"year": 2024, "date": "2024-06-20", "dow": "목", "as_of": "2024-06-01", "sold": 0, "occ": 0.0, "rev": 0, "adr": 0}]}, "signal": {"icon": "🟡", "action": "hold", "diff_pp": -4.5}, "days_before": 19, "bookings": []}, {"branch": "경주", "date": "2026-06-18", "dow": "목", "rooms": 19, "current": {"sold": 0, "occ": 0.0, "rev": 0, "adr": 0, "revpar": 0}, "stly": {"avg_occ": 5.3, "paces": [{"year": 2023, "date": "2023-06-15", "dow": "목", "as_of": "2023-05-27", "sold": 0, "occ": 0.0, "rev": 0, "adr": 0}, {"year": 2024, "date": "2024-06-20", "dow": "목", "as_of": "2024-06-01", "sold": 2, "occ": 10.5, "rev": 193050.0, "adr": 96525}]}, "signal": {"icon": "🟡", "action": "hold", "diff_pp": -5.3}, "days_before": 19, "bookings": []}, {"branch": "영흥도", "date": "2026-06-18", "dow": "목", "rooms": 14, "current": {"sold": 0, "occ": 0.0, "rev": 0, "adr": 0, "revpar": 0}, "stly": {"avg_occ": 10.7, "paces": [{"year": 2023, "date": "2023-06-15", "dow": "목", "as_of": "2023-05-27", "sold": 3, "occ": 21.4, "rev": 357000.0, "adr": 119000}, {"year": 2024, "date": "2024-06-20", "dow": "목", "as_of": "2024-06-01", "sold": 0, "occ": 0.0, "rev": 0, "adr": 0}]}, "signal": {"icon": "🟡", "action": "hold", "diff_pp": -10.7}, "days_before": 19, "bookings": []}, {"branch": "양양", "date": "2026-06-18", "dow": "목", "rooms": 31, "current": {"sold": 0, "occ": 0.0, "rev": 0, "adr": 0, "revpar": 0}, "stly": {"avg_occ": 9.7, "paces": [{"year": 2023, "date": "2023-06-15", "dow": "목", "as_of": "2023-05-27", "sold": 0, "occ": 0.0, "rev": 0, "adr": 0}, {"year": 2024, "date": "2024-06-20", "dow": "목", "as_of": "2024-06-01", "sold": 6, "occ": 19.4, "rev": 546220.0, "adr": 91037}]}, "signal": {"icon": "🟡", "action": "hold", "diff_pp": -9.7}, "days_before": 19, "bookings": []}, {"branch": "통영", "date": "2026-06-18", "dow": "목", "rooms": 18, "current": {"sold": 0, "occ": 0.0, "rev": 0, "adr": 0, "revpar": 0}, "stly": {"avg_occ": 0.0, "paces": [{"year": 2023, "date": "2023-06-15", "dow": "목", "as_of": "2023-05-27", "sold": 0, "occ": 0.0, "rev": 0, "adr": 0}, {"year": 2024, "date": "2024-06-20", "dow": "목", "as_of": "2024-06-01", "sold": 0, "occ": 0.0, "rev": 0, "adr": 0}]}, "signal": {"icon": "🟡", "action": "hold", "diff_pp": 0.0}, "days_before": 19, "bookings": []}, {"branch": "청평점", "date": "2026-06-19", "dow": "금", "rooms": 11, "current": {"sold": 0, "occ": 0.0, "rev": 0, "adr": 0, "revpar": 0}, "stly": {"avg_occ": 9.1, "paces": [{"year": 2023, "date": "2023-06-16", "dow": "금", "as_of": "2023-05-27", "sold": 2, "occ": 18.2, "rev": 308000.0, "adr": 154000}, {"year": 2024, "date": "2024-06-21", "dow": "금", "as_of": "2024-06-01", "sold": 0, "occ": 0.0, "rev": 0, "adr": 0}]}, "signal": {"icon": "🟡", "action": "hold", "diff_pp": -9.1}, "days_before": 20, "bookings": []}, {"branch": "경주", "date": "2026-06-19", "dow": "금", "rooms": 19, "current": {"sold": 0, "occ": 0.0, "rev": 0, "adr": 0, "revpar": 0}, "stly": {"avg_occ": 10.5, "paces": [{"year": 2023, "date": "2023-06-16", "dow": "금", "as_of": "2023-05-27", "sold": 1, "occ": 5.3, "rev": 179000.0, "adr": 179000}, {"year": 2024, "date": "2024-06-21", "dow": "금", "as_of": "2024-06-01", "sold": 3, "occ": 15.8, "rev": 362810.0, "adr": 120937}]}, "signal": {"icon": "🟡", "action": "hold", "diff_pp": -10.5}, "days_before": 20, "bookings": []}, {"branch": "영흥도", "date": "2026-06-19", "dow": "금", "rooms": 14, "current": {"sold": 1, "occ": 7.1, "rev": 79000.0, "adr": 79000, "revpar": 5643}, "stly": {"avg_occ": 14.3, "paces": [{"year": 2023, "date": "2023-06-16", "dow": "금", "as_of": "2023-05-27", "sold": 2, "occ": 14.3, "rev": 418000.0, "adr": 209000}, {"year": 2024, "date": "2024-06-21", "dow": "금", "as_of": "2024-06-01", "sold": 2, "occ": 14.3, "rev": 240210.0, "adr": 120105}]}, "signal": {"icon": "🟡", "action": "hold", "diff_pp": -7.1}, "days_before": 20, "bookings": [{"name": "전덕준", "channel": "NOL", "room": "205", "price": 79000.0, "nights": 1, "status": "COMPLETED", "rtype": "NOL 예약", "booking_dt": "2026-05-24"}]}, {"branch": "양양", "date": "2026-06-19", "dow": "금", "rooms": 31, "current": {"sold": 1, "occ": 3.2, "rev": 80100.0, "adr": 80100, "revpar": 2584}, "stly": {"avg_occ": 6.5, "paces": [{"year": 2023, "date": "2023-06-16", "dow": "금", "as_of": "2023-05-27", "sold": 3, "occ": 9.7, "rev": 567000.0, "adr": 189000}, {"year": 2024, "date": "2024-06-21", "dow": "금", "as_of": "2024-06-01", "sold": 1, "occ": 3.2, "rev": 113050.0, "adr": 113050}]}, "signal": {"icon": "🟡", "action": "hold", "diff_pp": -3.2}, "days_before": 20, "bookings": [{"name": "조진희", "channel": "NOL", "room": "일반형 303", "price": 80100.0, "nights": 1, "status": "COMPLETED", "rtype": "NOL 예약", "booking_dt": "2026-05-22"}]}, {"branch": "통영", "date": "2026-06-19", "dow": "금", "rooms": 18, "current": {"sold": 1, "occ": 5.6, "rev": 98100.0, "adr": 98100, "revpar": 5450}, "stly": {"avg_occ": 13.9, "paces": [{"year": 2023, "date": "2023-06-16", "dow": "금", "as_of": "2023-05-27", "sold": 0, "occ": 0.0, "rev": 0, "adr": 0}, {"year": 2024, "date": "2024-06-21", "dow": "금", "as_of": "2024-06-01", "sold": 5, "occ": 27.8, "rev": 567000.0, "adr": 113400}]}, "signal": {"icon": "🟡", "action": "hold", "diff_pp": -8.3}, "days_before": 20, "bookings": [{"name": "김일근(여기어때)", "channel": "YGY", "room": "301", "price": 98100.0, "nights": 1, "status": "COMPLETED", "rtype": "수기 예약", "booking_dt": "2026-05-17"}]}, {"branch": "청평점", "date": "2026-06-20", "dow": "토", "rooms": 11, "current": {"sold": 0, "occ": 0.0, "rev": 0, "adr": 0, "revpar": 0}, "stly": {"avg_occ": 18.2, "paces": [{"year": 2023, "date": "2023-06-17", "dow": "토", "as_of": "2023-05-27", "sold": 3, "occ": 27.3, "rev": 857000.0, "adr": 285667}, {"year": 2024, "date": "2024-06-22", "dow": "토", "as_of": "2024-06-01", "sold": 1, "occ": 9.1, "rev": 300000.0, "adr": 300000}]}, "signal": {"icon": "🔴", "action": "down", "diff_pp": -18.2}, "days_before": 21, "bookings": []}, {"branch": "경주", "date": "2026-06-20", "dow": "토", "rooms": 19, "current": {"sold": 0, "occ": 0.0, "rev": 0, "adr": 0, "revpar": 0}, "stly": {"avg_occ": 23.7, "paces": [{"year": 2023, "date": "2023-06-17", "dow": "토", "as_of": "2023-05-27", "sold": 1, "occ": 5.3, "rev": 219000.0, "adr": 219000}, {"year": 2024, "date": "2024-06-22", "dow": "토", "as_of": "2024-06-01", "sold": 8, "occ": 42.1, "rev": 1274460.0, "adr": 159308}]}, "signal": {"icon": "🔴", "action": "down", "diff_pp": -23.7}, "days_before": 21, "bookings": []}, {"branch": "영흥도", "date": "2026-06-20", "dow": "토", "rooms": 14, "current": {"sold": 3, "occ": 21.4, "rev": 537100.0, "adr": 179033, "revpar": 38364}, "stly": {"avg_occ": 7.1, "paces": [{"year": 2023, "date": "2023-06-17", "dow": "토", "as_of": "2023-05-27", "sold": 1, "occ": 7.1, "rev": 209000.0, "adr": 209000}, {"year": 2024, "date": "2024-06-22", "dow": "토", "as_of": "2024-06-01", "sold": 1, "occ": 7.1, "rev": 249000.0, "adr": 249000}]}, "signal": {"icon": "🟡", "action": "hold", "diff_pp": 14.3}, "days_before": 21, "bookings": [{"name": "한현정", "channel": "NOL", "room": "101", "price": 179100.0, "nights": 1, "status": "COMPLETED", "rtype": "NOL 예약", "booking_dt": "2026-05-18"}, {"name": "서유진", "channel": "NOL", "room": "103", "price": 179000.0, "nights": 1, "status": "COMPLETED", "rtype": "NOL 예약", "booking_dt": "2026-05-23"}, {"name": "강다겸", "channel": "NOL", "room": "104", "price": 179000.0, "nights": 1, "status": "COMPLETED", "rtype": "NOL 예약", "booking_dt": "2026-05-23"}]}, {"branch": "양양", "date": "2026-06-20", "dow": "토", "rooms": 31, "current": {"sold": 0, "occ": 0.0, "rev": 0, "adr": 0, "revpar": 0}, "stly": {"avg_occ": 11.3, "paces": [{"year": 2023, "date": "2023-06-17", "dow": "토", "as_of": "2023-05-27", "sold": 1, "occ": 3.2, "rev": 139000.0, "adr": 139000}, {"year": 2024, "date": "2024-06-22", "dow": "토", "as_of": "2024-06-01", "sold": 6, "occ": 19.4, "rev": 674160.0, "adr": 112360}]}, "signal": {"icon": "🟡", "action": "hold", "diff_pp": -11.3}, "days_before": 21, "bookings": []}, {"branch": "통영", "date": "2026-06-20", "dow": "토", "rooms": 18, "current": {"sold": 3, "occ": 16.7, "rev": 387200.0, "adr": 129067, "revpar": 21511}, "stly": {"avg_occ": 8.3, "paces": [{"year": 2023, "date": "2023-06-17", "dow": "토", "as_of": "2023-05-27", "sold": 1, "occ": 5.6, "rev": 199000.0, "adr": 199000}, {"year": 2024, "date": "2024-06-22", "dow": "토", "as_of": "2024-06-01", "sold": 2, "occ": 11.1, "rev": 339000.0, "adr": 169500}]}, "signal": {"icon": "🟡", "action": "hold", "diff_pp": 8.3}, "days_before": 21, "bookings": [{"name": "양지윤", "channel": "NOL", "room": "201", "price": 134100.0, "nights": 1, "status": "COMPLETED", "rtype": "NOL 예약", "booking_dt": "2026-05-21"}, {"name": "양지윤", "channel": "NOL", "room": "202", "price": 134100.0, "nights": 1, "status": "COMPLETED", "rtype": "NOL 예약", "booking_dt": "2026-05-21"}, {"name": "선은숙", "channel": "DIRECT", "room": "205", "price": 119000.0, "nights": 1, "status": "COMPLETED", "rtype": "수기 예약", "booking_dt": "2026-05-27"}]}, {"branch": "청평점", "date": "2026-06-21", "dow": "일", "rooms": 11, "current": {"sold": 0, "occ": 0.0, "rev": 0, "adr": 0, "revpar": 0}, "stly": {"avg_occ": 13.6, "paces": [{"year": 2023, "date": "2023-06-18", "dow": "일", "as_of": "2023-05-27", "sold": 3, "occ": 27.3, "rev": 358000.0, "adr": 179000}, {"year": 2024, "date": "2024-06-23", "dow": "일", "as_of": "2024-06-01", "sold": 0, "occ": 0.0, "rev": 0, "adr": 0}]}, "signal": {"icon": "🟡", "action": "hold", "diff_pp": -13.6}, "days_before": 22, "bookings": []}, {"branch": "경주", "date": "2026-06-21", "dow": "일", "rooms": 19, "current": {"sold": 0, "occ": 0.0, "rev": 0, "adr": 0, "revpar": 0}, "stly": {"avg_occ": 10.5, "paces": [{"year": 2023, "date": "2023-06-18", "dow": "일", "as_of": "2023-05-27", "sold": 1, "occ": 5.3, "rev": 169000.0, "adr": 169000}, {"year": 2024, "date": "2024-06-23", "dow": "일", "as_of": "2024-06-01", "sold": 3, "occ": 15.8, "rev": 297570.0, "adr": 99190}]}, "signal": {"icon": "🟡", "action": "hold", "diff_pp": -10.5}, "days_before": 22, "bookings": []}, {"branch": "영흥도", "date": "2026-06-21", "dow": "일", "rooms": 14, "current": {"sold": 0, "occ": 0.0, "rev": 0, "adr": 0, "revpar": 0}, "stly": {"avg_occ": 0.0, "paces": [{"year": 2023, "date": "2023-06-18", "dow": "일", "as_of": "2023-05-27", "sold": 0, "occ": 0.0, "rev": 0, "adr": 0}, {"year": 2024, "date": "2024-06-23", "dow": "일", "as_of": "2024-06-01", "sold": 0, "occ": 0.0, "rev": 0, "adr": 0}]}, "signal": {"icon": "🟡", "action": "hold", "diff_pp": 0.0}, "days_before": 22, "bookings": []}, {"branch": "양양", "date": "2026-06-21", "dow": "일", "rooms": 31, "current": {"sold": 1, "occ": 3.2, "rev": 62100.0, "adr": 62100, "revpar": 2003}, "stly": {"avg_occ": 22.6, "paces": [{"year": 2023, "date": "2023-06-18", "dow": "일", "as_of": "2023-05-27", "sold": 1, "occ": 3.2, "rev": 139000.0, "adr": 139000}, {"year": 2024, "date": "2024-06-23", "dow": "일", "as_of": "2024-06-01", "sold": 13, "occ": 41.9, "rev": 1058000.0, "adr": 81385}]}, "signal": {"icon": "🔴", "action": "down", "diff_pp": -19.4}, "days_before": 22, "bookings": [{"name": "정승원", "channel": "NOL", "room": "일반형 303", "price": 62100.0, "nights": 1, "status": "COMPLETED", "rtype": "NOL 예약", "booking_dt": "2026-05-26"}]}, {"branch": "통영", "date": "2026-06-21", "dow": "일", "rooms": 18, "current": {"sold": 0, "occ": 0.0, "rev": 0, "adr": 0, "revpar": 0}, "stly": {"avg_occ": 0.0, "paces": [{"year": 2023, "date": "2023-06-18", "dow": "일", "as_of": "2023-05-27", "sold": 0, "occ": 0.0, "rev": 0, "adr": 0}, {"year": 2024, "date": "2024-06-23", "dow": "일", "as_of": "2024-06-01", "sold": 0, "occ": 0.0, "rev": 0, "adr": 0}]}, "signal": {"icon": "🟡", "action": "hold", "diff_pp": 0.0}, "days_before": 22, "bookings": []}, {"branch": "청평점", "date": "2026-06-22", "dow": "월", "rooms": 11, "current": {"sold": 0, "occ": 0.0, "rev": 0, "adr": 0, "revpar": 0}, "stly": {"avg_occ": 13.6, "paces": [{"year": 2023, "date": "2023-06-19", "dow": "월", "as_of": "2023-05-27", "sold": 3, "occ": 27.3, "rev": 517000.0, "adr": 172333}, {"year": 2024, "date": "2024-06-24", "dow": "월", "as_of": "2024-06-01", "sold": 0, "occ": 0.0, "rev": 0, "adr": 0}]}, "signal": {"icon": "🟡", "action": "hold", "diff_pp": -13.6}, "days_before": 23, "bookings": []}, {"branch": "경주", "date": "2026-06-22", "dow": "월", "rooms": 19, "current": {"sold": 0, "occ": 0.0, "rev": 0, "adr": 0, "revpar": 0}, "stly": {"avg_occ": 7.9, "paces": [{"year": 2023, "date": "2023-06-19", "dow": "월", "as_of": "2023-05-27", "sold": 0, "occ": 0.0, "rev": 0, "adr": 0}, {"year": 2024, "date": "2024-06-24", "dow": "월", "as_of": "2024-06-01", "sold": 3, "occ": 15.8, "rev": 217000.0, "adr": 72333}]}, "signal": {"icon": "🟡", "action": "hold", "diff_pp": -7.9}, "days_before": 23, "bookings": []}, {"branch": "영흥도", "date": "2026-06-22", "dow": "월", "rooms": 14, "current": {"sold": 0, "occ": 0.0, "rev": 0, "adr": 0, "revpar": 0}, "stly": {"avg_occ": 0.0, "paces": [{"year": 2023, "date": "2023-06-19", "dow": "월", "as_of": "2023-05-27", "sold": 0, "occ": 0.0, "rev": 0, "adr": 0}, {"year": 2024, "date": "2024-06-24", "dow": "월", "as_of": "2024-06-01", "sold": 0, "occ": 0.0, "rev": 0, "adr": 0}]}, "signal": {"icon": "🟡", "action": "hold", "diff_pp": 0.0}, "days_before": 23, "bookings": []}, {"branch": "양양", "date": "2026-06-22", "dow": "월", "rooms": 31, "current": {"sold": 0, "occ": 0.0, "rev": 0, "adr": 0, "revpar": 0}, "stly": {"avg_occ": 6.5, "paces": [{"year": 2023, "date": "2023-06-19", "dow": "월", "as_of": "2023-05-27", "sold": 0, "occ": 0.0, "rev": 0, "adr": 0}, {"year": 2024, "date": "2024-06-24", "dow": "월", "as_of": "2024-06-01", "sold": 4, "occ": 12.9, "rev": 259000.0, "adr": 64750}]}, "signal": {"icon": "🟡", "action": "hold", "diff_pp": -6.5}, "days_before": 23, "bookings": []}, {"branch": "통영", "date": "2026-06-22", "dow": "월", "rooms": 18, "current": {"sold": 0, "occ": 0.0, "rev": 0, "adr": 0, "revpar": 0}, "stly": {"avg_occ": 5.6, "paces": [{"year": 2023, "date": "2023-06-19", "dow": "월", "as_of": "2023-05-27", "sold": 0, "occ": 0.0, "rev": 0, "adr": 0}, {"year": 2024, "date": "2024-06-24", "dow": "월", "as_of": "2024-06-01", "sold": 2, "occ": 11.1, "rev": 160000.0, "adr": 80000}]}, "signal": {"icon": "🟡", "action": "hold", "diff_pp": -5.6}, "days_before": 23, "bookings": []}, {"branch": "청평점", "date": "2026-06-23", "dow": "화", "rooms": 11, "current": {"sold": 0, "occ": 0.0, "rev": 0, "adr": 0, "revpar": 0}, "stly": {"avg_occ": 0.0, "paces": [{"year": 2023, "date": "2023-06-20", "dow": "화", "as_of": "2023-05-27", "sold": 0, "occ": 0.0, "rev": 0, "adr": 0}, {"year": 2024, "date": "2024-06-25", "dow": "화", "as_of": "2024-06-01", "sold": 0, "occ": 0.0, "rev": 0, "adr": 0}]}, "signal": {"icon": "🟡", "action": "hold", "diff_pp": 0.0}, "days_before": 24, "bookings": []}, {"branch": "경주", "date": "2026-06-23", "dow": "화", "rooms": 19, "current": {"sold": 0, "occ": 0.0, "rev": 0, "adr": 0, "revpar": 0}, "stly": {"avg_occ": 5.3, "paces": [{"year": 2023, "date": "2023-06-20", "dow": "화", "as_of": "2023-05-27", "sold": 0, "occ": 0.0, "rev": 0, "adr": 0}, {"year": 2024, "date": "2024-06-25", "dow": "화", "as_of": "2024-06-01", "sold": 2, "occ": 10.5, "rev": 198000.0, "adr": 99000}]}, "signal": {"icon": "🟡", "action": "hold", "diff_pp": -5.3}, "days_before": 24, "bookings": []}, {"branch": "영흥도", "date": "2026-06-23", "dow": "화", "rooms": 14, "current": {"sold": 0, "occ": 0.0, "rev": 0, "adr": 0, "revpar": 0}, "stly": {"avg_occ": 0.0, "paces": [{"year": 2023, "date": "2023-06-20", "dow": "화", "as_of": "2023-05-27", "sold": 0, "occ": 0.0, "rev": 0, "adr": 0}, {"year": 2024, "date": "2024-06-25", "dow": "화", "as_of": "2024-06-01", "sold": 0, "occ": 0.0, "rev": 0, "adr": 0}]}, "signal": {"icon": "🟡", "action": "hold", "diff_pp": 0.0}, "days_before": 24, "bookings": []}, {"branch": "양양", "date": "2026-06-23", "dow": "화", "rooms": 31, "current": {"sold": 0, "occ": 0.0, "rev": 0, "adr": 0, "revpar": 0}, "stly": {"avg_occ": 3.2, "paces": [{"year": 2023, "date": "2023-06-20", "dow": "화", "as_of": "2023-05-27", "sold": 0, "occ": 0.0, "rev": 0, "adr": 0}, {"year": 2024, "date": "2024-06-25", "dow": "화", "as_of": "2024-06-01", "sold": 2, "occ": 6.5, "rev": 198000.0, "adr": 99000}]}, "signal": {"icon": "🟡", "action": "hold", "diff_pp": -3.2}, "days_before": 24, "bookings": []}, {"branch": "통영", "date": "2026-06-23", "dow": "화", "rooms": 18, "current": {"sold": 2, "occ": 11.1, "rev": 142200.0, "adr": 71100, "revpar": 7900}, "stly": {"avg_occ": 0.0, "paces": [{"year": 2023, "date": "2023-06-20", "dow": "화", "as_of": "2023-05-27", "sold": 0, "occ": 0.0, "rev": 0, "adr": 0}, {"year": 2024, "date": "2024-06-25", "dow": "화", "as_of": "2024-06-01", "sold": 0, "occ": 0.0, "rev": 0, "adr": 0}]}, "signal": {"icon": "🟡", "action": "hold", "diff_pp": 11.1}, "days_before": 24, "bookings": [{"name": "엄재찬", "channel": "NOL", "room": "202", "price": 142200.0, "nights": 2, "status": "COMPLETED", "rtype": "NOL 예약", "booking_dt": "2026-05-16"}]}, {"branch": "청평점", "date": "2026-06-24", "dow": "수", "rooms": 11, "current": {"sold": 0, "occ": 0.0, "rev": 0, "adr": 0, "revpar": 0}, "stly": {"avg_occ": 0.0, "paces": [{"year": 2023, "date": "2023-06-21", "dow": "수", "as_of": "2023-05-27", "sold": 0, "occ": 0.0, "rev": 0, "adr": 0}, {"year": 2024, "date": "2024-06-26", "dow": "수", "as_of": "2024-06-01", "sold": 0, "occ": 0.0, "rev": 0, "adr": 0}]}, "signal": {"icon": "🟡", "action": "hold", "diff_pp": 0.0}, "days_before": 25, "bookings": []}, {"branch": "경주", "date": "2026-06-24", "dow": "수", "rooms": 19, "current": {"sold": 0, "occ": 0.0, "rev": 0, "adr": 0, "revpar": 0}, "stly": {"avg_occ": 0.0, "paces": [{"year": 2023, "date": "2023-06-21", "dow": "수", "as_of": "2023-05-27", "sold": 0, "occ": 0.0, "rev": 0, "adr": 0}, {"year": 2024, "date": "2024-06-26", "dow": "수", "as_of": "2024-06-01", "sold": 0, "occ": 0.0, "rev": 0, "adr": 0}]}, "signal": {"icon": "🟡", "action": "hold", "diff_pp": 0.0}, "days_before": 25, "bookings": []}, {"branch": "영흥도", "date": "2026-06-24", "dow": "수", "rooms": 14, "current": {"sold": 1, "occ": 7.1, "rev": 116100.0, "adr": 116100, "revpar": 8293}, "stly": {"avg_occ": 0.0, "paces": [{"year": 2023, "date": "2023-06-21", "dow": "수", "as_of": "2023-05-27", "sold": 0, "occ": 0.0, "rev": 0, "adr": 0}, {"year": 2024, "date": "2024-06-26", "dow": "수", "as_of": "2024-06-01", "sold": 0, "occ": 0.0, "rev": 0, "adr": 0}]}, "signal": {"icon": "🟡", "action": "hold", "diff_pp": 7.1}, "days_before": 25, "bookings": [{"name": "박채림(여기어때)", "channel": "YGY", "room": "104", "price": 116100.0, "nights": 1, "status": "COMPLETED", "rtype": "수기 예약", "booking_dt": "2026-05-17"}]}, {"branch": "양양", "date": "2026-06-24", "dow": "수", "rooms": 31, "current": {"sold": 0, "occ": 0.0, "rev": 0, "adr": 0, "revpar": 0}, "stly": {"avg_occ": 0.0, "paces": [{"year": 2023, "date": "2023-06-21", "dow": "수", "as_of": "2023-05-27", "sold": 0, "occ": 0.0, "rev": 0, "adr": 0}, {"year": 2024, "date": "2024-06-26", "dow": "수", "as_of": "2024-06-01", "sold": 0, "occ": 0.0, "rev": 0, "adr": 0}]}, "signal": {"icon": "🟡", "action": "hold", "diff_pp": 0.0}, "days_before": 25, "bookings": []}, {"branch": "통영", "date": "2026-06-24", "dow": "수", "rooms": 18, "current": {"sold": 0, "occ": 0.0, "rev": 0, "adr": 0, "revpar": 0}, "stly": {"avg_occ": 0.0, "paces": [{"year": 2023, "date": "2023-06-21", "dow": "수", "as_of": "2023-05-27", "sold": 0, "occ": 0.0, "rev": 0, "adr": 0}, {"year": 2024, "date": "2024-06-26", "dow": "수", "as_of": "2024-06-01", "sold": 0, "occ": 0.0, "rev": 0, "adr": 0}]}, "signal": {"icon": "🟡", "action": "hold", "diff_pp": 0.0}, "days_before": 25, "bookings": []}, {"branch": "청평점", "date": "2026-06-25", "dow": "목", "rooms": 11, "current": {"sold": 0, "occ": 0.0, "rev": 0, "adr": 0, "revpar": 0}, "stly": {"avg_occ": 4.5, "paces": [{"year": 2023, "date": "2023-06-22", "dow": "목", "as_of": "2023-05-27", "sold": 1, "occ": 9.1, "rev": 109000.0, "adr": 109000}, {"year": 2024, "date": "2024-06-27", "dow": "목", "as_of": "2024-06-01", "sold": 0, "occ": 0.0, "rev": 0, "adr": 0}]}, "signal": {"icon": "🟡", "action": "hold", "diff_pp": -4.5}, "days_before": 26, "bookings": []}, {"branch": "경주", "date": "2026-06-25", "dow": "목", "rooms": 19, "current": {"sold": 0, "occ": 0.0, "rev": 0, "adr": 0, "revpar": 0}, "stly": {"avg_occ": 0.0, "paces": [{"year": 2023, "date": "2023-06-22", "dow": "목", "as_of": "2023-05-27", "sold": 0, "occ": 0.0, "rev": 0, "adr": 0}, {"year": 2024, "date": "2024-06-27", "dow": "목", "as_of": "2024-06-01", "sold": 0, "occ": 0.0, "rev": 0, "adr": 0}]}, "signal": {"icon": "🟡", "action": "hold", "diff_pp": 0.0}, "days_before": 26, "bookings": []}, {"branch": "영흥도", "date": "2026-06-25", "dow": "목", "rooms": 14, "current": {"sold": 0, "occ": 0.0, "rev": 0, "adr": 0, "revpar": 0}, "stly": {"avg_occ": 0.0, "paces": [{"year": 2023, "date": "2023-06-22", "dow": "목", "as_of": "2023-05-27", "sold": 0, "occ": 0.0, "rev": 0, "adr": 0}, {"year": 2024, "date": "2024-06-27", "dow": "목", "as_of": "2024-06-01", "sold": 0, "occ": 0.0, "rev": 0, "adr": 0}]}, "signal": {"icon": "🟡", "action": "hold", "diff_pp": 0.0}, "days_before": 26, "bookings": []}, {"branch": "양양", "date": "2026-06-25", "dow": "목", "rooms": 31, "current": {"sold": 3, "occ": 9.7, "rev": 277000.0, "adr": 92333, "revpar": 8935}, "stly": {"avg_occ": 12.9, "paces": [{"year": 2023, "date": "2023-06-22", "dow": "목", "as_of": "2023-05-27", "sold": 4, "occ": 12.9, "rev": 486000.0, "adr": 121500}, {"year": 2024, "date": "2024-06-27", "dow": "목", "as_of": "2024-06-01", "sold": 4, "occ": 12.9, "rev": 348000.0, "adr": 87000}]}, "signal": {"icon": "🟡", "action": "hold", "diff_pp": -3.2}, "days_before": 26, "bookings": [{"name": "최정훈", "channel": "NOL", "room": "일반형 307", "price": 277000.0, "nights": 3, "status": "COMPLETED", "rtype": "NOL 예약", "booking_dt": "2026-05-29"}]}, {"branch": "통영", "date": "2026-06-25", "dow": "목", "rooms": 18, "current": {"sold": 0, "occ": 0.0, "rev": 0, "adr": 0, "revpar": 0}, "stly": {"avg_occ": 0.0, "paces": [{"year": 2023, "date": "2023-06-22", "dow": "목", "as_of": "2023-05-27", "sold": 0, "occ": 0.0, "rev": 0, "adr": 0}, {"year": 2024, "date": "2024-06-27", "dow": "목", "as_of": "2024-06-01", "sold": 0, "occ": 0.0, "rev": 0, "adr": 0}]}, "signal": {"icon": "🟡", "action": "hold", "diff_pp": 0.0}, "days_before": 26, "bookings": []}, {"branch": "청평점", "date": "2026-06-26", "dow": "금", "rooms": 11, "current": {"sold": 1, "occ": 9.1, "rev": 107100.0, "adr": 107100, "revpar": 9736}, "stly": {"avg_occ": 9.1, "paces": [{"year": 2023, "date": "2023-06-23", "dow": "금", "as_of": "2023-05-27", "sold": 1, "occ": 9.1, "rev": 149000.0, "adr": 149000}, {"year": 2024, "date": "2024-06-28", "dow": "금", "as_of": "2024-06-01", "sold": 1, "occ": 9.1, "rev": 199000.0, "adr": 199000}]}, "signal": {"icon": "🟡", "action": "hold", "diff_pp": 0.0}, "days_before": 27, "bookings": [{"name": "강민지", "channel": "NOL", "room": "B202", "price": 107100.0, "nights": 1, "status": "COMPLETED", "rtype": "NOL 예약", "booking_dt": "2026-05-04"}]}, {"branch": "경주", "date": "2026-06-26", "dow": "금", "rooms": 19, "current": {"sold": 0, "occ": 0.0, "rev": 0, "adr": 0, "revpar": 0}, "stly": {"avg_occ": 7.9, "paces": [{"year": 2023, "date": "2023-06-23", "dow": "금", "as_of": "2023-05-27", "sold": 0, "occ": 0.0, "rev": 0, "adr": 0}, {"year": 2024, "date": "2024-06-28", "dow": "금", "as_of": "2024-06-01", "sold": 3, "occ": 15.8, "rev": 253650.0, "adr": 84550}]}, "signal": {"icon": "🟡", "action": "hold", "diff_pp": -7.9}, "days_before": 27, "bookings": []}, {"branch": "영흥도", "date": "2026-06-26", "dow": "금", "rooms": 14, "current": {"sold": 0, "occ": 0.0, "rev": 0, "adr": 0, "revpar": 0}, "stly": {"avg_occ": 0.0, "paces": [{"year": 2023, "date": "2023-06-23", "dow": "금", "as_of": "2023-05-27", "sold": 0, "occ": 0.0, "rev": 0, "adr": 0}, {"year": 2024, "date": "2024-06-28", "dow": "금", "as_of": "2024-06-01", "sold": 0, "occ": 0.0, "rev": 0, "adr": 0}]}, "signal": {"icon": "🟡", "action": "hold", "diff_pp": 0.0}, "days_before": 27, "bookings": []}, {"branch": "양양", "date": "2026-06-26", "dow": "금", "rooms": 31, "current": {"sold": 0, "occ": 0.0, "rev": 0, "adr": 0, "revpar": 0}, "stly": {"avg_occ": 1.6, "paces": [{"year": 2023, "date": "2023-06-23", "dow": "금", "as_of": "2023-05-27", "sold": 0, "occ": 0.0, "rev": 0, "adr": 0}, {"year": 2024, "date": "2024-06-28", "dow": "금", "as_of": "2024-06-01", "sold": 1, "occ": 3.2, "rev": 120000.0, "adr": 120000}]}, "signal": {"icon": "🟡", "action": "hold", "diff_pp": -1.6}, "days_before": 27, "bookings": []}, {"branch": "통영", "date": "2026-06-26", "dow": "금", "rooms": 18, "current": {"sold": 0, "occ": 0.0, "rev": 0, "adr": 0, "revpar": 0}, "stly": {"avg_occ": 8.3, "paces": [{"year": 2023, "date": "2023-06-23", "dow": "금", "as_of": "2023-05-27", "sold": 1, "occ": 5.6, "rev": 139000.0, "adr": 139000}, {"year": 2024, "date": "2024-06-28", "dow": "금", "as_of": "2024-06-01", "sold": 2, "occ": 11.1, "rev": 158000.0, "adr": 79000}]}, "signal": {"icon": "🟡", "action": "hold", "diff_pp": -8.3}, "days_before": 27, "bookings": []}, {"branch": "청평점", "date": "2026-06-27", "dow": "토", "rooms": 11, "current": {"sold": 3, "occ": 27.3, "rev": 417000.0, "adr": 139000, "revpar": 37909}, "stly": {"avg_occ": 9.1, "paces": [{"year": 2023, "date": "2023-06-24", "dow": "토", "as_of": "2023-05-27", "sold": 1, "occ": 9.1, "rev": 329000.0, "adr": 329000}, {"year": 2024, "date": "2024-06-29", "dow": "토", "as_of": "2024-06-01", "sold": 1, "occ": 9.1, "rev": 299000.0, "adr": 299000}]}, "signal": {"icon": "🟢", "action": "up", "diff_pp": 18.2}, "days_before": 28, "bookings": [{"name": "김용운", "channel": "NOL", "room": "A201", "price": 139000.0, "nights": 1, "status": "COMPLETED", "rtype": "NOL 예약", "booking_dt": "2026-05-29"}, {"name": "서훈철", "channel": "NOL", "room": "A202", "price": 139000.0, "nights": 1, "status": "COMPLETED", "rtype": "NOL 예약", "booking_dt": "2026-05-29"}, {"name": "이기석", "channel": "NOL", "room": "A203", "price": 139000.0, "nights": 1, "status": "COMPLETED", "rtype": "NOL 예약", "booking_dt": "2026-05-29"}]}, {"branch": "경주", "date": "2026-06-27", "dow": "토", "rooms": 19, "current": {"sold": 0, "occ": 0.0, "rev": 0, "adr": 0, "revpar": 0}, "stly": {"avg_occ": 5.3, "paces": [{"year": 2023, "date": "2023-06-24", "dow": "토", "as_of": "2023-05-27", "sold": 1, "occ": 5.3, "rev": 259000.0, "adr": 259000}, {"year": 2024, "date": "2024-06-29", "dow": "토", "as_of": "2024-06-01", "sold": 1, "occ": 5.3, "rev": 159000.0, "adr": 159000}]}, "signal": {"icon": "🟡", "action": "hold", "diff_pp": -5.3}, "days_before": 28, "bookings": []}, {"branch": "영흥도", "date": "2026-06-27", "dow": "토", "rooms": 14, "current": {"sold": 3, "occ": 21.4, "rev": 478200.0, "adr": 159400, "revpar": 34157}, "stly": {"avg_occ": 7.1, "paces": [{"year": 2023, "date": "2023-06-24", "dow": "토", "as_of": "2023-05-27", "sold": 2, "occ": 14.3, "rev": 468000.0, "adr": 234000}, {"year": 2024, "date": "2024-06-29", "dow": "토", "as_of": "2024-06-01", "sold": 0, "occ": 0.0, "rev": 0, "adr": 0}]}, "signal": {"icon": "🟡", "action": "hold", "diff_pp": 14.3}, "days_before": 28, "bookings": [{"name": "서하나", "channel": "NOL", "room": "101", "price": 219000.0, "nights": 1, "status": "COMPLETED", "rtype": "NOL 예약", "booking_dt": "2026-05-16"}, {"name": "김보경(여기어때)", "channel": "YGY", "room": "102", "price": 134100.0, "nights": 1, "status": "COMPLETED", "rtype": "수기 예약", "booking_dt": "2026-05-11"}, {"name": "최민희", "channel": "NOL", "room": "202", "price": 125100.0, "nights": 1, "status": "COMPLETED", "rtype": "NOL 예약", "booking_dt": "2026-05-25"}]}, {"branch": "양양", "date": "2026-06-27", "dow": "토", "rooms": 31, "current": {"sold": 0, "occ": 0.0, "rev": 0, "adr": 0, "revpar": 0}, "stly": {"avg_occ": 8.1, "paces": [{"year": 2023, "date": "2023-06-24", "dow": "토", "as_of": "2023-05-27", "sold": 1, "occ": 3.2, "rev": 278000.0, "adr": 278000}, {"year": 2024, "date": "2024-06-29", "dow": "토", "as_of": "2024-06-01", "sold": 4, "occ": 12.9, "rev": 514000.0, "adr": 128500}]}, "signal": {"icon": "🟡", "action": "hold", "diff_pp": -8.1}, "days_before": 28, "bookings": []}, {"branch": "통영", "date": "2026-06-27", "dow": "토", "rooms": 18, "current": {"sold": 1, "occ": 5.6, "rev": 159000.0, "adr": 159000, "revpar": 8833}, "stly": {"avg_occ": 5.6, "paces": [{"year": 2023, "date": "2023-06-24", "dow": "토", "as_of": "2023-05-27", "sold": 0, "occ": 0.0, "rev": 0, "adr": 0}, {"year": 2024, "date": "2024-06-29", "dow": "토", "as_of": "2024-06-01", "sold": 2, "occ": 11.1, "rev": 290000.0, "adr": 145000}]}, "signal": {"icon": "🟡", "action": "hold", "diff_pp": 0.0}, "days_before": 28, "bookings": [{"name": "이금비(여기어때)", "channel": "YGY", "room": "307", "price": 159000.0, "nights": 1, "status": "COMPLETED", "rtype": "수기 예약", "booking_dt": "2026-05-21"}]}, {"branch": "청평점", "date": "2026-06-28", "dow": "일", "rooms": 11, "current": {"sold": 0, "occ": 0.0, "rev": 0, "adr": 0, "revpar": 0}, "stly": {"avg_occ": 0.0, "paces": [{"year": 2023, "date": "2023-06-25", "dow": "일", "as_of": "2023-05-27", "sold": 0, "occ": 0.0, "rev": 0, "adr": 0}, {"year": 2024, "date": "2024-06-30", "dow": "일", "as_of": "2024-06-01", "sold": 0, "occ": 0.0, "rev": 0, "adr": 0}]}, "signal": {"icon": "🟡", "action": "hold", "diff_pp": 0.0}, "days_before": 29, "bookings": []}, {"branch": "경주", "date": "2026-06-28", "dow": "일", "rooms": 19, "current": {"sold": 0, "occ": 0.0, "rev": 0, "adr": 0, "revpar": 0}, "stly": {"avg_occ": 0.0, "paces": [{"year": 2023, "date": "2023-06-25", "dow": "일", "as_of": "2023-05-27", "sold": 0, "occ": 0.0, "rev": 0, "adr": 0}, {"year": 2024, "date": "2024-06-30", "dow": "일", "as_of": "2024-06-01", "sold": 0, "occ": 0.0, "rev": 0, "adr": 0}]}, "signal": {"icon": "🟡", "action": "hold", "diff_pp": 0.0}, "days_before": 29, "bookings": []}, {"branch": "영흥도", "date": "2026-06-28", "dow": "일", "rooms": 14, "current": {"sold": 0, "occ": 0.0, "rev": 0, "adr": 0, "revpar": 0}, "stly": {"avg_occ": 0.0, "paces": [{"year": 2023, "date": "2023-06-25", "dow": "일", "as_of": "2023-05-27", "sold": 0, "occ": 0.0, "rev": 0, "adr": 0}, {"year": 2024, "date": "2024-06-30", "dow": "일", "as_of": "2024-06-01", "sold": 0, "occ": 0.0, "rev": 0, "adr": 0}]}, "signal": {"icon": "🟡", "action": "hold", "diff_pp": 0.0}, "days_before": 29, "bookings": []}, {"branch": "양양", "date": "2026-06-28", "dow": "일", "rooms": 31, "current": {"sold": 0, "occ": 0.0, "rev": 0, "adr": 0, "revpar": 0}, "stly": {"avg_occ": 1.6, "paces": [{"year": 2023, "date": "2023-06-25", "dow": "일", "as_of": "2023-05-27", "sold": 0, "occ": 0.0, "rev": 0, "adr": 0}, {"year": 2024, "date": "2024-06-30", "dow": "일", "as_of": "2024-06-01", "sold": 1, "occ": 3.2, "rev": 69000.0, "adr": 69000}]}, "signal": {"icon": "🟡", "action": "hold", "diff_pp": -1.6}, "days_before": 29, "bookings": []}, {"branch": "통영", "date": "2026-06-28", "dow": "일", "rooms": 18, "current": {"sold": 0, "occ": 0.0, "rev": 0, "adr": 0, "revpar": 0}, "stly": {"avg_occ": 5.6, "paces": [{"year": 2023, "date": "2023-06-25", "dow": "일", "as_of": "2023-05-27", "sold": 0, "occ": 0.0, "rev": 0, "adr": 0}, {"year": 2024, "date": "2024-06-30", "dow": "일", "as_of": "2024-06-01", "sold": 2, "occ": 11.1, "rev": 180000.0, "adr": 90000}]}, "signal": {"icon": "🟡", "action": "hold", "diff_pp": -5.6}, "days_before": 29, "bookings": []}, {"branch": "청평점", "date": "2026-06-29", "dow": "월", "rooms": 11, "current": {"sold": 0, "occ": 0.0, "rev": 0, "adr": 0, "revpar": 0}, "stly": {"avg_occ": 0.0, "paces": [{"year": 2023, "date": "2023-06-26", "dow": "월", "as_of": "2023-05-27", "sold": 0, "occ": 0.0, "rev": 0, "adr": 0}, {"year": 2024, "date": "2024-07-01", "dow": "월", "as_of": "2024-06-01", "sold": 0, "occ": 0.0, "rev": 0, "adr": 0}]}, "signal": {"icon": "🟡", "action": "hold", "diff_pp": 0.0}, "days_before": 30, "bookings": []}, {"branch": "경주", "date": "2026-06-29", "dow": "월", "rooms": 19, "current": {"sold": 0, "occ": 0.0, "rev": 0, "adr": 0, "revpar": 0}, "stly": {"avg_occ": 0.0, "paces": [{"year": 2023, "date": "2023-06-26", "dow": "월", "as_of": "2023-05-27", "sold": 0, "occ": 0.0, "rev": 0, "adr": 0}, {"year": 2024, "date": "2024-07-01", "dow": "월", "as_of": "2024-06-01", "sold": 0, "occ": 0.0, "rev": 0, "adr": 0}]}, "signal": {"icon": "🟡", "action": "hold", "diff_pp": 0.0}, "days_before": 30, "bookings": []}, {"branch": "영흥도", "date": "2026-06-29", "dow": "월", "rooms": 14, "current": {"sold": 0, "occ": 0.0, "rev": 0, "adr": 0, "revpar": 0}, "stly": {"avg_occ": 0.0, "paces": [{"year": 2023, "date": "2023-06-26", "dow": "월", "as_of": "2023-05-27", "sold": 0, "occ": 0.0, "rev": 0, "adr": 0}, {"year": 2024, "date": "2024-07-01", "dow": "월", "as_of": "2024-06-01", "sold": 0, "occ": 0.0, "rev": 0, "adr": 0}]}, "signal": {"icon": "🟡", "action": "hold", "diff_pp": 0.0}, "days_before": 30, "bookings": []}, {"branch": "양양", "date": "2026-06-29", "dow": "월", "rooms": 31, "current": {"sold": 0, "occ": 0.0, "rev": 0, "adr": 0, "revpar": 0}, "stly": {"avg_occ": 0.0, "paces": [{"year": 2023, "date": "2023-06-26", "dow": "월", "as_of": "2023-05-27", "sold": 0, "occ": 0.0, "rev": 0, "adr": 0}, {"year": 2024, "date": "2024-07-01", "dow": "월", "as_of": "2024-06-01", "sold": 0, "occ": 0.0, "rev": 0, "adr": 0}]}, "signal": {"icon": "🟡", "action": "hold", "diff_pp": 0.0}, "days_before": 30, "bookings": []}, {"branch": "통영", "date": "2026-06-29", "dow": "월", "rooms": 18, "current": {"sold": 0, "occ": 0.0, "rev": 0, "adr": 0, "revpar": 0}, "stly": {"avg_occ": 0.0, "paces": [{"year": 2023, "date": "2023-06-26", "dow": "월", "as_of": "2023-05-27", "sold": 0, "occ": 0.0, "rev": 0, "adr": 0}, {"year": 2024, "date": "2024-07-01", "dow": "월", "as_of": "2024-06-01", "sold": 0, "occ": 0.0, "rev": 0, "adr": 0}]}, "signal": {"icon": "🟡", "action": "hold", "diff_pp": 0.0}, "days_before": 30, "bookings": []}, {"branch": "청평점", "date": "2026-06-30", "dow": "화", "rooms": 11, "current": {"sold": 0, "occ": 0.0, "rev": 0, "adr": 0, "revpar": 0}, "stly": {"avg_occ": 0.0, "paces": [{"year": 2023, "date": "2023-06-27", "dow": "화", "as_of": "2023-05-27", "sold": 0, "occ": 0.0, "rev": 0, "adr": 0}, {"year": 2024, "date": "2024-07-02", "dow": "화", "as_of": "2024-06-01", "sold": 0, "occ": 0.0, "rev": 0, "adr": 0}]}, "signal": {"icon": "🟡", "action": "hold", "diff_pp": 0.0}, "days_before": 31, "bookings": []}, {"branch": "경주", "date": "2026-06-30", "dow": "화", "rooms": 19, "current": {"sold": 0, "occ": 0.0, "rev": 0, "adr": 0, "revpar": 0}, "stly": {"avg_occ": 7.9, "paces": [{"year": 2023, "date": "2023-06-27", "dow": "화", "as_of": "2023-05-27", "sold": 3, "occ": 15.8, "rev": 327000.0, "adr": 109000}, {"year": 2024, "date": "2024-07-02", "dow": "화", "as_of": "2024-06-01", "sold": 0, "occ": 0.0, "rev": 0, "adr": 0}]}, "signal": {"icon": "🟡", "action": "hold", "diff_pp": -7.9}, "days_before": 31, "bookings": []}, {"branch": "영흥도", "date": "2026-06-30", "dow": "화", "rooms": 14, "current": {"sold": 0, "occ": 0.0, "rev": 0, "adr": 0, "revpar": 0}, "stly": {"avg_occ": 0.0, "paces": [{"year": 2023, "date": "2023-06-27", "dow": "화", "as_of": "2023-05-27", "sold": 0, "occ": 0.0, "rev": 0, "adr": 0}, {"year": 2024, "date": "2024-07-02", "dow": "화", "as_of": "2024-06-01", "sold": 0, "occ": 0.0, "rev": 0, "adr": 0}]}, "signal": {"icon": "🟡", "action": "hold", "diff_pp": 0.0}, "days_before": 31, "bookings": []}, {"branch": "양양", "date": "2026-06-30", "dow": "화", "rooms": 31, "current": {"sold": 0, "occ": 0.0, "rev": 0, "adr": 0, "revpar": 0}, "stly": {"avg_occ": 4.8, "paces": [{"year": 2023, "date": "2023-06-27", "dow": "화", "as_of": "2023-05-27", "sold": 3, "occ": 9.7, "rev": 1071000.0, "adr": 357000}, {"year": 2024, "date": "2024-07-02", "dow": "화", "as_of": "2024-06-01", "sold": 0, "occ": 0.0, "rev": 0, "adr": 0}]}, "signal": {"icon": "🟡", "action": "hold", "diff_pp": -4.8}, "days_before": 31, "bookings": []}, {"branch": "통영", "date": "2026-06-30", "dow": "화", "rooms": 18, "current": {"sold": 0, "occ": 0.0, "rev": 0, "adr": 0, "revpar": 0}, "stly": {"avg_occ": 0.0, "paces": [{"year": 2023, "date": "2023-06-27", "dow": "화", "as_of": "2023-05-27", "sold": 0, "occ": 0.0, "rev": 0, "adr": 0}, {"year": 2024, "date": "2024-07-02", "dow": "화", "as_of": "2024-06-01", "sold": 0, "occ": 0.0, "rev": 0, "adr": 0}]}, "signal": {"icon": "🟡", "action": "hold", "diff_pp": 0.0}, "days_before": 31, "bookings": []}];
+
+function fmtWon(n){
+  if (!n) return '-';
+  if (n >= 100000000) return (n/100000000).toFixed(1) + '억';
+  if (n >= 10000) return Math.round(n/10000) + '만';
+  return n.toLocaleString();
+}
+
+function closeModal(){
+  document.getElementById('detailModal').classList.remove('open');
+}
+
+function showCellDetail(idx){
+  const c = CELLS[idx];
+  if (!c) return;
+  const sigColor = c.signal.action==='down'?'var(--a2)':(c.signal.action==='up'?'var(--green)':'var(--orange)');
+
+  // STLY 베이스라인 상세
+  let stlyRows = '';
+  for (const p of c.stly.paces){
+    stlyRows += `<div class="row"><span class="lbl">${p.year} ${p.date} (${p.dow})</span><span>${p.sold}박 / ${p.occ}% · ADR ${fmtWon(p.adr)}</span></div>`;
+  }
+
+  // 예약 리스트
+  let bookingRows = '';
+  if (c.bookings.length === 0){
+    bookingRows = '<tr><td colspan="6" style="color:var(--muted);text-align:center;padding:14px">아직 예약 없음</td></tr>';
+  } else {
+    for (const b of c.bookings){
+      const ch = b.channel || 'UNK';
+      const chCls = ch.replace(/[^A-Z]/g,'').slice(0,8);
+      bookingRows += `<tr>
+        <td>${b.room||'-'}</td>
+        <td>${b.name||'-'}</td>
+        <td><span class="ch-badge ${chCls}">${ch}</span></td>
+        <td style="text-align:right">${fmtWon(b.price)}</td>
+        <td style="text-align:center">${b.nights}박</td>
+        <td style="color:var(--muted)">${b.booking_dt}</td>
+      </tr>`;
+    }
+  }
+
+  const html = `
+    <div class="modal-head">
+      <div>
+        <div class="title">${c.signal.icon} ${c.branch} · ${c.date} (${c.dow})</div>
+        <div class="meta">D-${c.days_before}일 · ${c.rooms}실 보유 · STLY 베이스라인 [2023, 2024]</div>
+      </div>
+      <button class="modal-close" onclick="closeModal()">닫기 ✕</button>
+    </div>
+    <div class="modal-grid">
+      <div class="modal-block">
+        <h3>현재 페이스 (오늘 시점)</h3>
+        <div class="big" style="color:${sigColor}">${c.current.occ}%</div>
+        <div class="row"><span class="lbl">점유박</span><span>${c.current.sold} / ${c.rooms}실</span></div>
+        <div class="row"><span class="lbl">매출</span><span>${fmtWon(c.current.rev)}</span></div>
+        <div class="row"><span class="lbl">ADR</span><span>${fmtWon(c.current.adr)}</span></div>
+        <div class="row"><span class="lbl">RevPAR</span><span>${fmtWon(c.current.revpar)}</span></div>
+      </div>
+      <div class="modal-block">
+        <h3>STLY 베이스라인 (작년 동일 시점)</h3>
+        <div class="big">${c.stly.avg_occ}%</div>
+        ${stlyRows}
+        <div class="row" style="margin-top:6px;border-top:1px solid var(--border);padding-top:6px">
+          <span class="lbl">차이 (현재 − STLY)</span>
+          <span style="color:${sigColor};font-weight:700">${c.signal.diff_pp>0?'+':''}${c.signal.diff_pp}%p</span>
+        </div>
+      </div>
+    </div>
+    <div class="modal-block">
+      <h3>현재 들어와 있는 예약 (${c.bookings.length}건)</h3>
+      <table class="modal-list">
+        <thead><tr>
+          <th>객실</th><th>예약자</th><th>채널</th>
+          <th style="text-align:right">금액</th><th style="text-align:center">박수</th><th>예약일</th>
+        </tr></thead>
+        <tbody>${bookingRows}</tbody>
+      </table>
+    </div>
+  `;
+  document.getElementById('modalBody').innerHTML = html;
+  document.getElementById('detailModal').classList.add('open');
+}
+
+// ESC 키로 닫기
+document.addEventListener('keydown', e => { if(e.key==='Escape') closeModal(); });
+</script>
+
+</body>
+</html>
