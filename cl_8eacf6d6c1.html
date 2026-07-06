@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
 <meta http-equiv="refresh" content="1800">
 <title>글램독 경주 체크인 리스트</title>
-<!-- v2026-07-06 20:20 -->
+<!-- v2026-07-06 20:30 -->
 <style>
   :root {
     --navy: #1B3A5C;
@@ -1128,10 +1128,11 @@ function _submitPw() {
     <button class="btn-view"        id="btnField" onclick="setView('field')">💰 현장기록</button>
     <button class="btn-view"        id="btnNotice"  onclick="setView('notice')">📢 공지사항</button>
     <button class="btn-view"        id="btnExpense" onclick="setView('expense')">💰 지출 입력</button>
+    <button class="btn-view"        id="btnCash"    onclick="setView('cash')">🧮 현금시제</button>
     <button class="btn-view"        id="btnIssue"   onclick="setView('issue')">🔧 이슈 신고</button>
   </div>
   <button class="btn-refresh" id="btnRefresh" onclick="refreshData()">🔄 새로고침</button>
-  <span class="update-time">갱신: 2026-07-06 20:20</span>
+  <span class="update-time">갱신: 2026-07-06 20:30</span>
 </div>
 <div id="brNoticeBanner"></div>
 <div class="content" id="content">
@@ -1239,6 +1240,33 @@ function _submitPw() {
         <div class="op-card">
           <div class="op-card-title">📋 최근 30일 내역</div>
           <div id="exHistoryArea"><div class="op-loading">⏳ 불러오는 중...</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═════════ 🧮 현금시제 (지점) ═════════ -->
+  <div id="cashSection" style="display:none">
+    <div class="op-wrap">
+      <div id="cashSummaryArea" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:10px;margin-bottom:14px"><div class="op-loading">⏳ 불러오는 중...</div></div>
+      <div class="op-grid">
+        <div class="op-card">
+          <div class="op-card-title">🧮 시제 관리</div>
+          <div class="op-form">
+            <button class="op-btn op-btn-primary" onclick="cashGather()">📤 시제수거 기록</button>
+            <button class="op-btn op-btn-ghost" onclick="cashSetOpening()" style="margin-top:8px">⚙️ 시작잔액 설정/수정</button>
+            <div id="cashFormMsg" class="op-form-msg"></div>
+            <div style="font-size:11px;color:#888;margin-top:10px;line-height:1.7">
+              · 현금 유입 = 현장기록 중 <b>현금 결제</b> 자동 집계<br>
+              · 시제수거 = 본사로 올린 현금(본사입금)<br>
+              · 현금지출 = 현장에서 현금으로 쓴 지출<br>
+              · <b>남은 현금 = 시작잔액 + 현금유입 − 시제수거 − 현금지출</b>
+            </div>
+          </div>
+        </div>
+        <div class="op-card">
+          <div class="op-card-title">📋 현금 원장 (최근순)</div>
+          <div id="cashLedgerArea"><div class="op-loading">⏳ 불러오는 중...</div></div>
         </div>
       </div>
     </div>
@@ -1657,11 +1685,11 @@ let currentView = 'list'; // 'list' or 'calendar'
 
 function setView(v) {
   currentView = v;
-  ['btnList','btnCal','btnRes','btnClean','btnField','btnNotice','btnExpense','btnIssue'].forEach(id => {
+  ['btnList','btnCal','btnRes','btnClean','btnField','btnNotice','btnExpense','btnIssue','btnCash'].forEach(id => {
     const el = document.getElementById(id);
     if (el) el.classList.remove('active');
   });
-  const activeBtn = {list:'btnList', calendar:'btnCal', rescal:'btnRes', clean:'btnClean', field:'btnField', notice:'btnNotice', expense:'btnExpense', issue:'btnIssue'}[v];
+  const activeBtn = {list:'btnList', calendar:'btnCal', rescal:'btnRes', clean:'btnClean', field:'btnField', notice:'btnNotice', expense:'btnExpense', issue:'btnIssue', cash:'btnCash'}[v];
   if (activeBtn && document.getElementById(activeBtn))
     document.getElementById(activeBtn).classList.add('active');
 
@@ -1673,6 +1701,7 @@ function setView(v) {
   const noEl    = document.getElementById('noticeSection');
   const exEl    = document.getElementById('expenseSection');
   const isEl    = document.getElementById('issueSection');
+  const cashEl  = document.getElementById('cashSection');
   if (resEl)   resEl.style.display   = v === 'rescal' ? '' : 'none';
   if (cleanEl) cleanEl.style.display = v === 'clean'  ? '' : 'none';
   var clPrintBar = document.getElementById('clPrintBar');
@@ -1681,10 +1710,11 @@ function setView(v) {
   if (noEl) noEl.style.display = v === 'notice'  ? '' : 'none';
   if (exEl) exEl.style.display = v === 'expense' ? '' : 'none';
   if (isEl) isEl.style.display = v === 'issue'   ? '' : 'none';
+  if (cashEl) cashEl.style.display = v === 'cash' ? '' : 'none';
 
   // 운영확장 view 진입 시 지점 탭 그룹 숨김
   var tabsEl = document.getElementById('tabs');
-  if (tabsEl) tabsEl.style.display = (v === 'notice' || v === 'expense' || v === 'issue') ? 'none' : '';
+  if (tabsEl) tabsEl.style.display = (v === 'notice' || v === 'expense' || v === 'issue' || v === 'cash') ? 'none' : '';
 
   if (v === 'calendar') renderCalendar();
   if (v === 'rescal') { renderResCal(); setupResCalDrag(); }
@@ -1696,6 +1726,7 @@ function setView(v) {
   if (v === 'notice')  { if (typeof initNoticeDash  === 'function') initNoticeDash();  }
   if (v === 'expense') { if (typeof initExpenseDash === 'function') initExpenseDash(); }
   if (v === 'issue')   { if (typeof initIssueDash   === 'function') initIssueDash();   }
+  if (v === 'cash')    { if (typeof initCashDash    === 'function') initCashDash();    }
 }
 
 function getDayCount(dateStr) {
@@ -3022,6 +3053,7 @@ function loadBranchExpenses() {
 }
 
 function renderBranchExpenseHistory(rows) {
+  rows = (rows||[]).filter(function(r){ return r.category !== '시제시작잔액'; });
   var area = document.getElementById('exHistoryArea');
   if (!rows.length) { area.innerHTML = '<div class="op-empty">아직 등록된 지출이 없습니다.</div>'; return; }
   rows.sort(function(a, b){ return a.date < b.date ? 1 : (a.date > b.date ? -1 : 0); });
@@ -3065,6 +3097,113 @@ function showExMsg(text, kind) {
   if (!el) return;
   el.className = 'op-form-msg' + (kind ? ' ' + kind : '');
   el.textContent = text;
+}
+
+// ─── 현금시제 (지점) ─────
+function initCashDash() { loadCashData(); }
+function _cashSum(arr) { return arr.reduce(function(a,b){ return a + (Number(b)||0); }, 0); }
+function loadCashData() {
+  var sumArea = document.getElementById('cashSummaryArea');
+  var ledArea = document.getElementById('cashLedgerArea');
+  if (sumArea) sumArea.innerHTML = '<div class="op-loading">⏳ 불러오는 중...</div>';
+  var today = _ymd(new Date());
+  var FROM = '2000-01-01';
+  var pEnt = fetch(GAS_ENDPOINT + '?action=getRangeEntries&fromDate=' + FROM + '&toDate=' + today + '&branch=' + encodeURIComponent(currentBranch)).then(function(r){ return r.json(); });
+  var pExp = fetch(GAS_ENDPOINT + '?action=getExpenses&fromDate=' + FROM + '&toDate=' + today + '&branch=' + encodeURIComponent(currentBranch)).then(function(r){ return r.json(); });
+  Promise.all([pEnt, pExp]).then(function(res){
+    var entries  = (res[0] && res[0].ok) ? (res[0].data || []) : [];
+    var expenses = (res[1] && res[1].ok) ? (res[1].data || []) : [];
+    renderCash(entries, expenses);
+  }).catch(function(){
+    if (sumArea) sumArea.innerHTML = '<div class="op-error">조회 실패 — 네트워크 확인</div>';
+    if (ledArea) ledArea.innerHTML = '';
+  });
+}
+function renderCash(entries, expenses) {
+  var opens = expenses.filter(function(e){ return e.category === '시제시작잔액'; })
+                      .sort(function(a,b){ return a.date < b.date ? -1 : a.date > b.date ? 1 : 0; });
+  var opening  = opens.length ? opens[opens.length-1] : null;
+  var openDate = opening ? opening.date : '2000-01-01';
+  var openAmt  = opening ? (Number(opening.amount)||0) : 0;
+
+  var cashIn = entries.filter(function(x){ return x.payMethod === '현금' && x.date > openDate; });
+  var gather = expenses.filter(function(e){ return e.category === '본사입금' && e.date > openDate; });
+  var spend  = expenses.filter(function(e){ return e.category === '현금지출' && e.date > openDate; });
+
+  var inflowSum = _cashSum(cashIn.map(function(x){ return x.total; }));
+  var gatherSum = _cashSum(gather.map(function(x){ return x.amount; }));
+  var spendSum  = _cashSum(spend.map(function(x){ return x.amount; }));
+  var remain    = openAmt + inflowSum - gatherSum - spendSum;
+
+  var cards = [
+    ['시작잔액', openAmt, '#607d8b', (opening ? (openDate + ' 기준') : '미설정')],
+    ['현금 유입', inflowSum, '#2e7d32', '현장 현금결제 ' + cashIn.length + '건'],
+    ['시제수거', gatherSum, '#e65100', gather.length + '건'],
+    ['현금지출', spendSum, '#c62828', spend.length + '건'],
+    ['남은 현금', remain, '#1B3A5C', '현재 금고 예상']
+  ];
+  var sumArea = document.getElementById('cashSummaryArea');
+  sumArea.innerHTML = cards.map(function(c){
+    return '<div class="op-summary-card" style="border-top:3px solid ' + c[2] + '">'
+      + '<div class="op-summary-label">' + c[0] + '</div>'
+      + '<div class="op-summary-value" style="color:' + c[2] + '">' + c[1].toLocaleString() + '원</div>'
+      + '<div style="font-size:10px;color:#999;margin-top:3px">' + c[3] + '</div></div>';
+  }).join('');
+
+  var led = [];
+  cashIn.forEach(function(x){ led.push({ date:x.date, type:'현금유입', label:((x.room||'') + ' ' + (x.guest||'')).trim(), amt:Number(x.total)||0, sign:1 }); });
+  gather.forEach(function(e){ led.push({ date:e.date, type:'시제수거', label:e.memo||'', amt:Number(e.amount)||0, sign:-1 }); });
+  spend.forEach(function(e){  led.push({ date:e.date, type:'현금지출', label:e.memo||'', amt:Number(e.amount)||0, sign:-1 }); });
+  if (opening) led.push({ date:openDate, type:'시작잔액', label:opening.memo||'', amt:openAmt, sign:1 });
+  led.sort(function(a,b){ return a.date < b.date ? 1 : a.date > b.date ? -1 : 0; });
+
+  var ledArea = document.getElementById('cashLedgerArea');
+  if (!led.length) { ledArea.innerHTML = '<div class="op-empty">내역이 없습니다. 시작잔액을 먼저 설정하세요.</div>'; return; }
+  var rows = led.slice(0,200).map(function(r){
+    var color = r.sign > 0 ? '#2e7d32' : '#c62828';
+    var sign  = r.sign > 0 ? '+' : '−';
+    return '<tr><td>' + r.date + '</td><td>' + r.type + '</td><td>' + opEscapeHtml(r.label) + '</td>'
+      + '<td style="text-align:right;font-weight:600;color:' + color + '">' + sign + r.amt.toLocaleString() + '원</td></tr>';
+  }).join('');
+  ledArea.innerHTML = '<table class="op-table"><thead><tr><th>날짜</th><th>구분</th><th>내용</th><th style="text-align:right">금액</th></tr></thead><tbody>' + rows + '</tbody></table>';
+}
+function cashGather() {
+  var v = prompt('본사로 올린(수거한) 현금 금액을 입력하세요 (원)');
+  if (v === null) return;
+  var amt = Number(String(v).replace(/[^0-9]/g,'')) || 0;
+  if (amt <= 0) { _cashMsg('금액을 정확히 입력하세요.', 'error'); return; }
+  var memo = prompt('메모 (수거자/비고, 선택)') || '시제수거';
+  _cashMsg('저장 중...', '');
+  fetch(GAS_ENDPOINT, { method:'POST', body: JSON.stringify({
+    action:'addExpense', branch:currentBranch, date:_ymd(new Date()),
+    category:'본사입금', amount:amt, memo:memo, registeredBy:currentBranch
+  }) }).then(function(r){ return r.json(); }).then(function(res){
+    if (!res || !res.ok) { _cashMsg('저장 실패', 'error'); return; }
+    _cashMsg('✅ 시제수거 ' + amt.toLocaleString() + '원 기록', 'success');
+    loadCashData();
+  }).catch(function(){ _cashMsg('네트워크 오류', 'error'); });
+}
+function cashSetOpening() {
+  var v = prompt('현재 금고에 있는 실제 현금(시작잔액)을 입력하세요 (원)
+오늘 날짜 기준으로 설정되며 이후 유입/지출이 누적됩니다.');
+  if (v === null) return;
+  var amt = Number(String(v).replace(/[^0-9]/g,'')) || 0;
+  if (amt < 0) { _cashMsg('금액을 정확히 입력하세요.', 'error'); return; }
+  _cashMsg('저장 중...', '');
+  fetch(GAS_ENDPOINT, { method:'POST', body: JSON.stringify({
+    action:'addExpense', branch:currentBranch, date:_ymd(new Date()),
+    category:'시제시작잔액', amount:amt, memo:'시제 시작잔액 설정', registeredBy:currentBranch
+  }) }).then(function(r){ return r.json(); }).then(function(res){
+    if (!res || !res.ok) { _cashMsg('저장 실패', 'error'); return; }
+    _cashMsg('✅ 시작잔액 ' + amt.toLocaleString() + '원 설정', 'success');
+    loadCashData();
+  }).catch(function(){ _cashMsg('네트워크 오류', 'error'); });
+}
+function _cashMsg(text, kind) {
+  var el = document.getElementById('cashFormMsg');
+  if (!el) return;
+  el.textContent = text;
+  el.style.color = kind === 'error' ? '#c62828' : (kind === 'success' ? '#2e7d32' : '#888');
 }
 
 // ─── 운영확장 — 이슈 신고 (지점) ─────
