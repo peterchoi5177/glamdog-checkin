@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
 <meta http-equiv="refresh" content="1800">
 <title>글램독 체크인 리스트 (본사)</title>
-<!-- v2026-07-06 20:30 -->
+<!-- v2026-07-06 20:38 -->
 <style>
   :root {
     --navy: #1B3A5C;
@@ -1091,7 +1091,7 @@ function _submitPw() {
     <option value="">🏠 예약현황 (지점 선택)</option>
     <option value="cl_6a85a13087.html">가평(가평점)</option><option value="cl_806a86626b.html">가평(청평점)</option><option value="cl_8eacf6d6c1.html">경주</option><option value="cl_a88bfd0a7f.html">영흥도</option><option value="cl_9edad9ddd2.html">양양</option><option value="cl_d3039f7a59.html">통영</option>
   </select>
-  <span class="update-time">갱신: 2026-07-06 20:30</span>
+  <span class="update-time">갱신: 2026-07-06 20:38</span>
 </div>
 <div class="tabs" id="tabs"></div>
 <div class="content" id="content">
@@ -1380,6 +1380,24 @@ function memoHtml(wd) {
   return '<div style="font-size:11px;color:#444;line-height:1.6">' + wd.request + '</div>';
 }
 
+function memoCellHtml(bno, wd) {
+  var reqHtml = (wd && wd.request)
+    ? '<div style="font-size:11px;color:#444;line-height:1.5;margin-bottom:3px">📋 ' + wd.request + '</div>' : '';
+  var memoEnabled = (typeof MEMO_ENABLED !== 'undefined' && MEMO_ENABLED && bno);
+  if (!memoEnabled) {
+    if (reqHtml) return reqHtml;
+    if (!wd) return '<div class="write-lines">' + writeLine() + '</div>';
+    return '<div style="font-size:11px;color:#ccc;text-align:center">—</div>';
+  }
+  var memo = (typeof _memoData !== 'undefined' && _memoData[bno]) ? _memoData[bno] : '';
+  var editor = '<textarea class="memo-edit" data-bno="' + bno + '" onblur="saveBookingMemo(this)" placeholder="관리자 메모…" '
+    + 'style="width:100%;min-height:32px;border:1px solid #e2e6ea;border-radius:5px;font-size:11px;padding:4px 6px;resize:vertical;font-family:inherit;box-sizing:border-box">'
+    + opEscapeHtml(memo) + '</textarea>';
+  var printBlk = memo
+    ? '<div class="memo-print" style="font-size:11px;color:#111;line-height:1.4">✎ ' + memo + '</div>'
+    : '<div class="memo-print write-lines">' + writeLine() + '</div>';
+  return reqHtml + editor + printBlk;
+}
 function personsHtml(wd) {
   if (!wd || !wd.persons) return '<div style="color:#ccc;text-align:center">—</div>';
   return '<div style="text-align:center;font-size:15px;font-weight:700;color:#1B3A5C">' + wd.persons + '명</div>';
@@ -1504,7 +1522,7 @@ function renderTable() {
       <td class="col-payment">
         <div class="payment-box">${r.total.toLocaleString()}원${onsite}</div>
       </td>
-      <td class="col-memo">${memoHtml(wd)}</td>
+      <td class="col-memo">${memoCellHtml(bno, wd)}</td>
       ${fldBtn}
     </tr>`;
   });
