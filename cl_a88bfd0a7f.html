@@ -3239,8 +3239,7 @@ function cashGather() {
   }).catch(function(){ _cashMsg('네트워크 오류', 'error'); });
 }
 function cashSetOpening() {
-  var v = prompt('현재 금고에 있는 실제 현금(시작잔액)을 입력하세요 (원)
-오늘 날짜 기준으로 설정되며 이후 유입/지출이 누적됩니다.');
+  var v = prompt('현재 금고에 있는 실제 현금(시작잔액)을 입력하세요 (원)\n오늘 날짜 기준으로 설정되며 이후 유입/지출이 누적됩니다.');
   if (v === null) return;
   var amt = Number(String(v).replace(/[^0-9]/g,'')) || 0;
   if (amt < 0) { _cashMsg('금액을 정확히 입력하세요.', 'error'); return; }
