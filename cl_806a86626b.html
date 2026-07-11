@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
 <meta http-equiv="refresh" content="1800">
 <title>글램독 가평(청평점) 체크인 리스트</title>
-<!-- v2026-07-11 17:06 -->
+<!-- v2026-07-11 17:39 -->
 <style>
   :root {
     --navy: #1B3A5C;
@@ -976,6 +976,20 @@
     flex: 1; padding: 7px 10px; border: 1px solid var(--border); border-radius: 4px;
     font-size: 13px; font-family: inherit; resize: vertical; min-height: 50px;
   }
+
+  /* ── 입실 체크(체크인) ── */
+  .ci-btn { display:inline-block; padding:3px 11px; border-radius:12px; font-size:11px;
+    font-weight:700; cursor:pointer; border:1.5px solid #94a3b8; background:#f1f5f9; color:#475569; }
+  .ci-btn.ci-done { background:#16a34a; border-color:#16a34a; color:#fff; }
+  .ci-row-done { background:#f1f8f1 !important; opacity:.8; }
+  .ci-filter-bar { display:flex; gap:6px; margin:0 0 12px; flex-wrap:wrap; }
+  .ci-fbtn { padding:6px 14px; border:1.5px solid #ccd6e0; border-radius:6px; background:#fff;
+    color:#555; font-size:13px; font-weight:700; cursor:pointer; }
+  .ci-fbtn.active { background:var(--navy); color:#fff; border-color:var(--navy); }
+  .ci-cnt { display:inline-block; margin-left:4px; background:#e2e8f0; color:#475569;
+    border-radius:10px; padding:0 7px; font-size:11px; }
+  .ci-cnt-done { background:#16a34a; color:#fff; }
+  @media print { .ci-filter-bar, .ci-btn { display:none !important; } .ci-row-done { opacity:1 !important; } }
 </style>
 </head>
 <body>
@@ -1162,7 +1176,7 @@ function _submitPw() {
     <button class="btn-view"        id="btnIssue"   onclick="setView('issue')">🔧 이슈 신고</button>
   </div>
   <button class="btn-refresh" id="btnRefresh" onclick="refreshData()">🔄 새로고침</button>
-  <span class="update-time">갱신: 2026-07-11 17:06</span>
+  <span class="update-time">갱신: 2026-07-11 17:39</span>
 </div>
 <div id="brNoticeBanner"></div>
 <div class="content" id="content">
@@ -1380,6 +1394,62 @@ var _memoData = {};
 var _fieldEntries = {};
 var _fm = { bno:"", room:"", guest:"", bbq:0, person:0, dog:0, bigdog:0, etc:[], pay:"", entryId:"", editMode:false };
 
+// ─── 입실체크 JS (지점 전용) ─────────────────────────────
+
+// ─── 입실 체크(체크인) 상태 ───────────────────────────────
+var _ciStatus = {};      // { room: 'done' }  — GAS에서 로드
+var _ciFilter = 'all';   // 'all' | 'wait' | 'done'
+function ciLoadStatus(cb) {
+  fetch(GAS_ENDPOINT + '?action=getCheckinStatus&date=' + currentDate
+        + '&branch=' + encodeURIComponent(currentBranch))
+    .then(function(r){ return r.json(); })
+    .then(function(res){ if (res && res.ok) _ciStatus = res.data || {}; if (cb) cb(); })
+    .catch(function(){ if (cb) cb(); });
+}
+function toggleCheckinBtn(btn) { toggleCheckin(btn.getAttribute('data-room')); }
+function toggleCheckin(room) {
+  var done = _ciStatus[room] === 'done';
+  if (done) delete _ciStatus[room]; else _ciStatus[room] = 'done';
+  if (typeof renderAll === 'function') renderAll(); else renderTable();
+  fetch(GAS_ENDPOINT, { method:'POST', body: JSON.stringify({
+    action:'setCheckinStatus', date: currentDate, branch: currentBranch,
+    room: room, status: done ? '' : 'done'
+  })}).catch(function(){ if (typeof showToast === 'function') showToast('입실체크 저장 실패 — 재시도'); });
+}
+function ciCounts(recs) {
+  var done = 0, i;
+  for (i = 0; i < recs.length; i++) { if (_ciStatus[recs[i].room] === 'done') done++; }
+  return { done: done, wait: recs.length - done, total: recs.length };
+}
+function renderCiFilterBar(recs) {
+  var area = document.getElementById('tableArea');
+  if (!area) return;
+  var host = document.getElementById('ciFilterBar');
+  if (!host) {
+    host = document.createElement('div');
+    host.id = 'ciFilterBar';
+    host.className = 'ci-filter-bar';
+    area.parentNode.insertBefore(host, area);
+  }
+  var c = ciCounts(recs || []);
+  host.innerHTML =
+      '<button id="ciAll"  class="ci-fbtn' + (_ciFilter==='all'?' active':'')  + '" onclick="filterCheckin('all')">전체 <span class="ci-cnt">' + c.total + '</span></button>'
+    + '<button id="ciWait" class="ci-fbtn' + (_ciFilter==='wait'?' active':'') + '" onclick="filterCheckin('wait')">입실대기 <span class="ci-cnt">' + c.wait + '</span></button>'
+    + '<button id="ciDone" class="ci-fbtn' + (_ciFilter==='done'?' active':'') + '" onclick="filterCheckin('done')">입실완료 <span class="ci-cnt ci-cnt-done">' + c.done + '</span></button>';
+}
+function filterCheckin(mode) {
+  _ciFilter = mode;
+  ['ciAll','ciWait','ciDone'].forEach(function(id){ var el=document.getElementById(id); if(el) el.classList.remove('active'); });
+  var b = {all:'ciAll', wait:'ciWait', done:'ciDone'}[mode];
+  if (b && document.getElementById(b)) document.getElementById(b).classList.add('active');
+  var rows = document.querySelectorAll('#tableArea tbody tr[data-ci]');
+  rows.forEach(function(tr){
+    var st = tr.getAttribute('data-ci');
+    var show = (mode==='all') || (mode==='wait' && st!=='done') || (mode==='done' && st==='done');
+    tr.style.display = show ? '' : 'none';
+  });
+}
+
 // ─── 테이블 / 달력 JS ────────────────────────────────────
 
 function staysLabel(r) {
@@ -1589,12 +1659,17 @@ function renderTable() {
 
   const area = document.getElementById('tableArea');
   if (records.length === 0) {
+    var _ob = document.getElementById('ciFilterBar'); if (_ob) _ob.remove();
     area.innerHTML = '<div class="empty-state">해당 날짜에 입실 예약이 없습니다.</div>';
     return;
   }
 
   let rows = '';
   records.forEach((r, idx) => {
+    const ciDone = (typeof _ciStatus !== 'undefined' && _ciStatus[r.room] === 'done');
+    const ciBtn = (typeof _ciStatus !== 'undefined')
+      ? `<button class="ci-btn${ciDone?' ci-done':''}" data-room="${r.room}" onclick="toggleCheckinBtn(this)">${ciDone?'✅ 입실완료':'○ 입실체크'}</button>`
+      : '';
     const onsite = r.onsite > 0
       ? `<span style="color:#888;font-size:11px"> +현장${r.onsite.toLocaleString()}</span>` : '';
     const bno = r.booking_no || '';
@@ -1607,13 +1682,14 @@ function renderTable() {
       ? ' <span style="color:#16a34a;font-weight:900;font-size:15px;vertical-align:middle" title="웰컴등록완료">✓</span>'
       : '';
     rows += `
-    <tr style="${wd ? 'border-left:4px solid #4ade80;' : 'border-left:4px solid #fde047;'}">
+    <tr data-ci="${ciDone?'done':'wait'}"${ciDone?' class="ci-row-done"':''} style="${wd ? 'border-left:4px solid #4ade80;' : 'border-left:4px solid #fde047;'}">
       <td class="col-no">${idx + 1}</td>
       <td class="col-room"><span class="room-name">${r.room}</span></td>
       <td class="col-guest">
         <div class="guest-name">${r.guest}${welcomeCheck}</div>
         <div class="guest-phone">${r.phone}</div>
         ${channelBadge(r.channel)}
+        <div style="margin-top:5px">${ciBtn}</div>
       </td>
       <td class="col-stays">${staysLabel(r)}</td>
       <td class="col-arrive">${arriveHtml(wd)}</td>
@@ -1637,7 +1713,7 @@ function renderTable() {
   const colSpan  = hasField ? 12 : 11;
   let blankRows = '';
   for (let i = 0; i < BLANK_COUNT; i++) {
-    blankRows += `<tr style="height:38px;background:#fafaf8;">
+    blankRows += `<tr data-ci="wait" style="height:38px;background:#fafaf8;">
       <td class="col-no" style="color:#bbb">${records.length + i + 1}</td>
       <td class="col-room"><div class="write-lines">${writeLine()}</div></td>
       <td class="col-guest"><div class="write-lines">${writeLine()}</div></td>
@@ -1679,6 +1755,7 @@ function renderTable() {
     </thead>
     <tbody>${rows}${blankRows}</tbody>
   </table>`;
+  if (typeof renderCiFilterBar === 'function') { renderCiFilterBar(records); filterCheckin(_ciFilter); }
 }
 
 
@@ -1727,12 +1804,14 @@ function refreshData() {
 
 loadWelcomeData(currentDate);  // 페이지 로드 시 웰컴 + 렌더
 loadTodayFieldEntries();       // 페이지 로드 시 오늘 현장기록 로드
+if (typeof ciLoadStatus === 'function') ciLoadStatus(renderTable);  // 입실체크 상태 로드
 if (typeof loadMemoData === 'function') loadMemoData();  // 예약별 메모 로드
 
 document.getElementById('datePicker').addEventListener('change', e => {
   currentDate = e.target.value;
   loadWelcomeData(currentDate);
   loadTodayFieldEntries();
+  if (typeof ciLoadStatus === 'function') ciLoadStatus(renderTable);
   if (currentView === 'clean') { _clStatus = {}; clLoadStatus(renderCleaningView); }
 });
 setTimeout(() => location.reload(), 30 * 60 * 1000);
@@ -1777,7 +1856,11 @@ function setView(v) {
   if (v === 'calendar') renderCalendar();
   if (v === 'rescal') { renderResCal(); setupResCalDrag(); }
   if (v === 'list') {
-    if (typeof renderAll === 'function') renderAll(); else renderTable();
+    if (typeof ciLoadStatus === 'function') {
+      ciLoadStatus(function() { if (typeof renderAll === 'function') renderAll(); else renderTable(); });
+    } else {
+      if (typeof renderAll === 'function') renderAll(); else renderTable();
+    }
   }
   if (v === 'clean') { clLoadStatus(renderCleaningView); }
   if (v === 'field') { initFieldDash(); }
