@@ -3,7 +3,7 @@
 <title>글램독 양양점 · 2025–2026 실적</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <style>
-:root{--b:#2E75B6;--o:#C55A11;--ink:#1f2937;--mut:#6b7280;--line:#e5e7eb;--bg:#f7f8fa;--red:#c0392b;--grn:#1e874b}
+:root{color-scheme:light;--b:#2E75B6;--o:#C55A11;--ink:#1f2937;--mut:#6b7280;--line:#e5e7eb;--bg:#f7f8fa;--red:#c0392b;--grn:#1e874b}
 *{box-sizing:border-box;margin:0;padding:0}
 body{font-family:-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Pretendard","Malgun Gothic",sans-serif;color:var(--ink);background:var(--bg);line-height:1.5}
 .wrap{max-width:1180px;margin:0 auto;padding:32px 20px 60px}
@@ -11,7 +11,9 @@ header{border-bottom:3px solid var(--ink);padding-bottom:16px;margin-bottom:8px}
 h1{font-size:26px;font-weight:800;letter-spacing:-.5px}
 .sub{color:var(--mut);font-size:13px;margin-top:6px}
 h2{font-size:17px;font-weight:700;margin:34px 0 14px;padding-left:10px;border-left:4px solid var(--b)}
-.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px;margin-top:20px}
+.callout{margin-top:18px;background:#fff7ed;border:1px solid #fed7aa;border-left:4px solid var(--o);border-radius:10px;padding:13px 16px;font-size:13px;color:#7c2d12;line-height:1.65}
+.callout b{color:#9a3412}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px;margin-top:18px}
 .card{background:#fff;border:1px solid var(--line);border-radius:12px;padding:16px 18px}
 .card .lab{font-size:12px;color:var(--mut);font-weight:600}
 .card .val{font-size:22px;font-weight:800;margin-top:6px;letter-spacing:-.5px}
@@ -32,18 +34,22 @@ tfoot td{font-weight:800;background:#f0f2f5;border-top:2px solid #cbd5e1}
 .note{font-size:11.5px;color:var(--mut);margin-top:10px;line-height:1.7}
 .tag{display:inline-block;font-size:11px;font-weight:700;padding:2px 8px;border-radius:20px;margin-right:6px}
 .tag.b{background:#e7f0fb;color:var(--b)} .tag.o{background:#fbeae0;color:var(--o)}
-canvas{max-height:280px}
+canvas{max-height:280px}.panel canvas{height:280px!important}
 </style></head><body><div class="wrap">
 <header>
 <h1>글램독 양양점 · 2025–2026 실적 대시보드</h1>
 <div class="sub">객실 31실 · <b>2025</b> 투자보고서 손익 / <b>2026</b> 손익계산서 1~5월(임차료 매월 12.1M 정상화) · OCC·ADR = 예약대시보드 기준</div>
 </header>
+<div class="callout">
+<b>⚠ 감가상각비 제외 안내</b> — 2026년 손익계산서에는 감가상각비가 계상되어 있지 않습니다. 두 해를 같은 기준으로 비교하기 위해 <b>2025년에서도 리모델링 감가상각비를 판관비·총지출에서 제외</b>했습니다.
+따라서 아래 <b>이익 지표는 감가상각 제외(EBITDA 성격)</b> 기준입니다. 실제 회계상 손익으로 보려면 <b>양양점 리모델링 감가상각비 연 50,000,000원(월 약 4,166,667원)</b>을 2025·2026 각각의 판관비에 다시 더해야 합니다. (즉 표시된 이익에서 연 5,000만원만큼 낮아짐)
+</div>
 <div class="cards" id="kpi"></div>
 
 <h2>월별 매출 추이</h2>
 <div class="panel"><canvas id="cRev"></canvas></div>
 
-<h2>판관비 구성 (인건비 · 고정비 · 변동비)</h2>
+<h2>판관비 구성 (인건비 · 고정비 · 변동비) · 감가상각 제외</h2>
 <div class="grid2">
 <div class="panel"><h3><span class="tag b">2025</span>월별 비용 구성</h3><canvas id="c25"></canvas></div>
 <div class="panel"><h3><span class="tag o">2026</span>월별 비용 구성 (1~5월)</h3><canvas id="c26"></canvas></div>
@@ -53,9 +59,9 @@ canvas{max-height:280px}
 <div class="panel"><canvas id="cOcc"></canvas>
 <div class="note">※ 2026 3월·초4월 OCC/ADR은 예약 마스터 수집(2026-04-08~) 특성상 실제보다 과소 집계됩니다. 매출·비용은 손익 기준이라 정확합니다.</div></div>
 
-<h2>2025 월별 손익</h2>
+<h2>2025 월별 손익 <span style="font-size:12px;color:#9a3412;font-weight:600">(감가상각 제외)</span></h2>
 <div style="overflow-x:auto"><table class="t25"><thead><tr>
-<th>월</th><th>매출</th><th>인건비</th><th>고정비</th><th>변동비</th><th>기타</th><th>총지출</th><th>순이익</th><th>OCC</th><th>ADR</th></tr></thead>
+<th>월</th><th>매출</th><th>인건비</th><th>고정비</th><th>변동비</th><th>기타</th><th>총지출</th><th>이익(감가제외)</th><th>OCC</th><th>ADR</th></tr></thead>
 <tbody id="tb25"></tbody><tfoot id="tf25"></tfoot></table></div>
 
 <h2>2026 월별 손익 (1~5월)</h2>
@@ -65,65 +71,39 @@ canvas{max-height:280px}
 
 <div class="note" style="margin-top:24px">
 <b>산출 기준</b><br>
-· 2025 총지출 = 인건비 + 고정비(임차료·화재보험·점검비·통신비·리모델링감가) + 변동비(수도광열·소모품·지급수수료·광고·판매채널수수료·출장) + 기타(폐기물).<br>
+· <b>감가상각비 제외</b>: 비교 일관성을 위해 2025·2026 모두 판관비에서 감가상각비 미포함. 실제 반영 시 각 연도 판관비에 <b>연 50,000,000원(양양 리모델링 감가)</b> 추가 필요.<br>
+· 2025 총지출 = 인건비 + 고정비(임차료·화재보험·점검비·통신비) + 변동비(수도광열·소모품·지급수수료·광고·판매채널수수료·출장) + 기타(폐기물). <span class="muted">(리모델링 감가 4,166,667원/월 제외됨)</span><br>
 · 2026 판관비 = 인건비 + 고정비(임차료·통신비) + 변동비(전력·수도광열·소모품·지급수수료·광고·채널수수료·출장·복리후생·세금). 임차료는 3월 편중분을 매월 12.1M로 정상화.<br>
-· 이익 라벨: 2025=순이익(감가 포함), 2026=영업이익(판관비 기준)으로 범위가 달라 직접 비교 시 감가·기타 차이 유의.
+· 이익 라벨: 2025=이익(감가제외), 2026=영업이익(감가 미계상) — 둘 다 감가 제외 기준으로 통일.
 </div>
 </div>
-
 <script>
-const D={"M": ["1월", "2월", "3월", "4월", "5월", "6월", "7월", "8월", "9월", "10월", "11월", "12월"], "y25": {"rev": [44317476, 25166310, 33782659, 23797334, 44588877, 38344681, 94388762, 123085999, 22317720, 42567076, 15072273, 16196875], "labor": [9500000, 9100000, 8000000, 8000000, 8550000, 8550000, 13500000, 15500000, 9500000, 8500000, 9100000, 5500000], "fixed": [18334682, 18334682, 18334682, 18334682, 18334682, 18334682, 18334682, 18334682, 18334682, 18334682, 18334682, 18334682], "var": [14800257, 13212074, 13927603, 10164314, 12128936, 6598200, 11799960, 26101344, 11493854, 7494638, 7719010, 7483126], "etc": [660000, 660000, 660000, 660000, 660000, 660000, 660000, 880000, 660000, 660000, 660000, 660000], "spend": [43294939, 41306756, 40922285, 37158996, 39673618, 34142882, 44294642, 60816026, 39988536, 34989320, 35813692, 31977808], "net": [1022537, -16140446, -7139626, -13361662, 4915259, 4201799, 50094120, 62269973, -17670816, 7577756, -20741419, -15780933], "occ": [41.21, 37.56, 34.86, 28.46, 48.39, 41.83, 58.38, 61.6, 27.74, 22.37, 0.11, 0.0], "adr": [100712, 70451, 90367, 82577, 106769, 101764, 176014, 215124, 88988, 171918, 119000, 0], "rn": [396, 326, 335, 265, 465, 389, 561, 592, 258, 215, 1, 0], "rev_t": 523626042, "labor_t": 113300000, "fixed_t": 220016184, "var_t": 142923316, "etc_t": 8140000, "spend_t": 484379500, "net_t": 39246542, "occ_y": 44.9, "adr_y": 120335, "rn_t": 3803}, "y26": {"rev": [15851986, 15040267, 9160958, 9407153, 31368607], "labor": [4717500, 5110900, 4917500, 4917500, 4917500], "fixed": [12574370, 12617200, 12574200, 12574240, 12577942], "var": [10441063, 9720661, 10382469, 10763043, 11944963], "sga": [27732933, 27448761, 27874169, 28254783, 29440405], "oi": [-11880947, -12408494, -18713211, -18847630, 1928202], "occ": [null, null, 6.33, 19.51, 28.32], "adr": [null, null, 101555, 102848, 149999], "rn": [null, null, 51, 175, 228], "rev_t": 80828971, "labor_t": 24580900, "fixed_t": 62917952, "var_t": 53252199, "sga_t": 140751051, "oi_t": -59922080}};
+const D={"M": ["1월", "2월", "3월", "4월", "5월", "6월", "7월", "8월", "9월", "10월", "11월", "12월"], "dep_annual": 50000000, "y25": {"rev": [44317476, 25166310, 33782659, 23797334, 44588877, 38344681, 94388762, 123085999, 22317720, 42567076, 15072273, 16196875], "labor": [9500000, 9100000, 8000000, 8000000, 8550000, 8550000, 13500000, 15500000, 9500000, 8500000, 9100000, 5500000], "fixed": [14168015, 14168015, 14168015, 14168015, 14168015, 14168015, 14168015, 14168015, 14168015, 14168015, 14168015, 14168015], "var": [14800257, 13212074, 13927603, 10164314, 12128936, 6598200, 11799960, 26101344, 11493854, 7494638, 7719010, 7483126], "etc": [660000, 660000, 660000, 660000, 660000, 660000, 660000, 880000, 660000, 660000, 660000, 660000], "spend": [39128272, 37140089, 36755618, 32992329, 35506951, 29976215, 40127975, 56649359, 35821869, 30822653, 31647025, 27811141], "net": [5189204, -11973779, -2972959, -9194995, 9081926, 8368466, 54260787, 66436640, -13504149, 11744423, -16574752, -11614266], "occ": [41.21, 37.56, 34.86, 28.46, 48.39, 41.83, 58.38, 61.6, 27.74, 22.37, 0.11, 0.0], "adr": [100712, 70451, 90367, 82577, 106769, 101764, 176014, 215124, 88988, 171918, 119000, 0], "rn": [396, 326, 335, 265, 465, 389, 561, 592, 258, 215, 1, 0], "rev_t": 523626042, "labor_t": 113300000, "fixed_t": 170016180, "var_t": 142923316, "etc_t": 8140000, "spend_t": 434379496, "net_t": 89246546, "occ_y": 44.9, "adr_y": 120335, "rn_t": 3803}, "y26": {"rev": [15851986, 15040267, 9160958, 9407153, 31368607], "labor": [4717500, 5110900, 4917500, 4917500, 4917500], "fixed": [12574370, 12617200, 12574200, 12574240, 12577942], "var": [10441063, 9720661, 10382469, 10763043, 11944963], "sga": [27732933, 27448761, 27874169, 28254783, 29440405], "oi": [-11880947, -12408494, -18713211, -18847630, 1928202], "occ": [null, null, 6.33, 19.51, 28.32], "adr": [null, null, 101555, 102848, 149999], "rn": [null, null, 51, 175, 228], "rev_t": 80828971, "labor_t": 24580900, "fixed_t": 62917952, "var_t": 53252199, "sga_t": 140751051, "oi_t": -59922080}};
 const won=n=>n==null?'–':n.toLocaleString('ko-KR');
 const wonM=n=>n==null?'–':(n/1e6).toFixed(1)+'M';
 const pct=n=>n==null?'–':n.toFixed(1)+'%';
 const neg=n=>(typeof n==='number'&&n<0)?'neg':'';
-
-// KPI
 const y25=D.y25,y26=D.y26;
 const rev25_5=y25.rev.slice(0,5).reduce((a,b)=>a+b,0);
 const kpis=[
  ['2025 연매출',won(y25.rev_t)+'원',null],
- ['2025 순이익',won(y25.net_t)+'원',y25.net_t>=0?'up':'down'],
+ ['2025 이익(감가제외)',won(y25.net_t)+'원',y25.net_t>=0?'up':'down'],
  ['2025 OCC / ADR',y25.occ_y+'% / '+won(y25.adr_y),null],
  ['2026 매출(1~5월)',won(y26.rev_t)+'원',null,'전년동기 '+won(rev25_5)+' → '+(((y26.rev_t-rev25_5)/rev25_5*100).toFixed(0))+'%'],
  ['2026 영업이익(1~5월)',won(y26.oi_t)+'원','down'],
 ];
 document.getElementById('kpi').innerHTML=kpis.map(k=>`<div class="card"><div class="lab">${k[0]}</div><div class="val ${k[2]||''}">${k[1]}</div>${k[3]?`<div class="cmp ${k[2]||''}">${k[3]}</div>`:''}</div>`).join('');
-
-// tables
-function rowsMain(){
- let tb=document.getElementById('tb25');
- D.M.forEach((m,i)=>{const t=y25;
-  tb.innerHTML+=`<tr><td>${m}</td><td>${won(t.rev[i])}</td><td>${won(t.labor[i])}</td><td>${won(t.fixed[i])}</td><td>${won(t.var[i])}</td><td>${won(t.etc[i])}</td><td>${won(t.spend[i])}</td><td class="${neg(t.net[i])}">${won(t.net[i])}</td><td>${pct(t.occ[i])}</td><td>${won(t.adr[i]||null)}</td></tr>`;});
+(function(){let tb=document.getElementById('tb25');
+ D.M.forEach((m,i)=>{const t=y25;tb.innerHTML+=`<tr><td>${m}</td><td>${won(t.rev[i])}</td><td>${won(t.labor[i])}</td><td>${won(t.fixed[i])}</td><td>${won(t.var[i])}</td><td>${won(t.etc[i])}</td><td>${won(t.spend[i])}</td><td class="${neg(t.net[i])}">${won(t.net[i])}</td><td>${pct(t.occ[i])}</td><td>${won(t.adr[i]||null)}</td></tr>`;});
  document.getElementById('tf25').innerHTML=`<tr><td>합계</td><td>${won(y25.rev_t)}</td><td>${won(y25.labor_t)}</td><td>${won(y25.fixed_t)}</td><td>${won(y25.var_t)}</td><td>${won(y25.etc_t)}</td><td>${won(y25.spend_t)}</td><td class="${neg(y25.net_t)}">${won(y25.net_t)}</td><td>${y25.occ_y}%</td><td>${won(y25.adr_y)}</td></tr>`;
  let tb2=document.getElementById('tb26');
- [0,1,2,3,4].forEach(i=>{const t=y26;
-  tb2.innerHTML+=`<tr><td>${D.M[i]}</td><td>${won(t.rev[i])}</td><td>${won(t.labor[i])}</td><td>${won(t.fixed[i])}</td><td>${won(t.var[i])}</td><td>${won(t.sga[i])}</td><td class="${neg(t.oi[i])}">${won(t.oi[i])}</td><td>${pct(t.occ[i])}</td><td>${won(t.adr[i])}</td></tr>`;});
+ [0,1,2,3,4].forEach(i=>{const t=y26;tb2.innerHTML+=`<tr><td>${D.M[i]}</td><td>${won(t.rev[i])}</td><td>${won(t.labor[i])}</td><td>${won(t.fixed[i])}</td><td>${won(t.var[i])}</td><td>${won(t.sga[i])}</td><td class="${neg(t.oi[i])}">${won(t.oi[i])}</td><td>${pct(t.occ[i])}</td><td>${won(t.adr[i])}</td></tr>`;});
  document.getElementById('tf26').innerHTML=`<tr><td>합계</td><td>${won(y26.rev_t)}</td><td>${won(y26.labor_t)}</td><td>${won(y26.fixed_t)}</td><td>${won(y26.var_t)}</td><td>${won(y26.sga_t)}</td><td class="${neg(y26.oi_t)}">${won(y26.oi_t)}</td><td>–</td><td>–</td></tr>`;
-}
-rowsMain();
-
-Chart.defaults.font.family=getComputedStyle(document.body).fontFamily;
-Chart.defaults.font.size=11;
+})();
+Chart.defaults.font.family=getComputedStyle(document.body).fontFamily;Chart.defaults.font.size=11;
 const B='#2E75B6',O='#C55A11';
-// revenue
-new Chart(cRev,{type:'bar',data:{labels:D.M,datasets:[
- {label:'2025',data:y25.rev,backgroundColor:B,borderRadius:4},
- {label:'2026',data:[...y26.rev,null,null,null,null,null,null,null],backgroundColor:O,borderRadius:4}]},
- options:{plugins:{legend:{position:'top'},tooltip:{callbacks:{label:c=>c.dataset.label+': '+won(c.raw)+'원'}}},scales:{y:{ticks:{callback:wonM}}}}});
-// cost stacks
-function stack(el,lab,labor,fixed,var_){new Chart(el,{type:'bar',data:{labels:lab,datasets:[
- {label:'인건비',data:labor,backgroundColor:'#3b82f6'},
- {label:'고정비',data:fixed,backgroundColor:'#f59e0b'},
- {label:'변동비',data:var_,backgroundColor:'#ef4444'}]},
- options:{plugins:{legend:{position:'top'},tooltip:{callbacks:{label:c=>c.dataset.label+': '+won(c.raw)+'원'}}},scales:{x:{stacked:true},y:{stacked:true,ticks:{callback:wonM}}}}});}
-stack(c25,D.M,y25.labor,y25.fixed,y25.var);
-stack(c26,D.M.slice(0,5),y26.labor,y26.fixed,y26.var);
-// occ / adr
-new Chart(cOcc,{data:{labels:D.M,datasets:[
- {type:'line',label:'2025 OCC',data:y25.occ,borderColor:B,backgroundColor:B,yAxisID:'y',tension:.3,pointRadius:3},
- {type:'line',label:'2026 OCC',data:[...y26.occ,null,null,null,null,null,null,null],borderColor:O,backgroundColor:O,yAxisID:'y',tension:.3,borderDash:[5,4],pointRadius:3},
- {type:'bar',label:'2025 ADR',data:y25.adr,backgroundColor:'rgba(46,117,182,.18)',yAxisID:'y1'}]},
- options:{plugins:{legend:{position:'top'},tooltip:{callbacks:{label:c=>c.dataset.label+': '+(c.dataset.yAxisID==='y'?pct(c.raw):won(c.raw))}}},
- scales:{y:{position:'left',title:{display:true,text:'OCC %'},ticks:{callback:v=>v+'%'}},y1:{position:'right',title:{display:true,text:'ADR'},grid:{drawOnChartArea:false},ticks:{callback:wonM}}}}});
+new Chart(cRev,{type:'bar',data:{labels:D.M,datasets:[{label:'2025',data:y25.rev,backgroundColor:B,borderRadius:4},{label:'2026',data:[...y26.rev,null,null,null,null,null,null,null],backgroundColor:O,borderRadius:4}]},options:{plugins:{legend:{position:'top'},tooltip:{callbacks:{label:c=>c.dataset.label+': '+won(c.raw)+'원'}}},scales:{y:{ticks:{callback:wonM}}}}});
+function stack(el,lab,a,b,c){new Chart(el,{type:'bar',data:{labels:lab,datasets:[{label:'인건비',data:a,backgroundColor:'#3b82f6'},{label:'고정비',data:b,backgroundColor:'#f59e0b'},{label:'변동비',data:c,backgroundColor:'#ef4444'}]},options:{plugins:{legend:{position:'top'},tooltip:{callbacks:{label:x=>x.dataset.label+': '+won(x.raw)+'원'}}},scales:{x:{stacked:true},y:{stacked:true,ticks:{callback:wonM}}}}});}
+stack(c25,D.M,y25.labor,y25.fixed,y25.var);stack(c26,D.M.slice(0,5),y26.labor,y26.fixed,y26.var);
+new Chart(cOcc,{data:{labels:D.M,datasets:[{type:'line',label:'2025 OCC',data:y25.occ,borderColor:B,backgroundColor:B,yAxisID:'y',tension:.3,pointRadius:3},{type:'line',label:'2026 OCC',data:[...y26.occ,null,null,null,null,null,null,null],borderColor:O,backgroundColor:O,yAxisID:'y',tension:.3,borderDash:[5,4],pointRadius:3},{type:'bar',label:'2025 ADR',data:y25.adr,backgroundColor:'rgba(46,117,182,.18)',yAxisID:'y1'}]},options:{plugins:{legend:{position:'top'},tooltip:{callbacks:{label:c=>c.dataset.label+': '+(c.dataset.yAxisID==='y'?pct(c.raw):won(c.raw))}}},scales:{y:{position:'left',title:{display:true,text:'OCC %'},ticks:{callback:v=>v+'%'}},y1:{position:'right',title:{display:true,text:'ADR'},grid:{drawOnChartArea:false},ticks:{callback:wonM}}}}});
 </script></body></html>
