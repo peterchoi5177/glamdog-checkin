@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
 <meta http-equiv="refresh" content="1800">
 <title>글램독 체크인 리스트 (본사)</title>
-<!-- v2026-07-23 16:27 -->
+<!-- v2026-07-23 16:37 -->
 <style>
   :root {
     --navy: #1B3A5C;
@@ -1105,7 +1105,7 @@ function _submitPw() {
     <option value="">🏠 예약현황 (지점 선택)</option>
     <option value="cl_6a85a13087.html">가평(가평점)</option><option value="cl_806a86626b.html">가평(청평점)</option><option value="cl_8eacf6d6c1.html">경주</option><option value="cl_a88bfd0a7f.html">영흥도</option><option value="cl_9edad9ddd2.html">양양</option><option value="cl_d3039f7a59.html">통영</option>
   </select>
-  <span class="update-time">갱신: 2026-07-23 16:27</span>
+  <span class="update-time">갱신: 2026-07-23 16:37</span>
 </div>
 <div class="tabs" id="tabs"></div>
 <div class="content" id="content">
@@ -1420,28 +1420,32 @@ function personsHtml(wd) {
   return '<div style="text-align:center;font-size:15px;font-weight:700;color:#1B3A5C">' + wd.persons + '명</div>';
 }
 
-function extraHtml(bno, wd) {
-  // 현장기록 있으면 실제 결제된 금액 우선 표시
-  if (typeof _fieldEntries !== 'undefined' && bno && _fieldEntries[bno]) {
-    var e = _fieldEntries[bno];
+function extraHtml(bno, wd, nights) {
+  // 현장기록 있으면 실제 결제된 금액 우선 표시 (기록 여러 건 합산)
+  if (typeof _fieldEntries !== 'undefined' && bno && _fieldEntries[bno] && _fieldEntries[bno].length) {
+    var list = _fieldEntries[bno];
+    var sum = list.reduce(function(s, e) { return s + (Number(e.total) || 0); }, 0);
     return '<div style="text-align:center;font-size:13px;font-weight:700;color:#e65100">'
-      + Number(e.total).toLocaleString() + '원</div>';
+      + sum.toLocaleString() + '원'
+      + (list.length > 1 ? '<div style="font-size:10px;font-weight:400;color:#999">' + list.length + '건</div>' : '')
+      + '</div>';
   }
   if (!wd) return '<div style="color:#ddd;text-align:center;font-size:11px">—</div>';
 
-  // 단가
-  var FEE_PERSON = 20000;   // 인원 1명 추가
-  var FEE_DOG    = 10000;   // 강아지 1마리 추가
-  var FEE_BIG    = 10000;   // 대형견 1마리 추가
-  var FEE_BBQ    = 20000;   // BBQ
+  // 단가 (1박 기준 — 인원/애견/대형견은 박수당, BBQ는 1회성)
+  var FEE_PERSON = 20000;   // 인원 1명 추가 / 박
+  var FEE_DOG    = 10000;   // 강아지 1마리 추가 / 박
+  var FEE_BIG    = 10000;   // 대형견 1마리 추가 / 박
+  var FEE_BBQ    = 20000;   // BBQ (1회성)
+  var n = Math.max(1, Number(nights) || 1);   // 박수
 
   // 인원 추가 (2명 초과)
   var pExtra = (wd.persons && wd.persons > 2) ? (wd.persons - 2) : 0;
-  var pAmt   = pExtra * FEE_PERSON;
+  var pAmt   = pExtra * FEE_PERSON * n;
 
   // 강아지 추가 (1마리 초과)
   var dExtra = (wd.dogCount && wd.dogCount > 1) ? (wd.dogCount - 1) : 0;
-  var dAmt   = dExtra * FEE_DOG;
+  var dAmt   = dExtra * FEE_DOG * n;
 
   // 대형견 (welcome.html 옵션: "5kg 미만" / "5-10kg" / "10-15kg" → 10kg 이상을 대형으로 카운트)
   var dogs = parseDogs(wd);
@@ -1449,7 +1453,7 @@ function extraHtml(bno, wd) {
     if (!d.weight) return false;
     return /10-15kg|10kg\s*이상|10kg\+|15kg|20kg/i.test(d.weight);
   }).length;
-  var bAmt = bigCount * FEE_BIG;
+  var bAmt = bigCount * FEE_BIG * n;
 
   var bbqOn  = (wd.bbq === 'yes');
   var bbqAmt = bbqOn ? FEE_BBQ : 0;
@@ -1459,10 +1463,11 @@ function extraHtml(bno, wd) {
     return '<div style="color:#ddd;text-align:center;font-size:11px">—</div>';
   }
 
+  var nSuffix = (n > 1) ? '×' + n + '박' : '';
   var lines = [];
-  if (pExtra > 0)   lines.push('인원+' + pExtra + '명');
-  if (dExtra > 0)   lines.push('강아지+' + dExtra + '마리');
-  if (bigCount > 0) lines.push('대형견 ' + bigCount + '마리');
+  if (pExtra > 0)   lines.push('인원+' + pExtra + '명' + nSuffix);
+  if (dExtra > 0)   lines.push('강아지+' + dExtra + '마리' + nSuffix);
+  if (bigCount > 0) lines.push('대형견 ' + bigCount + '마리' + nSuffix);
   if (bbqOn)        lines.push('BBQ');
 
   var html = '<div style="font-size:10px;line-height:1.6;text-align:center;color:#555">';
@@ -1517,9 +1522,11 @@ function renderTable() {
     const onsite = r.onsite > 0
       ? `<span style="color:#888;font-size:11px"> +현장${r.onsite.toLocaleString()}</span>` : '';
     const bno = r.booking_no || '';
-    const hasRec = (typeof _fieldEntries !== 'undefined' && _fieldEntries[bno]);
+    const recList = (typeof _fieldEntries !== 'undefined' && bno && _fieldEntries[bno]) ? _fieldEntries[bno] : null;
+    const hasRec = recList && recList.length > 0;
+    const recSum = hasRec ? recList.reduce((s, e) => s + (Number(e.total) || 0), 0) : 0;
     const fldBtn = (typeof _fieldEntries !== 'undefined')
-      ? `<td class="col-field"><button class="field-btn${hasRec?' has-record':''}" data-bno="${bno}" data-room="${r.room}" data-guest="${r.guest}" onclick="openFM(this)">${hasRec ? '✏️ '+Number(_fieldEntries[bno].total).toLocaleString()+'원 (수정)' : '+ 현장기록'}</button></td>`
+      ? `<td class="col-field"><button class="field-btn${hasRec?' has-record':''}" data-bno="${bno}" data-room="${r.room}" data-guest="${r.guest}" data-nights="${r.nights||1}" onclick="openFM(this)">${hasRec ? '✏️ '+recSum.toLocaleString()+'원 ('+recList.length+'건)' : '+ 현장기록'}</button></td>`
       : '';
     const wd = getWelcomeEntry(currentDate, r.branch, r.room);
     const welcomeCheck = wd
@@ -1541,7 +1548,7 @@ function renderTable() {
       <td class="col-persons">${personsHtml(wd)}</td>
       <td class="col-dog">${dogInfoHtml(wd)}</td>
       <td class="col-bbq">${bbqHtml(wd)}</td>
-      <td class="col-extra">${extraHtml(bno, wd)}</td>
+      <td class="col-extra">${extraHtml(bno, wd, r.nights)}</td>
       <td class="col-payment">
         <div class="payment-box">${r.total.toLocaleString()}원${onsite}</div>
       </td>

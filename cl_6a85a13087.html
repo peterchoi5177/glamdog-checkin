@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
 <meta http-equiv="refresh" content="1800">
 <title>글램독 가평(가평점) 체크인 리스트</title>
-<!-- v2026-07-23 16:27 -->
+<!-- v2026-07-23 16:37 -->
 <style>
   :root {
     --navy: #1B3A5C;
@@ -1081,14 +1081,15 @@ function _submitPw() {
           <button class="fm-close" onclick="closeFM()">&#215;</button>
         </div>
       </div>
+      <div id="fmExistList" style="display:none"></div>
       <div class="fm-sec">
-        <div class="fm-sec-label">BBQ (1세트 20,000원)</div>
+        <div class="fm-sec-label">BBQ (1세트 20,000원 · 1회성)</div>
         <div class="fm-btns">
           <button class="fm-btn" onclick="fmAdd('bbq')">BBQ +20,000원</button>
         </div>
       </div>
       <div class="fm-sec">
-        <div class="fm-sec-label">인원추가 (1인당 20,000원)</div>
+        <div class="fm-sec-label" id="fmLblPerson">인원추가 (1인당 20,000원/박)</div>
         <div class="fm-btns">
           <button class="fm-btn" id="fmP1" onclick="fmPerson(1)">+1인</button>
           <button class="fm-btn" id="fmP2" onclick="fmPerson(2)">+2인</button>
@@ -1098,7 +1099,7 @@ function _submitPw() {
         </div>
       </div>
       <div class="fm-sec">
-        <div class="fm-sec-label">애견추가 (마리당 10,000원)</div>
+        <div class="fm-sec-label" id="fmLblDog">애견추가 (마리당 10,000원/박)</div>
         <div class="fm-btns">
           <button class="fm-btn" onclick="fmAdd('dog')">추가 마리 +10,000원</button>
           <button class="fm-btn" onclick="fmAdd('bigdog')">무게 초과 +10,000원</button>
@@ -1146,7 +1147,7 @@ function _submitPw() {
     <button class="btn-view"        id="btnIssue"   onclick="setView('issue')">🔧 이슈 신고</button>
   </div>
   <button class="btn-refresh" id="btnRefresh" onclick="refreshData()">🔄 새로고침</button>
-  <span class="update-time">갱신: 2026-07-23 16:27</span>
+  <span class="update-time">갱신: 2026-07-23 16:37</span>
 </div>
 <div id="brNoticeBanner"></div>
 <div class="content" id="content">
@@ -1362,7 +1363,7 @@ var _memoData = {};
 
 // ─── 현장기록 상태 ───────────────────────────────────────
 var _fieldEntries = {};
-var _fm = { bno:"", room:"", guest:"", bbq:0, person:0, dog:0, bigdog:0, etc:[], pay:"", entryId:"", editMode:false };
+var _fm = { bno:"", room:"", guest:"", nights:1, bbq:0, person:0, dog:0, bigdog:0, etc:[], pay:"", entryId:"", editMode:false };
 
 // ─── 입실체크 JS (지점 전용) ─────────────────────────────
 
@@ -1547,28 +1548,32 @@ function personsHtml(wd) {
   return '<div style="text-align:center;font-size:15px;font-weight:700;color:#1B3A5C">' + wd.persons + '명</div>';
 }
 
-function extraHtml(bno, wd) {
-  // 현장기록 있으면 실제 결제된 금액 우선 표시
-  if (typeof _fieldEntries !== 'undefined' && bno && _fieldEntries[bno]) {
-    var e = _fieldEntries[bno];
+function extraHtml(bno, wd, nights) {
+  // 현장기록 있으면 실제 결제된 금액 우선 표시 (기록 여러 건 합산)
+  if (typeof _fieldEntries !== 'undefined' && bno && _fieldEntries[bno] && _fieldEntries[bno].length) {
+    var list = _fieldEntries[bno];
+    var sum = list.reduce(function(s, e) { return s + (Number(e.total) || 0); }, 0);
     return '<div style="text-align:center;font-size:13px;font-weight:700;color:#e65100">'
-      + Number(e.total).toLocaleString() + '원</div>';
+      + sum.toLocaleString() + '원'
+      + (list.length > 1 ? '<div style="font-size:10px;font-weight:400;color:#999">' + list.length + '건</div>' : '')
+      + '</div>';
   }
   if (!wd) return '<div style="color:#ddd;text-align:center;font-size:11px">—</div>';
 
-  // 단가
-  var FEE_PERSON = 20000;   // 인원 1명 추가
-  var FEE_DOG    = 10000;   // 강아지 1마리 추가
-  var FEE_BIG    = 10000;   // 대형견 1마리 추가
-  var FEE_BBQ    = 20000;   // BBQ
+  // 단가 (1박 기준 — 인원/애견/대형견은 박수당, BBQ는 1회성)
+  var FEE_PERSON = 20000;   // 인원 1명 추가 / 박
+  var FEE_DOG    = 10000;   // 강아지 1마리 추가 / 박
+  var FEE_BIG    = 10000;   // 대형견 1마리 추가 / 박
+  var FEE_BBQ    = 20000;   // BBQ (1회성)
+  var n = Math.max(1, Number(nights) || 1);   // 박수
 
   // 인원 추가 (2명 초과)
   var pExtra = (wd.persons && wd.persons > 2) ? (wd.persons - 2) : 0;
-  var pAmt   = pExtra * FEE_PERSON;
+  var pAmt   = pExtra * FEE_PERSON * n;
 
   // 강아지 추가 (1마리 초과)
   var dExtra = (wd.dogCount && wd.dogCount > 1) ? (wd.dogCount - 1) : 0;
-  var dAmt   = dExtra * FEE_DOG;
+  var dAmt   = dExtra * FEE_DOG * n;
 
   // 대형견 (welcome.html 옵션: "5kg 미만" / "5-10kg" / "10-15kg" → 10kg 이상을 대형으로 카운트)
   var dogs = parseDogs(wd);
@@ -1576,7 +1581,7 @@ function extraHtml(bno, wd) {
     if (!d.weight) return false;
     return /10-15kg|10kg\s*이상|10kg\+|15kg|20kg/i.test(d.weight);
   }).length;
-  var bAmt = bigCount * FEE_BIG;
+  var bAmt = bigCount * FEE_BIG * n;
 
   var bbqOn  = (wd.bbq === 'yes');
   var bbqAmt = bbqOn ? FEE_BBQ : 0;
@@ -1586,10 +1591,11 @@ function extraHtml(bno, wd) {
     return '<div style="color:#ddd;text-align:center;font-size:11px">—</div>';
   }
 
+  var nSuffix = (n > 1) ? '×' + n + '박' : '';
   var lines = [];
-  if (pExtra > 0)   lines.push('인원+' + pExtra + '명');
-  if (dExtra > 0)   lines.push('강아지+' + dExtra + '마리');
-  if (bigCount > 0) lines.push('대형견 ' + bigCount + '마리');
+  if (pExtra > 0)   lines.push('인원+' + pExtra + '명' + nSuffix);
+  if (dExtra > 0)   lines.push('강아지+' + dExtra + '마리' + nSuffix);
+  if (bigCount > 0) lines.push('대형견 ' + bigCount + '마리' + nSuffix);
   if (bbqOn)        lines.push('BBQ');
 
   var html = '<div style="font-size:10px;line-height:1.6;text-align:center;color:#555">';
@@ -1644,9 +1650,11 @@ function renderTable() {
     const onsite = r.onsite > 0
       ? `<span style="color:#888;font-size:11px"> +현장${r.onsite.toLocaleString()}</span>` : '';
     const bno = r.booking_no || '';
-    const hasRec = (typeof _fieldEntries !== 'undefined' && _fieldEntries[bno]);
+    const recList = (typeof _fieldEntries !== 'undefined' && bno && _fieldEntries[bno]) ? _fieldEntries[bno] : null;
+    const hasRec = recList && recList.length > 0;
+    const recSum = hasRec ? recList.reduce((s, e) => s + (Number(e.total) || 0), 0) : 0;
     const fldBtn = (typeof _fieldEntries !== 'undefined')
-      ? `<td class="col-field"><button class="field-btn${hasRec?' has-record':''}" data-bno="${bno}" data-room="${r.room}" data-guest="${r.guest}" onclick="openFM(this)">${hasRec ? '✏️ '+Number(_fieldEntries[bno].total).toLocaleString()+'원 (수정)' : '+ 현장기록'}</button></td>`
+      ? `<td class="col-field"><button class="field-btn${hasRec?' has-record':''}" data-bno="${bno}" data-room="${r.room}" data-guest="${r.guest}" data-nights="${r.nights||1}" onclick="openFM(this)">${hasRec ? '✏️ '+recSum.toLocaleString()+'원 ('+recList.length+'건)' : '+ 현장기록'}</button></td>`
       : '';
     const wd = getWelcomeEntry(currentDate, r.branch, r.room);
     const welcomeCheck = wd
@@ -1668,7 +1676,7 @@ function renderTable() {
       <td class="col-persons">${personsHtml(wd)}</td>
       <td class="col-dog">${dogInfoHtml(wd)}</td>
       <td class="col-bbq">${bbqHtml(wd)}</td>
-      <td class="col-extra">${extraHtml(bno, wd)}</td>
+      <td class="col-extra">${extraHtml(bno, wd, r.nights)}</td>
       <td class="col-payment">
         <div class="payment-box">${r.total.toLocaleString()}원${onsite}</div>
       </td>
@@ -2076,43 +2084,120 @@ function initFieldDash() {
 }
 
 // ─── FM 모달 열기/닫기 ───────────────────────────────────
+// 결제 1건 = 기록 1건. 예약당 기록 여러 건 가능, 각 기록마다 결제방식 별도.
+var _fmCtx = { bno:"", room:"", guest:"", nights:1 };
+
 function openFM(btn) {
-  var bno   = btn.dataset.bno   || "";
-  var room  = btn.dataset.room  || "";
-  var guest = btn.dataset.guest || "";
-  var existing = bno ? _fieldEntries[bno] : null;
-  if(existing) {
-    _fm = { bno:bno, room:room||existing.room, guest:guest||existing.guest,
-      bbq:existing.bbq||0, person:existing.person||0,
-      dog:existing.dog||0, bigdog:existing.bigdog||0,
-      etc:existing.etc ? JSON.parse(JSON.stringify(existing.etc)) : [],
-      pay:existing.payMethod||"", entryId:existing.entryId||"", editMode:true };
-    document.getElementById("fmModeBadge").style.display="";
-    document.getElementById("fmSaveBtn").textContent="수정 저장";
-    document.getElementById("fmSaveBtn").disabled = false;  // 수정모드: 항상 활성화
-    document.getElementById("fmDeleteBtn").style.display="";
-  } else {
-    _fm = { bno:bno, room:room, guest:guest, bbq:0, person:0, dog:0, bigdog:0, etc:[], pay:"", entryId:"", editMode:false };
-    document.getElementById("fmModeBadge").style.display="none";
-    document.getElementById("fmSaveBtn").textContent="기록하기";
-    document.getElementById("fmDeleteBtn").style.display="none";
-  }
-  document.getElementById("fmSub").textContent=(guest||"수기예약")+(room?" · "+room:"");
-  [1,2,3,4,5].forEach(function(n){ var el=document.getElementById("fmP"+n); if(el) el.classList.toggle("selected",_fm.person===n); });
-  ["현금","계좌","카드"].forEach(function(l,i){ document.getElementById("fmPay"+i).classList.toggle("on",l===_fm.pay); });
+  _fmCtx = {
+    bno:    btn.dataset.bno   || "",
+    room:   btn.dataset.room  || "",
+    guest:  btn.dataset.guest || "",
+    nights: Math.max(1, parseInt(btn.dataset.nights) || 1)
+  };
+  document.getElementById("fmSub").textContent =
+    (_fmCtx.guest||"수기예약") + (_fmCtx.room ? " · " + _fmCtx.room : "") + " · " + _fmCtx.nights + "박";
+  var lp = document.getElementById("fmLblPerson");
+  if(lp) lp.textContent = "인원추가 (1인당 20,000원/박" + (_fmCtx.nights>1 ? " × "+_fmCtx.nights+"박" : "") + ")";
+  var ld = document.getElementById("fmLblDog");
+  if(ld) ld.textContent = "애견추가 (마리당 10,000원/박" + (_fmCtx.nights>1 ? " × "+_fmCtx.nights+"박" : "") + ")";
+  fmNewEntry();
+  document.getElementById("fmOverlay").classList.add("open");
+  document.body.style.overflow="hidden";
+}
+
+// 새 기록 입력 상태로 폼 초기화
+function fmNewEntry() {
+  _fm = { bno:_fmCtx.bno, room:_fmCtx.room, guest:_fmCtx.guest, nights:_fmCtx.nights,
+    bbq:0, person:0, dog:0, bigdog:0, etc:[], pay:"", entryId:"", editMode:false };
+  document.getElementById("fmModeBadge").style.display="none";
+  document.getElementById("fmSaveBtn").textContent="기록하기";
+  document.getElementById("fmDeleteBtn").style.display="none";
+  [1,2,3,4,5].forEach(function(n){ var el=document.getElementById("fmP"+n); if(el) el.classList.remove("selected"); });
+  ["현금","계좌","카드"].forEach(function(l,i){ document.getElementById("fmPay"+i).classList.remove("on"); });
   document.getElementById("fmEtcNote").value="";
   document.getElementById("fmEtcAmt").value="";
-  // 입금자명 복원 (계좌 결제인 경우)
+  var depositorRow = document.getElementById("fmDepositorRow");
+  if(depositorRow) depositorRow.style.display="none";
+  var depositorInput = document.getElementById("fmDepositorName");
+  if(depositorInput) depositorInput.value="";
+  fmRenderExistList();
+  fmRender();
+}
+
+// 기존 기록 목록 렌더 (기록별 수정/삭제)
+function fmRenderExistList() {
+  var box = document.getElementById("fmExistList");
+  if(!box) return;
+  var list = (_fmCtx.bno && _fieldEntries[_fmCtx.bno]) ? _fieldEntries[_fmCtx.bno] : [];
+  if(!list.length) { box.innerHTML=""; box.style.display="none"; return; }
+  var sum = list.reduce(function(s,e){ return s+(Number(e.total)||0); },0);
+  var html = '<div class="fm-sec-label">기존 기록 '+list.length+'건 · 합계 '+sum.toLocaleString()+'원</div>';
+  list.forEach(function(e,i){
+    var editing = (_fm.editMode && _fm.entryId===e.entryId);
+    html += '<div style="display:flex;justify-content:space-between;align-items:center;'
+      + 'padding:7px 10px;margin:4px 0;border-radius:8px;font-size:13px;'
+      + (editing ? 'background:#fff3e0;border:1px solid #e65100;' : 'background:#f5f5f4;border:1px solid #e5e5e3;')
+      + '">'
+      + '<span style="font-weight:700">'+Number(e.total).toLocaleString()+'원'
+      + ' <span style="font-weight:400;color:#666">'+(e.payMethod||'—')
+      + (e.payMethod==='계좌'&&e.depositorName?' ('+e.depositorName+')':'')+'</span></span>'
+      + '<span style="display:flex;gap:6px">'
+      + '<button onclick="fmEditEntry('+i+')" style="border:1px solid #ccc;background:#fff;border-radius:6px;padding:3px 9px;font-size:12px;cursor:pointer">'+(editing?'수정 중':'수정')+'</button>'
+      + '<button onclick="fmDeleteEntry('+i+')" style="border:1px solid #f3c1c1;background:#fff;color:#c0392b;border-radius:6px;padding:3px 9px;font-size:12px;cursor:pointer">삭제</button>'
+      + '</span></div>';
+  });
+  if(_fm.editMode) {
+    html += '<button onclick="fmNewEntry()" style="width:100%;margin-top:4px;border:1px dashed #bbb;background:#fff;border-radius:8px;padding:6px;font-size:12px;color:#555;cursor:pointer">＋ 새 기록 추가로 전환</button>';
+  }
+  box.innerHTML = html; box.style.display="";
+}
+
+// 기존 기록을 폼에 로드 (수정 모드)
+function fmEditEntry(i) {
+  var list = (_fmCtx.bno && _fieldEntries[_fmCtx.bno]) ? _fieldEntries[_fmCtx.bno] : [];
+  var e = list[i]; if(!e) return;
+  _fm = { bno:_fmCtx.bno, room:_fmCtx.room||e.room, guest:_fmCtx.guest||e.guest, nights:_fmCtx.nights,
+    bbq:e.bbq||0, person:e.person||0, dog:e.dog||0, bigdog:e.bigdog||0,
+    etc:e.etc ? JSON.parse(JSON.stringify(e.etc)) : [],
+    pay:e.payMethod||"", entryId:e.entryId||"", editMode:true };
+  document.getElementById("fmModeBadge").style.display="";
+  document.getElementById("fmSaveBtn").textContent="수정 저장";
+  document.getElementById("fmSaveBtn").disabled=false;
+  document.getElementById("fmDeleteBtn").style.display="";
+  [1,2,3,4,5].forEach(function(n){ var el=document.getElementById("fmP"+n); if(el) el.classList.toggle("selected",_fm.person===n); });
+  ["현금","계좌","카드"].forEach(function(l,i2){ document.getElementById("fmPay"+i2).classList.toggle("on",l===_fm.pay); });
+  document.getElementById("fmEtcNote").value="";
+  document.getElementById("fmEtcAmt").value="";
   var depositorRow = document.getElementById("fmDepositorRow");
   var depositorInput = document.getElementById("fmDepositorName");
   if(depositorRow && depositorInput) {
     var isAccount = (_fm.pay === "계좌");
     depositorRow.style.display = isAccount ? "" : "none";
-    depositorInput.value = (isAccount && existing && existing.depositorName) ? existing.depositorName : "";
+    depositorInput.value = (isAccount && e.depositorName) ? e.depositorName : "";
   }
+  fmRenderExistList();
   fmRender();
-  document.getElementById("fmOverlay").classList.add("open");
-  document.body.style.overflow="hidden";
+}
+
+// 목록에서 특정 기록 삭제
+function fmDeleteEntry(i) {
+  var list = (_fmCtx.bno && _fieldEntries[_fmCtx.bno]) ? _fieldEntries[_fmCtx.bno] : [];
+  var e = list[i]; if(!e || !e.entryId) return;
+  if(!confirm(Number(e.total).toLocaleString()+"원 ("+(e.payMethod||"—")+") 기록을 삭제하시겠습니까?")) return;
+  fetch(GAS_ENDPOINT, {method:"POST", body:JSON.stringify({action:"deleteFieldEntry",entryId:e.entryId})})
+    .then(function(r){ return r.text(); })
+    .then(function(text){
+      var res; try{res=JSON.parse(text);}catch(err){throw new Error("응답 오류");}
+      if(!res.ok) throw new Error(res.error||"삭제 실패");
+      list.splice(i,1);
+      if(!list.length) delete _fieldEntries[_fmCtx.bno];
+      if(_fm.editMode && _fm.entryId===e.entryId) fmNewEntry();
+      else fmRenderExistList();
+      updateFieldBtns(); renderTable();
+      showToast("🗑 삭제 완료");
+      loadTodayFieldEntries();
+    })
+    .catch(function(err){ alert("삭제 오류: "+err.message); });
 }
 function closeFM() {
   document.getElementById("fmOverlay").classList.remove("open");
@@ -2157,16 +2242,22 @@ function fmPay(method) {
   if(method !== "계좌") document.getElementById("fmDepositorName").value = "";
   fmRender();
 }
+// 박수당 단가 (BBQ·기타는 1회성, 인원/애견/무게초과는 ×박수)
+function fmNights() { return Math.max(1, Number(_fm.nights)||1); }
+function fmUnitPerson() { return 20000 * fmNights(); }
+function fmUnitDog()    { return 10000 * fmNights(); }
 function fmCalcTotal() {
-  return _fm.bbq*20000 + _fm.person*20000 + _fm.dog*10000 + _fm.bigdog*10000
+  return _fm.bbq*20000 + _fm.person*fmUnitPerson() + _fm.dog*fmUnitDog() + _fm.bigdog*fmUnitDog()
     + _fm.etc.reduce(function(s,x){return s+x.amount;},0);
 }
 function fmRender() {
+  var n = fmNights();
+  var nSfx = (n>1) ? ' ×'+n+'박' : '';
   var items="";
   if(_fm.bbq>0)    items+='<div class="fm-item"><span class="fm-item-label">BBQ '+_fm.bbq+'세트</span><span><span class="fm-item-amt">'+(_fm.bbq*20000).toLocaleString()+'원</span> <button class="fm-item-del" onclick="fmRemove(&apos;bbq&apos;)">&#215;</button></span></div>';
-  if(_fm.person>0) items+='<div class="fm-item"><span class="fm-item-label">인원추가 '+_fm.person+'명</span><span><span class="fm-item-amt">'+(_fm.person*20000).toLocaleString()+'원</span> <button class="fm-item-del" onclick="fmRemove(&apos;person&apos;)">&#215;</button></span></div>';
-  if(_fm.dog>0)    items+='<div class="fm-item"><span class="fm-item-label">애견 추가 '+_fm.dog+'마리</span><span><span class="fm-item-amt">'+(_fm.dog*10000).toLocaleString()+'원</span> <button class="fm-item-del" onclick="fmRemove(&apos;dog&apos;)">&#215;</button></span></div>';
-  if(_fm.bigdog>0) items+='<div class="fm-item"><span class="fm-item-label">무게 초과 '+_fm.bigdog+'마리</span><span><span class="fm-item-amt">'+(_fm.bigdog*10000).toLocaleString()+'원</span> <button class="fm-item-del" onclick="fmRemove(&apos;bigdog&apos;)">&#215;</button></span></div>';
+  if(_fm.person>0) items+='<div class="fm-item"><span class="fm-item-label">인원추가 '+_fm.person+'명'+nSfx+'</span><span><span class="fm-item-amt">'+(_fm.person*fmUnitPerson()).toLocaleString()+'원</span> <button class="fm-item-del" onclick="fmRemove(&apos;person&apos;)">&#215;</button></span></div>';
+  if(_fm.dog>0)    items+='<div class="fm-item"><span class="fm-item-label">애견 추가 '+_fm.dog+'마리'+nSfx+'</span><span><span class="fm-item-amt">'+(_fm.dog*fmUnitDog()).toLocaleString()+'원</span> <button class="fm-item-del" onclick="fmRemove(&apos;dog&apos;)">&#215;</button></span></div>';
+  if(_fm.bigdog>0) items+='<div class="fm-item"><span class="fm-item-label">무게 초과 '+_fm.bigdog+'마리'+nSfx+'</span><span><span class="fm-item-amt">'+(_fm.bigdog*fmUnitDog()).toLocaleString()+'원</span> <button class="fm-item-del" onclick="fmRemove(&apos;bigdog&apos;)">&#215;</button></span></div>';
   _fm.etc.forEach(function(it,i){ items+='<div class="fm-item"><span class="fm-item-label">'+it.note+'</span><span><span class="fm-item-amt">'+it.amount.toLocaleString()+'원</span> <button class="fm-item-del" onclick="fmRemove(&apos;etc&apos;,'+i+')">&#215;</button></span></div>'; });
   document.getElementById("fmItems").innerHTML = items;
   var total = fmCalcTotal();
@@ -2198,9 +2289,9 @@ function fmSave() {
     entryId: _fm.entryId,
     date: currentDate, branch: currentBranch,
     room: _fm.room, guest: _fm.guest, bookingNo: _fm.bno,
-    bbq: bbq*20000, personCount: person, personAmount: person*20000,
-    dogCount: dog, dogAmount: dog*10000,
-    bigDogCount: bigdog, bigDogAmount: bigdog*10000,
+    bbq: bbq*20000, personCount: person, personAmount: person*fmUnitPerson(),
+    dogCount: dog, dogAmount: dog*fmUnitDog(),
+    bigDogCount: bigdog, bigDogAmount: bigdog*fmUnitDog(),
     etcNote: etcNote, etcAmount: etcAmt,
     total: total, payMethod: pay, depositorName: depositorName
   });
@@ -2215,8 +2306,18 @@ function fmSave() {
         depositorName:depositorName,
         bbq:bbq, person:person, dog:dog, bigdog:bigdog,
         etc:JSON.parse(JSON.stringify(_fm.etc)), room:_fm.room, guest:_fm.guest };
-      if(_fm.bno) _fieldEntries[_fm.bno] = entry;
-      updateFieldBtns(); closeFM();
+      if(_fm.bno) {
+        if(!_fieldEntries[_fm.bno]) _fieldEntries[_fm.bno] = [];
+        var list = _fieldEntries[_fm.bno];
+        if(_fm.editMode) {
+          var idx = -1;
+          for(var i=0;i<list.length;i++) if(list[i].entryId===_fm.entryId) { idx=i; break; }
+          if(idx>=0) list[idx]=entry; else list.push(entry);
+        } else {
+          list.push(entry);
+        }
+      }
+      updateFieldBtns(); renderTable(); closeFM();
       var toastMsg = "💾 저장 완료! " + total.toLocaleString() + "원 (" + pay + (depositorName?" / "+depositorName:"") + ")";
       showToast(toastMsg);
       loadTodayFieldEntries();
@@ -2237,8 +2338,11 @@ function fmDelete() {
     .then(function(text){
       var res; try{res=JSON.parse(text);}catch(e){throw new Error("응답 오류");}
       if(!res.ok) throw new Error(res.error||"삭제 실패");
-      if(_fm.bno) delete _fieldEntries[_fm.bno];
-      updateFieldBtns(); closeFM();
+      if(_fm.bno && _fieldEntries[_fm.bno]) {
+        _fieldEntries[_fm.bno] = _fieldEntries[_fm.bno].filter(function(e){ return e.entryId!==_fm.entryId; });
+        if(!_fieldEntries[_fm.bno].length) delete _fieldEntries[_fm.bno];
+      }
+      updateFieldBtns(); renderTable(); closeFM();
       showToast("🗑 삭제 완료");
       loadTodayFieldEntries();
     })
@@ -2249,10 +2353,16 @@ function fmDelete() {
 function updateFieldBtns() {
   document.querySelectorAll(".field-btn").forEach(function(btn){
     var bno = btn.dataset.bno;
-    if(bno && _fieldEntries[bno]){
-      var e=_fieldEntries[bno];
-      var label = "✏️ "+Number(e.total).toLocaleString()+"원";
-      if(e.payMethod) label += " ("+e.payMethod+(e.depositorName?" / "+e.depositorName:"")+")";
+    var list = (bno && _fieldEntries[bno]) ? _fieldEntries[bno] : null;
+    if(list && list.length){
+      var sum = list.reduce(function(s,e){ return s+(Number(e.total)||0); },0);
+      var label = "✏️ "+sum.toLocaleString()+"원";
+      if(list.length > 1) {
+        label += " ("+list.length+"건)";
+      } else {
+        var e = list[0];
+        if(e.payMethod) label += " ("+e.payMethod+(e.depositorName?" / "+e.depositorName:"")+")";
+      }
       btn.textContent=label;
       btn.classList.add("has-record");
     } else {
@@ -2271,16 +2381,22 @@ function loadTodayFieldEntries() {
       _fieldEntries={};
       if(res.ok && res.data && res.data.length>0){
         res.data.forEach(function(e){
-          if(e.bookingNo) _fieldEntries[e.bookingNo]={
+          if(!e.bookingNo) return;
+          if(!_fieldEntries[e.bookingNo]) _fieldEntries[e.bookingNo]=[];
+          _fieldEntries[e.bookingNo].push({
             entryId:e.entryId, total:e.total, payMethod:e.payMethod,
             depositorName:e.depositorName||"",
             bbq:Math.round((e.bbq||0)/20000), person:e.personCount||0, dog:e.dogCount||0, bigdog:e.bigDogCount||0,
             etc:e.etcNote?[{note:e.etcNote,amount:e.etcAmount||0}]:[],
             room:e.room, guest:e.guest
-          };
+          });
         });
       }
       updateFieldBtns();
+      if (typeof renderTable === 'function' && typeof currentView !== 'undefined' && currentView === 'list') renderTable();
+      // 모달이 열려있으면 기존 기록 목록 갱신
+      var _ov = document.getElementById("fmOverlay");
+      if (_ov && _ov.classList.contains("open")) fmRenderExistList();
     })
     .catch(function(){});
 }
