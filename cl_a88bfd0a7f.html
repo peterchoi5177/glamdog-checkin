@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
 <meta http-equiv="refresh" content="1800">
 <title>글램독 영흥도 체크인 리스트</title>
-<!-- v2026-07-23 16:37 -->
+<!-- v2026-07-23 16:53 -->
 <style>
   :root {
     --navy: #1B3A5C;
@@ -1113,6 +1113,14 @@ function _submitPw() {
       </div>
       <div id="fmExistList" style="display:none"></div>
       <div class="fm-sec">
+        <div class="fm-sec-label">박수 — 인원·애견 요금에 곱해짐 (BBQ·기타 제외)</div>
+        <div class="fm-btns" style="align-items:center">
+          <button class="fm-btn" onclick="fmNightsAdj(-1)" style="min-width:48px;font-size:18px;font-weight:800">−</button>
+          <span id="fmNightsVal" style="font-size:17px;font-weight:800;min-width:56px;text-align:center;color:#1B3A5C">1박</span>
+          <button class="fm-btn" onclick="fmNightsAdj(1)" style="min-width:48px;font-size:18px;font-weight:800">＋</button>
+        </div>
+      </div>
+      <div class="fm-sec">
         <div class="fm-sec-label">BBQ (1세트 20,000원 · 1회성)</div>
         <div class="fm-btns">
           <button class="fm-btn" onclick="fmAdd('bbq')">BBQ +20,000원</button>
@@ -1177,7 +1185,7 @@ function _submitPw() {
     <button class="btn-view"        id="btnIssue"   onclick="setView('issue')">🔧 이슈 신고</button>
   </div>
   <button class="btn-refresh" id="btnRefresh" onclick="refreshData()">🔄 새로고침</button>
-  <span class="update-time">갱신: 2026-07-23 16:37</span>
+  <span class="update-time">갱신: 2026-07-23 16:53</span>
 </div>
 <div id="brNoticeBanner"></div>
 <div class="content" id="content">
@@ -1393,7 +1401,7 @@ var _memoData = {};
 
 // ─── 현장기록 상태 ───────────────────────────────────────
 var _fieldEntries = {};
-var _fm = { bno:"", room:"", guest:"", nights:1, bbq:0, person:0, dog:0, bigdog:0, etc:[], pay:"", entryId:"", editMode:false };
+var _fm = { bno:"", room:"", guest:"", nights:1, bbq:0, person:0, dog:0, bigdog:0, etc:[], pay:"", entryId:"", editMode:false, ov:{bbq:null, person:null, dog:null, bigdog:null} };
 
 // ─── 입실체크 JS (지점 전용) ─────────────────────────────
 
@@ -2125,20 +2133,37 @@ function openFM(btn) {
     nights: Math.max(1, parseInt(btn.dataset.nights) || 1)
   };
   document.getElementById("fmSub").textContent =
-    (_fmCtx.guest||"수기예약") + (_fmCtx.room ? " · " + _fmCtx.room : "") + " · " + _fmCtx.nights + "박";
-  var lp = document.getElementById("fmLblPerson");
-  if(lp) lp.textContent = "인원추가 (1인당 20,000원/박" + (_fmCtx.nights>1 ? " × "+_fmCtx.nights+"박" : "") + ")";
-  var ld = document.getElementById("fmLblDog");
-  if(ld) ld.textContent = "애견추가 (마리당 10,000원/박" + (_fmCtx.nights>1 ? " × "+_fmCtx.nights+"박" : "") + ")";
+    (_fmCtx.guest||"수기예약") + (_fmCtx.room ? " · " + _fmCtx.room : "") + " · 예약 " + _fmCtx.nights + "박";
   fmNewEntry();
   document.getElementById("fmOverlay").classList.add("open");
   document.body.style.overflow="hidden";
 }
 
+// 박수 UI 갱신 (스테퍼 + 섹션 라벨)
+function fmUpdateNightsUI() {
+  var n = fmNights();
+  var v = document.getElementById("fmNightsVal");
+  if(v) v.textContent = n + "박";
+  var lp = document.getElementById("fmLblPerson");
+  if(lp) lp.textContent = "인원추가 (1인당 20,000원 × " + n + "박 = " + (20000*n).toLocaleString() + "원)";
+  var ld = document.getElementById("fmLblDog");
+  if(ld) ld.textContent = "애견추가 (마리당 10,000원 × " + n + "박 = " + (10000*n).toLocaleString() + "원)";
+}
+
+// 박수 조정 — 인원/애견 금액 재계산 (직접수정 금액은 초기화)
+function fmNightsAdj(delta) {
+  _fm.nights = Math.max(1, fmNights() + delta);
+  _fm.ov.person = null; _fm.ov.dog = null; _fm.ov.bigdog = null;
+  fmUpdateNightsUI();
+  fmRender();
+}
+
 // 새 기록 입력 상태로 폼 초기화
 function fmNewEntry() {
   _fm = { bno:_fmCtx.bno, room:_fmCtx.room, guest:_fmCtx.guest, nights:_fmCtx.nights,
-    bbq:0, person:0, dog:0, bigdog:0, etc:[], pay:"", entryId:"", editMode:false };
+    bbq:0, person:0, dog:0, bigdog:0, etc:[], pay:"", entryId:"", editMode:false,
+    ov:{bbq:null, person:null, dog:null, bigdog:null} };
+  fmUpdateNightsUI();
   document.getElementById("fmModeBadge").style.display="none";
   document.getElementById("fmSaveBtn").textContent="기록하기";
   document.getElementById("fmDeleteBtn").style.display="none";
@@ -2189,7 +2214,15 @@ function fmEditEntry(i) {
   _fm = { bno:_fmCtx.bno, room:_fmCtx.room||e.room, guest:_fmCtx.guest||e.guest, nights:_fmCtx.nights,
     bbq:e.bbq||0, person:e.person||0, dog:e.dog||0, bigdog:e.bigdog||0,
     etc:e.etc ? JSON.parse(JSON.stringify(e.etc)) : [],
-    pay:e.payMethod||"", entryId:e.entryId||"", editMode:true };
+    pay:e.payMethod||"", entryId:e.entryId||"", editMode:true,
+    ov:{bbq:null, person:null, dog:null, bigdog:null} };
+  // 저장된 금액이 자동계산과 다르면(할인 등) 저장된 금액을 유지
+  if(e.bbqAmt > 0 && _fm.bbq === 0) _fm.bbq = 1;   // 대폭할인으로 count 역산이 0이 된 경우 보호
+  if(e.bbqAmt    !== undefined && e.bbqAmt    !== _fm.bbq*20000)          _fm.ov.bbq    = e.bbqAmt;
+  if(e.personAmt !== undefined && e.personAmt !== _fm.person*fmUnitPerson()) _fm.ov.person = e.personAmt;
+  if(e.dogAmt    !== undefined && e.dogAmt    !== _fm.dog*fmUnitDog())    _fm.ov.dog    = e.dogAmt;
+  if(e.bigdogAmt !== undefined && e.bigdogAmt !== _fm.bigdog*fmUnitDog()) _fm.ov.bigdog = e.bigdogAmt;
+  fmUpdateNightsUI();
   document.getElementById("fmModeBadge").style.display="";
   document.getElementById("fmSaveBtn").textContent="수정 저장";
   document.getElementById("fmSaveBtn").disabled=false;
@@ -2236,13 +2269,14 @@ function closeFM() {
 
 // ─── FM 모달 함수 (원본) ─────────────────────────────────
 function fmAdd(type) {
-  if(type==="bbq")    _fm.bbq++;
-  if(type==="dog")    _fm.dog++;
-  if(type==="bigdog") _fm.bigdog++;
+  if(type==="bbq")    { _fm.bbq++;    _fm.ov.bbq=null; }
+  if(type==="dog")    { _fm.dog++;    _fm.ov.dog=null; }
+  if(type==="bigdog") { _fm.bigdog++; _fm.ov.bigdog=null; }
   fmRender();
 }
 function fmPerson(n) {
   _fm.person = (_fm.person === n) ? 0 : n;
+  _fm.ov.person = null;
   [1,2,3,4,5].forEach(function(x){ var el=document.getElementById("fmP"+x); if(el) el.classList.toggle("selected",_fm.person===x); });
   fmRender();
 }
@@ -2256,12 +2290,33 @@ function fmAddEtc() {
   fmRender();
 }
 function fmRemove(type, idx) {
-  if(type==="bbq")    _fm.bbq    = Math.max(0, _fm.bbq-1);
-  if(type==="person") { _fm.person=0; [1,2,3,4,5].forEach(function(n){var el=document.getElementById("fmP"+n);if(el)el.classList.remove("selected");}); }
-  if(type==="dog")    _fm.dog    = Math.max(0, _fm.dog-1);
-  if(type==="bigdog") _fm.bigdog = Math.max(0, _fm.bigdog-1);
+  if(type==="bbq")    { _fm.bbq    = Math.max(0, _fm.bbq-1);    _fm.ov.bbq=null; }
+  if(type==="person") { _fm.person=0; _fm.ov.person=null; [1,2,3,4,5].forEach(function(n){var el=document.getElementById("fmP"+n);if(el)el.classList.remove("selected");}); }
+  if(type==="dog")    { _fm.dog    = Math.max(0, _fm.dog-1);    _fm.ov.dog=null; }
+  if(type==="bigdog") { _fm.bigdog = Math.max(0, _fm.bigdog-1); _fm.ov.bigdog=null; }
   if(type==="etc")    _fm.etc.splice(idx,1);
   fmRender();
+}
+// 항목 금액 직접 수정 (할인 등) — 저장 전 자유 조정
+function fmAmtEdit(type, val) {
+  var amt = Math.max(0, parseInt(val) || 0);
+  if(type==="etc") return;
+  _fm.ov[type] = amt;
+  fmRender();
+}
+function fmEtcAmtEdit(idx, val) {
+  var amt = Math.max(0, parseInt(val) || 0);
+  if(_fm.etc[idx]) _fm.etc[idx].amount = amt;
+  fmRender();
+}
+// 항목별 실제 적용 금액 (직접수정 우선, 아니면 단가×수량×박수)
+function fmEffAmt(type) {
+  if(_fm.ov[type] !== null && _fm.ov[type] !== undefined) return _fm.ov[type];
+  if(type==="bbq")    return _fm.bbq * 20000;
+  if(type==="person") return _fm.person * fmUnitPerson();
+  if(type==="dog")    return _fm.dog * fmUnitDog();
+  if(type==="bigdog") return _fm.bigdog * fmUnitDog();
+  return 0;
 }
 function fmPay(method) {
   _fm.pay = method;
@@ -2277,18 +2332,29 @@ function fmNights() { return Math.max(1, Number(_fm.nights)||1); }
 function fmUnitPerson() { return 20000 * fmNights(); }
 function fmUnitDog()    { return 10000 * fmNights(); }
 function fmCalcTotal() {
-  return _fm.bbq*20000 + _fm.person*fmUnitPerson() + _fm.dog*fmUnitDog() + _fm.bigdog*fmUnitDog()
+  return fmEffAmt("bbq") + fmEffAmt("person") + fmEffAmt("dog") + fmEffAmt("bigdog")
     + _fm.etc.reduce(function(s,x){return s+x.amount;},0);
+}
+// 금액 입력란 (저장 전 직접 수정 — 할인 등)
+function fmAmtInput(type, amt, autoAmt) {
+  var edited = (amt !== autoAmt);
+  return '<input type="number" inputmode="numeric" class="fm-amt-input" value="'+amt+'"'
+    + ' onchange="fmAmtEdit(&apos;'+type+'&apos;,this.value)"'
+    + ' style="width:86px;text-align:right;font-weight:700;font-size:14px;border:1px solid '
+    + (edited ? '#e65100' : '#ddd') + ';border-radius:6px;padding:4px 6px;'
+    + (edited ? 'color:#e65100;background:#fff8f2;' : '') + '">'
+    + (edited ? '<span style="font-size:10px;color:#999;text-decoration:line-through;margin-left:3px">'+autoAmt.toLocaleString()+'</span>' : '')
+    + '<span style="font-size:12px;color:#666">원</span>';
 }
 function fmRender() {
   var n = fmNights();
   var nSfx = (n>1) ? ' ×'+n+'박' : '';
   var items="";
-  if(_fm.bbq>0)    items+='<div class="fm-item"><span class="fm-item-label">BBQ '+_fm.bbq+'세트</span><span><span class="fm-item-amt">'+(_fm.bbq*20000).toLocaleString()+'원</span> <button class="fm-item-del" onclick="fmRemove(&apos;bbq&apos;)">&#215;</button></span></div>';
-  if(_fm.person>0) items+='<div class="fm-item"><span class="fm-item-label">인원추가 '+_fm.person+'명'+nSfx+'</span><span><span class="fm-item-amt">'+(_fm.person*fmUnitPerson()).toLocaleString()+'원</span> <button class="fm-item-del" onclick="fmRemove(&apos;person&apos;)">&#215;</button></span></div>';
-  if(_fm.dog>0)    items+='<div class="fm-item"><span class="fm-item-label">애견 추가 '+_fm.dog+'마리'+nSfx+'</span><span><span class="fm-item-amt">'+(_fm.dog*fmUnitDog()).toLocaleString()+'원</span> <button class="fm-item-del" onclick="fmRemove(&apos;dog&apos;)">&#215;</button></span></div>';
-  if(_fm.bigdog>0) items+='<div class="fm-item"><span class="fm-item-label">무게 초과 '+_fm.bigdog+'마리'+nSfx+'</span><span><span class="fm-item-amt">'+(_fm.bigdog*fmUnitDog()).toLocaleString()+'원</span> <button class="fm-item-del" onclick="fmRemove(&apos;bigdog&apos;)">&#215;</button></span></div>';
-  _fm.etc.forEach(function(it,i){ items+='<div class="fm-item"><span class="fm-item-label">'+it.note+'</span><span><span class="fm-item-amt">'+it.amount.toLocaleString()+'원</span> <button class="fm-item-del" onclick="fmRemove(&apos;etc&apos;,'+i+')">&#215;</button></span></div>'; });
+  if(_fm.bbq>0)    items+='<div class="fm-item"><span class="fm-item-label">BBQ '+_fm.bbq+'세트</span><span style="display:flex;align-items:center;gap:4px">'+fmAmtInput('bbq',fmEffAmt('bbq'),_fm.bbq*20000)+' <button class="fm-item-del" onclick="fmRemove(&apos;bbq&apos;)">&#215;</button></span></div>';
+  if(_fm.person>0) items+='<div class="fm-item"><span class="fm-item-label">인원추가 '+_fm.person+'명'+nSfx+'</span><span style="display:flex;align-items:center;gap:4px">'+fmAmtInput('person',fmEffAmt('person'),_fm.person*fmUnitPerson())+' <button class="fm-item-del" onclick="fmRemove(&apos;person&apos;)">&#215;</button></span></div>';
+  if(_fm.dog>0)    items+='<div class="fm-item"><span class="fm-item-label">애견 추가 '+_fm.dog+'마리'+nSfx+'</span><span style="display:flex;align-items:center;gap:4px">'+fmAmtInput('dog',fmEffAmt('dog'),_fm.dog*fmUnitDog())+' <button class="fm-item-del" onclick="fmRemove(&apos;dog&apos;)">&#215;</button></span></div>';
+  if(_fm.bigdog>0) items+='<div class="fm-item"><span class="fm-item-label">무게 초과 '+_fm.bigdog+'마리'+nSfx+'</span><span style="display:flex;align-items:center;gap:4px">'+fmAmtInput('bigdog',fmEffAmt('bigdog'),_fm.bigdog*fmUnitDog())+' <button class="fm-item-del" onclick="fmRemove(&apos;bigdog&apos;)">&#215;</button></span></div>';
+  _fm.etc.forEach(function(it,i){ items+='<div class="fm-item"><span class="fm-item-label">'+it.note+'</span><span style="display:flex;align-items:center;gap:4px"><input type="number" inputmode="numeric" value="'+it.amount+'" onchange="fmEtcAmtEdit('+i+',this.value)" style="width:86px;text-align:right;font-weight:700;font-size:14px;border:1px solid #ddd;border-radius:6px;padding:4px 6px"><span style="font-size:12px;color:#666">원</span> <button class="fm-item-del" onclick="fmRemove(&apos;etc&apos;,'+i+')">&#215;</button></span></div>'; });
   document.getElementById("fmItems").innerHTML = items;
   var total = fmCalcTotal();
   document.getElementById("fmTotalAmt").textContent = total.toLocaleString()+"원";
@@ -2319,9 +2385,9 @@ function fmSave() {
     entryId: _fm.entryId,
     date: currentDate, branch: currentBranch,
     room: _fm.room, guest: _fm.guest, bookingNo: _fm.bno,
-    bbq: bbq*20000, personCount: person, personAmount: person*fmUnitPerson(),
-    dogCount: dog, dogAmount: dog*fmUnitDog(),
-    bigDogCount: bigdog, bigDogAmount: bigdog*fmUnitDog(),
+    bbq: fmEffAmt("bbq"), personCount: person, personAmount: fmEffAmt("person"),
+    dogCount: dog, dogAmount: fmEffAmt("dog"),
+    bigDogCount: bigdog, bigDogAmount: fmEffAmt("bigdog"),
     etcNote: etcNote, etcAmount: etcAmt,
     total: total, payMethod: pay, depositorName: depositorName
   });
@@ -2335,6 +2401,7 @@ function fmSave() {
       var entry = { entryId:res.entryId||_fm.entryId, total:total, payMethod:pay,
         depositorName:depositorName,
         bbq:bbq, person:person, dog:dog, bigdog:bigdog,
+        bbqAmt:fmEffAmt("bbq"), personAmt:fmEffAmt("person"), dogAmt:fmEffAmt("dog"), bigdogAmt:fmEffAmt("bigdog"),
         etc:JSON.parse(JSON.stringify(_fm.etc)), room:_fm.room, guest:_fm.guest };
       if(_fm.bno) {
         if(!_fieldEntries[_fm.bno]) _fieldEntries[_fm.bno] = [];
@@ -2417,6 +2484,7 @@ function loadTodayFieldEntries() {
             entryId:e.entryId, total:e.total, payMethod:e.payMethod,
             depositorName:e.depositorName||"",
             bbq:Math.round((e.bbq||0)/20000), person:e.personCount||0, dog:e.dogCount||0, bigdog:e.bigDogCount||0,
+            bbqAmt:Number(e.bbq)||0, personAmt:Number(e.personAmount)||0, dogAmt:Number(e.dogAmount)||0, bigdogAmt:Number(e.bigDogAmount)||0,
             etc:e.etcNote?[{note:e.etcNote,amount:e.etcAmount||0}]:[],
             room:e.room, guest:e.guest
           });
