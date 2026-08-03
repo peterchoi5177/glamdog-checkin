@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
 <meta http-equiv="refresh" content="1800">
 <title>글램독 통영 체크인 리스트</title>
-<!-- v2026-08-03 10:00 -->
+<!-- v2026-08-03 10:21 -->
 <style>
   :root {
     --navy: #1B3A5C;
@@ -1011,6 +1011,15 @@
   .ho-set-row { display:flex; justify-content:space-between; align-items:center; padding:11px 4px; border-bottom:1px solid #eee; font-size:14px; }
   .ho-toggle { border:none; border-radius:14px; padding:5px 18px; font-size:12px; font-weight:800; cursor:pointer; background:#c9ccd1; color:#fff; }
   .ho-toggle.on { background:#16a34a; }
+  .pc-input { width:44px; text-align:center; font-size:14px; font-weight:700; color:#1B3A5C; border:1px solid #cdd6e0; border-radius:6px; padding:3px 2px; -moz-appearance:textfield; }
+  .blk-total { font-size:13px; font-weight:800; color:#0369a1; text-align:center; padding:2px 0 12px; }
+  .blk-item { display:grid; grid-template-columns:1fr auto; align-items:center; gap:2px 10px; border:1px solid #d6e6f2; border-left:4px solid #0369a1; border-radius:8px; padding:9px 12px; margin-bottom:9px; background:#f4fafe; }
+  .blk-item.done { opacity:.5; }
+  .blk-room { grid-column:1; font-size:16px; font-weight:800; color:#0f2b46; }
+  .blk-cnt-badge { display:inline-block; background:#0369a1; color:#fff; border-radius:8px; font-size:12px; font-weight:800; padding:1px 8px; margin-left:8px; }
+  .blk-guest { grid-column:1; font-size:12px; color:#7890a0; }
+  .blk-chk { grid-column:2; grid-row:1 / span 2; border:1.5px solid #0369a1; background:#fff; color:#0369a1; border-radius:8px; padding:8px 14px; font-size:13px; font-weight:800; cursor:pointer; white-space:nowrap; }
+  .blk-chk.done { background:#16a34a; border-color:#16a34a; color:#fff; }
   @media print { .ho-btn, .ho-modal-bg { display:none !important; } }
 
 </style>
@@ -1209,7 +1218,8 @@ function _submitPw() {
   </div>
   <button class="btn-refresh" id="btnRefresh" onclick="refreshData()">🔄 새로고침</button>
   <button class="ho-btn" id="btnHandover" onclick="openHandoverModal()" style="display:none">🔄 인수인계<span class="ho-cnt" id="hoCnt">0</span></button>
-  <span class="update-time">갱신: 2026-08-03 10:00</span>
+  <button class="ho-btn" id="btnBlanket" onclick="openBlanketModal()" style="display:none;background:#0369a1">🛏️ 추가이불<span class="ho-cnt" id="blkCnt" style="color:#0369a1">0</span></button>
+  <span class="update-time">갱신: 2026-08-03 10:21</span>
 </div>
 <div id="brNoticeBanner"></div>
 <div class="content" id="content">
@@ -1395,6 +1405,7 @@ function _submitPw() {
 <div id="brNoticeModal"></div>
 <div id="brIssueModal"></div>
 <div id="hoModal"></div>
+<div id="blkModal"></div>
 <style>
 .memo-print { display:none; }
 @media print {
@@ -1631,6 +1642,108 @@ function hoResolve(el) {
   hoRenderList(); hoRenderBtn();
 }
 
+
+// ─── 추가이불 + 인원 편집 — 지점 전용 ─────────────────────
+var _ckExtra = {};   // { room: { persons: <num|null>, blanket: <bool> } }
+var _ckExtraEnabled = false;  // getCheckinExtra 성공(=GAS 배포됨) 시 활성화
+function ckLoadExtra(cb) {
+  fetch(GAS_ENDPOINT + '?action=getCheckinExtra&date=' + currentDate + '&branch=' + encodeURIComponent(currentBranch))
+    .then(function(r){ return r.json(); })
+    .then(function(res){ if (res && res.ok) { _ckExtra = res.data || {}; _ckExtraEnabled = true; } if (cb) cb(); })
+    .catch(function(){ if (cb) cb(); });
+}
+function effPersons(room, wd) {
+  var o = _ckExtra[room];
+  if (o && o.persons !== undefined && o.persons !== null && o.persons !== '') return Number(o.persons);
+  return (wd && wd.persons) ? Number(wd.persons) : null;
+}
+function savePersonCount(el) {
+  var room = el.getAttribute('data-room');
+  var v = String(el.value).trim();
+  var n = (v === '') ? null : Math.max(0, parseInt(v, 10) || 0);
+  if (!_ckExtra[room]) _ckExtra[room] = {};
+  _ckExtra[room].persons = n;
+  fetch(GAS_ENDPOINT, { method:'POST', body: JSON.stringify({
+    action:'setCheckinExtra', date: currentDate, branch: currentBranch, room: room, field: 'persons', value: (n===null?'':n)
+  })}).catch(function(){ if (typeof showToast==='function') showToast('인원 저장 실패 — 재시도'); });
+  if (typeof renderAll === 'function') renderAll(); else renderTable();
+  if (typeof blkRenderBtn === 'function') blkRenderBtn();
+}
+function blkList() {
+  var out = [];
+  if (typeof ALL_RECORDS === 'undefined') return out;
+  for (var i=0;i<ALL_RECORDS.length;i++){
+    var r = ALL_RECORDS[i];
+    if (r.is_block) continue;
+    if (r.checkin !== currentDate) continue;   // 오늘 입실(도착) 건만
+    var wd = (typeof getWelcomeEntry==='function') ? getWelcomeEntry(currentDate, r.branch, r.room) : null;
+    var p = effPersons(r.room, wd);
+    var cnt = (p && p > 2) ? (p - 2) : 0;
+    if (cnt <= 0) continue;
+    var o = _ckExtra[r.room];
+    out.push({ room: r.room, guest: r.guest, count: cnt, delivered: !!(o && o.blanket) });
+  }
+  out.sort(function(a,b){ return (typeof roomSortCmp==='function') ? roomSortCmp(a.room,b.room) : (a.room<b.room?-1:1); });
+  return out;
+}
+function blkRenderBtn() {
+  var btn = document.getElementById('btnBlanket');
+  if (!btn) return;
+  if (typeof _ckExtraEnabled !== 'undefined' && !_ckExtraEnabled) { btn.style.display = 'none'; return; }
+  btn.style.display = '';
+  var list = blkList();
+  var undone = 0;
+  for (var i=0;i<list.length;i++){ if(!list[i].delivered) undone++; }
+  var cnt = document.getElementById('blkCnt');
+  if (cnt) cnt.textContent = undone;
+}
+function openBlanketModal() {
+  var modal = document.getElementById('blkModal');
+  if (!modal) return;
+  modal.innerHTML =
+    '<div class="ho-modal-bg" onclick="closeBlanketModal(event)">'
+    + '<div class="ho-modal" onclick="event.stopPropagation()">'
+    + '<div class="ho-modal-head" style="background:#0369a1"><span>🛏️ 추가이불 (오늘 입실)</span><button class="ho-x" onclick="closeBlanketModal()">×</button></div>'
+    + '<div class="ho-modal-body" id="blkListBody"></div>'
+    + '</div></div>';
+  modal.style.display = 'block';
+  blkRenderList();
+}
+function closeBlanketModal(e) {
+  var modal = document.getElementById('blkModal');
+  if (modal) { modal.innerHTML=''; modal.style.display='none'; }
+}
+function blkRenderList() {
+  var body = document.getElementById('blkListBody');
+  if (!body) return;
+  var list = blkList();
+  if (!list.length) { body.innerHTML = '<div class="ho-empty">오늘 입실 중 추가이불 대상이 없습니다.<br><span style="font-size:11px">인원이 안 보이면 리스트의 인원 칸에 입력해 주세요.</span></div>'; return; }
+  var total = 0;
+  for (var t=0;t<list.length;t++){ total += list[t].count; }
+  var html = '<div class="blk-total">총 ' + total + '개 · ' + list.length + '개 객실</div>';
+  for (var i=0;i<list.length;i++){
+    var it = list[i];
+    var room = (typeof opEscapeHtml==='function') ? opEscapeHtml(it.room) : it.room;
+    var guest = (typeof opEscapeHtml==='function') ? opEscapeHtml(it.guest||'') : (it.guest||'');
+    html += '<div class="blk-item' + (it.delivered?' done':'') + '">'
+      + '<div class="blk-room">' + room + '<span class="blk-cnt-badge">' + it.count + '개</span></div>'
+      + '<div class="blk-guest">' + guest + '</div>'
+      + '<button class="blk-chk' + (it.delivered?' done':'') + '" data-room="' + room + '" onclick="blkToggle(this)">' + (it.delivered?'✅ 전달완료':'○ 전달') + '</button>'
+      + '</div>';
+  }
+  body.innerHTML = html;
+}
+function blkToggle(el) {
+  var room = el.getAttribute('data-room');
+  if (!_ckExtra[room]) _ckExtra[room] = {};
+  var cur = !!_ckExtra[room].blanket;
+  _ckExtra[room].blanket = !cur;
+  fetch(GAS_ENDPOINT, { method:'POST', body: JSON.stringify({
+    action:'setCheckinExtra', date: currentDate, branch: currentBranch, room: room, field: 'blanket', value: (cur ? '' : 'done')
+  })}).catch(function(){ if (typeof showToast==='function') showToast('전달 저장 실패 — 재시도'); });
+  blkRenderList(); blkRenderBtn();
+}
+
 // ─── 테이블 / 달력 JS ────────────────────────────────────
 
 function staysLabel(r) {
@@ -1752,12 +1865,18 @@ function memoCellHtml(bno, wd) {
     : '<div class="memo-print write-lines">' + writeLine() + '</div>';
   return reqHtml + editor + printBlk;
 }
-function personsHtml(wd) {
-  if (!wd || !wd.persons) return '<div style="color:#ccc;text-align:center">—</div>';
-  return '<div style="text-align:center;font-size:15px;font-weight:700;color:#1B3A5C">' + wd.persons + '명</div>';
+function personsHtml(wd, room) {
+  var eff = (typeof effPersons === 'function') ? effPersons(room, wd) : (wd && wd.persons ? Number(wd.persons) : null);
+  if (typeof _ckExtraEnabled !== 'undefined' && _ckExtraEnabled) {
+    var val = (eff==null ? '' : eff);
+    var rk = (typeof opEscapeHtml==='function') ? opEscapeHtml(room) : room;
+    return '<input class="pc-input" type="number" min="0" inputmode="numeric" data-room="' + rk + '" value="' + val + '" placeholder="–" onclick="event.stopPropagation()" onchange="savePersonCount(this)">';
+  }
+  if (eff == null) return '<div style="color:#ccc;text-align:center">—</div>';
+  return '<div style="text-align:center;font-size:15px;font-weight:700;color:#1B3A5C">' + eff + '명</div>';
 }
 
-function extraHtml(bno, wd, nights) {
+function extraHtml(bno, wd, nights, room) {
   // 현장기록 있으면 실제 결제된 금액 우선 표시 (기록 여러 건 합산)
   if (typeof _fieldEntries !== 'undefined' && bno && _fieldEntries[bno] && _fieldEntries[bno].length) {
     var list = _fieldEntries[bno];
@@ -1767,7 +1886,7 @@ function extraHtml(bno, wd, nights) {
       + (list.length > 1 ? '<div style="font-size:10px;font-weight:400;color:#999">' + list.length + '건</div>' : '')
       + '</div>';
   }
-  if (!wd) return '<div style="color:#ddd;text-align:center;font-size:11px">—</div>';
+  wd = wd || {};
 
   // 단가 (1박 기준 — 인원/애견/대형견은 박수당, BBQ는 1회성)
   var FEE_PERSON = 20000;   // 인원 1명 추가 / 박
@@ -1777,7 +1896,8 @@ function extraHtml(bno, wd, nights) {
   var n = Math.max(1, Number(nights) || 1);   // 박수
 
   // 인원 추가 (2명 초과)
-  var pExtra = (wd.persons && wd.persons > 2) ? (wd.persons - 2) : 0;
+  var _persons = (typeof effPersons === 'function') ? effPersons(room, wd) : (wd.persons || 0);
+  var pExtra = (_persons && _persons > 2) ? (_persons - 2) : 0;
   var pAmt   = pExtra * FEE_PERSON * n;
 
   // 강아지 추가 (1마리 초과)
@@ -1882,10 +2002,10 @@ function renderTable() {
       <td class="col-stays">${staysLabel(r)}</td>
       <td class="col-arrive">${arriveHtml(wd)}</td>
       <td class="col-bookdt">${r.book_date || ''}</td>
-      <td class="col-persons">${personsHtml(wd)}</td>
+      <td class="col-persons">${personsHtml(wd, r.room)}</td>
       <td class="col-dog">${dogInfoHtml(wd)}</td>
       <td class="col-bbq">${bbqHtml(wd)}</td>
-      <td class="col-extra">${extraHtml(bno, wd, r.nights)}</td>
+      <td class="col-extra">${extraHtml(bno, wd, r.nights, r.room)}</td>
       <td class="col-payment">
         <div class="payment-box">${r.total.toLocaleString()}원${onsite}</div>
       </td>
@@ -1993,6 +2113,7 @@ function refreshData() {
 loadWelcomeData(currentDate);  // 페이지 로드 시 웰컴 + 렌더
 loadTodayFieldEntries();       // 페이지 로드 시 오늘 현장기록 로드
 if (typeof ciLoadStatus === 'function') ciLoadStatus(renderTable);  // 입실체크 상태 로드
+if (typeof ckLoadExtra === 'function') ckLoadExtra(function(){ if (typeof renderAll==='function') renderAll(); else renderTable(); if (typeof blkRenderBtn==='function') blkRenderBtn(); });
 if (typeof loadMemoData === 'function') loadMemoData();  // 예약별 메모 로드
 
 document.getElementById('datePicker').addEventListener('change', e => {
@@ -2000,6 +2121,7 @@ document.getElementById('datePicker').addEventListener('change', e => {
   loadWelcomeData(currentDate);
   loadTodayFieldEntries();
   if (typeof ciLoadStatus === 'function') ciLoadStatus(renderTable);
+  if (typeof ckLoadExtra === 'function') ckLoadExtra(function(){ if (typeof renderAll==='function') renderAll(); else renderTable(); if (typeof blkRenderBtn==='function') blkRenderBtn(); });
   if (currentView === 'clean') { _clStatus = {}; clLoadStatus(renderCleaningView); }
 });
 setTimeout(() => location.reload(), 30 * 60 * 1000);
