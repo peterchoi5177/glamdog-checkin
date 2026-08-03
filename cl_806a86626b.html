@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
 <meta http-equiv="refresh" content="1800">
 <title>글램독 가평(청평점) 체크인 리스트</title>
-<!-- v2026-08-03 09:26 -->
+<!-- v2026-08-03 10:00 -->
 <style>
   :root {
     --navy: #1B3A5C;
@@ -990,6 +990,29 @@
     border-radius:10px; padding:0 7px; font-size:11px; }
   .ci-cnt-done { background:#16a34a; color:#fff; }
   @media print { .ci-filter-bar, .ci-btn { display:none !important; } .ci-row-done { opacity:1 !important; } }
+  /* ── 인수인계(shift handover) ── */
+  .ho-btn { display:inline-block; padding:7px 14px; border:none; border-radius:6px; background:#7c3aed; color:#fff; font-size:13px; font-weight:700; cursor:pointer; margin-left:8px; }
+  .ho-btn .ho-cnt { display:inline-block; min-width:18px; height:18px; line-height:18px; text-align:center; background:#fff; color:#7c3aed; border-radius:9px; font-size:11px; font-weight:800; margin-left:6px; padding:0 5px; }
+  .ho-modal-bg { position:fixed; inset:0; background:rgba(0,0,0,.45); z-index:9999; display:flex; align-items:flex-start; justify-content:center; padding:40px 16px; overflow:auto; }
+  .ho-modal { background:#fff; border-radius:14px; width:100%; max-width:520px; box-shadow:0 10px 40px rgba(0,0,0,.3); overflow:hidden; }
+  .ho-modal-head { background:#7c3aed; color:#fff; padding:14px 18px; font-size:16px; font-weight:800; display:flex; justify-content:space-between; align-items:center; }
+  .ho-modal-head .ho-x { cursor:pointer; font-size:22px; line-height:1; background:none; border:none; color:#fff; }
+  .ho-modal-body { padding:16px 18px; max-height:55vh; overflow:auto; }
+  .ho-item { border:1px solid #e5e0f5; border-left:4px solid #7c3aed; border-radius:8px; padding:10px 12px; margin-bottom:10px; background:#faf8ff; }
+  .ho-item-text { font-size:14px; color:#222; white-space:pre-wrap; word-break:break-word; }
+  .ho-item-meta { font-size:11px; color:#888; margin-top:8px; display:flex; justify-content:space-between; align-items:center; gap:8px; }
+  .ho-item-done { border:none; background:#16a34a; color:#fff; border-radius:6px; padding:4px 12px; font-size:12px; font-weight:700; cursor:pointer; white-space:nowrap; }
+  .ho-empty { text-align:center; color:#aaa; padding:24px; font-size:13px; }
+  .ho-form { border-top:1px solid #eee; padding:14px 18px; }
+  .ho-form textarea { width:100%; box-sizing:border-box; border:1px solid #ccd6e0; border-radius:8px; padding:9px; font-size:14px; resize:vertical; min-height:60px; font-family:inherit; }
+  .ho-form-row { display:flex; gap:8px; margin-top:8px; }
+  .ho-form-row input { flex:0 0 130px; border:1px solid #ccd6e0; border-radius:8px; padding:8px; font-size:13px; }
+  .ho-form-row button { flex:1; border:none; background:#7c3aed; color:#fff; border-radius:8px; padding:8px; font-size:14px; font-weight:700; cursor:pointer; }
+  .ho-set-row { display:flex; justify-content:space-between; align-items:center; padding:11px 4px; border-bottom:1px solid #eee; font-size:14px; }
+  .ho-toggle { border:none; border-radius:14px; padding:5px 18px; font-size:12px; font-weight:800; cursor:pointer; background:#c9ccd1; color:#fff; }
+  .ho-toggle.on { background:#16a34a; }
+  @media print { .ho-btn, .ho-modal-bg { display:none !important; } }
+
 </style>
 </head>
 <body>
@@ -1185,7 +1208,8 @@ function _submitPw() {
     <button class="btn-view"        id="btnIssue"   onclick="setView('issue')">🔧 이슈 신고</button>
   </div>
   <button class="btn-refresh" id="btnRefresh" onclick="refreshData()">🔄 새로고침</button>
-  <span class="update-time">갱신: 2026-08-03 09:26</span>
+  <button class="ho-btn" id="btnHandover" onclick="openHandoverModal()" style="display:none">🔄 인수인계<span class="ho-cnt" id="hoCnt">0</span></button>
+  <span class="update-time">갱신: 2026-08-03 10:00</span>
 </div>
 <div id="brNoticeBanner"></div>
 <div class="content" id="content">
@@ -1370,6 +1394,7 @@ function _submitPw() {
 </div>
 <div id="brNoticeModal"></div>
 <div id="brIssueModal"></div>
+<div id="hoModal"></div>
 <style>
 .memo-print { display:none; }
 @media print {
@@ -1513,6 +1538,97 @@ function filterCheckin(mode) {
     var show = (mode==='all') || (mode==='wait' && st!=='done') || (mode==='done' && st==='done');
     tr.style.display = show ? '' : 'none';
   });
+}
+
+
+// ─── 인수인계(shift handover) — 지점 전용 ─────────────────
+var _hoEnabled = false;
+var _hoItems = [];
+var _hoAutoShown = false;
+function hoEsc(s){ return (typeof opEscapeHtml==='function') ? opEscapeHtml(String(s==null?'':s)) : String(s==null?'':s); }
+function hoFmtTime(s){
+  if(!s) return '';
+  var d = new Date(s); if (isNaN(d.getTime())) return String(s);
+  var mm=d.getMonth()+1, dd=d.getDate(), hh=d.getHours(), mi=d.getMinutes();
+  return mm+'/'+dd+' '+(hh<10?'0':'')+hh+':'+(mi<10?'0':'')+mi;
+}
+function hoLoad(auto) {
+  fetch(GAS_ENDPOINT + '?action=getHandover&branch=' + encodeURIComponent(currentBranch))
+    .then(function(r){ return r.json(); })
+    .then(function(res){
+      if (!res || !res.ok) { _hoEnabled = false; hoRenderBtn(); return; }
+      _hoEnabled = !!res.enabled;
+      _hoItems = res.items || [];
+      hoRenderBtn();
+      if (_hoEnabled && auto && !_hoAutoShown && _hoItems.length > 0) { _hoAutoShown = true; openHandoverModal(); }
+    })
+    .catch(function(){ _hoEnabled = false; hoRenderBtn(); });
+}
+function hoRenderBtn() {
+  var btn = document.getElementById('btnHandover');
+  if (!btn) return;
+  if (!_hoEnabled) { btn.style.display = 'none'; return; }
+  btn.style.display = '';
+  var cnt = document.getElementById('hoCnt');
+  if (cnt) cnt.textContent = _hoItems.length;
+}
+function hoRenderList() {
+  var body = document.getElementById('hoListBody');
+  if (!body) return;
+  if (!_hoItems.length) { body.innerHTML = '<div class="ho-empty">전달할 인수인계가 없습니다. 아래에 남겨보세요.</div>'; return; }
+  var html = '';
+  for (var i=0;i<_hoItems.length;i++){
+    var it = _hoItems[i];
+    var who = it.author ? hoEsc(it.author) : '익명';
+    html += '<div class="ho-item">'
+      + '<div class="ho-item-text">' + hoEsc(it.content) + '</div>'
+      + '<div class="ho-item-meta"><span>✍️ ' + who + ' · ' + hoFmtTime(it.createdAt) + '</span>'
+      + '<button class="ho-item-done" data-id="' + hoEsc(it.id) + '" onclick="hoResolve(this)">✓ 완료</button>'
+      + '</div></div>';
+  }
+  body.innerHTML = html;
+}
+function openHandoverModal() {
+  var modal = document.getElementById('hoModal');
+  if (!modal) return;
+  modal.innerHTML =
+    '<div class="ho-modal-bg" onclick="closeHandoverModal(event)">'
+    + '<div class="ho-modal" onclick="event.stopPropagation()">'
+    + '<div class="ho-modal-head"><span>🔄 근무 인수인계</span><button class="ho-x" onclick="closeHandoverModal()">×</button></div>'
+    + '<div class="ho-modal-body" id="hoListBody"></div>'
+    + '<div class="ho-form">'
+    + '<textarea id="hoInput" placeholder="다음 근무자에게 전달할 메시지나 할 일을 남겨주세요…"></textarea>'
+    + '<div class="ho-form-row"><input type="text" id="hoAuthor" placeholder="작성자(선택)"><button onclick="submitHandover()">남기기</button></div>'
+    + '</div></div></div>';
+  modal.style.display = 'block';
+  hoRenderList();
+}
+function closeHandoverModal(e) {
+  var modal = document.getElementById('hoModal');
+  if (modal) { modal.innerHTML = ''; modal.style.display = 'none'; }
+}
+function submitHandover() {
+  var ta = document.getElementById('hoInput');
+  var au = document.getElementById('hoAuthor');
+  var content = ta ? ta.value.trim() : '';
+  var author  = au ? au.value.trim() : '';
+  if (!content) { if (typeof showToast==='function') showToast('내용을 입력하세요'); return; }
+  fetch(GAS_ENDPOINT, { method:'POST', body: JSON.stringify({ action:'addHandover', branch: currentBranch, content: content, author: author }) })
+    .then(function(r){ return r.json(); })
+    .then(function(res){
+      if (res && res.ok && res.item) { _hoItems.unshift(res.item); }
+      else { _hoItems.unshift({ id:'tmp'+Date.now(), content:content, author:author, createdAt:new Date().toISOString() }); }
+      if (ta) ta.value='';
+      hoRenderList(); hoRenderBtn();
+      if (typeof showToast==='function') showToast('인수인계 등록됨');
+    })
+    .catch(function(){ if (typeof showToast==='function') showToast('저장 실패 — 재시도'); });
+}
+function hoResolve(el) {
+  var id = el.getAttribute('data-id');
+  fetch(GAS_ENDPOINT, { method:'POST', body: JSON.stringify({ action:'resolveHandover', id: id, branch: currentBranch }) }).catch(function(){});
+  _hoItems = _hoItems.filter(function(x){ return String(x.id) !== String(id); });
+  hoRenderList(); hoRenderBtn();
 }
 
 // ─── 테이블 / 달력 JS ────────────────────────────────────
@@ -3829,6 +3945,7 @@ function showBrIsMsg(text, kind) {
 }
 
 loadBranchNotices();
+hoLoad(true);
 
 
 // 기본 뷰: 체크인 리스트
