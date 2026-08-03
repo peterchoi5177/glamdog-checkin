@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
 <meta http-equiv="refresh" content="1800">
 <title>글램독 경주 체크인 리스트</title>
-<!-- v2026-08-03 07:02 -->
+<!-- v2026-08-03 09:04 -->
 <style>
   :root {
     --navy: #1B3A5C;
@@ -1088,7 +1088,7 @@ function _submitPw() {
       <button onclick="document.getElementById('mismatchModal').style.display='none';"
               style="background:none;border:none;color:#fff;font-size:22px;cursor:pointer;">&times;</button>
     </div>
-    <div style="padding:16px 0 0;"><div style="margin:0 20px 14px;padding:12px 14px;background:#fffde7;border-left:4px solid #f9a825;border-radius:6px;"><div style="font-weight:700;color:#f9a825;font-size:13px;margin-bottom:2px;">🟡 여기어때 재고 0 · 야놀자 예약 없음 <span style="background:#f9a825;color:#fff;font-size:11px;padding:1px 8px;border-radius:10px;margin-left:4px;">1건</span></div><div style="color:#666;font-size:11px;margin-bottom:6px">여기어때가 판매 불가로 잠긴 상태인데 야놀자에 예약 없음. 여기어때 실 예약 or 타채널·수기막기·본사막기일 수 있음.</div><ul style="list-style:none;margin:0;padding:0;"><li style="padding:10px 0;border-bottom:1px solid #f0e0e0;font-size:13px;color:#222;line-height:1.5;"><div><strong>B102</strong> · 2026-08-14 · 예약자 불명 <span style="color:#999;font-size:11px">(미스 2026-08-14)</span></div><div style="color:#666;font-size:12px;margin-top:2px">→ 여기어때에서 해당 방·날짜 실 예약 확인 → 있으면 야놀자 등록, 없으면 원인 확인</div></li></ul></div></div>
+    <div style="padding:16px 0 0;"><div style="margin:0 20px 14px;padding:12px 14px;background:#fffde7;border-left:4px solid #f9a825;border-radius:6px;"><div style="font-weight:700;color:#f9a825;font-size:13px;margin-bottom:2px;">🟡 여기어때 재고 0 · 야놀자 예약 없음 <span style="background:#f9a825;color:#fff;font-size:11px;padding:1px 8px;border-radius:10px;margin-left:4px;">1건</span></div><div style="color:#666;font-size:11px;margin-bottom:6px">여기어때가 판매 불가로 잠긴 상태인데 야놀자에 예약 없음. 여기어때 실 예약 or 타채널·수기막기·본사막기일 수 있음.</div><ul style="list-style:none;margin:0;padding:0;"><li style="padding:10px 0;border-bottom:1px solid #f0e0e0;font-size:13px;color:#222;line-height:1.5;"><div><strong>A203</strong> · 2026-08-15 · 예약자 불명 <span style="color:#999;font-size:11px">(미스 2026-08-15)</span></div><div style="color:#666;font-size:12px;margin-top:2px">→ 여기어때에서 해당 방·날짜 실 예약 확인 → 있으면 야놀자 등록, 없으면 원인 확인</div></li></ul></div></div>
     <div style="padding:12px 20px;background:#f5f5f5;color:#666;font-size:12px;border-radius:0 0 12px 12px;">
       처리 완료 시 별도 버튼 없음 — 다음 동기화 사이클(최대 약 2시간)에 자동으로 사라집니다.
       🟡 여기어때 확인 섹션은 오탐 가능(방막기·타채널 예약 포함). 실 예약 확인 후 대응.
@@ -1185,7 +1185,7 @@ function _submitPw() {
     <button class="btn-view"        id="btnIssue"   onclick="setView('issue')">🔧 이슈 신고</button>
   </div>
   <button class="btn-refresh" id="btnRefresh" onclick="refreshData()">🔄 새로고침</button>
-  <span class="update-time">갱신: 2026-08-03 07:02</span>
+  <span class="update-time">갱신: 2026-08-03 09:04</span>
 </div>
 <div id="brNoticeBanner"></div>
 <div class="content" id="content">
@@ -1416,14 +1416,58 @@ function ciLoadStatus(cb) {
     .catch(function(){ if (cb) cb(); });
 }
 function toggleCheckinBtn(btn) { toggleCheckin(btn.getAttribute('data-room')); }
+// ISO 날짜(YYYY-MM-DD)를 delta일 이동 — UTC 기준으로 계산해 KST 타임존 밀림 방지
+function ciShiftDate(ds, delta) {
+  var p = String(ds).split('-');
+  var d = new Date(Date.UTC(+p[0], (+p[1]) - 1, +p[2]));
+  d.setUTCDate(d.getUTCDate() + delta);
+  var y = d.getUTCFullYear(), m = d.getUTCMonth() + 1, da = d.getUTCDate();
+  return y + '-' + (m < 10 ? '0' : '') + m + '-' + (da < 10 ? '0' : '') + da;
+}
+// (room, dateStr)에 묵는 고객의 "연속된 밤" 목록 반환.
+// 같은 이름+전화+같은 객실 조건으로 연박 단일예약 + 분리예약(연달아 예약)을 하나의 연속 숙박으로 인식.
+// dateStr 기준 앞뒤로 밤이 이어지는 구간만 반환(중간에 끊기면 그 구간까지만).
+function ciStayRunDates(room, dateStr) {
+  if (typeof ALL_RECORDS === 'undefined') return [dateStr];
+  var base = null, i;
+  for (i = 0; i < ALL_RECORDS.length; i++) {
+    var r = ALL_RECORDS[i];
+    if (!r.is_block && r.room === room && r.stay_dates && r.stay_dates.indexOf(dateStr) >= 0) { base = r; break; }
+  }
+  if (!base) return [dateStr];
+  var key = (base.guest || '') + '|' + (base.phone || '') + '|' + room;
+  var nights = {};
+  for (i = 0; i < ALL_RECORDS.length; i++) {
+    var x = ALL_RECORDS[i];
+    if (x.is_block || x.room !== room || !x.stay_dates) continue;
+    if (((x.guest || '') + '|' + (x.phone || '') + '|' + room) !== key) continue;
+    for (var k = 0; k < x.stay_dates.length; k++) nights[x.stay_dates[k]] = true;
+  }
+  var run = [dateStr], cur;
+  cur = ciShiftDate(dateStr, -1); while (nights[cur]) { run.unshift(cur); cur = ciShiftDate(cur, -1); }
+  cur = ciShiftDate(dateStr, 1);  while (nights[cur]) { run.push(cur);    cur = ciShiftDate(cur, 1); }
+  return run;
+}
+function ciPost(dateStr, room, status) {
+  fetch(GAS_ENDPOINT, { method:'POST', body: JSON.stringify({
+    action:'setCheckinStatus', date: dateStr, branch: currentBranch,
+    room: room, status: status
+  })}).catch(function(){ if (typeof showToast === 'function') showToast('입실체크 저장 실패 — 재시도'); });
+}
 function toggleCheckin(room) {
   var done = _ciStatus[room] === 'done';
   if (done) delete _ciStatus[room]; else _ciStatus[room] = 'done';
   if (typeof renderAll === 'function') renderAll(); else renderTable();
-  fetch(GAS_ENDPOINT, { method:'POST', body: JSON.stringify({
-    action:'setCheckinStatus', date: currentDate, branch: currentBranch,
-    room: room, status: done ? '' : 'done'
-  })}).catch(function(){ if (typeof showToast === 'function') showToast('입실체크 저장 실패 — 재시도'); });
+  if (done) {
+    // 수동 해제: 현재 날짜만 독립 해제 (연박 다른 밤은 유지)
+    ciPost(currentDate, room, '');
+  } else {
+    // 입실체크: 현재 날짜 + 연박 이후 밤들에 done 전파 → 다음날 자동 '입실완료'
+    var run = ciStayRunDates(room, currentDate);
+    var idx = run.indexOf(currentDate);
+    var targets = (idx >= 0) ? run.slice(idx) : [currentDate];
+    for (var t = 0; t < targets.length; t++) ciPost(targets[t], room, 'done');
+  }
 }
 function ciCounts(recs) {
   var done = 0, i;
