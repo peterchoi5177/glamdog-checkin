@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
 <meta http-equiv="refresh" content="1800">
 <title>글램독 경주 체크인 리스트</title>
-<!-- v2026-08-03 09:04 -->
+<!-- v2026-08-03 09:14 -->
 <style>
   :root {
     --navy: #1B3A5C;
@@ -1185,7 +1185,7 @@ function _submitPw() {
     <button class="btn-view"        id="btnIssue"   onclick="setView('issue')">🔧 이슈 신고</button>
   </div>
   <button class="btn-refresh" id="btnRefresh" onclick="refreshData()">🔄 새로고침</button>
-  <span class="update-time">갱신: 2026-08-03 09:04</span>
+  <span class="update-time">갱신: 2026-08-03 09:14</span>
 </div>
 <div id="brNoticeBanner"></div>
 <div class="content" id="content">
@@ -1407,8 +1407,10 @@ var _fm = { bno:"", room:"", guest:"", nights:1, bbq:0, person:0, dog:0, bigdog:
 
 // ─── 입실 체크(체크인) 상태 ───────────────────────────────
 var _ciStatus = {};      // { room: 'done' }  — GAS에서 로드
+var _ciWaitOverride = {};// { room: true }  — 자동완료(연박 중간날) 세션 임시해제. 새로고침/날짜변경 시 리셋
 var _ciFilter = 'all';   // 'all' | 'wait' | 'done'
 function ciLoadStatus(cb) {
+  _ciWaitOverride = {};
   fetch(GAS_ENDPOINT + '?action=getCheckinStatus&date=' + currentDate
         + '&branch=' + encodeURIComponent(currentBranch))
     .then(function(r){ return r.json(); })
@@ -1454,24 +1456,33 @@ function ciPost(dateStr, room, status) {
     room: room, status: status
   })}).catch(function(){ if (typeof showToast === 'function') showToast('입실체크 저장 실패 — 재시도'); });
 }
+function ciIsContinuation(room, dateStr) {
+  var run = ciStayRunDates(room, dateStr);
+  return run.length > 1 && run[0] !== dateStr;   // 오늘이 연속숙박의 첫날이 아니면 = 이미 투숙 중
+}
+function ciEffectiveDone(room, dateStr) {
+  if (_ciWaitOverride[room]) return false;          // 수동 임시해제
+  if (_ciStatus[room] === 'done') return true;      // 저장된 입실완료
+  return ciIsContinuation(room, dateStr);           // 연박 중간날 → 예약정보 기반 자동완료
+}
 function toggleCheckin(room) {
-  var done = _ciStatus[room] === 'done';
-  if (done) delete _ciStatus[room]; else _ciStatus[room] = 'done';
-  if (typeof renderAll === 'function') renderAll(); else renderTable();
-  if (done) {
-    // 수동 해제: 현재 날짜만 독립 해제 (연박 다른 밤은 유지)
-    ciPost(currentDate, room, '');
+  var eff  = ciEffectiveDone(room, currentDate);
+  var cont = ciIsContinuation(room, currentDate);
+  if (eff) {
+    // → 입실대기
+    if (_ciStatus[room] === 'done') { delete _ciStatus[room]; ciPost(currentDate, room, ''); }
+    if (cont) _ciWaitOverride[room] = true;   // 자동완료 중간날: 세션 임시해제(새로고침 시 자동완료로 복귀)
   } else {
-    // 입실체크: 현재 날짜 + 연박 이후 밤들에 done 전파 → 다음날 자동 '입실완료'
-    var run = ciStayRunDates(room, currentDate);
-    var idx = run.indexOf(currentDate);
-    var targets = (idx >= 0) ? run.slice(idx) : [currentDate];
-    for (var t = 0; t < targets.length; t++) ciPost(targets[t], room, 'done');
+    // → 입실완료
+    delete _ciWaitOverride[room];
+    if (!cont) { _ciStatus[room] = 'done'; ciPost(currentDate, room, 'done'); }
+    // 중간날이면 예약정보 기반 자동완료 → 별도 저장 불필요
   }
+  if (typeof renderAll === 'function') renderAll(); else renderTable();
 }
 function ciCounts(recs) {
   var done = 0, i;
-  for (i = 0; i < recs.length; i++) { if (_ciStatus[recs[i].room] === 'done') done++; }
+  for (i = 0; i < recs.length; i++) { if (ciEffectiveDone(recs[i].room, currentDate)) done++; }
   return { done: done, wait: recs.length - done, total: recs.length };
 }
 function renderCiFilterBar(recs) {
@@ -1725,7 +1736,7 @@ function renderTable() {
 
   let rows = '';
   records.forEach((r, idx) => {
-    const ciDone = (typeof _ciStatus !== 'undefined' && _ciStatus[r.room] === 'done');
+    const ciDone = (typeof _ciStatus !== 'undefined' && (typeof ciEffectiveDone === 'function' ? ciEffectiveDone(r.room, currentDate) : _ciStatus[r.room] === 'done'));
     const ciBtn = (typeof _ciStatus !== 'undefined')
       ? `<button class="ci-btn${ciDone?' ci-done':''}" data-room="${r.room}" onclick="toggleCheckinBtn(this)">${ciDone?'✅ 입실완료':'○ 입실체크'}</button>`
       : '';
