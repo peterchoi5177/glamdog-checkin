@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
 <meta http-equiv="refresh" content="1800">
 <title>글램독 경주 체크인 리스트</title>
-<!-- v2026-08-06 17:57 -->
+<!-- v2026-08-06 18:14 -->
 <style>
   :root {
     --navy: #1B3A5C;
@@ -1215,11 +1215,12 @@ function _submitPw() {
     <button class="btn-view"        id="btnCash"    onclick="setView('cash')">🧮 현금시제</button>
     <button class="btn-view"        id="btnClosing" onclick="setView('closing')">🧾 오늘의 마감</button>
     <button class="btn-view"        id="btnIssue"   onclick="setView('issue')">🔧 이슈 신고</button>
+    
   </div>
   <button class="btn-refresh" id="btnRefresh" onclick="refreshData()">🔄 새로고침</button>
   <button class="ho-btn" id="btnHandover" onclick="openHandoverModal()" style="display:none">🔄 인수인계<span class="ho-cnt" id="hoCnt">0</span></button>
   <button class="ho-btn" id="btnBlanket" onclick="openBlanketModal()" style="display:none;background:#0369a1">🛏️ 추가이불<span class="ho-cnt" id="blkCnt" style="color:#0369a1">0</span></button>
-  <span class="update-time">갱신: 2026-08-06 17:57</span>
+  <span class="update-time">갱신: 2026-08-06 18:14</span>
 </div>
 <div id="brNoticeBanner"></div>
 <div class="content" id="content">
@@ -1228,6 +1229,7 @@ function _submitPw() {
     <div id="tableArea"></div>
   </div>
   <div id="calSection" class="calendar-wrap" style="display:none"></div>
+  
   <div id="resCalSection" class="rescal-wrap" style="display:none">
     <div class="rescal-controls">
       <button class="rescal-nav" onclick="resCalMove(-1)">&#8249;</button>
@@ -3893,77 +3895,62 @@ function closingDateChange() {
   loadClosingData();
 }
 function _clsSum(arr) { return arr.reduce(function(a,b){ return a + (Number(b)||0); }, 0); }
-// GAS가 지점 데이터 클 때 간헐적으로 느려져(20초쯤) 404 HTML을 뱉으므로 재시도로 흡수.
-function _clsFetchJSON(url, tries) {
-  tries = tries || 3;
-  return fetch(url).then(function(r){
-    if (!r.ok) throw new Error('http ' + r.status);
-    return r.text();
-  }).then(function(txt){
-    var j; try { j = JSON.parse(txt); } catch(e) { throw new Error('non-json'); }
-    return j;
-  }).catch(function(err){
-    if (tries > 1) {
-      return new Promise(function(res){ setTimeout(res, 1200); }).then(function(){ return _clsFetchJSON(url, tries - 1); });
-    }
-    throw err;
-  });
-}
-// ── 오늘 기준 빠른 버전 ── 무거운 전체이력(getRangeEntries) 대신 getDayEntries(당일)만 사용.
-// 현금/카드/계좌 예상 = 오늘 수입. 금고 누적 대조는 '현금시제' 탭. 지출은 비차단 로드.
-var _clsEntries = [];
-var _clsInc = {cash:0, card:0, acct:0, total:0, cashN:0, cardN:0, acctN:0, n:0};
-var _clsExpenses = null;   // null=조회중, 'FAIL'=실패, []=로드됨
 function loadClosingData() {
-  var sumArea   = document.getElementById('closingSummaryArea');
-  var reconArea = document.getElementById('closingReconArea');
-  var ledArea   = document.getElementById('closingLedgerArea');
-  if (sumArea)   sumArea.innerHTML   = '<div class="op-loading">⏳ 불러오는 중...</div>';
-  if (reconArea) reconArea.innerHTML = '<div class="op-loading">⏳ 불러오는 중...</div>';
-  if (ledArea)   ledArea.innerHTML   = '<div class="op-loading">⏳ 불러오는 중...</div>';
-  var D = _clsDate;
-  _clsExpenses = null;
-  var pDay = _clsFetchJSON(GAS_ENDPOINT + '?action=getDayEntries&date=' + D + '&branch=' + encodeURIComponent(currentBranch)).catch(function(){ return {__failed:true}; });
-  var pCls = _clsFetchJSON(GAS_ENDPOINT + '?action=getClosing&date=' + D + '&branch=' + encodeURIComponent(currentBranch)).catch(function(){ return {__failed:true}; });
-  Promise.all([pDay, pCls]).then(function(res){
-    if (res[0].__failed || !res[0].ok) {
-      if (sumArea) sumArea.innerHTML = '<div class="op-error" style="grid-column:1/-1">⚠ 조회가 지연되고 있습니다. <button class="op-btn op-btn-primary" style="margin-left:8px;padding:5px 14px" onclick="loadClosingData()">🔄 재시도</button></div>';
-      if (reconArea) reconArea.innerHTML = '<div class="op-empty">재시도하면 대부분 정상 조회됩니다.</div>';
-      if (ledArea) ledArea.innerHTML = '';
-      return;
-    }
-    var entries = res[0].data || [];
-    var closing = (res[1] && res[1].ok) ? (res[1].data || null) : null;
-    renderClosing(entries, closing);
-    loadClosingExpenses(D);
+  var sumArea = document.getElementById('closingSummaryArea');
+  if (sumArea) sumArea.innerHTML = '<div class="op-loading">⏳ 불러오는 중...</div>';
+  var today = _ymd(new Date());
+  var FROM = '2000-01-01';
+  var pEnt = fetch(GAS_ENDPOINT + '?action=getRangeEntries&fromDate=' + FROM + '&toDate=' + today + '&branch=' + encodeURIComponent(currentBranch)).then(function(r){ return r.json(); });
+  var pExp = fetch(GAS_ENDPOINT + '?action=getExpenses&fromDate=' + FROM + '&toDate=' + today + '&branch=' + encodeURIComponent(currentBranch)).then(function(r){ return r.json(); });
+  var pCls = fetch(GAS_ENDPOINT + '?action=getClosing&date=' + _clsDate + '&branch=' + encodeURIComponent(currentBranch)).then(function(r){ return r.json(); }).catch(function(){ return {ok:false}; });
+  Promise.all([pEnt, pExp, pCls]).then(function(res){
+    var entries  = (res[0] && res[0].ok) ? (res[0].data || []) : [];
+    var expenses = (res[1] && res[1].ok) ? (res[1].data || []) : [];
+    var closing  = (res[2] && res[2].ok) ? (res[2].data || null) : null;
+    renderClosing(entries, expenses, closing);
+  }).catch(function(){
+    if (sumArea) sumArea.innerHTML = '<div class="op-error">조회 실패 — 네트워크 확인</div>';
   });
 }
-// 지출은 별도(비차단) — 실패해도 수입·마감엔 영향 없음
-function loadClosingExpenses(D) {
-  _clsFetchJSON(GAS_ENDPOINT + '?action=getExpenses&fromDate=' + D + '&toDate=' + D + '&branch=' + encodeURIComponent(currentBranch))
-    .then(function(r){ _clsExpenses = (r && r.ok && r.data) ? r.data : 'FAIL'; })
-    .catch(function(){ _clsExpenses = 'FAIL'; })
-    .then(function(){ renderClosingSummary(); renderClosingLedger(); });
-}
-function renderClosing(entries, closing) {
+function renderClosing(entries, expenses, closing) {
   var D = _clsDate;
-  _clsEntries = entries.filter(function(x){ return !x.date || x.date === D; });
-  var cashN = _clsEntries.filter(function(x){return x.payMethod==='현금';});
-  var cardN = _clsEntries.filter(function(x){return x.payMethod==='카드';});
-  var acctN = _clsEntries.filter(function(x){return x.payMethod==='계좌';});
-  _clsInc = {
-    cash:_clsSum(cashN.map(function(x){return x.total;})),
-    card:_clsSum(cardN.map(function(x){return x.total;})),
-    acct:_clsSum(acctN.map(function(x){return x.total;})),
-    cashN:cashN.length, cardN:cardN.length, acctN:acctN.length, n:_clsEntries.length
-  };
-  _clsInc.total = _clsInc.cash + _clsInc.card + _clsInc.acct;
+  var todayEnt = entries.filter(function(x){ return x.date === D; });
+  var cashIn = _clsSum(todayEnt.filter(function(x){return x.payMethod==='현금';}).map(function(x){return x.total;}));
+  var cardIn = _clsSum(todayEnt.filter(function(x){return x.payMethod==='카드';}).map(function(x){return x.total;}));
+  var acctIn = _clsSum(todayEnt.filter(function(x){return x.payMethod==='계좌';}).map(function(x){return x.total;}));
+  var incomeTotal = cashIn + cardIn + acctIn;
+  var todayExp = expenses.filter(function(e){ return e.date === D; });
+  var expCash  = _clsSum(todayExp.filter(function(e){return e.category==='현금지출';}).map(function(e){return e.amount;}));
+  var expCard  = _clsSum(todayExp.filter(function(e){return e.category==='카드지출';}).map(function(e){return e.amount;}));
+  var expClean = _clsSum(todayExp.filter(function(e){return e.category==='청소용역';}).map(function(e){return e.amount;}));
+  var expenseTotal = expCash + expCard + expClean;
+  // 예상 금고 현금 (현금시제와 동일, D 시점까지 누적)
+  var opens = expenses.filter(function(e){ return e.category === '시제시작잔액' && e.date <= D; })
+                      .sort(function(a,b){ return a.date < b.date ? -1 : a.date > b.date ? 1 : 0; });
+  var opening  = opens.length ? opens[opens.length-1] : null;
+  var openDate = opening ? opening.date : '2000-01-01';
+  var openAmt  = opening ? (Number(opening.amount)||0) : 0;
+  var cashInRun = _clsSum(entries.filter(function(x){ return x.payMethod==='현금' && x.date > openDate && x.date <= D; }).map(function(x){return x.total;}));
+  var gatherRun = _clsSum(expenses.filter(function(e){ return e.category==='본사입금' && e.date > openDate && e.date <= D; }).map(function(e){return e.amount;}));
+  var spendRun  = _clsSum(expenses.filter(function(e){ return e.category==='현금지출' && e.date > openDate && e.date <= D; }).map(function(e){return e.amount;}));
+  var cashExpected = openAmt + cashInRun - gatherRun - spendRun;
+  var cardExpected = cardIn;
+  var acctExpected = acctIn;
 
-  window._clsSnapshot = {
-    date:D, cashExpected:_clsInc.cash, cardExpected:_clsInc.card, accountExpected:_clsInc.acct,
-    incomeTotal:_clsInc.total, expenseTotal:0
-  };
-  renderClosingSummary();
+  var sumCards = [
+    ['현금 수입', cashIn, '#2e7d32', todayEnt.filter(function(x){return x.payMethod==='현금';}).length + '건'],
+    ['카드 수입', cardIn, '#1565c0', todayEnt.filter(function(x){return x.payMethod==='카드';}).length + '건'],
+    ['계좌 수입', acctIn, '#6a1b9a', todayEnt.filter(function(x){return x.payMethod==='계좌';}).length + '건'],
+    ['수입 합계', incomeTotal, '#1B3A5C', '현장기록 ' + todayEnt.length + '건'],
+    ['지출 합계', expenseTotal, '#c62828', todayExp.length + '건']
+  ];
+  var sumArea = document.getElementById('closingSummaryArea');
+  if (sumArea) sumArea.innerHTML = sumCards.map(function(c){
+    return '<div class="op-summary-card" style="border-top:3px solid ' + c[2] + '">'
+      + '<div class="op-summary-label">' + c[0] + '</div>'
+      + '<div class="op-summary-value" style="color:' + c[2] + '">' + c[1].toLocaleString() + '원</div>'
+      + '<div style="font-size:10px;color:#999;margin-top:3px">' + c[3] + '</div></div>';
+  }).join('');
 
   var actCash = closing ? closing.cashActual : '';
   var actCard = closing ? closing.cardActual : '';
@@ -3985,10 +3972,10 @@ function renderClosing(entries, closing) {
       + '</div>';
   }
   var reconArea = document.getElementById('closingReconArea');
-  var html = '<div class="cls-recon-head"><span>구분</span><span>오늘 수입</span><span>실물 카운트</span><span>차액</span></div>';
-  html += reconRow('💵 현금', 'cash', _clsInc.cash, actCash, '금고 실제', mCash);
-  html += reconRow('💳 카드', 'card', _clsInc.card, actCard, '단말 정산', mCard);
-  html += reconRow('🏦 계좌', 'acct', _clsInc.acct, actAcct, '입금 확인', mAcct);
+  var html = '<div class="cls-recon-head"><span>구분</span><span>시스템 예상</span><span>실물 카운트</span><span>차액</span></div>';
+  html += reconRow('💵 현금', 'cash', cashExpected, actCash, '금고 실제', mCash);
+  html += reconRow('💳 카드', 'card', cardExpected, actCard, '단말 정산', mCard);
+  html += reconRow('🏦 계좌', 'acct', acctExpected, actAcct, '입금 확인', mAcct);
   html += '<button class="op-btn op-btn-primary" style="margin-top:12px" onclick="submitClosing()">' + (closing ? '🔁 마감 재확정' : '✅ 마감 확정') + '</button>';
   reconArea.innerHTML = html;
 
@@ -3997,52 +3984,25 @@ function renderClosing(entries, closing) {
     if (closing) badge.innerHTML = '<div class="cls-badge cls-badge-done">✅ 마감 완료 · ' + (closing.confirmedAt||'') + (closing.confirmedBy?(' · '+closing.confirmedBy):'') + '</div>';
     else badge.innerHTML = '<div class="cls-badge cls-badge-open">⏳ 미마감 — 실물 금액 입력 후 확정하세요</div>';
   }
+
+  window._clsSnapshot = {
+    date: D, cashExpected: cashExpected, cardExpected: cardExpected, accountExpected: acctExpected,
+    incomeTotal: incomeTotal, expenseTotal: expenseTotal
+  };
   closingRecalc();
-  renderClosingLedger();
-}
-function renderClosingSummary() {
-  var expTotal = 0, expDesc, expFail = (_clsExpenses === 'FAIL');
-  if (_clsExpenses === null) expDesc = '조회 중...';
-  else if (expFail) expDesc = '조회 지연';
-  else {
-    var te = _clsExpenses.filter(function(e){ return e.category!=='시제시작잔액' && e.category!=='본사입금'; });
-    expTotal = _clsSum(te.map(function(e){return e.amount;}));
-    expDesc = te.length + '건';
-  }
-  if (window._clsSnapshot) window._clsSnapshot.expenseTotal = expTotal;
-  var cards = [
-    ['현금 수입', _clsInc.cash, '#2e7d32', _clsInc.cashN + '건', false],
-    ['카드 수입', _clsInc.card, '#1565c0', _clsInc.cardN + '건', false],
-    ['계좌 수입', _clsInc.acct, '#6a1b9a', _clsInc.acctN + '건', false],
-    ['수입 합계', _clsInc.total, '#1B3A5C', '현장기록 ' + _clsInc.n + '건', false],
-    ['지출 합계', expTotal, '#c62828', expDesc, expFail]
-  ];
-  var sumArea = document.getElementById('closingSummaryArea');
-  if (!sumArea) return;
-  sumArea.innerHTML = cards.map(function(c){
-    var val = c[4] ? '<button class="op-btn" style="padding:2px 10px;font-size:13px" onclick="loadClosingExpenses(_clsDate)">🔄 재시도</button>' : (c[1].toLocaleString()+'원');
-    return '<div class="op-summary-card" style="border-top:3px solid ' + c[2] + '">'
-      + '<div class="op-summary-label">' + c[0] + '</div>'
-      + '<div class="op-summary-value" style="color:' + c[2] + '">' + val + '</div>'
-      + '<div style="font-size:10px;color:#999;margin-top:3px">' + c[3] + '</div></div>';
-  }).join('');
-}
-function renderClosingLedger() {
+
   var led = [];
-  _clsEntries.forEach(function(x){ led.push({type:(x.payMethod||'?')+' 수입', label:((x.room||'')+' '+(x.guest||'')).trim(), amt:Number(x.total)||0, sign:1}); });
-  if (Array.isArray(_clsExpenses)) {
-    _clsExpenses.forEach(function(e){ if(e.category==='시제시작잔액'||e.category==='본사입금') return; led.push({type:e.category, label:e.memo||'', amt:Number(e.amount)||0, sign:-1}); });
-  }
+  todayEnt.forEach(function(x){ led.push({type:(x.payMethod||'?')+' 수입', label:((x.room||'')+' '+(x.guest||'')).trim(), amt:Number(x.total)||0, sign:1}); });
+  todayExp.forEach(function(e){ if(e.category==='시제시작잔액'||e.category==='본사입금') return; led.push({type:e.category, label:e.memo||'', amt:Number(e.amount)||0, sign:-1}); });
   var ledArea = document.getElementById('closingLedgerArea');
-  if (!ledArea) return;
-  var note = (_clsExpenses===null) ? '<div style="font-size:11px;color:#999;padding:4px 2px">지출 내역 불러오는 중...</div>'
-           : (_clsExpenses==='FAIL' ? '<div style="font-size:11px;color:#c62828;padding:4px 2px">지출 조회 지연 — 위 \'지출 합계\'의 🔄로 재시도</div>' : '');
-  if (!led.length) { ledArea.innerHTML = note + '<div class="op-empty">오늘 수입/지출 내역이 없습니다.</div>'; return; }
-  var rows = led.map(function(r){
-    var color = r.sign>0 ? '#2e7d32' : '#c62828'; var sign = r.sign>0?'+':'−';
-    return '<tr><td>' + r.type + '</td><td>' + opEscapeHtml(r.label) + '</td><td style="text-align:right;font-weight:600;color:'+color+'">'+sign+r.amt.toLocaleString()+'원</td></tr>';
-  }).join('');
-  ledArea.innerHTML = note + '<table class="op-table"><thead><tr><th>구분</th><th>내용</th><th style="text-align:right">금액</th></tr></thead><tbody>'+rows+'</tbody></table>';
+  if (!led.length) { ledArea.innerHTML = '<div class="op-empty">오늘 수입/지출 내역이 없습니다.</div>'; }
+  else {
+    var rows = led.map(function(r){
+      var color = r.sign>0 ? '#2e7d32' : '#c62828'; var sign = r.sign>0?'+':'−';
+      return '<tr><td>' + r.type + '</td><td>' + opEscapeHtml(r.label) + '</td><td style="text-align:right;font-weight:600;color:'+color+'">'+sign+r.amt.toLocaleString()+'원</td></tr>';
+    }).join('');
+    ledArea.innerHTML = '<table class="op-table"><thead><tr><th>구분</th><th>내용</th><th style="text-align:right">금액</th></tr></thead><tbody>'+rows+'</tbody></table>';
+  }
 }
 function closingRecalc() {
   ['cash','card','acct'].forEach(function(k){
@@ -4303,6 +4263,7 @@ function showBrIsMsg(text, kind) {
 
 loadBranchNotices();
 hoLoad(true);
+
 
 
 // 기본 뷰: 체크인 리스트
