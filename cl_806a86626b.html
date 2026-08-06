@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
 <meta http-equiv="refresh" content="1800">
 <title>글램독 가평(청평점) 체크인 리스트</title>
-<!-- v2026-08-06 15:44 -->
+<!-- v2026-08-06 16:18 -->
 <style>
   :root {
     --navy: #1B3A5C;
@@ -728,7 +728,9 @@
   }
   .cls-recon-head { font-size:11px; color:#94a3b8; font-weight:700; padding:0 2px 6px; text-align:right; }
   .cls-recon-head span:first-child { text-align:left; }
-  .cls-recon-row { padding:8px 2px; border-top:1px solid #eef2f7; }
+  .cls-recon-row { padding:8px 2px; }
+  .cls-recon-item { border-top:1px solid #eef2f7; }
+  .cls-memo-row { margin:2px 2px 10px; font-size:13px; }
   .cls-recon-label { font-size:14px; font-weight:700; color:#1e293b; text-align:left; display:flex; flex-direction:column; }
   .cls-recon-hint { font-size:10px; color:#94a3b8; font-weight:400; }
   .cls-recon-exp { font-size:13px; color:#475569; text-align:right; font-weight:600; }
@@ -1217,7 +1219,7 @@ function _submitPw() {
   <button class="btn-refresh" id="btnRefresh" onclick="refreshData()">🔄 새로고침</button>
   <button class="ho-btn" id="btnHandover" onclick="openHandoverModal()" style="display:none">🔄 인수인계<span class="ho-cnt" id="hoCnt">0</span></button>
   <button class="ho-btn" id="btnBlanket" onclick="openBlanketModal()" style="display:none;background:#0369a1">🛏️ 추가이불<span class="ho-cnt" id="blkCnt" style="color:#0369a1">0</span></button>
-  <span class="update-time">갱신: 2026-08-06 15:44</span>
+  <span class="update-time">갱신: 2026-08-06 16:18</span>
 </div>
 <div id="brNoticeBanner"></div>
 <div class="content" id="content">
@@ -2710,17 +2712,12 @@ function fmSave() {
   });
   var btn = document.getElementById("fmSaveBtn");
   btn.disabled=true; btn.textContent="저장 중...";
-
-  // ── 저장 복원력 패치 (2026-08-05) ──────────────────────────
-  // 구글(GAS)이 간헐적으로 JSON 대신 HTML 오류 페이지를 반환하거나
-  // ok 응답 후 기록이 유실되는 문제 대응:
-  // 응답이 비정상이면 getDayEntries로 실제 저장 여부를 확인한 뒤
-  // 저장돼 있으면 성공 처리(중복 방지), 없으면 1회 자동 재시도.
-  var preIds = {};
-  if(_fm.bno && _fieldEntries[_fm.bno]) _fieldEntries[_fm.bno].forEach(function(x){ preIds[x.entryId]=1; });
-
-  function applySuccess(entryIdResolved) {
-      var entry = { entryId:entryIdResolved||_fm.entryId, total:total, payMethod:pay,
+  fetch(GAS_ENDPOINT, {method:"POST", body:payload})
+    .then(function(r){ return r.text(); })
+    .then(function(text){
+      var res; try{res=JSON.parse(text);}catch(e){throw new Error("응답 오류: "+text.slice(0,200));}
+      if(!res.ok) throw new Error(res.error||"저장 실패");
+      var entry = { entryId:res.entryId||_fm.entryId, total:total, payMethod:pay,
         depositorName:depositorName,
         bbq:bbq, person:person, dog:dog, bigdog:bigdog,
         bbqAmt:fmEffAmt("bbq"), personAmt:fmEffAmt("person"), dogAmt:fmEffAmt("dog"), bigdogAmt:fmEffAmt("bigdog"),
@@ -2740,69 +2737,11 @@ function fmSave() {
       var toastMsg = "💾 저장 완료! " + total.toLocaleString() + "원 (" + pay + (depositorName?" / "+depositorName:"") + ")";
       showToast(toastMsg);
       loadTodayFieldEntries();
-  }
-
-  // 실제 저장 여부를 서버 조회로 확인 (최대 2회)
-  // cb(entryId)=저장 확인됨 / cb(false)=확실히 없음 / cb(null)=확인 불가
-  function verifySaved(cb) {
-    var tries = 0;
-    function once() {
-      tries++;
-      fetch(GAS_ENDPOINT+"?action=getDayEntries&date="+currentDate+"&branch="+encodeURIComponent(currentBranch))
-        .then(function(r){ return r.text(); })
-        .then(function(text){
-          var res; try{ res=JSON.parse(text); }catch(e){ res=null; }
-          if(res && res.ok && res.data) {
-            var found = null;
-            res.data.forEach(function(e){
-              if(String(e.bookingNo||"")!==String(_fm.bno||"")) return;
-              if(String(e.room||"")!==String(_fm.room||"")) return;
-              if(Number(e.total)!==Number(total)) return;
-              if(String(e.payMethod||"")!==String(pay)) return;
-              if(_fm.editMode) { if(e.entryId===_fm.entryId) found=e; }
-              else { if(e.entryId && !preIds[e.entryId]) found=e; }
-            });
-            cb(found ? (found.entryId||_fm.entryId) : false); return;
-          }
-          if(tries<2) setTimeout(once, 2500); else cb(null);
-        })
-        .catch(function(){ if(tries<2) setTimeout(once, 2500); else cb(null); });
-    }
-    once();
-  }
-
-  var attempted = 0;
-  function attempt() {
-    attempted++;
-    fetch(GAS_ENDPOINT, {method:"POST", body:payload})
-      .then(function(r){ return r.text(); })
-      .then(function(text){
-        var res; try{res=JSON.parse(text);}catch(e){ onUncertain(); return; }
-        if(!res.ok) { onFail(res.error||"저장 실패"); return; }
-        applySuccess(res.entryId);
-      })
-      .catch(function(){ onUncertain(); });
-  }
-
-  // 응답이 JSON이 아니거나(HTML 오류 페이지) 네트워크 오류 → 저장 여부 확인 후 분기
-  function onUncertain() {
-    btn.textContent="저장 확인 중...";
-    setTimeout(function() {
-      verifySaved(function(entryId) {
-        if(entryId) { applySuccess(entryId); return; }
-        if(entryId===false && attempted<2) { btn.textContent="재시도 중..."; attempt(); return; }
-        onFail("구글 서버 일시 오류입니다. 아래 기존 기록 목록을 확인한 뒤 없으면 다시 시도해주세요.");
-      });
-    }, 2000);
-  }
-
-  function onFail(msg) {
-    alert("저장 오류: "+msg);
-    btn.disabled=false; btn.textContent=_fm.editMode?"수정 저장":"기록하기";
-    loadTodayFieldEntries();
-  }
-
-  attempt();
+    })
+    .catch(function(err){
+      alert("저장 오류: "+err.message);
+      btn.disabled=false; btn.textContent=_fm.editMode?"수정 저장":"기록하기";
+    });
 }
 
 function fmDelete() {
@@ -4014,23 +3953,27 @@ function renderClosing(entries, expenses, closing) {
   var actCash = closing ? closing.cashActual : '';
   var actCard = closing ? closing.cardActual : '';
   var actAcct = closing ? closing.accountActual : '';
-  var memo    = closing ? (closing.memo||'') : '';
-  function reconRow(label, key, expected, actual, hint) {
+  var mCash = closing ? (closing.cashMemo||'') : '';
+  var mCard = closing ? (closing.cardMemo||'') : '';
+  var mAcct = closing ? (closing.accountMemo||'') : '';
+  function reconRow(label, key, expected, actual, hint, memoVal) {
     var av = (actual===''||actual===null||actual===undefined) ? '' : actual;
-    return '<div class="cls-recon-row">'
+    var mv = memoVal ? opEscapeHtml(memoVal) : '';
+    return '<div class="cls-recon-item">'
+      + '<div class="cls-recon-row">'
       + '<div class="cls-recon-label">' + label + '<span class="cls-recon-hint">' + hint + '</span></div>'
       + '<div class="cls-recon-exp">' + expected.toLocaleString() + '원</div>'
       + '<input type="number" inputmode="numeric" class="cls-recon-input" id="clsAct_' + key + '" value="' + av + '" placeholder="실물" oninput="closingRecalc()" data-exp="' + expected + '">'
       + '<div class="cls-recon-diff" id="clsDiff_' + key + '">—</div>'
+      + '</div>'
+      + '<input type="text" class="cls-memo-input cls-memo-row" id="clsMemo_' + key + '" value="' + mv + '" placeholder="' + label + ' 차액 사유 (선택)">'
       + '</div>';
   }
   var reconArea = document.getElementById('closingReconArea');
   var html = '<div class="cls-recon-head"><span>구분</span><span>시스템 예상</span><span>실물 카운트</span><span>차액</span></div>';
-  html += reconRow('💵 현금', 'cash', cashExpected, actCash, '금고 실제');
-  html += reconRow('💳 카드', 'card', cardExpected, actCard, '단말 정산');
-  html += reconRow('🏦 계좌', 'acct', acctExpected, actAcct, '입금 확인');
-  html += '<label class="cls-memo-label">메모 (선택)</label>';
-  html += '<input type="text" id="clsMemo" class="cls-memo-input" value="' + opEscapeHtml(memo) + '" placeholder="차액 사유 등">';
+  html += reconRow('💵 현금', 'cash', cashExpected, actCash, '금고 실제', mCash);
+  html += reconRow('💳 카드', 'card', cardExpected, actCard, '단말 정산', mCard);
+  html += reconRow('🏦 계좌', 'acct', acctExpected, actAcct, '입금 확인', mAcct);
   html += '<button class="op-btn op-btn-primary" style="margin-top:12px" onclick="submitClosing()">' + (closing ? '🔁 마감 재확정' : '✅ 마감 확정') + '</button>';
   reconArea.innerHTML = html;
 
@@ -4079,7 +4022,10 @@ function submitClosing() {
     cashExpected:snap.cashExpected, cardExpected:snap.cardExpected, accountExpected:snap.accountExpected,
     cashActual:val('cash'), cardActual:val('card'), accountActual:val('acct'),
     incomeTotal:snap.incomeTotal, expenseTotal:snap.expenseTotal,
-    memo:(document.getElementById('clsMemo')||{}).value||'', confirmedBy:currentBranch
+    cashMemo:(document.getElementById('clsMemo_cash')||{}).value||'',
+    cardMemo:(document.getElementById('clsMemo_card')||{}).value||'',
+    accountMemo:(document.getElementById('clsMemo_acct')||{}).value||'',
+    confirmedBy:currentBranch
   };
   _closingMsg('저장 중...','');
   fetch(GAS_ENDPOINT, {method:'POST', body:JSON.stringify(payload)})
