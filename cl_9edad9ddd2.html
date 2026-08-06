@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
 <meta http-equiv="refresh" content="1800">
 <title>글램독 양양 체크인 리스트</title>
-<!-- v2026-08-06 18:31 -->
+<!-- v2026-08-06 19:05 -->
 <style>
   :root {
     --navy: #1B3A5C;
@@ -1250,7 +1250,7 @@ function _submitPw() {
   <button class="btn-refresh" id="btnRefresh" onclick="refreshData()">🔄 새로고침</button>
   <button class="ho-btn" id="btnHandover" onclick="openHandoverModal()" style="display:none">🔄 인수인계<span class="ho-cnt" id="hoCnt">0</span></button>
   <button class="ho-btn" id="btnBlanket" onclick="openBlanketModal()" style="display:none;background:#0369a1">🛏️ 추가이불<span class="ho-cnt" id="blkCnt" style="color:#0369a1">0</span></button>
-  <span class="update-time">갱신: 2026-08-06 18:31</span>
+  <span class="update-time">갱신: 2026-08-06 19:05</span>
 </div>
 <div id="brNoticeBanner"></div>
 <div class="content" id="content">
@@ -1282,6 +1282,7 @@ function _submitPw() {
   .sh-c-AM{background:#dbeafe;color:#1d4ed8;border:1px solid #bfdbfe;}
   .sh-c-PM{background:#ffedd5;color:#c2410c;border:1px solid #fed7aa;}
   .sh-c-OFF{background:#f1f5f9;color:#64748b;border:1px solid #e2e8f0;}
+  .sh-c-ALL{background:#ede9fe;color:#6d28d9;border:1px solid #ddd6fe;}
   .sh-c-na{background:repeating-linear-gradient(45deg,#f8fafc,#f8fafc 6px,#f1f5f9 6px,#f1f5f9 12px);color:#cbd5e1;border:1px solid #eef2f7;cursor:default;}
   .sh-dirty{box-shadow:0 0 0 2px #f59e0b inset;}
   .sh-grouprow td{background:#f8fafc;text-align:left;font-weight:800;font-size:12px;color:#475569;padding:4px 10px;}
@@ -1305,8 +1306,9 @@ function _submitPw() {
   <div class="sh-legend">
     <span><span class="sh-cell sh-c-AM" style="display:inline;padding:2px 8px;">오전</span> 볼런티어 10~14시 · 직원 9~16시</span>
     <span><span class="sh-cell sh-c-PM" style="display:inline;padding:2px 8px;">오후</span> 볼런티어 16~20시 · 직원 15~22시</span>
+    <span><span class="sh-cell sh-c-ALL" style="display:inline;padding:2px 8px;">올데이</span> 오픈~마감 풀타임 (매니저)</span>
     <span><span class="sh-cell sh-c-OFF" style="display:inline;padding:2px 8px;">OFF</span> 휴무 확정</span>
-    <span>빈칸=미정 · 셀을 탭하면 오전&#8594;오후&#8594;OFF&#8594;빈칸 순환 · 날짜별 배지=퇴실(청소) 수 대비 오전 인력 판정</span>
+    <span>빈칸=미정 · 셀을 탭하면 오전&#8594;오후&#8594;올데이&#8594;OFF&#8594;빈칸 순환 · 날짜별 배지=퇴실(청소) 수 대비 오전 인력 판정</span>
   </div>
   <!-- 스태프 관리 모달 -->
   <div class="sh-ov" id="shStaffOv" onclick="if(event.target===this)shStaffClose()">
@@ -1323,6 +1325,7 @@ function _submitPw() {
           <select id="shfType" class="fm-etc-input" onchange="shTypeChanged()">
             <option value="볼런티어">볼런티어 (주4일)</option>
             <option value="직원">직원 (주5일)</option>
+            <option value="매니저">매니저 (제한 없음)</option>
             <option value="파트타임">파트타임 (호출)</option>
           </select>
           <input id="shfCap" class="fm-etc-input" type="number" step="0.5" placeholder="청소 처리량(실)">
@@ -4375,16 +4378,33 @@ hoLoad(true);
 
 
 // ═══════════ 근무표(시프트) — 양양 파일럿 ═══════════
-var SHIFT_TYPE_CAP   = {'볼런티어':3.5, '직원':5, '파트타임':5};
-var SHIFT_TYPE_LIMIT = {'볼런티어':4,   '직원':5, '파트타임':0};   // 주당 기준일수 (0=제한 없음)
+var SHIFT_TYPE_CAP   = {'매니저':5, '볼런티어':3.5, '직원':5, '파트타임':5};
+var SHIFT_TYPE_LIMIT = {'매니저':0, '볼런티어':4,   '직원':5, '파트타임':0};   // 주당 기준일수 (0=제한 없음)
 var SHIFT_PART_CAP   = 5;   // 파트타임 1명 처리량 → 부족분 호출 인원 계산
-var _sh = { weekStart:null, staff:[], grid:{}, orig:{}, dirty:{}, loaded:false, err:'', co:null };
+var _sh = { weekStart:null, staff:[], grid:{}, orig:{}, dirty:{}, loaded:false, err:'', co:null, stale:0 };
 
 function shPad(n){ return (n<10?'0':'')+n; }
 function shISO(d){ return d.getFullYear()+'-'+shPad(d.getMonth()+1)+'-'+shPad(d.getDate()); }
 function shAddDays(iso,n){ var d=new Date(iso+'T00:00:00'); d.setDate(d.getDate()+n); return shISO(d); }
 function shMonday(iso){ var d=new Date(iso+'T00:00:00'); var w=(d.getDay()+6)%7; d.setDate(d.getDate()-w); return shISO(d); }
 function _shToast(m){ if(typeof showToast==='function'){ showToast(m); } else { alert(m); } }
+
+// GAS 간헐 실패 대비 공용 재시도 fetch (비JSON·네트워크 오류 시 1.5초 간격 재시도)
+function shFetchJson(url, tries){
+  return fetch(url).then(function(r){ return r.text(); }).then(function(t){ return JSON.parse(t); })
+    .catch(function(e){
+      if(tries>1){ return new Promise(function(res,rej){ setTimeout(function(){ shFetchJson(url,tries-1).then(res,rej); },1500); }); }
+      throw e;
+    });
+}
+function shPostJson(body, tries){
+  return fetch(GAS_ENDPOINT,{ method:'POST', body:JSON.stringify(body) })
+    .then(function(r){ return r.text(); }).then(function(t){ return JSON.parse(t); })
+    .catch(function(e){
+      if(tries>1){ return new Promise(function(res,rej){ setTimeout(function(){ shPostJson(body,tries-1).then(res,rej); },1500); }); }
+      throw e;
+    });
+}
 
 // 날짜별 퇴실(청소) 수 — 방막기 제외
 function shCheckoutMap(){
@@ -4417,13 +4437,25 @@ function shLoad(){
         _sh.grid={};
         (res.shifts||[]).forEach(function(s){ if(s.shift) _sh.grid[s.date+'|'+s.staffId]=s.shift; });
         _sh.orig=JSON.parse(JSON.stringify(_sh.grid));
-        _sh.dirty={}; _sh.err=''; _sh.loaded=true;
+        _sh.dirty={}; _sh.err=''; _sh.loaded=true; _sh.stale=0;
+        try{ localStorage.setItem('shCache_'+currentBranch,
+          JSON.stringify({t:Date.now(), weekStart:_sh.weekStart, staff:_sh.staff, grid:_sh.grid})); }catch(e){}
         shRender();
         var ov=document.getElementById('shStaffOv');
         if(ov && ov.classList.contains('open')) shStaffRenderList();
       })
       .catch(function(e){
         if(n<MAX){ setTimeout(function(){ attempt(n+1); }, 1200*n); return; }
+        // 최종 실패 — 같은 주의 마지막 성공 캐시가 있으면 보기 전용으로 표시
+        var c=null;
+        try{ c=JSON.parse(localStorage.getItem('shCache_'+currentBranch)||'null'); }catch(e2){}
+        if(c && c.weekStart===_sh.weekStart && c.staff){
+          _sh.staff=c.staff; _sh.grid=c.grid||{};
+          _sh.orig=JSON.parse(JSON.stringify(_sh.grid));
+          _sh.dirty={}; _sh.err=''; _sh.loaded=true; _sh.stale=c.t;
+          shRender();
+          return;
+        }
         _sh.err=(e==='NONJSON')
           ? 'GAS가 일시적으로 비정상 응답을 반환했습니다 (자동 재시도 '+(MAX-1)+'회 모두 실패)'
           : String(e);
@@ -4443,9 +4475,10 @@ function shGoThisWeek(){ if(!shConfirmDiscard()) return; _sh.weekStart=shMonday(
 
 function shCycle(dateIso, sid){
   if(!_sh.loaded) return;
+  if(_sh.stale){ _shToast('&#128274; 보기 전용 — 서버 재연결 후 수정할 수 있습니다'); return; }
   var k=dateIso+'|'+sid;
   var cur=_sh.grid[k]||'';
-  var next={'':'AM','AM':'PM','PM':'OFF','OFF':''}[cur];
+  var next={'':'AM','AM':'PM','PM':'ALL','ALL':'OFF','OFF':''}[cur];
   if(next) _sh.grid[k]=next; else delete _sh.grid[k];
   if((_sh.orig[k]||'')===(next||'')) delete _sh.dirty[k]; else _sh.dirty[k]=true;
   shRender();
@@ -4485,7 +4518,10 @@ function shRender(){
 
   function amCap(d){
     var c=0;
-    weekStaff.forEach(function(s){ if(_sh.grid[d+'|'+s.staffId]==='AM') c+=(s.capacity||0); });
+    weekStaff.forEach(function(s){
+      var v=_sh.grid[d+'|'+s.staffId];
+      if(v==='AM'||v==='ALL') c+=(s.capacity||0);   // 올데이는 청소시간 포함 근무
+    });
     return c;
   }
 
@@ -4506,7 +4542,7 @@ function shRender(){
   });
   h+='<th style="min-width:76px;">이번주</th></tr></thead><tbody>';
 
-  var groups=[['직원','&#128084; 직원'],['볼런티어','&#127757; 볼런티어'],['파트타임','&#128222; 파트타임 (호출)']];
+  var groups=[['매니저','&#128081; 매니저'],['직원','&#128084; 직원'],['볼런티어','&#127757; 볼런티어'],['파트타임','&#128222; 파트타임 (호출)']];
   groups.forEach(function(g){
     var members=weekStaff.filter(function(s){ return s.type===g[0]; });
     if(!members.length) return;
@@ -4515,18 +4551,19 @@ function shRender(){
       var m4=0;
       Object.keys(_sh.grid).forEach(function(k){
         var p=k.split('|');
-        if(p[1]===s.staffId && (_sh.grid[k]==='AM'||_sh.grid[k]==='PM')) m4++;
+        var gv=_sh.grid[k];
+        if(p[1]===s.staffId && (gv==='AM'||gv==='PM'||gv==='ALL')) m4++;
       });
       h+='<tr><td class="sh-namecell"><b>'+s.name+'</b><br>'
         +'<span style="font-size:11px;color:#94a3b8;">처리 '+(s.capacity||0)+'실 &#183; 4주 '+m4+'일</span></td>';
       var wcnt=0;
       days.forEach(function(d){
         var k=d+'|'+s.staffId, v=_sh.grid[k]||'';
-        if(v==='AM'||v==='PM') wcnt++;
+        if(v==='AM'||v==='PM'||v==='ALL') wcnt++;
         var na=(s.start && d<s.start)||(s.end && d>s.end);
         if(na){ h+='<td><span class="sh-cell sh-c-na">&#65293;</span></td>'; return; }
         var cls=v?('sh-c-'+v):'sh-c-empty';
-        var txt=(v==='AM')?'오전':(v==='PM')?'오후':(v==='OFF')?'OFF':'&#183;';
+        var txt=(v==='AM')?'오전':(v==='PM')?'오후':(v==='ALL')?'올데이':(v==='OFF')?'OFF':'&#183;';
         h+='<td><span class="sh-cell '+cls+(_sh.dirty[k]?' sh-dirty':'')
           +'" onclick="shCycle(\''+d+'\',\''+s.staffId+'\')">'+txt+'</span></td>';
       });
@@ -4541,20 +4578,28 @@ function shRender(){
       +'등록된 스태프가 없습니다. &#128101; 스태프 관리에서 추가하세요.</td></tr>';
   }
   h+='</tbody></table>';
+  if(_sh.stale){
+    var st=new Date(_sh.stale);
+    h='<div style="background:#fffbeb;border:1px solid #fde68a;color:#92400e;padding:10px 14px;border-radius:10px;margin-bottom:10px;font-size:13px;font-weight:600;">'
+      +'&#9888;&#65039; 서버 연결 실패 — '+shPad(st.getHours())+':'+shPad(st.getMinutes())+' 시점 데이터를 보기 전용으로 표시 중 '
+      +'<button class="sh-nav" style="margin-left:8px;padding:4px 12px;font-size:12px;" onclick="shLoad()">다시 연결</button></div>'+h;
+  }
   area.innerHTML=h;
 
   // 오늘 근무자 요약
   if(tEl){
     if(days.indexOf(todayIso)>=0){
-      var am=[],pm=[];
+      var am=[],pm=[],ad=[];
       weekStaff.forEach(function(s){
         var v=_sh.grid[todayIso+'|'+s.staffId];
         if(v==='AM') am.push(s.name);
         if(v==='PM') pm.push(s.name);
+        if(v==='ALL') ad.push(s.name);
       });
       tEl.style.display='';
       tEl.innerHTML='&#128204; 오늘 '+todayIso.substring(5).replace('-','/')
         +' — 오전: '+(am.join(', ')||'미배정')+' / 오후: '+(pm.join(', ')||'미배정')
+        +(ad.length?(' / 올데이: '+ad.join(', ')):'')
         +' &#183; 청소 '+(co[todayIso]||0)+'실';
     } else tEl.style.display='none';
   }
@@ -4574,12 +4619,12 @@ function shSave(){
   entries.forEach(function(e){ if(e.date<dMin)dMin=e.date; if(e.date>dMax)dMax=e.date; });
   var btn=document.getElementById('shSaveBtn');
   if(btn){ btn.disabled=true; btn.textContent='저장 중…'; }
-  fetch(GAS_ENDPOINT,{ method:'POST', body:JSON.stringify({action:'saveShiftWeek', branch:currentBranch, entries:entries}) })
-    .then(function(r){ return r.json(); })
+  // 그리드 저장은 멱등(같은 값 재전송 안전) → 자동 재시도 3회
+  shPostJson({action:'saveShiftWeek', branch:currentBranch, entries:entries}, 3)
     .then(function(res){
       if(!res||!res.ok) throw ((res&&res.error)||'저장 실패');
-      return fetch(GAS_ENDPOINT+'?action=getShiftData&branch='+encodeURIComponent(currentBranch)
-        +'&fromDate='+dMin+'&toDate='+dMax).then(function(r){ return r.json(); });
+      return shFetchJson(GAS_ENDPOINT+'?action=getShiftData&branch='+encodeURIComponent(currentBranch)
+        +'&fromDate='+dMin+'&toDate='+dMax+'&_t='+Date.now(), 2);
     })
     .then(function(res){
       if(!res||!res.ok) throw '저장 후 검증 조회 실패';
@@ -4665,9 +4710,8 @@ function shStaffEdit(sid){
 }
 // 서버 스태프 명단 재확인 (저장 실패로 보여도 실제론 저장된 케이스 판별용)
 function _shStaffVerify(sid, name, cb){
-  fetch(GAS_ENDPOINT+'?action=getShiftData&branch='+encodeURIComponent(currentBranch)
-    +'&fromDate=2099-01-01&toDate=2099-01-02&_t='+Date.now())
-    .then(function(r){ return r.json(); })
+  shFetchJson(GAS_ENDPOINT+'?action=getShiftData&branch='+encodeURIComponent(currentBranch)
+    +'&fromDate=2099-01-01&toDate=2099-01-02&_t='+Date.now(), 3)
     .then(function(res){
       if(!res||!res.ok){ cb(null,null); return; }
       var f=null;
