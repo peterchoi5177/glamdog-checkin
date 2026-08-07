@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
 <meta http-equiv="refresh" content="1800">
 <title>글램독 양양 체크인 리스트</title>
-<!-- v2026-08-07 19:08 -->
+<!-- v2026-08-07 19:41 -->
 <style>
   :root {
     --navy: #1B3A5C;
@@ -1250,7 +1250,7 @@ function _submitPw() {
   <button class="btn-refresh" id="btnRefresh" onclick="refreshData()">🔄 새로고침</button>
   <button class="ho-btn" id="btnHandover" onclick="openHandoverModal()" style="display:none">🔄 인수인계<span class="ho-cnt" id="hoCnt">0</span></button>
   <button class="ho-btn" id="btnBlanket" onclick="openBlanketModal()" style="display:none;background:#0369a1">🛏️ 추가이불<span class="ho-cnt" id="blkCnt" style="color:#0369a1">0</span></button>
-  <span class="update-time">갱신: 2026-08-07 19:08</span>
+  <span class="update-time">갱신: 2026-08-07 19:41</span>
 </div>
 <div id="brNoticeBanner"></div>
 <div class="content" id="content">
@@ -1301,6 +1301,7 @@ function _submitPw() {
     <button class="sh-staffbtn" onclick="shStaffOpen()">&#128101; 스태프 관리</button>
     <button class="sh-staffbtn" onclick="shAutoDraft()">&#10024; 자동 초안</button>
     <button class="sh-staffbtn" onclick="shMonthOpen()">&#128202; 월별 집계</button>
+    <button class="sh-staffbtn" onclick="shCopyWeek()">&#128203; 복사</button>
     <button class="sh-save" id="shSaveBtn" onclick="shSave()" disabled>저장</button>
   </div>
   <div class="sh-today" id="shToday" style="display:none"></div>
@@ -4806,6 +4807,55 @@ function shAutoDraft(){
     if(unassigned.length) msg+=' 수요 부족으로 미달: '+unassigned.join(', ')+' (나머지는 미정)';
     _shToast(msg);
   } else _shToast('채울 빈칸이 없습니다 (기존 입력은 건드리지 않습니다)');
+}
+
+// ── 주간 근무표 복사 (카톡 공지용 텍스트) ───────────
+function shCopyFallback(txt, done){
+  try{
+    var ta=document.createElement('textarea');
+    ta.value=txt; ta.style.position='fixed'; ta.style.left='-9999px';
+    document.body.appendChild(ta); ta.select();
+    var ok=document.execCommand('copy');
+    document.body.removeChild(ta);
+    done(ok);
+  }catch(e){ done(false); }
+}
+function shCopyWeek(){
+  if(!_sh.loaded){ _shToast('데이터 로딩 후 사용할 수 있습니다'); return; }
+  var days=[]; for(var i=0;i<7;i++) days.push(shAddDays(_sh.weekStart,i));
+  var co=shCheckoutMap();
+  var wd=['일','월','화','수','목','금','토'];
+  var weekStaff=_sh.staff.filter(function(s){
+    if(s.end && s.end<days[0]) return false;
+    if(s.start && s.start>days[6]) return false;
+    return true;
+  });
+  function md(d){ var t=new Date(d+'T00:00:00'); return (t.getMonth()+1)+'/'+t.getDate()+'('+wd[t.getDay()]+')'; }
+  var L=[];
+  L.push('\uD83D\uDCC5 글램독 '+currentBranch+' 근무표');
+  L.push(md(days[0])+' ~ '+md(days[6]));
+  days.forEach(function(d){
+    var g={ALL:[],AM:[],PM:[],OFF:[]};
+    weekStaff.forEach(function(s){
+      var v=_sh.grid[d+'|'+s.staffId];
+      if(v && g[v]) g[v].push(s.name);
+    });
+    L.push('');
+    L.push('\u25A0 '+md(d)+' \u2014 청소 '+(co[d]||0)+'실');
+    if(g.ALL.length) L.push('\uC62C\uB370\uC774: '+g.ALL.join(', '));
+    if(g.AM.length)  L.push('\uC624\uC804: '+g.AM.join(', '));
+    if(g.PM.length)  L.push('\uC624\uD6C4: '+g.PM.join(', '));
+    if(g.OFF.length) L.push('\uD734\uBB34: '+g.OFF.join(', '));
+    if(!g.ALL.length&&!g.AM.length&&!g.PM.length&&!g.OFF.length) L.push('\uBBF8\uC815');
+  });
+  if(Object.keys(_sh.dirty).length) L.push('','\u203B 저장 전 변경사항이 포함되어 있습니다');
+  var txt=L.join('\n');
+  function done(ok){
+    _shToast(ok?'\uD83D\uDCCB 복사 완료 — 카톡에 붙여넣기 하세요':'복사 실패 — 다시 시도해주세요');
+  }
+  if(navigator.clipboard && navigator.clipboard.writeText){
+    navigator.clipboard.writeText(txt).then(function(){ done(true); }, function(){ shCopyFallback(txt, done); });
+  } else shCopyFallback(txt, done);
 }
 
 // ── 월별 근무 집계 (근무일지·정산용) ───────────────
