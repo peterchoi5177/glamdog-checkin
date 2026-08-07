@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
 <meta http-equiv="refresh" content="1800">
 <title>글램독 양양 체크인 리스트</title>
-<!-- v2026-08-07 16:51 -->
+<!-- v2026-08-07 17:25 -->
 <style>
   :root {
     --navy: #1B3A5C;
@@ -1250,7 +1250,7 @@ function _submitPw() {
   <button class="btn-refresh" id="btnRefresh" onclick="refreshData()">🔄 새로고침</button>
   <button class="ho-btn" id="btnHandover" onclick="openHandoverModal()" style="display:none">🔄 인수인계<span class="ho-cnt" id="hoCnt">0</span></button>
   <button class="ho-btn" id="btnBlanket" onclick="openBlanketModal()" style="display:none;background:#0369a1">🛏️ 추가이불<span class="ho-cnt" id="blkCnt" style="color:#0369a1">0</span></button>
-  <span class="update-time">갱신: 2026-08-07 16:51</span>
+  <span class="update-time">갱신: 2026-08-07 17:25</span>
 </div>
 <div id="brNoticeBanner"></div>
 <div class="content" id="content">
@@ -1299,6 +1299,7 @@ function _submitPw() {
     <button class="sh-nav" onclick="shMove(1)">다음주 &#8250;</button>
     <span class="sh-week" id="shWeekLabel"></span>
     <button class="sh-staffbtn" onclick="shStaffOpen()">&#128101; 스태프 관리</button>
+    <button class="sh-staffbtn" onclick="shMonthOpen()">&#128202; 월별 집계</button>
     <button class="sh-save" id="shSaveBtn" onclick="shSave()" disabled>저장</button>
   </div>
   <div class="sh-today" id="shToday" style="display:none"></div>
@@ -1308,7 +1309,25 @@ function _submitPw() {
     <span><span class="sh-cell sh-c-PM" style="display:inline;padding:2px 8px;">오후</span> 볼런티어 16~20시 · 직원 15~22시</span>
     <span><span class="sh-cell sh-c-ALL" style="display:inline;padding:2px 8px;">올데이</span> 오픈~마감 풀타임 (매니저)</span>
     <span><span class="sh-cell sh-c-OFF" style="display:inline;padding:2px 8px;">OFF</span> 휴무 확정</span>
-    <span>빈칸=미정 · 셀을 탭하면 오전&#8594;오후&#8594;올데이&#8594;OFF&#8594;빈칸 순환 · 날짜별 배지=퇴실(청소) 수 대비 오전 인력 판정</span>
+    <span>빈칸=미정 · 셀을 탭하면 오전&#8594;오후&#8594;올데이&#8594;OFF&#8594;빈칸 순환 · 윗줄 배지=청소(오전) 판정 · 아랫줄 &#128718;&#65039;=체크인 수와 오후 커버 인원(올데이 포함)</span>
+  </div>
+  <!-- 월별 근무 집계 모달 -->
+  <div class="sh-ov" id="shMonthOv" onclick="if(event.target===this)shMonthClose()">
+    <div class="sh-sheet">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+        <b style="font-size:16px;">&#128202; 월별 근무 집계</b>
+        <button class="fm-close" onclick="shMonthClose()">&#215;</button>
+      </div>
+      <div style="display:flex;gap:8px;align-items:center;margin-bottom:12px;">
+        <input id="shMonthPick" class="fm-etc-input" type="month" style="flex:1;">
+        <button class="sh-staffbtn" onclick="shMonthLoad()">조회</button>
+      </div>
+      <div id="shMonthResult" style="font-size:13px;color:#94a3b8;">월을 선택하고 조회를 누르세요.</div>
+      <div style="margin-top:12px;font-size:11px;color:#94a3b8;line-height:1.5;">
+        근무표에 저장된 배정 기준 집계입니다. 실제 근무가 달라진 날은 그리드에서 셀을 수정해두면
+        이 집계가 곧 근무일지·정산 기록이 됩니다. 파트타임 월급 = 합계일수 &#215; 일당.
+      </div>
+    </div>
   </div>
   <!-- 스태프 관리 모달 -->
   <div class="sh-ov" id="shStaffOv" onclick="if(event.target===this)shStaffClose()">
@@ -4413,6 +4432,13 @@ function shCheckoutMap(){
   ALL_RECORDS.forEach(function(r){ if(r.is_block) return; m[r.checkout]=(m[r.checkout]||0)+1; });
   _sh.co=m; return m;
 }
+// 날짜별 체크인 수 — 방막기 제외 (오후 인원 가늠용)
+function shCheckinMap(){
+  if(_sh.ci) return _sh.ci;
+  var m={};
+  ALL_RECORDS.forEach(function(r){ if(r.is_block) return; m[r.checkin]=(m[r.checkin]||0)+1; });
+  _sh.ci=m; return m;
+}
 
 function shiftInit(){
   if(!_sh.weekStart) _sh.weekStart = shMonday(shISO(new Date()));
@@ -4506,6 +4532,7 @@ function shRender(){
 
   var days=[]; for(var i=0;i<7;i++) days.push(shAddDays(_sh.weekStart,i));
   var co=shCheckoutMap();
+  var ciMap=shCheckinMap();
   var wd=['일','월','화','수','목','금','토'];
   var todayIso=shISO(new Date());
 
@@ -4537,9 +4564,19 @@ function shRender(){
       badge='<span class="sh-demand-short">&#129529;'+need+' &#183; 풀'+capTxt+' &#183; 파트'+part+'명</span>';
     }
     var isToday=(d===todayIso);
+    // 오후 커버 인원 (오후+올데이) — 체크인 응대 가늠용
+    var pmN=0;
+    weekStaff.forEach(function(s){
+      var gv=_sh.grid[d+'|'+s.staffId];
+      if(gv==='PM'||gv==='ALL') pmN++;
+    });
+    var ciN=ciMap[d]||0;
+    var pmWarn=(ciN>0 && pmN===0);
     h+='<th class="sh-day"><div style="font-weight:800;'+(isToday?'color:#1d4ed8;':'')+'">'
       +(dt.getMonth()+1)+'/'+dt.getDate()+' ('+wd[dt.getDay()]+')'+(isToday?' &#183; 오늘':'')+'</div>'
-      +'<div style="margin-top:3px;">'+badge+'</div></th>';
+      +'<div style="margin-top:3px;">'+badge+'</div>'
+      +'<div style="margin-top:2px;font-size:11px;font-weight:600;color:'+(pmWarn?'#b45309':'#64748b')+';">'
+      +'&#128718;&#65039;'+ciN+' &#183; 오후 '+pmN+'명</div></th>';
   });
   h+='<th style="min-width:76px;">이번주</th></tr></thead><tbody>';
 
@@ -4601,7 +4638,7 @@ function shRender(){
       tEl.innerHTML='&#128204; 오늘 '+todayIso.substring(5).replace('-','/')
         +' — 오전: '+(am.join(', ')||'미배정')+' / 오후: '+(pm.join(', ')||'미배정')
         +(ad.length?(' / 올데이: '+ad.join(', ')):'')
-        +' &#183; 청소 '+(co[todayIso]||0)+'실';
+        +' &#183; 청소 '+(co[todayIso]||0)+'실 &#183; 체크인 '+(shCheckinMap()[todayIso]||0)+'건';
     } else tEl.style.display='none';
   }
 }
@@ -4652,6 +4689,73 @@ function shSave(){
       shRender();
     })
     .catch(function(e){ _shToast('&#10060; 저장 실패: '+e); shRender(); });
+}
+
+// ── 월별 근무 집계 (근무일지·정산용) ───────────────
+function shMonthOpen(){
+  var d=new Date();
+  var pick=document.getElementById('shMonthPick');
+  if(!pick.value) pick.value=d.getFullYear()+'-'+shPad(d.getMonth()+1);
+  document.getElementById('shMonthOv').classList.add('open');
+  shMonthLoad();
+}
+function shMonthClose(){ document.getElementById('shMonthOv').classList.remove('open'); }
+function shMonthLoad(){
+  var mv=document.getElementById('shMonthPick').value;
+  if(!mv) return;
+  var from=mv+'-01';
+  var last=new Date(parseInt(mv.substring(0,4),10), parseInt(mv.substring(5,7),10), 0);
+  var to=mv+'-'+shPad(last.getDate());
+  var el=document.getElementById('shMonthResult');
+  el.innerHTML='<div style="padding:14px;color:#94a3b8;">집계 중&#8230;</div>';
+  shFetchJson(GAS_ENDPOINT+'?action=getShiftData&branch='+encodeURIComponent(currentBranch)
+    +'&fromDate='+from+'&toDate='+to+'&_t='+Date.now(), 3)
+    .then(function(res){
+      if(!res||!res.ok) throw ((res&&res.error)||'조회 실패');
+      var agg={};
+      (res.shifts||[]).forEach(function(s){
+        if(s.shift!=='AM'&&s.shift!=='PM'&&s.shift!=='ALL') return;
+        if(!agg[s.staffId]) agg[s.staffId]={AM:0,PM:0,ALL:0,days:[]};
+        agg[s.staffId][s.shift]++;
+        var dayN=parseInt(s.date.substring(8),10);
+        agg[s.staffId].days.push(dayN+(s.shift==='PM'?'(오후)':s.shift==='ALL'?'(올)':''));
+      });
+      var staffById={};
+      (res.staff||[]).forEach(function(s){ staffById[s.staffId]=s; });
+      var order=['매니저','직원','볼런티어','파트타임'];
+      var rows=[];
+      Object.keys(agg).forEach(function(sid){
+        var st=staffById[sid];
+        rows.push({ sid:sid, name:st?st.name:'(삭제된 스태프)', type:st?st.type:'기타', a:agg[sid] });
+      });
+      if(!rows.length){ el.innerHTML='<div style="padding:14px;color:#94a3b8;">'+mv+' 근무 기록이 없습니다.</div>'; return; }
+      rows.sort(function(x,y){
+        var ox=order.indexOf(x.type), oy=order.indexOf(y.type);
+        if(ox!==oy) return (ox<0?9:ox)-(oy<0?9:oy);
+        return x.name<y.name?-1:1;
+      });
+      var h='';
+      var curType='';
+      rows.forEach(function(r){
+        if(r.type!==curType){
+          curType=r.type;
+          h+='<div style="font-weight:800;font-size:12px;color:#475569;background:#f8fafc;padding:5px 10px;border-radius:6px;margin:10px 0 4px;">'+curType+'</div>';
+        }
+        var tot=r.a.AM+r.a.PM+r.a.ALL;
+        var isPart=(r.type==='파트타임');
+        h+='<div style="padding:8px 10px;border-bottom:1px solid #f1f5f9;'+(isPart?'background:#fffbeb;border-radius:8px;':'')+'">'
+          +'<div style="display:flex;align-items:center;gap:8px;font-size:14px;">'
+          +'<b>'+r.name+'</b>'
+          +'<span style="margin-left:auto;font-weight:800;color:#1B3A5C;">합계 '+tot+'일</span></div>'
+          +'<div style="font-size:12px;color:#64748b;margin-top:2px;">오전 '+r.a.AM+' &#183; 오후 '+r.a.PM+' &#183; 올데이 '+r.a.ALL+'</div>'
+          +'<div style="font-size:11px;color:#94a3b8;margin-top:2px;">근무일: '+r.a.days.join(', ')+'</div>'
+          +'</div>';
+      });
+      el.innerHTML=h;
+    })
+    .catch(function(e){
+      el.innerHTML='<div style="padding:14px;color:#991b1b;">조회 실패: '+e+' <button class="sh-staffbtn" style="padding:4px 10px;font-size:12px;" onclick="shMonthLoad()">다시 시도</button></div>';
+    });
 }
 
 // ── 스태프 관리 모달 ─────────────────────────────
