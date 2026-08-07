@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<meta name="robots" content="noindex">
+<title>Glamdog Yangyang Schedule</title>
+<style>
+:root{--navy:#1B3A5C;--bg:#f4f6f9;}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:-apple-system,BlinkMacSystemFont,'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:var(--bg);color:#1e293b;padding-bottom:40px;}
+.top{background:var(--navy);color:#fff;padding:16px 14px 12px;}
+.top h1{font-size:17px;display:flex;align-items:center;gap:8px;}
+.lang{margin-left:auto;display:flex;gap:4px;}
+.lang button{padding:4px 10px;border-radius:14px;border:1px solid rgba(255,255,255,.4);background:transparent;color:#fff;font-size:12px;font-weight:700;}
+.lang button.on{background:#fff;color:var(--navy);}
+.nav{display:flex;gap:6px;align-items:center;padding:10px 14px;}
+.nav button{padding:8px 12px;border:1.5px solid #d7dde5;background:#fff;border-radius:8px;font-weight:700;font-size:13px;color:#334155;}
+.nav .wk{font-weight:800;font-size:14px;color:var(--navy);margin-left:auto;}
+.wrap{padding:0 12px;}
+.day{background:#fff;border:1px solid #e2e8f0;border-radius:12px;margin-bottom:10px;padding:12px 14px;}
+.day.today{border:2px solid #2563eb;}
+.dhead{display:flex;align-items:center;gap:8px;margin-bottom:8px;}
+.dhead b{font-size:15px;color:var(--navy);}
+.dhead .tdy{font-size:11px;font-weight:800;color:#2563eb;background:#eff6ff;padding:1px 8px;border-radius:10px;}
+.dhead .cln{margin-left:auto;font-size:12px;color:#64748b;font-weight:600;}
+.row{display:flex;gap:8px;align-items:flex-start;margin:4px 0;font-size:14px;}
+.chip{flex:0 0 auto;min-width:74px;text-align:center;font-size:12px;font-weight:800;padding:3px 8px;border-radius:8px;}
+.c-ALL{background:#ede9fe;color:#6d28d9;}
+.c-AM{background:#dbeafe;color:#1d4ed8;}
+.c-PM{background:#ffedd5;color:#c2410c;}
+.c-OFF{background:#f1f5f9;color:#64748b;}
+.c-TBD{background:#fefce8;color:#a16207;}
+.names{padding-top:2px;line-height:1.5;}
+.legend{padding:12px 14px;font-size:12px;color:#64748b;line-height:1.7;}
+.msg{padding:40px 20px;text-align:center;color:#94a3b8;font-size:14px;}
+.msg button{margin-top:10px;padding:8px 16px;border:1.5px solid #d7dde5;background:#fff;border-radius:8px;font-weight:700;}
+.stale{background:#fffbeb;border:1px solid #fde68a;color:#92400e;padding:9px 12px;border-radius:10px;margin:0 12px 10px;font-size:12px;font-weight:600;}
+.upd{text-align:center;font-size:11px;color:#94a3b8;margin-top:6px;}
+</style>
+</head>
+<body>
+<div class="top"><h1>🐾 <span id="tTitle"></span><span class="lang">
+  <button id="btnKo" onclick="setLang('ko')">한국어</button>
+  <button id="btnEn" onclick="setLang('en')">EN</button>
+</span></h1></div>
+<div class="nav">
+  <button onclick="move(-1)">‹</button>
+  <button onclick="goThis()" id="tThis"></button>
+  <button onclick="move(1)">›</button>
+  <span class="wk" id="wkLabel"></span>
+</div>
+<div id="staleBox" class="stale" style="display:none"></div>
+<div class="wrap" id="area"><div class="msg" id="loadMsg"></div></div>
+<div class="legend" id="tLegend"></div>
+<div class="upd" id="updAt"></div>
+<script>
+var GAS="https://script.google.com/macros/s/AKfycbzgA5z1GICaqgstqht-gwY-pNFCLnoGijGjbVGI5tGSs-3A5mcoex7bl6x9BIDLgUeXgQ/exec";
+var BRANCH="양양", KEY="yy77";
+var I18N={
+ ko:{title:"글램독 양양 근무표",thisWk:"이번주",loading:"근무표 불러오는 중…",err:"불러오기 실패 — 잠시 후 다시 시도해주세요",retry:"다시 시도",
+     ALL:"올데이",AM:"오전",PM:"오후",OFF:"휴무",TBD:"미정",clean:"청소",rooms:"실",empty:"배정 없음",
+     legend:"오전: 볼런티어 10:00–14:00 · 직원 9:00–16:00<br>오후: 볼런티어 16:00–20:00 · 직원 15:00–22:00<br>올데이: 오픈–마감 (매니저)",
+     stale:"서버 연결 실패 — 마지막으로 불러온 근무표를 표시 중입니다",upd:"기준",noKey:"접근 키가 올바르지 않습니다. 관리자에게 링크를 다시 받아주세요.",
+     wd:["일","월","화","수","목","금","토"]},
+ en:{title:"Glamdog Yangyang Schedule",thisWk:"This week",loading:"Loading schedule…",err:"Failed to load — please try again shortly",retry:"Retry",
+     ALL:"Full day",AM:"Morning",PM:"Afternoon",OFF:"Day off",TBD:"TBD",clean:"Cleaning",rooms:" rooms",empty:"No assignments",
+     legend:"Morning: volunteers 10:00–14:00 · staff 9:00–16:00<br>Afternoon: volunteers 16:00–20:00 · staff 15:00–22:00<br>Full day: open–close (managers)",
+     stale:"Server unavailable — showing the last loaded schedule",upd:"as of",noKey:"Invalid access key. Please ask your manager for the correct link.",
+     wd:["Sun","Mon","Tue","Wed","Thu","Fri","Sat"]}
+};
+var lang=localStorage.getItem("schedLang")||((navigator.language||"").indexOf("ko")===0?"ko":"en");
+var weekStart=null, staffList=[], grid={}, staleAt=0;
+function T(){ return I18N[lang]; }
+function pad(n){ return (n<10?"0":"")+n; }
+function iso(d){ return d.getFullYear()+"-"+pad(d.getMonth()+1)+"-"+pad(d.getDate()); }
+function addDays(s,n){ var d=new Date(s+"T00:00:00"); d.setDate(d.getDate()+n); return iso(d); }
+function monday(s){ var d=new Date(s+"T00:00:00"); d.setDate(d.getDate()-((d.getDay()+6)%7)); return iso(d); }
+function setLang(l){ lang=l; try{localStorage.setItem("schedLang",l);}catch(e){} applyLang(); render(); }
+function applyLang(){
+  document.getElementById("tTitle").textContent=T().title;
+  document.getElementById("tThis").textContent=T().thisWk;
+  document.getElementById("tLegend").innerHTML=T().legend;
+  document.getElementById("btnKo").className=(lang==="ko")?"on":"";
+  document.getElementById("btnEn").className=(lang==="en")?"on":"";
+  document.documentElement.lang=lang;
+}
+function move(n){ weekStart=addDays(weekStart,7*n); load(); }
+function goThis(){ weekStart=monday(iso(new Date())); load(); }
+function fetchJson(url,tries){
+  return fetch(url).then(function(r){return r.text();}).then(function(t){return JSON.parse(t);})
+    .catch(function(e){
+      if(tries>1){ return new Promise(function(res,rej){ setTimeout(function(){ fetchJson(url,tries-1).then(res,rej); },1500); }); }
+      throw e;
+    });
+}
+function load(){
+  var area=document.getElementById("area");
+  area.innerHTML='<div class="msg">'+T().loading+'</div>';
+  document.getElementById("staleBox").style.display="none";
+  var to=addDays(weekStart,6);
+  fetchJson(GAS+"?action=getShiftData&branch="+encodeURIComponent(BRANCH)+"&fromDate="+weekStart+"&toDate="+to+"&_t="+Date.now(),3)
+    .then(function(res){
+      if(!res||!res.ok) throw "ERR";
+      staffList=res.staff||[]; grid={}; staleAt=0;
+      (res.shifts||[]).forEach(function(s){ if(s.shift) grid[s.date+"|"+s.staffId]=s.shift; });
+      try{ localStorage.setItem("schedCache_"+weekStart, JSON.stringify({t:Date.now(),staff:staffList,grid:grid})); }catch(e){}
+      render();
+    })
+    .catch(function(){
+      var c=null;
+      try{ c=JSON.parse(localStorage.getItem("schedCache_"+weekStart)||"null"); }catch(e){}
+      if(c&&c.staff){ staffList=c.staff; grid=c.grid||{}; staleAt=c.t; render(); return; }
+      area.innerHTML='<div class="msg">'+T().err+'<br><button onclick="load()">'+T().retry+'</button></div>';
+    });
+}
+function render(){
+  var wkTo=addDays(weekStart,6);
+  document.getElementById("wkLabel").textContent=weekStart.substring(5).replace("-","/")+" ~ "+wkTo.substring(5).replace("-","/");
+  var sb=document.getElementById("staleBox");
+  if(staleAt){ var st=new Date(staleAt); sb.style.display=""; sb.textContent="⚠️ "+T().stale+" ("+pad(st.getHours())+":"+pad(st.getMinutes())+")"; }
+  else sb.style.display="none";
+  var todayIso=iso(new Date());
+  var ws=staffList.filter(function(s){
+    if(s.end && s.end<weekStart) return false;
+    if(s.start && s.start>wkTo) return false;
+    return true;
+  });
+  var h="";
+  for(var i=0;i<7;i++){
+    var d=addDays(weekStart,i), dt=new Date(d+"T00:00:00");
+    var g={ALL:[],AM:[],PM:[],OFF:[],TBD:[]};
+    ws.forEach(function(s){
+      if((s.start&&d<s.start)||(s.end&&d>s.end)) return;
+      var v=grid[d+"|"+s.staffId];
+      if(v&&g[v]) g[v].push(s.name);
+      else if(!v && s.type!=="파트타임") g.TBD.push(s.name);
+    });
+    var isT=(d===todayIso);
+    h+='<div class="day'+(isT?' today':'')+'"><div class="dhead"><b>'+(dt.getMonth()+1)+'/'+dt.getDate()+' ('+T().wd[dt.getDay()]+')</b>'
+      +(isT?('<span class="tdy">'+(lang==="ko"?"오늘":"Today")+'</span>'):'')+'</div>';
+    var any=false;
+    ["ALL","AM","PM","OFF"].forEach(function(k){
+      if(!g[k].length) return;
+      any=true;
+      h+='<div class="row"><span class="chip c-'+k+'">'+T()[k]+'</span><span class="names">'+g[k].join(", ")+'</span></div>';
+    });
+    if(g.TBD.length){ h+='<div class="row"><span class="chip c-TBD">'+T().TBD+'</span><span class="names" style="color:#94a3b8;">'+g.TBD.join(", ")+'</span></div>'; any=true; }
+    if(!any) h+='<div class="row"><span class="names" style="color:#cbd5e1;">'+T().empty+'</span></div>';
+    h+='</div>';
+  }
+  document.getElementById("area").innerHTML=h;
+  document.getElementById("updAt").textContent=staleAt?"":(T().upd+" "+new Date().toLocaleString(lang==="ko"?"ko-KR":"en-US"));
+}
+(function(){
+  var qk=new URLSearchParams(location.search).get("k");
+  applyLang();
+  if(qk!==KEY){
+    document.getElementById("area").innerHTML='<div class="msg">🔒 '+T().noKey+'</div>';
+    return;
+  }
+  weekStart=monday(iso(new Date()));
+  load();
+})();
+</script>
+</body>
+</html>
