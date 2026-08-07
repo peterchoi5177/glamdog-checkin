@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
 <meta http-equiv="refresh" content="1800">
 <title>글램독 양양 체크인 리스트</title>
-<!-- v2026-08-07 17:25 -->
+<!-- v2026-08-07 18:00 -->
 <style>
   :root {
     --navy: #1B3A5C;
@@ -1250,7 +1250,7 @@ function _submitPw() {
   <button class="btn-refresh" id="btnRefresh" onclick="refreshData()">🔄 새로고침</button>
   <button class="ho-btn" id="btnHandover" onclick="openHandoverModal()" style="display:none">🔄 인수인계<span class="ho-cnt" id="hoCnt">0</span></button>
   <button class="ho-btn" id="btnBlanket" onclick="openBlanketModal()" style="display:none;background:#0369a1">🛏️ 추가이불<span class="ho-cnt" id="blkCnt" style="color:#0369a1">0</span></button>
-  <span class="update-time">갱신: 2026-08-07 17:25</span>
+  <span class="update-time">갱신: 2026-08-07 18:00</span>
 </div>
 <div id="brNoticeBanner"></div>
 <div class="content" id="content">
@@ -1299,6 +1299,7 @@ function _submitPw() {
     <button class="sh-nav" onclick="shMove(1)">다음주 &#8250;</button>
     <span class="sh-week" id="shWeekLabel"></span>
     <button class="sh-staffbtn" onclick="shStaffOpen()">&#128101; 스태프 관리</button>
+    <button class="sh-staffbtn" onclick="shAutoDraft()">&#10024; 자동 초안</button>
     <button class="sh-staffbtn" onclick="shMonthOpen()">&#128202; 월별 집계</button>
     <button class="sh-save" id="shSaveBtn" onclick="shSave()" disabled>저장</button>
   </div>
@@ -4689,6 +4690,103 @@ function shSave(){
       shRender();
     })
     .catch(function(e){ _shToast('&#10060; 저장 실패: '+e); shRender(); });
+}
+
+// ── 자동 초안: 과거 4주 요일 패턴 + 수요 보정 ───────
+//   원칙: 빈칸만 채움(기존 입력 불변) · 파트타임 자동배정 없음 · 결과는 dirty(저장 전) 상태
+function shAutoDraft(){
+  if(!_sh.loaded){ _shToast('데이터 로딩 후 사용할 수 있습니다'); return; }
+  if(_sh.stale){ _shToast('&#128274; 보기 전용 상태에서는 사용할 수 없습니다'); return; }
+  var days=[]; for(var i=0;i<7;i++) days.push(shAddDays(_sh.weekStart,i));
+  var co=shCheckoutMap();
+  var weekStaff=_sh.staff.filter(function(s){
+    if(s.type==='파트타임') return false;
+    if(s.end && s.end<days[0]) return false;
+    if(s.start && s.start>days[6]) return false;
+    return true;
+  });
+  if(!weekStaff.length){ _shToast('배정할 스태프가 없습니다'); return; }
+
+  // 1. 과거 요일별 패턴 (이번 주 제외, 로드된 최근 4주 히스토리)
+  var pat={};   // staffId|weekday → {AM:n,PM:n,ALL:n,OFF:n}
+  Object.keys(_sh.grid).forEach(function(k){
+    var p=k.split('|');
+    if(p[0]>=days[0] && p[0]<=days[6]) return;   // 이번 주 제외
+    var wdn=new Date(p[0]+'T00:00:00').getDay();
+    var pk=p[1]+'|'+wdn;
+    if(!pat[pk]) pat[pk]={AM:0,PM:0,ALL:0,OFF:0};
+    if(pat[pk][_sh.grid[k]]!==undefined) pat[pk][_sh.grid[k]]++;
+  });
+  function bestPattern(sid, wdn){
+    var p=pat[sid+'|'+wdn];
+    if(!p) return '';
+    var best='', bn=0;
+    ['ALL','AM','PM','OFF'].forEach(function(v){ if(p[v]>bn){ bn=p[v]; best=v; } });
+    return bn>=1?best:'';
+  }
+  function setCell(d, sid, v){
+    var k=d+'|'+sid;
+    _sh.grid[k]=v;
+    if((_sh.orig[k]||'')===v) delete _sh.dirty[k]; else _sh.dirty[k]=true;
+  }
+  function weekCnt(sid){
+    var c=0;
+    days.forEach(function(d){ var v=_sh.grid[d+'|'+sid]; if(v==='AM'||v==='PM'||v==='ALL') c++; });
+    return c;
+  }
+  var filled=0;
+
+  // 2. 패턴대로 빈칸 채우기 (주간 한도 준수)
+  days.forEach(function(d){
+    var wdn=new Date(d+'T00:00:00').getDay();
+    weekStaff.forEach(function(s){
+      var k=d+'|'+s.staffId;
+      if(_sh.grid[k]) return;                                   // 기존 입력 보존
+      if((s.start && d<s.start)||(s.end && d>s.end)) return;    // 재직기간 밖
+      var v=bestPattern(s.staffId, wdn);
+      if(!v) return;
+      var lim=SHIFT_TYPE_LIMIT[s.type]||0;
+      if((v==='AM'||v==='PM'||v==='ALL') && lim && weekCnt(s.staffId)>=lim) v='OFF';
+      setCell(d, s.staffId, v); filled++;
+    });
+  });
+
+  // 3. 수요 보정: 풀 부족일에 근무일 적은 사람부터 오전 추가 (기존 입력은 불변, 초안 OFF만 전환 가능)
+  days.forEach(function(d){
+    var need=co[d]||0;
+    if(!need) return;
+    function cap(){
+      var c=0;
+      weekStaff.forEach(function(s){
+        var v=_sh.grid[d+'|'+s.staffId];
+        if(v==='AM'||v==='ALL') c+=(s.capacity||0);
+      });
+      return c;
+    }
+    var guard=0;
+    while(cap()<need && guard<20){
+      guard++;
+      var cands=weekStaff.filter(function(s){
+        if((s.start && d<s.start)||(s.end && d>s.end)) return false;
+        var k=d+'|'+s.staffId, v=_sh.grid[k]||'';
+        if(v==='AM'||v==='PM'||v==='ALL') return false;
+        if(v==='OFF' && !_sh.dirty[k]) return false;            // 사람이 확정한 OFF는 존중
+        var lim=SHIFT_TYPE_LIMIT[s.type]||0;
+        if(lim && weekCnt(s.staffId)>=lim) return false;
+        return true;
+      });
+      if(!cands.length) break;
+      cands.sort(function(a,b){ return weekCnt(a.staffId)-weekCnt(b.staffId); });
+      var pick=cands[0], pk=d+'|'+pick.staffId;
+      if(!_sh.grid[pk]) filled++;
+      setCell(d, pick.staffId, 'AM');
+    }
+  });
+
+  shRender();
+  var dn=Object.keys(_sh.dirty).length;
+  if(dn) _shToast('&#10024; 초안 '+dn+'칸 배치 — 검토 후 [저장]을 눌러 확정하세요');
+  else _shToast('채울 빈칸이 없습니다 (기존 입력은 건드리지 않습니다)');
 }
 
 // ── 월별 근무 집계 (근무일지·정산용) ───────────────
