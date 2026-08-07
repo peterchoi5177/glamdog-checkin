@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
 <meta http-equiv="refresh" content="1800">
 <title>글램독 양양 체크인 리스트</title>
-<!-- v2026-08-07 18:34 -->
+<!-- v2026-08-07 19:08 -->
 <style>
   :root {
     --navy: #1B3A5C;
@@ -1250,7 +1250,7 @@ function _submitPw() {
   <button class="btn-refresh" id="btnRefresh" onclick="refreshData()">🔄 새로고침</button>
   <button class="ho-btn" id="btnHandover" onclick="openHandoverModal()" style="display:none">🔄 인수인계<span class="ho-cnt" id="hoCnt">0</span></button>
   <button class="ho-btn" id="btnBlanket" onclick="openBlanketModal()" style="display:none;background:#0369a1">🛏️ 추가이불<span class="ho-cnt" id="blkCnt" style="color:#0369a1">0</span></button>
-  <span class="update-time">갱신: 2026-08-07 18:34</span>
+  <span class="update-time">갱신: 2026-08-07 19:08</span>
 </div>
 <div id="brNoticeBanner"></div>
 <div class="content" id="content">
@@ -4692,101 +4692,120 @@ function shSave(){
     .catch(function(e){ _shToast('&#10060; 저장 실패: '+e); shRender(); });
 }
 
-// ── 자동 초안: 과거 4주 요일 패턴 + 수요 보정 ───────
-//   원칙: 빈칸만 채움(기존 입력 불변) · 파트타임 자동배정 없음 · 결과는 dirty(저장 전) 상태
+// ── 자동 초안 v3: 수요 연동 — 수요 없는 날은 배정하지 않는다 ──
+//   1) 매니저: 퇴실 15+ 날 3명, 그 외 2명 올데이 (주간 근무일 적은 사람 우선, 나머지 OFF)
+//   2) 직원·볼런티어: 퇴실 5+ 인 날에만, 수요 높은 날부터 배정 (직원 최대 5일·볼런티어 최대 4일)
+//      수요일수가 모자라면 그만큼만 배정하고 나머지는 빈칸(미정)으로 남김 — 확정은 사람이
+//   3) 커버 보정: 그래도 풀<퇴실인 날은 잔여 한도 인원 추가
+//   4) 오후: 체크인 20+ → 2명, 5+ → 1명 (AM→PM 전환, PM 적은 사람 순)
+//   원칙: 빈칸만 채움 · 기존 입력 불변 · 파트타임 자동배정 없음 · 결과는 dirty(검토 후 저장)
 function shAutoDraft(){
   if(!_sh.loaded){ _shToast('데이터 로딩 후 사용할 수 있습니다'); return; }
   if(_sh.stale){ _shToast('&#128274; 보기 전용 상태에서는 사용할 수 없습니다'); return; }
+  var MIN_DEMAND=5;      // 이 미만 퇴실일은 직원·볼런티어 배정 안 함
+  var MGR3_DEMAND=15;    // 이 이상이면 매니저 3명
   var days=[]; for(var i=0;i<7;i++) days.push(shAddDays(_sh.weekStart,i));
-  var co=shCheckoutMap();
-  var weekStaff=_sh.staff.filter(function(s){
-    if(s.type==='파트타임') return false;
-    if(s.end && s.end<days[0]) return false;
-    if(s.start && s.start>days[6]) return false;
-    return true;
-  });
-  if(!weekStaff.length){ _shToast('배정할 스태프가 없습니다'); return; }
-
-  // 1. 과거 요일별 패턴 (이번 주 제외, 로드된 최근 4주 히스토리)
-  var pat={};   // staffId|weekday → {AM:n,PM:n,ALL:n,OFF:n}
-  Object.keys(_sh.grid).forEach(function(k){
-    var p=k.split('|');
-    if(p[0]>=days[0] && p[0]<=days[6]) return;   // 이번 주 제외
-    var wdn=new Date(p[0]+'T00:00:00').getDay();
-    var pk=p[1]+'|'+wdn;
-    if(!pat[pk]) pat[pk]={AM:0,PM:0,ALL:0,OFF:0};
-    if(pat[pk][_sh.grid[k]]!==undefined) pat[pk][_sh.grid[k]]++;
-  });
-  function bestPattern(sid, wdn){
-    var p=pat[sid+'|'+wdn];
-    if(!p) return '';
-    var best='', bn=0;
-    ['ALL','AM','PM','OFF'].forEach(function(v){ if(p[v]>bn){ bn=p[v]; best=v; } });
-    return bn>=1?best:'';
-  }
-  function setCell(d, sid, v){
-    var k=d+'|'+sid;
-    _sh.grid[k]=v;
+  var co=shCheckoutMap(), ciM=shCheckinMap();
+  function inT(s,d){ return !((s.start&&d<s.start)||(s.end&&d>s.end)); }
+  var mans=_sh.staff.filter(function(s){return s.type==='매니저';});
+  var emps=_sh.staff.filter(function(s){return s.type==='직원';});
+  var vols=_sh.staff.filter(function(s){return s.type==='볼런티어';});
+  function setCell(d,sid,v){
+    var k=d+'|'+sid; _sh.grid[k]=v;
     if((_sh.orig[k]||'')===v) delete _sh.dirty[k]; else _sh.dirty[k]=true;
   }
-  function weekCnt(sid){
-    var c=0;
-    days.forEach(function(d){ var v=_sh.grid[d+'|'+sid]; if(v==='AM'||v==='PM'||v==='ALL') c++; });
+  function isDraft(d,sid){ return !!_sh.dirty[d+'|'+sid]; }
+  function val(d,sid){ return _sh.grid[d+'|'+sid]||''; }
+  function isWork(v){ return v==='AM'||v==='PM'||v==='ALL'; }
+  function wkCnt(sid){
+    var c=0; days.forEach(function(d){ if(isWork(val(d,sid))) c++; });
     return c;
   }
-  var filled=0;
+  function amCapDay(d){
+    var c=0;
+    _sh.staff.forEach(function(s){
+      if(s.type==='파트타임') return;
+      var v=val(d,s.staffId);
+      if(v==='AM'||v==='ALL') c+=(s.capacity||0);
+    });
+    return c;
+  }
 
-  // 2. 패턴대로 빈칸 채우기 (주간 한도 준수)
+  // 1. 매니저: 날짜별 필요 수만 올데이, 나머지 OFF (주간 근무일 균형 로테이션)
   days.forEach(function(d){
-    var wdn=new Date(d+'T00:00:00').getDay();
-    weekStaff.forEach(function(s){
-      var k=d+'|'+s.staffId;
-      if(_sh.grid[k]) return;                                   // 기존 입력 보존
-      if((s.start && d<s.start)||(s.end && d>s.end)) return;    // 재직기간 밖
-      var v=bestPattern(s.staffId, wdn);
-      if(!v) return;
-      var lim=SHIFT_TYPE_LIMIT[s.type]||0;
-      if((v==='AM'||v==='PM'||v==='ALL') && lim && weekCnt(s.staffId)>=lim) v='OFF';
-      setCell(d, s.staffId, v); filled++;
+    var avail=mans.filter(function(s){ return inT(s,d); });
+    if(!avail.length) return;
+    var reqM=Math.min(avail.length, (co[d]||0)>=MGR3_DEMAND?3:2);
+    var fixed=avail.filter(function(s){ return !!val(d,s.staffId); });          // 기존 입력 존중
+    var open =avail.filter(function(s){ return !val(d,s.staffId); });
+    var workFixed=fixed.filter(function(s){ return isWork(val(d,s.staffId)); }).length;
+    open.sort(function(a,b){ return wkCnt(a.staffId)-wkCnt(b.staffId); });
+    open.forEach(function(s,idx){
+      if(workFixed+idx<reqM) setCell(d,s.staffId,'ALL');
+      else setCell(d,s.staffId,'OFF');
     });
   });
 
-  // 3. 수요 보정: 풀 부족일에 근무일 적은 사람부터 오전 추가 (기존 입력은 불변, 초안 OFF만 전환 가능)
-  days.forEach(function(d){
-    var need=co[d]||0;
-    if(!need) return;
-    function cap(){
-      var c=0;
-      weekStaff.forEach(function(s){
-        var v=_sh.grid[d+'|'+s.staffId];
-        if(v==='AM'||v==='ALL') c+=(s.capacity||0);
-      });
-      return c;
-    }
-    var guard=0;
-    while(cap()<need && guard<20){
+  // 2. 직원(최대5)·볼런티어(최대4): 퇴실 MIN_DEMAND+ 날에만, 수요 높은 날부터
+  var demandDays=days.slice().sort(function(a,b){ return (co[b]||0)-(co[a]||0); })
+                     .filter(function(d){ return (co[d]||0)>=MIN_DEMAND; });
+  function fillByDemand(s, maxDays){
+    var assigned=0;
+    days.forEach(function(d){ if(isWork(val(d,s.staffId))) assigned++; });     // 기존 입력 카운트
+    demandDays.forEach(function(d){
+      if(assigned>=maxDays) return;
+      if(!inT(s,d) || val(d,s.staffId)) return;
+      setCell(d,s.staffId,'AM'); assigned++;
+    });
+    // 수요일이 모자라면 나머지는 빈칸(미정)으로 둔다 — OFF 확정도 사람 몫
+  }
+  emps.forEach(function(s){ fillByDemand(s,5); });
+  vols.forEach(function(s){ fillByDemand(s,4); });
+
+  // 3. 커버 보정: 풀<퇴실 날에 잔여 한도 인원 추가 (수요 높은 날부터)
+  demandDays.forEach(function(d){
+    var need=co[d]||0, guard=0;
+    while(amCapDay(d)<need && guard<10){
       guard++;
-      var cands=weekStaff.filter(function(s){
-        if((s.start && d<s.start)||(s.end && d>s.end)) return false;
-        var k=d+'|'+s.staffId, v=_sh.grid[k]||'';
-        if(v==='AM'||v==='PM'||v==='ALL') return false;
-        if(v==='OFF' && !_sh.dirty[k]) return false;            // 사람이 확정한 OFF는 존중
-        var lim=SHIFT_TYPE_LIMIT[s.type]||0;
-        if(lim && weekCnt(s.staffId)>=lim) return false;
-        return true;
+      var cands=vols.filter(function(s){ return inT(s,d) && !val(d,s.staffId) && wkCnt(s.staffId)<4; })
+        .concat(emps.filter(function(s){ return inT(s,d) && !val(d,s.staffId) && wkCnt(s.staffId)<5; }));
+      if(!cands.length) break;
+      cands.sort(function(a,b){ return wkCnt(a.staffId)-wkCnt(b.staffId); });
+      setCell(d,cands[0].staffId,'AM');
+    }
+  });
+
+  // 4. 오후 커버: CI 20+ → 2명 · 5+ → 1명 (직원·볼런티어 draft-AM을 PM으로, 청소 커버 유지 범위)
+  days.forEach(function(d){
+    var ci=ciM[d]||0;
+    var target=(ci>=20)?2:((ci>=5)?1:0);
+    if(!target) return;
+    var have=0;
+    vols.concat(emps).forEach(function(s){ if(val(d,s.staffId)==='PM') have++; });
+    var guard=0;
+    function pmCnt(x){ var c=0; days.forEach(function(dd){ if(val(dd,x.staffId)==='PM') c++; }); return c; }
+    while(have<target && guard<5){
+      guard++;
+      var cands=vols.concat(emps).filter(function(s){
+        return inT(s,d) && val(d,s.staffId)==='AM' && isDraft(d,s.staffId)
+          && (amCapDay(d)-(s.capacity||0))>=(co[d]||0);
       });
       if(!cands.length) break;
-      cands.sort(function(a,b){ return weekCnt(a.staffId)-weekCnt(b.staffId); });
-      var pick=cands[0], pk=d+'|'+pick.staffId;
-      if(!_sh.grid[pk]) filled++;
-      setCell(d, pick.staffId, 'AM');
+      cands.sort(function(a,b){ return pmCnt(a)-pmCnt(b); });
+      setCell(d,cands[0].staffId,'PM');
+      have++;
     }
   });
 
   shRender();
   var dn=Object.keys(_sh.dirty).length;
-  if(dn) _shToast('&#10024; 초안 '+dn+'칸 배치 — 검토 후 [저장]을 눌러 확정하세요');
-  else _shToast('채울 빈칸이 없습니다 (기존 입력은 건드리지 않습니다)');
+  var unassigned=[];
+  vols.forEach(function(s){ var c=wkCnt(s.staffId); if(c<4) unassigned.push(s.name+' '+c+'/4일'); });
+  if(dn){
+    var msg='&#10024; 초안 배치 완료 — 퇴실 '+MIN_DEMAND+'실 미만 날은 배정하지 않았습니다.';
+    if(unassigned.length) msg+=' 수요 부족으로 미달: '+unassigned.join(', ')+' (나머지는 미정)';
+    _shToast(msg);
+  } else _shToast('채울 빈칸이 없습니다 (기존 입력은 건드리지 않습니다)');
 }
 
 // ── 월별 근무 집계 (근무일지·정산용) ───────────────
