@@ -51,6 +51,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Apple SD Gothic Neo','Malgun 
   <span class="wk" id="wkLabel"></span>
 </div>
 <div id="staleBox" class="stale" style="display:none"></div>
+<div class="wrap" id="cleanSec" style="display:none"></div>
 <div class="wrap" id="area"><div class="msg" id="loadMsg"></div></div>
 <div class="legend" id="tLegend"></div>
 <div class="upd" id="updAt"></div>
@@ -59,11 +60,15 @@ var GAS="https://script.google.com/macros/s/AKfycbzgA5z1GICaqgstqht-gwY-pNFCLnoG
 var BRANCH="양양", KEY="yy77";
 var I18N={
  ko:{title:"글램독 양양 근무표",thisWk:"이번주",loading:"근무표 불러오는 중…",err:"불러오기 실패 — 잠시 후 다시 시도해주세요",retry:"다시 시도",
+     cleanTitle:"오늘의 청소 (탭해서 완료 처리)",team:"팀",confirmDone:"청소 완료로 표시할까요?",confirmUndo:"완료를 취소할까요?",saveFail:"저장 실패 — 다시 시도해주세요",
+     stDone:"완료",stWait:"대기",stYeon:"연박",stNeed:"청소",
      ALL:"올데이",AM:"오전",PM:"오후",OFF:"휴무",TBD:"미정",clean:"청소",rooms:"실",empty:"배정 없음",
      legend:"오전: 볼런티어 10:00–14:00 · 직원 9:00–16:00<br>오후: 볼런티어 16:00–20:00 · 직원 15:00–22:00<br>올데이: 오픈–마감 (매니저)",
      stale:"서버 연결 실패 — 마지막으로 불러온 근무표를 표시 중입니다",upd:"기준",noKey:"접근 키가 올바르지 않습니다. 관리자에게 링크를 다시 받아주세요.",
      wd:["일","월","화","수","목","금","토"]},
  en:{title:"Glamdog Yangyang Schedule",thisWk:"This week",loading:"Loading schedule…",err:"Failed to load — please try again shortly",retry:"Retry",
+     cleanTitle:"Today's Cleaning (tap a room to mark done)",team:"Team",confirmDone:"Mark this room as cleaned?",confirmUndo:"Undo the done mark?",saveFail:"Save failed — please try again",
+     stDone:"Done",stWait:"Hold",stYeon:"Stay",stNeed:"Clean",
      ALL:"Full day",AM:"Morning",PM:"Afternoon",OFF:"Day off",TBD:"TBD",clean:"Cleaning",rooms:" rooms",empty:"No assignments",
      legend:"Morning: volunteers 10:00–14:00 · staff 9:00–16:00<br>Afternoon: volunteers 16:00–20:00 · staff 15:00–22:00<br>Full day: open–close (managers)",
      stale:"Server unavailable — showing the last loaded schedule",upd:"as of",noKey:"Invalid access key. Please ask your manager for the correct link.",
@@ -76,7 +81,7 @@ function pad(n){ return (n<10?"0":"")+n; }
 function iso(d){ return d.getFullYear()+"-"+pad(d.getMonth()+1)+"-"+pad(d.getDate()); }
 function addDays(s,n){ var d=new Date(s+"T00:00:00"); d.setDate(d.getDate()+n); return iso(d); }
 function monday(s){ var d=new Date(s+"T00:00:00"); d.setDate(d.getDate()-((d.getDay()+6)%7)); return iso(d); }
-function setLang(l){ lang=l; try{localStorage.setItem("schedLang",l);}catch(e){} applyLang(); render(); }
+function setLang(l){ lang=l; try{localStorage.setItem("schedLang",l);}catch(e){} applyLang(); render(); if(typeof renderCleaning==="function") renderCleaning(); }
 function applyLang(){
   document.getElementById("tTitle").textContent=T().title;
   document.getElementById("tThis").textContent=T().thisWk;
@@ -152,6 +157,76 @@ function render(){
   document.getElementById("area").innerHTML=h;
   document.getElementById("updAt").textContent=staleAt?"":(T().upd+" "+new Date().toLocaleString(lang==="ko"?"ko-KR":"en-US"));
 }
+// ── 오늘의 청소 (청소팀 + 상태 연동, 완료 처리 가능) ──
+var _cTeams=null, _cStatus={}, _cToday=null;
+function loadCleaning(){
+  var d=iso(new Date());
+  _cToday=d;
+  Promise.all([
+    fetchJson(GAS+"?action=getCleanTeams&branch="+encodeURIComponent(BRANCH)+"&date="+d+"&_t="+Date.now(),3),
+    fetchJson(GAS+"?action=getCleaningStatus&date="+d+"&branch="+encodeURIComponent(BRANCH)+"&_t="+Date.now(),3)
+  ]).then(function(res){
+    _cTeams=(res[0]&&res[0].ok)?res[0]:null;
+    _cStatus=(res[1]&&res[1].ok)?(res[1].data||{}):{};
+    renderCleaning();
+  }).catch(function(){ /* 조용히 스킵 — 근무표는 그대로 표시 */ });
+}
+var C_TEAM_COL={1:"#1e40af",2:"#065f46",3:"#92400e",4:"#6d28d9",5:"#9d174d"};
+function renderCleaning(){
+  var el=document.getElementById("cleanSec");
+  if(!el) return;
+  if(!_cTeams){ el.style.display="none"; return; }
+  var rooms=_cTeams.rooms||{}, stf=_cTeams.staff||{};
+  var teams={};
+  Object.keys(rooms).forEach(function(r){ var t=rooms[r]; if(!teams[t]) teams[t]={rooms:[],members:[]}; teams[t].rooms.push(r); });
+  Object.keys(stf).forEach(function(sid){
+    var t=stf[sid]; if(!teams[t]) teams[t]={rooms:[],members:[]};
+    var nm=null; staffList.forEach(function(s){ if(s.staffId===sid) nm=s.name; });
+    if(nm) teams[t].members.push(nm);
+  });
+  var keys=Object.keys(teams).sort();
+  if(!keys.length){ el.style.display="none"; return; }
+  var h='<div class="day" style="border:2px solid #0ea5e9;"><div class="dhead"><b>🧹 '+T().cleanTitle+'</b></div>';
+  keys.forEach(function(t){
+    var g=teams[t], col=C_TEAM_COL[t]||"#334155";
+    h+='<div style="margin:8px 0 2px;font-size:13px;font-weight:800;color:'+col+';">'+T().team+' '+t
+      +(g.members.length?(' — '+g.members.join(", ")):'')+'</div>';
+    if(!g.rooms.length){ h+='<div style="font-size:12px;color:#94a3b8;">-</div>'; return; }
+    h+='<div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:4px;">';
+    g.rooms.sort().forEach(function(r){
+      var st=_cStatus[r]||"";
+      var chip;
+      if(st==="done")          chip=['#ecfdf5','#065f46','✅ '+T().stDone];
+      else if(st==="deferred") chip=['#fffbeb','#92400e','⏸ '+T().stWait];
+      else if(st==="yeonbak")  chip=['#eff6ff','#1e40af','🌙 '+T().stYeon];
+      else                     chip=['#fef2f2','#991b1b','🧹 '+T().stNeed];
+      h+='<span onclick="tapRoom(\''+r.replace(/'/g,"\\'")+'\')" style="cursor:pointer;padding:8px 10px;border-radius:10px;'
+        +'background:'+chip[0]+';color:'+chip[1]+';font-size:13px;font-weight:800;border:1px solid '+chip[1]+'33;">'
+        +r+' · '+chip[2]+'</span>';
+    });
+    h+='</div>';
+  });
+  h+='</div>';
+  el.innerHTML=h; el.style.display="";
+}
+function tapRoom(room){
+  var st=_cStatus[room]||"";
+  if(st==="deferred"||st==="yeonbak") return;   // 대기·연박은 매니저 영역
+  var toDone=(st!=="done");
+  if(!confirm(room+" — "+(toDone?T().confirmDone:T().confirmUndo))) return;
+  var prev=_cStatus[room];
+  if(toDone) _cStatus[room]="done"; else delete _cStatus[room];
+  renderCleaning();
+  fetch(GAS,{method:"POST",body:JSON.stringify({action:"setCleaningStatus",date:_cToday,branch:BRANCH,room:room,status:toDone?"done":""})})
+    .then(function(r){ return r.json(); })
+    .then(function(res){ if(!res||!res.ok) throw "ERR"; })
+    .catch(function(){
+      if(prev===undefined) delete _cStatus[room]; else _cStatus[room]=prev;
+      renderCleaning();
+      alert(T().saveFail);
+    });
+}
+
 (function(){
   var qk=new URLSearchParams(location.search).get("k");
   applyLang();
@@ -161,6 +236,8 @@ function render(){
   }
   weekStart=monday(iso(new Date()));
   load();
+  loadCleaning();
+  setInterval(loadCleaning, 300000);   // 5분마다 청소 상태 갱신
 })();
 </script>
 </body>

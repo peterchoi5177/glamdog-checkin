@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
 <meta http-equiv="refresh" content="1800">
 <title>글램독 영흥도 체크인 리스트</title>
-<!-- v2026-08-08 18:42 -->
+<!-- v2026-08-08 19:42 -->
 <style>
   :root {
     --navy: #1B3A5C;
@@ -1250,7 +1250,7 @@ function _submitPw() {
   <button class="btn-refresh" id="btnRefresh" onclick="refreshData()">🔄 새로고침</button>
   <button class="ho-btn" id="btnHandover" onclick="openHandoverModal()" style="display:none">🔄 인수인계<span class="ho-cnt" id="hoCnt">0</span></button>
   <button class="ho-btn" id="btnBlanket" onclick="openBlanketModal()" style="display:none;background:#0369a1">🛏️ 추가이불<span class="ho-cnt" id="blkCnt" style="color:#0369a1">0</span></button>
-  <span class="update-time">갱신: 2026-08-08 18:42</span>
+  <span class="update-time">갱신: 2026-08-08 19:42</span>
 </div>
 <div id="brNoticeBanner"></div>
 <div class="content" id="content">
@@ -1284,6 +1284,7 @@ function _submitPw() {
   </div>
   <!-- 청소현황 탭 -->
   <div id="cleanSection" class="cl-wrap" style="display:none">
+    <div id="clTeamBox"></div>
     <div id="cleanArea"></div>
     <div id="clPrintBar" style="display:none;position:sticky;bottom:0;background:white;
       border-top:2px solid var(--border);padding:10px 16px;gap:10px;align-items:center;">
@@ -2744,17 +2745,12 @@ function fmSave() {
   });
   var btn = document.getElementById("fmSaveBtn");
   btn.disabled=true; btn.textContent="저장 중...";
-
-  // ── 저장 복원력 패치 (2026-08-05, 8/8 재적용) ────────────────
-  // 구글(GAS)이 간헐적으로 JSON 대신 HTML 오류 페이지를 반환하거나
-  // ok 응답 후 기록이 유실되는 문제 대응:
-  // 응답이 비정상이면 getDayEntries로 실제 저장 여부를 확인한 뒤
-  // 저장돼 있으면 성공 처리(중복 방지), 없으면 1회 자동 재시도.
-  var preIds = {};
-  if(_fm.bno && _fieldEntries[_fm.bno]) _fieldEntries[_fm.bno].forEach(function(x){ preIds[x.entryId]=1; });
-
-  function applySuccess(entryIdResolved) {
-      var entry = { entryId:entryIdResolved||_fm.entryId, total:total, payMethod:pay,
+  fetch(GAS_ENDPOINT, {method:"POST", body:payload})
+    .then(function(r){ return r.text(); })
+    .then(function(text){
+      var res; try{res=JSON.parse(text);}catch(e){throw new Error("응답 오류: "+text.slice(0,200));}
+      if(!res.ok) throw new Error(res.error||"저장 실패");
+      var entry = { entryId:res.entryId||_fm.entryId, total:total, payMethod:pay,
         depositorName:depositorName,
         bbq:bbq, person:person, dog:dog, bigdog:bigdog,
         bbqAmt:fmEffAmt("bbq"), personAmt:fmEffAmt("person"), dogAmt:fmEffAmt("dog"), bigdogAmt:fmEffAmt("bigdog"),
@@ -2774,68 +2770,11 @@ function fmSave() {
       var toastMsg = "💾 저장 완료! " + total.toLocaleString() + "원 (" + pay + (depositorName?" / "+depositorName:"") + ")";
       showToast(toastMsg);
       loadTodayFieldEntries();
-  }
-
-  // 실제 저장 여부를 서버 조회로 확인 (최대 2회)
-  function verifySaved(cb) {
-    var tries = 0;
-    function once() {
-      tries++;
-      fetch(GAS_ENDPOINT+"?action=getDayEntries&date="+currentDate+"&branch="+encodeURIComponent(currentBranch))
-        .then(function(r){ return r.text(); })
-        .then(function(text){
-          var res; try{ res=JSON.parse(text); }catch(e){ res=null; }
-          if(res && res.ok && res.data) {
-            var found = null;
-            res.data.forEach(function(e){
-              if(String(e.bookingNo||"")!==String(_fm.bno||"")) return;
-              if(String(e.room||"")!==String(_fm.room||"")) return;
-              if(Number(e.total)!==Number(total)) return;
-              if(String(e.payMethod||"")!==String(pay)) return;
-              if(_fm.editMode) { if(e.entryId===_fm.entryId) found=e; }
-              else { if(e.entryId && !preIds[e.entryId]) found=e; }
-            });
-            cb(found ? (found.entryId||_fm.entryId) : false); return;
-          }
-          if(tries<2) setTimeout(once, 2500); else cb(null);
-        })
-        .catch(function(){ if(tries<2) setTimeout(once, 2500); else cb(null); });
-    }
-    once();
-  }
-
-  var attempted = 0;
-  function attempt() {
-    attempted++;
-    fetch(GAS_ENDPOINT, {method:"POST", body:payload})
-      .then(function(r){ return r.text(); })
-      .then(function(text){
-        var res; try{res=JSON.parse(text);}catch(e){ onUncertain(); return; }
-        if(!res.ok) { onFail(res.error||"저장 실패"); return; }
-        applySuccess(res.entryId);
-      })
-      .catch(function(){ onUncertain(); });
-  }
-
-  // 응답이 JSON이 아니거나(HTML 오류 페이지) 네트워크 오류 → 저장 여부 확인 후 분기
-  function onUncertain() {
-    btn.textContent="저장 확인 중...";
-    setTimeout(function() {
-      verifySaved(function(entryId) {
-        if(entryId) { applySuccess(entryId); return; }
-        if(entryId===false && attempted<2) { btn.textContent="재시도 중..."; attempt(); return; }
-        onFail("구글 서버 일시 오류입니다. 아래 기존 기록 목록을 확인한 뒤 없으면 다시 시도해주세요.");
-      });
-    }, 2000);
-  }
-
-  function onFail(msg) {
-    alert("저장 오류: "+msg);
-    btn.disabled=false; btn.textContent=_fm.editMode?"수정 저장":"기록하기";
-    loadTodayFieldEntries();
-  }
-
-  attempt();
+    })
+    .catch(function(err){
+      alert("저장 오류: "+err.message);
+      btn.disabled=false; btn.textContent=_fm.editMode?"수정 저장":"기록하기";
+    });
 }
 
 function fmDelete() {
@@ -2981,48 +2920,104 @@ function clLoadStatus(callback) {
     .catch(function() { if (callback) callback(); });
 }
 
-// localStorage에서 팀 데이터 로드
+// 청소팀 — 서버(GAS 청소팀 시트) 연동 (2026-08-07, localStorage → 서버 전환)
+var _clStaffTeam = {};      // {staffId: team}
+var _clTeamStaffList = [];    // 오늘 오전(AM/ALL) 근무자
+var _clTeamLoadedFor = null;
+
+function _clTeamCacheKey() {
+  return 'gd_team2_' + (currentBranch||'').replace(/\s+/g,'_') + '_' + currentDate;
+}
 function clLoadTeam() {
-  _clTeam = {};
-  if (!currentBranch || !currentDate) return;
-  var storagePrefix = 'gd_team_' + (currentBranch || '').replace(/\s+/g, '_');
-  var storageKey = storagePrefix + '_' + currentDate;
+  if (_clTeamLoadedFor === currentDate) return;
+  _clTeam = {}; _clStaffTeam = {}; _clTeamStaffList = [];
   try {
-    var stored = localStorage.getItem(storageKey);
-    if (stored) {
-      _clTeam = JSON.parse(stored);
-    }
+    var c = JSON.parse(localStorage.getItem(_clTeamCacheKey()) || 'null');
+    if (c) { _clTeam = c.rooms||{}; _clStaffTeam = c.staff||{}; _clTeamStaffList = c.list||[]; }
   } catch(e) {}
+  var d = currentDate;
+  Promise.all([
+    fetch(GAS_ENDPOINT + '?action=getCleanTeams&branch=' + encodeURIComponent(currentBranch) + '&date=' + d + '&_t=' + Date.now()).then(function(r){return r.json();}),
+    fetch(GAS_ENDPOINT + '?action=getShiftData&branch=' + encodeURIComponent(currentBranch) + '&fromDate=' + d + '&toDate=' + d + '&_t=' + Date.now()).then(function(r){return r.json();})
+  ]).then(function(res) {
+    if (d !== currentDate) return;
+    var t = res[0], s = res[1];
+    if (t && t.ok) { _clTeam = t.rooms||{}; _clStaffTeam = t.staff||{}; }
+    if (s && s.ok) {
+      var todays = {};
+      (s.shifts||[]).forEach(function(x){ if(x.date===d) todays[x.staffId]=x.shift; });
+      _clTeamStaffList = (s.staff||[]).filter(function(st){
+        var v = todays[st.staffId];
+        return v==='AM' || v==='ALL' || (st.type==='파트타임' && (v==='AM'||v==='PM'));
+      }).map(function(st){ return {staffId:st.staffId, name:st.name, type:st.type}; });
+    }
+    _clTeamLoadedFor = d;
+    try { localStorage.setItem(_clTeamCacheKey(), JSON.stringify({rooms:_clTeam, staff:_clStaffTeam, list:_clTeamStaffList})); } catch(e) {}
+    clRenderTeamBox();
+    renderCleaningView();
+  }).catch(function() { clRenderTeamBox(); });
 }
 
-// localStorage에 팀 데이터 저장
+function _clPostTeam(kind, key, team) {
+  fetch(GAS_ENDPOINT, { method:'POST', body: JSON.stringify({
+    action:'saveCleanTeam', branch: currentBranch, date: currentDate,
+    kind: kind, key: key, team: team||0 }) })
+    .then(function(r){ return r.json(); })
+    .then(function(res){ if(!res||!res.ok) showToast('팀 저장 실패 — 다시 시도해주세요'); })
+    .catch(function() { showToast('팀 저장 실패 — 다시 시도해주세요'); });
+  try { localStorage.setItem(_clTeamCacheKey(), JSON.stringify({rooms:_clTeam, staff:_clStaffTeam, list:_clTeamStaffList})); } catch(e) {}
+}
+
 function clSaveTeam(room, team) {
   if (!currentBranch || !currentDate) return;
-  _clTeam[room] = team;
-  var storagePrefix = 'gd_team_' + (currentBranch || '').replace(/\s+/g, '_');
-  var storageKey = storagePrefix + '_' + currentDate;
-  try {
-    localStorage.setItem(storageKey, JSON.stringify(_clTeam));
-  } catch(e) {}
+  if (team === null) { delete _clTeam[room]; } else { _clTeam[room] = team; }
+  _clPostTeam('room', room, team===null?0:team);
   renderCleaningView();
 }
 
-// 층별/그룹 일괄 팀 배정
+// 층별/그룹 일괄 팀 배정 (서버 저장)
 function clBulkAssignTeam(roomsCsv, team) {
   if (!currentBranch || !currentDate || !roomsCsv) return;
   var teamVal = (team === 0 || team === '0') ? null : team;
-  var rooms = roomsCsv.split('|');
-  rooms.forEach(function(rm) {
+  roomsCsv.split('|').forEach(function(rm) {
     if (!rm) return;
-    if (teamVal === null) { delete _clTeam[rm]; }
-    else { _clTeam[rm] = teamVal; }
+    if (teamVal === null) { delete _clTeam[rm]; } else { _clTeam[rm] = teamVal; }
+    _clPostTeam('room', rm, teamVal===null?0:teamVal);
   });
-  var storagePrefix = 'gd_team_' + (currentBranch || '').replace(/\s+/g, '_');
-  var storageKey = storagePrefix + '_' + currentDate;
-  try {
-    localStorage.setItem(storageKey, JSON.stringify(_clTeam));
-  } catch(e) {}
   renderCleaningView();
+}
+
+// 오늘 청소팀(사람) — 근무표의 오전/올데이 근무자를 탭해서 팀 지정
+var CL_TEAM_COLORS = {1:'#1e40af',2:'#065f46',3:'#92400e',4:'#6d28d9',5:'#9d174d'};
+var CL_TEAM_BG     = {1:'#eff6ff',2:'#ecfdf5',3:'#fff5e6',4:'#ede9fe',5:'#fdf2f8'};
+function clRenderTeamBox() {
+  var el = document.getElementById('clTeamBox');
+  if (!el) return;
+  if (!_clTeamStaffList.length) {
+    el.innerHTML = '<div style="background:#fff;border:1px solid #e2e8f0;border-radius:10px;padding:10px 14px;margin-bottom:10px;font-size:13px;color:#94a3b8;">'
+      + '👥 오늘 오전 근무자가 없습니다 — 근무표에서 배정하면 여기 표시됩니다</div>';
+    return;
+  }
+  var h = '<div style="background:#fff;border:1px solid #e2e8f0;border-radius:10px;padding:10px 14px;margin-bottom:10px;">'
+    + '<div style="font-size:12px;font-weight:800;color:#475569;margin-bottom:8px;">👥 오늘 청소팀 — 이름을 탭해서 팀 지정 (1~5팀 순환)</div>'
+    + '<div style="display:flex;flex-wrap:wrap;gap:6px;">';
+  _clTeamStaffList.forEach(function(s) {
+    var t = _clStaffTeam[s.staffId] || 0;
+    var col = t ? CL_TEAM_COLORS[t] : '#64748b';
+    var bg  = t ? CL_TEAM_BG[t] : '#f1f5f9';
+    h += '<span onclick="clCycleStaffTeam(\'' + s.staffId + '\')" style="cursor:pointer;padding:7px 12px;border-radius:16px;'
+      + 'background:' + bg + ';color:' + col + ';font-size:13px;font-weight:800;border:1.5px solid ' + (t?col:'#e2e8f0') + ';">'
+      + s.name + (t ? ' · ' + t + '팀' : '') + '</span>';
+  });
+  h += '</div></div>';
+  el.innerHTML = h;
+}
+function clCycleStaffTeam(sid) {
+  var cur = _clStaffTeam[sid] || 0;
+  var next = cur >= 5 ? 0 : cur + 1;
+  if (next === 0) delete _clStaffTeam[sid]; else _clStaffTeam[sid] = next;
+  _clPostTeam('staff', sid, next);
+  clRenderTeamBox();
 }
 
 var _clTeamMenuRoom = null;
@@ -3190,7 +3185,8 @@ function renderTeamView() {
 
 function renderCleaningView() {
   if (_clViewMode === 'team') { renderTeamView(); return; }
-  clLoadTeam();  // 팀 데이터 로드
+  clLoadTeam();  // 팀 데이터 로드 (서버)
+  clRenderTeamBox();
   var today = currentDate;
 
   // 퇴실 (오늘 체크아웃), 방막기 제외
