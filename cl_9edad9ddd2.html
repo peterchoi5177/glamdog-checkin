@@ -2847,12 +2847,17 @@ function fmSave() {
   });
   var btn = document.getElementById("fmSaveBtn");
   btn.disabled=true; btn.textContent="저장 중...";
-  fetch(GAS_ENDPOINT, {method:"POST", body:payload})
-    .then(function(r){ return r.text(); })
-    .then(function(text){
-      var res; try{res=JSON.parse(text);}catch(e){throw new Error("응답 오류: "+text.slice(0,200));}
-      if(!res.ok) throw new Error(res.error||"저장 실패");
-      var entry = { entryId:res.entryId||_fm.entryId, total:total, payMethod:pay,
+
+  // ── 저장 복원력 패치 (2026-08-05, 8/8 재적용) ────────────────
+  // 구글(GAS)이 간헐적으로 JSON 대신 HTML 오류 페이지를 반환하거나
+  // ok 응답 후 기록이 유실되는 문제 대응:
+  // 응답이 비정상이면 getDayEntries로 실제 저장 여부를 확인한 뒤
+  // 저장돼 있으면 성공 처리(중복 방지), 없으면 1회 자동 재시도.
+  var preIds = {};
+  if(_fm.bno && _fieldEntries[_fm.bno]) _fieldEntries[_fm.bno].forEach(function(x){ preIds[x.entryId]=1; });
+
+  function applySuccess(entryIdResolved) {
+      var entry = { entryId:entryIdResolved||_fm.entryId, total:total, payMethod:pay,
         depositorName:depositorName,
         bbq:bbq, person:person, dog:dog, bigdog:bigdog,
         bbqAmt:fmEffAmt("bbq"), personAmt:fmEffAmt("person"), dogAmt:fmEffAmt("dog"), bigdogAmt:fmEffAmt("bigdog"),
@@ -2872,11 +2877,68 @@ function fmSave() {
       var toastMsg = "💾 저장 완료! " + total.toLocaleString() + "원 (" + pay + (depositorName?" / "+depositorName:"") + ")";
       showToast(toastMsg);
       loadTodayFieldEntries();
-    })
-    .catch(function(err){
-      alert("저장 오류: "+err.message);
-      btn.disabled=false; btn.textContent=_fm.editMode?"수정 저장":"기록하기";
-    });
+  }
+
+  // 실제 저장 여부를 서버 조회로 확인 (최대 2회)
+  function verifySaved(cb) {
+    var tries = 0;
+    function once() {
+      tries++;
+      fetch(GAS_ENDPOINT+"?action=getDayEntries&date="+currentDate+"&branch="+encodeURIComponent(currentBranch))
+        .then(function(r){ return r.text(); })
+        .then(function(text){
+          var res; try{ res=JSON.parse(text); }catch(e){ res=null; }
+          if(res && res.ok && res.data) {
+            var found = null;
+            res.data.forEach(function(e){
+              if(String(e.bookingNo||"")!==String(_fm.bno||"")) return;
+              if(String(e.room||"")!==String(_fm.room||"")) return;
+              if(Number(e.total)!==Number(total)) return;
+              if(String(e.payMethod||"")!==String(pay)) return;
+              if(_fm.editMode) { if(e.entryId===_fm.entryId) found=e; }
+              else { if(e.entryId && !preIds[e.entryId]) found=e; }
+            });
+            cb(found ? (found.entryId||_fm.entryId) : false); return;
+          }
+          if(tries<2) setTimeout(once, 2500); else cb(null);
+        })
+        .catch(function(){ if(tries<2) setTimeout(once, 2500); else cb(null); });
+    }
+    once();
+  }
+
+  var attempted = 0;
+  function attempt() {
+    attempted++;
+    fetch(GAS_ENDPOINT, {method:"POST", body:payload})
+      .then(function(r){ return r.text(); })
+      .then(function(text){
+        var res; try{res=JSON.parse(text);}catch(e){ onUncertain(); return; }
+        if(!res.ok) { onFail(res.error||"저장 실패"); return; }
+        applySuccess(res.entryId);
+      })
+      .catch(function(){ onUncertain(); });
+  }
+
+  // 응답이 JSON이 아니거나(HTML 오류 페이지) 네트워크 오류 → 저장 여부 확인 후 분기
+  function onUncertain() {
+    btn.textContent="저장 확인 중...";
+    setTimeout(function() {
+      verifySaved(function(entryId) {
+        if(entryId) { applySuccess(entryId); return; }
+        if(entryId===false && attempted<2) { btn.textContent="재시도 중..."; attempt(); return; }
+        onFail("구글 서버 일시 오류입니다. 아래 기존 기록 목록을 확인한 뒤 없으면 다시 시도해주세요.");
+      });
+    }, 2000);
+  }
+
+  function onFail(msg) {
+    alert("저장 오류: "+msg);
+    btn.disabled=false; btn.textContent=_fm.editMode?"수정 저장":"기록하기";
+    loadTodayFieldEntries();
+  }
+
+  attempt();
 }
 
 function fmDelete() {
