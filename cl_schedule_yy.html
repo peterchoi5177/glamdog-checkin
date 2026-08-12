@@ -60,14 +60,14 @@ var GAS="https://script.google.com/macros/s/AKfycbzgA5z1GICaqgstqht-gwY-pNFCLnoG
 var BRANCH="양양", KEY="yy77";
 var I18N={
  ko:{title:"글램독 양양 근무표",thisWk:"이번주",loading:"근무표 불러오는 중…",err:"불러오기 실패 — 잠시 후 다시 시도해주세요",retry:"다시 시도",
-     cleanTitle:"청소 (탭해서 완료 처리)",tomorrow:"내일",team:"팀",confirmDone:"청소 완료로 표시할까요?",confirmUndo:"완료를 취소할까요?",saveFail:"저장 실패 — 다시 시도해주세요",
+     cleanTitle:"청소 (탭해서 완료 처리)",tomorrow:"내일",team:"팀",confirmDone:"청소 완료로 표시할까요? (잘못 누르면 방을 다시 탭해서 되돌릴 수 있어요)",confirmUndo:"완료를 취소하고 '청소 필요'로 되돌릴까요?",saveFail:"저장 실패 — 다시 시도해주세요",
      stDone:"완료",stWait:"대기",stYeon:"연박",stNeed:"청소",
      ALL:"올데이",AM:"오전",PM:"오후",OFF:"휴무",TBD:"미정",clean:"청소",rooms:"실",empty:"배정 없음",
      legend:"오전: 볼런티어 10:00–14:00 · 직원 9:00–16:00<br>오후: 볼런티어 16:00–20:00 · 직원 15:00–22:00<br>올데이: 오픈–마감 (매니저)",
      stale:"서버 연결 실패 — 마지막으로 불러온 근무표를 표시 중입니다",upd:"기준",noKey:"접근 키가 올바르지 않습니다. 관리자에게 링크를 다시 받아주세요.",
      wd:["일","월","화","수","목","금","토"]},
  en:{title:"Glamdog Yangyang Schedule",thisWk:"This week",loading:"Loading schedule…",err:"Failed to load — please try again shortly",retry:"Retry",
-     cleanTitle:"Cleaning (tap a room to mark done)",tomorrow:"Tomorrow",team:"Team",confirmDone:"Mark this room as cleaned?",confirmUndo:"Undo the done mark?",saveFail:"Save failed — please try again",
+     cleanTitle:"Cleaning (tap a room to mark done)",tomorrow:"Tomorrow",team:"Team",confirmDone:"Mark this room as cleaned? (Tap again anytime to undo)",confirmUndo:"Undo and set back to 'needs cleaning'?",saveFail:"Save failed — please try again",
      stDone:"Done",stWait:"Hold",stYeon:"Stay",stNeed:"Clean",
      ALL:"Full day",AM:"Morning",PM:"Afternoon",OFF:"Day off",TBD:"TBD",clean:"Cleaning",rooms:" rooms",empty:"No assignments",
      legend:"Morning: volunteers 10:00–14:00 · staff 9:00–16:00<br>Afternoon: volunteers 16:00–20:00 · staff 15:00–22:00<br>Full day: open–close (managers)",
@@ -222,6 +222,16 @@ function renderCleaning(){
   h+='</div>';
   el.innerHTML=h; el.style.display="";
 }
+// 상태 저장 — 멱등이라 자동 재시도 3회, 최종 실패 시 서버 재확인 후에만 에러 표시
+function _postStatus(room,status,tries){
+  return fetch(GAS,{method:"POST",body:JSON.stringify({action:"setCleaningStatus",date:_cToday,branch:BRANCH,room:room,status:status})})
+    .then(function(r){ return r.text(); })
+    .then(function(t){ var j=JSON.parse(t); if(!j||!j.ok) throw "ERR"; return true; })
+    .catch(function(e){
+      if(tries>1){ return new Promise(function(res,rej){ setTimeout(function(){ _postStatus(room,status,tries-1).then(res,rej); },1200); }); }
+      throw e;
+    });
+}
 function tapRoom(room){
   var st=_cStatus[room]||"";
   if(st==="deferred"||st==="yeonbak") return;   // 대기·연박은 매니저 영역
@@ -230,13 +240,28 @@ function tapRoom(room){
   var prev=_cStatus[room];
   if(toDone) _cStatus[room]="done"; else delete _cStatus[room];
   renderCleaning();
-  fetch(GAS,{method:"POST",body:JSON.stringify({action:"setCleaningStatus",date:_cToday,branch:BRANCH,room:room,status:toDone?"done":""})})
-    .then(function(r){ return r.json(); })
-    .then(function(res){ if(!res||!res.ok) throw "ERR"; })
+  _postStatus(room, toDone?"done":"", 3)
     .catch(function(){
-      if(prev===undefined) delete _cStatus[room]; else _cStatus[room]=prev;
-      renderCleaning();
-      alert(T().saveFail);
+      // 재시도 모두 실패 — 실제 반영 여부를 서버에서 재확인 (응답만 유실된 경우가 많음)
+      return fetchJson(GAS+"?action=getCleaningStatus&date="+_cToday+"&branch="+encodeURIComponent(BRANCH)+"&_t="+Date.now(),2)
+        .then(function(s){
+          if(s&&s.ok){
+            _cStatus=s.data||{};
+            renderCleaning();
+            var now=_cStatus[room]||"";
+            var applied=toDone?(now==="done"):(now!=="done");
+            if(!applied) alert(T().saveFail);
+          } else {
+            if(prev===undefined) delete _cStatus[room]; else _cStatus[room]=prev;
+            renderCleaning();
+            alert(T().saveFail);
+          }
+        })
+        .catch(function(){
+          if(prev===undefined) delete _cStatus[room]; else _cStatus[room]=prev;
+          renderCleaning();
+          alert(T().saveFail);
+        });
     });
 }
 
