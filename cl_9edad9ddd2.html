@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
 <meta http-equiv="refresh" content="1800">
 <title>글램독 양양 체크인 리스트</title>
-<!-- v2026-08-12 16:56 -->
+<!-- v2026-08-12 17:24 -->
 <style>
   :root {
     --navy: #1B3A5C;
@@ -1250,7 +1250,7 @@ function _submitPw() {
   <button class="btn-refresh" id="btnRefresh" onclick="refreshData()">🔄 새로고침</button>
   <button class="ho-btn" id="btnHandover" onclick="openHandoverModal()" style="display:none">🔄 인수인계<span class="ho-cnt" id="hoCnt">0</span></button>
   <button class="ho-btn" id="btnBlanket" onclick="openBlanketModal()" style="display:none;background:#0369a1">🛏️ 추가이불<span class="ho-cnt" id="blkCnt" style="color:#0369a1">0</span></button>
-  <span class="update-time">갱신: 2026-08-12 16:56</span>
+  <span class="update-time">갱신: 2026-08-12 17:24</span>
 </div>
 <div id="brNoticeBanner"></div>
 <div class="content" id="content">
@@ -3057,12 +3057,17 @@ function clLoadStatus(callback) {
 var _clStaffTeam = {};      // {staffId: team}
 var _clTeamStaffList = [];    // 오늘 오전(AM/ALL) 근무자
 var _clTeamLoadedFor = null;
+var _clTeamLoading = false;
 
 function _clTeamCacheKey() {
   return 'gd_team2_' + (currentBranch||'').replace(/\s+/g,'_') + '_' + currentDate;
 }
 function clLoadTeam() {
-  if (_clTeamLoadedFor === currentDate) return;
+  // ⚠️ 실패해도 재시도 폭주가 없도록 시도 시점에 잠금. renderCleaningView가 자주 호출되므로
+  //    여기서 막지 않으면 GAS가 느릴 때 호출이 눈덩이처럼 불어난다(2026-08-12 장애 원인).
+  if (_clTeamLoadedFor === currentDate || _clTeamLoading) return;
+  _clTeamLoading = true;
+  _clTeamLoadedFor = currentDate;
   _clTeam = {}; _clStaffTeam = {}; _clTeamStaffList = [];
   try {
     var c = JSON.parse(localStorage.getItem(_clTeamCacheKey()) || 'null');
@@ -3084,11 +3089,11 @@ function clLoadTeam() {
         return v==='AM' || v==='ALL' || (st.type==='파트타임' && (v==='AM'||v==='PM'));
       }).map(function(st){ return {staffId:st.staffId, name:st.name, type:st.type}; });
     }
-    _clTeamLoadedFor = d;
+    _clTeamLoading = false;
     try { localStorage.setItem(_clTeamCacheKey(), JSON.stringify({rooms:_clTeam, staff:_clStaffTeam, list:_clTeamStaffList})); } catch(e) {}
     clRenderTeamBox();
     renderCleaningView();
-  }).catch(function() { clRenderTeamBox(); });
+  }).catch(function() { _clTeamLoading = false; clRenderTeamBox(); });
 }
 
 function _clPostTeam(kind, key, team) {
