@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
 <meta http-equiv="refresh" content="1800">
 <title>글램독 양양 체크인 리스트</title>
-<!-- v2026-08-12 16:22 -->
+<!-- v2026-08-12 16:29 -->
 <style>
   :root {
     --navy: #1B3A5C;
@@ -1250,7 +1250,7 @@ function _submitPw() {
   <button class="btn-refresh" id="btnRefresh" onclick="refreshData()">🔄 새로고침</button>
   <button class="ho-btn" id="btnHandover" onclick="openHandoverModal()" style="display:none">🔄 인수인계<span class="ho-cnt" id="hoCnt">0</span></button>
   <button class="ho-btn" id="btnBlanket" onclick="openBlanketModal()" style="display:none;background:#0369a1">🛏️ 추가이불<span class="ho-cnt" id="blkCnt" style="color:#0369a1">0</span></button>
-  <span class="update-time">갱신: 2026-08-12 16:22</span>
+  <span class="update-time">갱신: 2026-08-12 16:29</span>
 </div>
 <div id="brNoticeBanner"></div>
 <div class="content" id="content">
@@ -2875,8 +2875,38 @@ function fmSave() {
       loadTodayFieldEntries();
     })
     .catch(function(err){
-      alert("저장 오류: "+err.message);
-      btn.disabled=false; btn.textContent=_fm.editMode?"수정 저장":"기록하기";
+      // ⚠️ 중복 기입 방지: 실패로 보여도 서버에 이미 저장된 경우가 있다(GAS 응답 유실).
+      //    에러를 띄우기 전에 반드시 서버를 재조회해서 실제 저장 여부를 확인한다.
+      btn.textContent="저장 확인 중...";
+      var _bno=_fm.bno, _room=_fm.room, _total=total, _edit=_fm.editMode, _eid=_fm.entryId;
+      fetch(GAS_ENDPOINT+"?action=getDayEntries&date="+currentDate+"&branch="+encodeURIComponent(currentBranch)+"&_t="+Date.now())
+        .then(function(r){ return r.text(); })
+        .then(function(t){
+          var res=JSON.parse(t);
+          if(!res || !res.ok) throw new Error("verify fail");
+          var found=false;
+          (res.data||[]).forEach(function(e){
+            if(_edit) { if(String(e.entryId)===String(_eid) && Number(e.total)===Number(_total)) found=true; }
+            else {
+              var sameBno = _bno ? (String(e.bookingNo)===String(_bno)) : (String(e.room)===String(_room));
+              if(sameBno && Number(e.total)===Number(_total)) found=true;
+            }
+          });
+          if(found) {
+            // 실제로는 저장됨 — 사용자가 다시 눌러 중복 만드는 것을 막는다
+            updateFieldBtns(); renderTable(); closeFM();
+            showToast("💾 저장 완료 (응답 지연이었습니다)");
+            loadTodayFieldEntries();
+          } else {
+            alert("저장되지 않았습니다. [기록하기]를 한 번만 다시 눌러주세요.\n(오류: "+err.message+")");
+            btn.disabled=false; btn.textContent=_edit?"수정 저장":"기록하기";
+          }
+        })
+        .catch(function(){
+          alert("저장 결과를 확인하지 못했습니다.\n⚠️ 다시 누르기 전에 현장기록 목록에서 저장 여부를 먼저 확인해주세요.\n(오류: "+err.message+")");
+          btn.disabled=false; btn.textContent=_fm.editMode?"수정 저장":"기록하기";
+          loadTodayFieldEntries();
+        });
     });
 }
 
@@ -3079,15 +3109,30 @@ function clSaveTeam(room, team) {
 }
 
 // 층별/그룹 일괄 팀 배정 (서버 저장)
+//  ⚠️ 병렬 POST 금지 — GAS는 스크립트 락이 프로젝트 전역이라 동시 다발 요청 시
+//     현장기록 등 다른 저장이 락 대기에 걸려 실패한다. 반드시 순차 전송.
 function clBulkAssignTeam(roomsCsv, team) {
   if (!currentBranch || !currentDate || !roomsCsv) return;
   var teamVal = (team === 0 || team === '0') ? null : team;
-  roomsCsv.split('|').forEach(function(rm) {
-    if (!rm) return;
+  var rooms = roomsCsv.split('|').filter(function(r){ return !!r; });
+  rooms.forEach(function(rm) {
     if (teamVal === null) { delete _clTeam[rm]; } else { _clTeam[rm] = teamVal; }
-    _clPostTeam('room', rm, teamVal===null?0:teamVal);
   });
   renderCleaningView();
+  try { localStorage.setItem(_clTeamCacheKey(), JSON.stringify({rooms:_clTeam, staff:_clStaffTeam, list:_clTeamStaffList})); } catch(e) {}
+  // 순차 저장 (한 번에 하나씩)
+  var i = 0;
+  function next() {
+    if (i >= rooms.length) return;
+    var rm = rooms[i++];
+    fetch(GAS_ENDPOINT, { method:'POST', body: JSON.stringify({
+      action:'saveCleanTeam', branch: currentBranch, date: currentDate,
+      kind:'room', key: rm, team: teamVal===null?0:teamVal }) })
+      .then(function(r){ return r.text(); })
+      .catch(function(){})
+      .then(function(){ next(); });
+  }
+  next();
 }
 
 // 오늘 청소팀(사람) — 근무표의 오전/올데이 근무자를 탭해서 팀 지정
