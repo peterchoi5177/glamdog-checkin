@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
 <meta http-equiv="refresh" content="1800">
 <title>글램독 양양 체크인 리스트</title>
-<!-- v2026-08-16 18:15 -->
+<!-- v2026-08-16 18:41 -->
 <style>
   :root {
     --navy: #1B3A5C;
@@ -1238,8 +1238,10 @@ function _submitPw() {
   .bbq-seat-tag {
     display:inline-block; margin-top:4px; padding:3px 8px; cursor:pointer;
     border:1px solid #f59e0b; border-radius:6px; background:#fffbeb;
-    font-size:12px; font-weight:900; color:#b45309; white-space:nowrap;
+    font-size:12px; font-weight:900; color:#b45309; white-space:nowrap; line-height:1.5;
   }
+  .bbq-seat-tag .bbq-tag-time { display:block; font-size:13px; color:#92400e; }
+  .bbq-seat-tag .bbq-tag-notime { display:block; font-size:10px; color:#d97706; font-weight:700; }
   .bbq-overlay {
     display:none; position:fixed; inset:0; background:rgba(0,0,0,.45);
     z-index:9000; align-items:flex-end; justify-content:center;
@@ -1267,6 +1269,15 @@ function _submitPw() {
   .bbq-seat.taken { border-color:#e2e8f0; background:#f1f5f9; }
   .bbq-seat.taken .bbq-seat-no { color:#94a3b8; }
   .bbq-seat.taken .bbq-seat-sub { color:#64748b; }
+  .bbq-time-wrap { margin-top:18px; border-top:1px solid #e2e8f0; padding-top:14px; }
+  .bbq-time-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(70px,1fr)); gap:7px; margin-top:8px; }
+  .bbq-time-btn {
+    border:1.5px solid #cbd5e1; border-radius:9px; background:#fff; cursor:pointer;
+    padding:9px 2px; text-align:center; font-size:14px; font-weight:800; color:#334155; user-select:none;
+  }
+  .bbq-time-btn:active { background:#f8fafc; }
+  .bbq-time-btn.on { border-color:#b45309; background:#fffbeb; color:#b45309; }
+  .bbq-time-clear { border:1.5px solid #e2e8f0; color:#94a3b8; font-weight:700; }
   .bbq-note { margin-top:14px; font-size:12px; color:#64748b; line-height:1.6; }
   @media print { .bbq-seat-btn, .bbq-overlay { display:none !important; } }
 </style>
@@ -1306,7 +1317,7 @@ function _submitPw() {
   <button class="btn-refresh" id="btnRefresh" onclick="refreshData()">🔄 새로고침</button>
   <button class="ho-btn" id="btnHandover" onclick="openHandoverModal()" style="display:none">🔄 인수인계<span class="ho-cnt" id="hoCnt">0</span></button>
   <button class="ho-btn" id="btnBlanket" onclick="openBlanketModal()" style="display:none;background:#0369a1">🛏️ 추가이불<span class="ho-cnt" id="blkCnt" style="color:#0369a1">0</span></button>
-  <span class="update-time">갱신: 2026-08-16 18:15</span>
+  <span class="update-time">갱신: 2026-08-16 18:41</span>
 </div>
 <div id="brNoticeBanner"></div>
 <div class="content" id="content">
@@ -2042,7 +2053,8 @@ function fmtTime(t) {
 
 function bbqHtml(wd, room, bno, guest) {
   // 자리 배정 UI는 BBQ_SEAT 지점(양양)에서만 존재 — 다른 페이지에선 함수 자체가 없어 ''
-  var seat = (typeof bbqSeatCellHtml === 'function') ? bbqSeatCellHtml(room, bno, guest) : '';
+  var seat = (typeof bbqSeatCellHtml === 'function')
+      ? bbqSeatCellHtml(room, bno, guest, (wd && wd.bbq === 'yes') ? fmtTime(wd.bbqTime) : '') : '';
   if (!wd) return '<div class="bbq-box">□</div>' + seat;
   if (wd.bbq === 'yes') {
     var t = fmtTime(wd.bbqTime) || '시간미정';
@@ -5266,13 +5278,14 @@ window.addEventListener('beforeunload', function(e){
 // ═══════════ /근무표 ═══════════
 
 var BBQ_SEATS_DEF = {"실내": ["1-1", "1-2", "2-1", "2-2", "3-1", "3-2", "4", "5", "6", "7", "8", "9", "10", "11"], "실외": ["12", "13", "14", "15", "16", "17", "18", "19"]};
+var BBQ_TIME_SLOTS = ["16:00", "16:30", "17:00", "17:30", "18:00", "18:30", "19:00", "19:30", "20:00", "20:30", "21:00"];
 
 // ═══════════ BBQ 자리 배정 (2026-08-16) ═══════════
-// 날짜당 1자리 1팀 독점. 독점 판정의 최종 권한은 서버(GAS LockService)에 있고
-// 클라이언트는 낙관적 표시만 한다 — 충돌 시 서버 응답(taken)으로 되돌린다.
-var _bbqSeats   = {};     // { seat: {zone, room, guest, bookingNo} }
+// 자리는 날짜당 1자리 1팀 독점(시간과 무관). 시간은 그 팀이 몇 시에 쓰는지 기록용.
+// 독점 판정의 최종 권한은 서버(GAS LockService)에 있고 클라는 낙관적 표시만 한다.
+var _bbqSeats   = {};     // { seat: {zone, room, guest, bookingNo, time} }
 var _bbqEnabled = false;  // getBbqSeats 성공(=GAS 재배포 완료) 시 자동 활성화
-var _bbqTarget  = null;   // {room, bno, guest}
+var _bbqTarget  = null;   // {room, bno, guest, want}
 
 function bbqZoneOf(seat) {
   for (var z in BBQ_SEATS_DEF) { if (BBQ_SEATS_DEF[z].indexOf(seat) >= 0) return z; }
@@ -5292,6 +5305,12 @@ function bbqSeatsOfRoom(room) {
   for (var s in _bbqSeats) { if (_bbqSeats[s].room === room) out.push(s); }
   return out.sort(function(a, b){ return bbqSeatOrder(a) - bbqSeatOrder(b); });
 }
+// 이 방에 이미 잡힌 시간 (여러 자리여도 한 팀이므로 첫 값)
+function bbqTimeOfRoom(room) {
+  var ss = bbqSeatsOfRoom(room);
+  for (var i = 0; i < ss.length; i++) { if (_bbqSeats[ss[i]].time) return _bbqSeats[ss[i]].time; }
+  return '';
+}
 
 function bbqLoadSeats(cb) {
   var d = currentDate;
@@ -5308,24 +5327,28 @@ function bbqLoadSeats(cb) {
 }
 
 // 체크인 리스트 BBQ 칸에 붙는 조각 (bbqHtml에서 호출)
-function bbqSeatCellHtml(room, bno, guest) {
+//   want = 웰컴에서 고객이 적어낸 희망시간 (참고용)
+function bbqSeatCellHtml(room, bno, guest, want) {
   if (!_bbqEnabled || !room) return '';
   var esc = function(s){ return String(s == null ? '' : s).replace(/\\/g, '').replace(/'/g, ''); };
-  var arg = "'" + esc(room) + "','" + esc(bno) + "','" + esc(guest) + "'";
+  var arg = "'" + esc(room) + "','" + esc(bno) + "','" + esc(guest) + "','" + esc(want) + "'";
   var mine = bbqSeatsOfRoom(room);
   if (mine.length) {
     var label = mine.map(function(s){ return bbqZoneOf(s) + s; }).join(', ');
-    return '<div class="bbq-seat-tag" onclick="bbqOpenModal(' + arg + ')">🔥 ' + label + '</div>';
+    var t = bbqTimeOfRoom(room);
+    return '<div class="bbq-seat-tag" onclick="bbqOpenModal(' + arg + ')">🔥 ' + label
+         + (t ? '<span class="bbq-tag-time">' + t + '</span>'
+              : '<span class="bbq-tag-notime">시간 미정</span>') + '</div>';
   }
   return '<div class="bbq-seat-btn" onclick="bbqOpenModal(' + arg + ')">＋ 자리</div>';
 }
 
-function bbqOpenModal(room, bno, guest) {
+function bbqOpenModal(room, bno, guest, want) {
   if (!_bbqEnabled) {
     alert('BBQ 자리 기능이 아직 서버에 반영되지 않았습니다.\n(GAS 재배포 후 사용 가능)');
     return;
   }
-  _bbqTarget = { room: room, bno: bno, guest: guest };
+  _bbqTarget = { room: room, bno: bno, guest: guest, want: want || '' };
   document.getElementById('bbqSub').textContent =
     currentDate.substring(5).replace('-', '/') + ' · ' + room + (guest ? ' · ' + guest : '');
   bbqRenderGrid();
@@ -5345,18 +5368,39 @@ function bbqRenderGrid() {
     for (var i = 0; i < seats.length; i++) {
       var s = seats[i], occ = _bbqSeats[s];
       var cls = 'bbq-seat', sub = '<span class="bbq-seat-sub">빈자리</span>';
-      if (occ && occ.room === t.room) { cls += ' mine';  sub = '<span class="bbq-seat-sub">이 방 ✓</span>'; }
-      else if (occ)                   { cls += ' taken'; sub = '<span class="bbq-seat-sub">' + occ.room + '</span>'; }
+      if (occ && occ.room === t.room) {
+        cls += ' mine';
+        sub = '<span class="bbq-seat-sub">' + (occ.time ? occ.time : '이 방 ✓') + '</span>';
+      } else if (occ) {
+        cls += ' taken';
+        sub = '<span class="bbq-seat-sub">' + occ.room + (occ.time ? ' ' + occ.time : '') + '</span>';
+      }
       h += '<div class="' + cls + '" onclick="bbqTapSeat(\'' + s + '\')">'
          + '<span class="bbq-seat-no">' + s + '</span>' + sub + '</div>';
     }
     h += '</div>';
   }
+
   var mine = bbqSeatsOfRoom(t.room);
+  if (mine.length) {
+    var cur = bbqTimeOfRoom(t.room);
+    h += '<div class="bbq-time-wrap">'
+       + '<div class="bbq-zone-label" style="margin:0">⏰ 이용 시간'
+       + (cur ? ' — <span style="color:#b45309">' + cur + '</span>' : ' <span style="color:#94a3b8;font-weight:700">(미정 · 선택 사항)</span>')
+       + (t.want ? ' <span style="color:#64748b;font-weight:700">· 웰컴 희망 ' + t.want + '</span>' : '')
+       + '</div><div class="bbq-time-grid">';
+    for (var k = 0; k < BBQ_TIME_SLOTS.length; k++) {
+      var tv = BBQ_TIME_SLOTS[k];
+      h += '<div class="bbq-time-btn' + (tv === cur ? ' on' : '') + '" onclick="bbqSetTime(\'' + tv + '\')">' + tv + '</div>';
+    }
+    h += '<div class="bbq-time-btn bbq-time-clear" onclick="bbqSetTime(\'\')">지움</div>';
+    h += '</div></div>';
+  }
+
   h += '<div class="bbq-note">' + (mine.length
       ? '현재 이 방 배정: <b>' + mine.join(', ') + '</b> — 같은 자리를 다시 탭하면 해제됩니다.'
-      : '빈 자리를 탭하면 <b>' + t.room + '</b>으로 배정됩니다.')
-    + '<br>회색 자리는 다른 방이 이미 잡은 자리입니다.</div>';
+      : '빈 자리를 탭하면 <b>' + t.room + '</b>으로 배정됩니다. 자리를 잡으면 시간 선택이 나타납니다.')
+    + '<br>회색 자리는 다른 방이 이미 잡은 자리입니다. 자리는 시간과 무관하게 하루 단위로 독점됩니다.</div>';
   document.getElementById('bbqGrid').innerHTML = h;
 }
 
@@ -5390,10 +5434,11 @@ function _bbqPost(body, onOk, onFail) {
 function bbqAssign(seat) {
   var t = _bbqTarget; if (!t) return;
   var zone = bbqZoneOf(seat);
+  var time = bbqTimeOfRoom(t.room);   // 이미 다른 자리에 시간이 있으면 승계
   _bbqPost({ action:'saveBbqSeat', op:'assign', branch:currentBranch, date:currentDate,
-             seat:seat, zone:zone, room:t.room, guest:t.guest || '', bookingNo:t.bno || '' },
+             seat:seat, zone:zone, room:t.room, guest:t.guest || '', bookingNo:t.bno || '', time:time },
     function(){
-      _bbqSeats[seat] = { zone:zone, room:t.room, guest:t.guest || '', bookingNo:t.bno || '' };
+      _bbqSeats[seat] = { zone:zone, room:t.room, guest:t.guest || '', bookingNo:t.bno || '', time:time };
       bbqRenderGrid(); renderTable();
       showToast('🔥 ' + zone + seat + ' 배정 완료 — ' + t.room);
     },
@@ -5417,6 +5462,29 @@ function bbqRelease(seat) {
       alert('해제 실패: ' + ((res && res.error) || '알 수 없는 오류'));
       bbqLoadSeats(function(){ bbqRenderGrid(); renderTable(); });
     });
+}
+
+// 시간 지정/변경 — 이 방이 잡은 모든 자리에 동일 적용 (한 팀이므로)
+function bbqSetTime(tv) {
+  var t = _bbqTarget; if (!t) return;
+  var seats = bbqSeatsOfRoom(t.room);
+  if (!seats.length) { alert('먼저 자리를 배정해주세요.'); return; }
+  if (tv && bbqTimeOfRoom(t.room) === tv) return;   // 같은 값 재탭 → 무시
+  var i = 0, failed = false;
+  function next() {
+    if (i >= seats.length) {
+      bbqRenderGrid(); renderTable();
+      if (!failed) showToast(tv ? ('⏰ 이용 시간 ' + tv + ' — ' + t.room) : '이용 시간을 지웠습니다');
+      return;
+    }
+    var s = seats[i++];
+    // ⚠️ GAS 스크립트 락은 프로젝트 전역 — 병렬 POST 금지, 반드시 순차 (2026-08-08 사고)
+    _bbqPost({ action:'saveBbqSeat', op:'time', branch:currentBranch, date:currentDate, seat:s, time:tv },
+      function(){ if (_bbqSeats[s]) _bbqSeats[s].time = tv; next(); },
+      function(res){ failed = true; alert('시간 저장 실패: ' + ((res && res.error) || '알 수 없는 오류'));
+                     bbqLoadSeats(function(){ bbqRenderGrid(); renderTable(); }); });
+  }
+  next();
 }
 // ═══════════ /BBQ 자리 배정 ═══════════
 

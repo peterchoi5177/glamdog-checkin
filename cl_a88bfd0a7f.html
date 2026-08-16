@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
 <meta http-equiv="refresh" content="1800">
 <title>글램독 영흥도 체크인 리스트</title>
-<!-- v2026-08-16 18:15 -->
+<!-- v2026-08-16 18:41 -->
 <style>
   :root {
     --navy: #1B3A5C;
@@ -1251,7 +1251,7 @@ function _submitPw() {
   <button class="btn-refresh" id="btnRefresh" onclick="refreshData()">🔄 새로고침</button>
   <button class="ho-btn" id="btnHandover" onclick="openHandoverModal()" style="display:none">🔄 인수인계<span class="ho-cnt" id="hoCnt">0</span></button>
   <button class="ho-btn" id="btnBlanket" onclick="openBlanketModal()" style="display:none;background:#0369a1">🛏️ 추가이불<span class="ho-cnt" id="blkCnt" style="color:#0369a1">0</span></button>
-  <span class="update-time">갱신: 2026-08-16 18:15</span>
+  <span class="update-time">갱신: 2026-08-16 18:41</span>
 </div>
 <div id="brNoticeBanner"></div>
 <div class="content" id="content">
@@ -1884,7 +1884,8 @@ function fmtTime(t) {
 
 function bbqHtml(wd, room, bno, guest) {
   // 자리 배정 UI는 BBQ_SEAT 지점(양양)에서만 존재 — 다른 페이지에선 함수 자체가 없어 ''
-  var seat = (typeof bbqSeatCellHtml === 'function') ? bbqSeatCellHtml(room, bno, guest) : '';
+  var seat = (typeof bbqSeatCellHtml === 'function')
+      ? bbqSeatCellHtml(room, bno, guest, (wd && wd.bbq === 'yes') ? fmtTime(wd.bbqTime) : '') : '';
   if (!wd) return '<div class="bbq-box">□</div>' + seat;
   if (wd.bbq === 'yes') {
     var t = fmtTime(wd.bbqTime) || '시간미정';
