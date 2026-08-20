@@ -275,7 +275,13 @@ function tapRoom(room){
   weekStart=monday(iso(new Date()));
   load();
   loadCleaning();
-  setInterval(loadCleaning, 300000);   // 5분마다 청소 상태 갱신
+  setInterval(function(){ if(!document.hidden) loadCleaning(); }, 900000);   // 15분(화면 보일 때만)
+  document.addEventListener("visibilitychange", function(){
+    if(document.hidden) return;
+    if(Date.now()-(window.__lastSync||0) < 300000) return;
+    window.__lastSync=Date.now();
+    load(); loadCleaning();
+  });
 })();
 </script>
 </body>
