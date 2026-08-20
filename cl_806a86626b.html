@@ -3,9 +3,9 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
-<meta http-equiv="refresh" content="1800">
+<!-- 자동 리로드 제거(2026-08-12): 전체 리로드 대신 복귀 시 데이터만 갱신 -->
 <title>글램독 가평(청평점) 체크인 리스트</title>
-<!-- v2026-08-20 09:59 -->
+<!-- v2026-08-20 10:21 -->
 <style>
   :root {
     --navy: #1B3A5C;
@@ -1250,7 +1250,7 @@ function _submitPw() {
   <button class="btn-refresh" id="btnRefresh" onclick="refreshData()">🔄 새로고침</button>
   <button class="ho-btn" id="btnHandover" onclick="openHandoverModal()" style="display:none">🔄 인수인계<span class="ho-cnt" id="hoCnt">0</span></button>
   <button class="ho-btn" id="btnBlanket" onclick="openBlanketModal()" style="display:none;background:#0369a1">🛏️ 추가이불<span class="ho-cnt" id="blkCnt" style="color:#0369a1">0</span></button>
-  <span class="update-time">갱신: 2026-08-20 09:59</span>
+  <span class="update-time">갱신: 2026-08-20 10:21</span>
 </div>
 <div id="brNoticeBanner"></div>
 <div class="content" id="content">
@@ -1503,11 +1503,10 @@ var _ciWaitOverride = {};// { room: true }  — 자동완료(연박 중간날) �
 var _ciFilter = 'all';   // 'all' | 'wait' | 'done'
 function ciLoadStatus(cb) {
   _ciWaitOverride = {};
-  fetch(GAS_ENDPOINT + '?action=getCheckinStatus&date=' + currentDate
-        + '&branch=' + encodeURIComponent(currentBranch))
-    .then(function(r){ return r.json(); })
-    .then(function(res){ if (res && res.ok) _ciStatus = res.data || {}; if (cb) cb(); })
-    .catch(function(){ if (cb) cb(); });
+  gdCache('ci_' + currentBranch + '_' + currentDate,
+    GAS_ENDPOINT + '?action=getCheckinStatus&date=' + currentDate
+      + '&branch=' + encodeURIComponent(currentBranch),
+    function(res){ if (res && res.ok) _ciStatus = res.data || {}; if (cb) cb(); });
 }
 function toggleCheckinBtn(btn) { toggleCheckin(btn.getAttribute('data-room')); }
 // ISO 날짜(YYYY-MM-DD)를 delta일 이동 — UTC 기준으로 계산해 KST 타임존 밀림 방지
@@ -1620,16 +1619,15 @@ function hoFmtTime(s){
   return mm+'/'+dd+' '+(hh<10?'0':'')+hh+':'+(mi<10?'0':'')+mi;
 }
 function hoLoad(auto) {
-  fetch(GAS_ENDPOINT + '?action=getHandover&branch=' + encodeURIComponent(currentBranch))
-    .then(function(r){ return r.json(); })
-    .then(function(res){
+  gdCache('ho_' + currentBranch,
+    GAS_ENDPOINT + '?action=getHandover&branch=' + encodeURIComponent(currentBranch),
+    function(res){
       if (!res || !res.ok) { _hoEnabled = false; hoRenderBtn(); return; }
       _hoEnabled = !!res.enabled;
       _hoItems = res.items || [];
       hoRenderBtn();
       if (_hoEnabled && auto && !_hoAutoShown && _hoItems.length > 0) { _hoAutoShown = true; openHandoverModal(); }
-    })
-    .catch(function(){ _hoEnabled = false; hoRenderBtn(); });
+    });
 }
 function hoRenderBtn() {
   var btn = document.getElementById('btnHandover');
@@ -1801,6 +1799,21 @@ function blkToggle(el) {
 }
 
 // ─── 테이블 / 달력 JS ────────────────────────────────────
+
+// ── 즉시표시 캐시 (마지막 성공 응답을 먼저 그리고, 뒤에서 갱신) ──
+function gdCache(key, url, onRes) {
+  var ck = 'gdc_' + key;
+  try { var c = localStorage.getItem(ck); if (c) onRes(JSON.parse(c), true); } catch(e) {}
+  return fetch(url)
+    .then(function(r) { return r.text(); })
+    .then(function(t) {
+      var j = JSON.parse(t);
+      if (j && j.ok) { try { localStorage.setItem(ck, t); } catch(e) {} }
+      onRes(j, false);
+      return j;
+    })
+    .catch(function() { onRes(null, false); });
+}
 
 function staysLabel(r) {
   const ci = new Date(r.checkin + 'T00:00:00');
@@ -2853,10 +2866,10 @@ function updateFieldBtns() {
 
 // ─── 오늘 현장기록 로드 ──────────────────────────────────
 function loadTodayFieldEntries() {
-  fetch(GAS_ENDPOINT+"?action=getDayEntries&date="+currentDate+"&branch="+encodeURIComponent(currentBranch))
-    .then(function(r){ return r.text(); })
-    .then(function(text){
-      var res; try{res=JSON.parse(text);}catch(e){return;}
+  gdCache('fe_' + currentBranch + '_' + currentDate,
+    GAS_ENDPOINT+"?action=getDayEntries&date="+currentDate+"&branch="+encodeURIComponent(currentBranch),
+    function(res){
+      if(!res) return;
       _fieldEntries={};
       if(res.ok && res.data && res.data.length>0){
         res.data.forEach(function(e){
@@ -2877,8 +2890,7 @@ function loadTodayFieldEntries() {
       // 모달이 열려있으면 기존 기록 목록 갱신
       var _ov = document.getElementById("fmOverlay");
       if (_ov && _ov.classList.contains("open")) fmRenderExistList();
-    })
-    .catch(function(){});
+    });
 }
 
 // ─── 현장기록 탭 조회 ────────────────────────────────────
@@ -2939,15 +2951,14 @@ function getRoomFloor(room) {
 
 // GAS에서 상태 로드
 function clLoadStatus(callback) {
-  fetch(GAS_ENDPOINT + '?action=getCleaningStatus'
-    + '&date=' + currentDate
-    + '&branch=' + encodeURIComponent(currentBranch))
-    .then(function(r) { return r.json(); })
-    .then(function(res) {
+  gdCache('cl_' + currentBranch + '_' + currentDate,
+    GAS_ENDPOINT + '?action=getCleaningStatus'
+      + '&date=' + currentDate
+      + '&branch=' + encodeURIComponent(currentBranch),
+    function(res) {
       if (res && res.ok) { _clStatus = res.data || {}; }
       if (callback) callback();
-    })
-    .catch(function() { if (callback) callback(); });
+    });
 }
 
 // 청소팀 — 서버(GAS 청소팀 시트) 연동 (2026-08-07, localStorage → 서버 전환)
@@ -3587,17 +3598,16 @@ var _brNoticeAll = [];
 
 function loadBranchNotices() {
   if (!currentBranch) return;
-  fetch(GAS_ENDPOINT + "?action=getNotices&branch=" + encodeURIComponent(currentBranch))
-    .then(function(r){ return r.json(); })
-    .then(function(res){
+  gdCache('no_' + currentBranch,
+    GAS_ENDPOINT + "?action=getNotices&branch=" + encodeURIComponent(currentBranch),
+    function(res){
       if (!res || !res.ok) { _brNoticeAll = []; renderNoticeBanner([]); return; }
       _brNoticeAll = res.data || [];
       var unread = _brNoticeAll.filter(function(n){ return !n.isRead; });
       renderNoticeBanner(unread);
       updateNoticeBadge(_brNoticeAll);
       if (typeof currentView !== 'undefined' && currentView === 'notice') renderNoticeHistory();
-    })
-    .catch(function(){ _brNoticeAll = []; });
+    });
 }
 
 function renderNoticeBanner(items) {
@@ -4401,6 +4411,18 @@ function showBrIsMsg(text, kind) {
 
 loadBranchNotices();
 hoLoad(true);
+
+// ── 화면 복귀 시 데이터만 갱신 (전체 리로드 대신) ──
+var _gdLastSync = Date.now();
+document.addEventListener('visibilitychange', function() {
+  if (document.hidden) return;
+  if (Date.now() - _gdLastSync < 300000) return;   // 5분 이내면 생략
+  _gdLastSync = Date.now();
+  if (typeof ciLoadStatus === 'function') ciLoadStatus(function(){ if (typeof renderAll === 'function') renderAll(); });
+  if (typeof loadTodayFieldEntries === 'function') loadTodayFieldEntries();
+  if (typeof loadBranchNotices === 'function') loadBranchNotices();
+  if (typeof hoLoad === 'function') hoLoad(false);
+});
 
 
 
