@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
 <meta http-equiv="refresh" content="1800">
 <title>글램독 가평(청평점) 체크인 리스트</title>
-<!-- v2026-08-20 09:47 -->
+<!-- v2026-08-20 09:59 -->
 <style>
   :root {
     --navy: #1B3A5C;
@@ -151,7 +151,7 @@
   .col-bookdt  { width: 6%;  text-align: center; }
   .col-persons { width: 4%;  text-align: center; }
   .col-dog     { width: 9%;  }
-  .col-bbq     { width: 8%;  text-align: center; }
+  .col-bbq     { width: 6%;  text-align: center; }
   .col-extra   { width: 11%; text-align: center; }
   .col-payment { width: 7%;  text-align: center; }
   .col-memo    { width: 22%; }
@@ -335,7 +335,7 @@
     .col-arrive  { width: 5%; }
     .col-persons { width: 4%; }
     .col-dog     { width: 9%; }
-    .col-bbq     { width: 8%; }
+    .col-bbq     { width: 6%; }
     .col-extra   { width: 12%; }
     .col-memo    { width: 22%; }
     /* 글꼴 크기 축소 */
@@ -1227,7 +1227,6 @@ function _submitPw() {
     <button class="fm-save" id="fmSaveBtn" onclick="fmSave()" disabled>기록하기</button>
   </div>
 </div>
-
 <!-- ── 토스트 ── -->
 <div id="toastEl" class="toast"></div>
 
@@ -1251,7 +1250,7 @@ function _submitPw() {
   <button class="btn-refresh" id="btnRefresh" onclick="refreshData()">🔄 새로고침</button>
   <button class="ho-btn" id="btnHandover" onclick="openHandoverModal()" style="display:none">🔄 인수인계<span class="ho-cnt" id="hoCnt">0</span></button>
   <button class="ho-btn" id="btnBlanket" onclick="openBlanketModal()" style="display:none;background:#0369a1">🛏️ 추가이불<span class="ho-cnt" id="blkCnt" style="color:#0369a1">0</span></button>
-  <span class="update-time">갱신: 2026-08-20 09:47</span>
+  <span class="update-time">갱신: 2026-08-20 09:59</span>
 </div>
 <div id="brNoticeBanner"></div>
 <div class="content" id="content">
@@ -1882,17 +1881,14 @@ function fmtTime(t) {
   return s;
 }
 
-function bbqHtml(wd, room, bno, guest) {
-  // 자리 배정 UI는 BBQ_SEAT 지점(양양)에서만 존재 — 다른 페이지에선 함수 자체가 없어 ''
-  var seat = (typeof bbqSeatCellHtml === 'function')
-      ? bbqSeatCellHtml(room, bno, guest, (wd && wd.bbq === 'yes') ? fmtTime(wd.bbqTime) : '') : '';
-  if (!wd) return '<div class="bbq-box">□</div>' + seat;
+function bbqHtml(wd) {
+  if (!wd) return '<div class="bbq-box">□</div>';
   if (wd.bbq === 'yes') {
     var t = fmtTime(wd.bbqTime) || '시간미정';
     return '<div style="text-align:center;line-height:1.6">✅<br>'
-      + '<b style="font-size:14px;color:#2d6a4f">' + t + '</b></div>' + seat;
+      + '<b style="font-size:14px;color:#2d6a4f">' + t + '</b></div>';
   }
-  return '<div style="text-align:center;font-size:11px;color:#aaa">미이용</div>' + seat;
+  return '<div style="text-align:center;font-size:11px;color:#aaa">미이용</div>';
 }
 
 function arriveHtml(wd) {
@@ -2064,7 +2060,7 @@ function renderTable() {
       <td class="col-bookdt">${r.book_date || ''}</td>
       <td class="col-persons">${personsHtml(wd, r.room)}</td>
       <td class="col-dog">${dogInfoHtml(wd)}</td>
-      <td class="col-bbq">${bbqHtml(wd, r.room, bno, r.guest)}</td>
+      <td class="col-bbq">${bbqHtml(wd)}</td>
       <td class="col-extra">${extraHtml(bno, wd, r.nights, r.room)}</td>
       <td class="col-payment">
         <div class="payment-box">${r.total.toLocaleString()}원${onsite}</div>
@@ -2165,7 +2161,6 @@ function refreshData() {
   delete _welcomeCache[currentDate];
   loadWelcomeData(currentDate);
   loadTodayFieldEntries();
-  if (typeof bbqLoadSeats === 'function') bbqLoadSeats(renderTable);
   setTimeout(function() {
     if (btn) { btn.textContent = '🔄 새로고침'; btn.classList.remove('spin'); }
   }, 1500);
@@ -2176,7 +2171,6 @@ loadTodayFieldEntries();       // 페이지 로드 시 오늘 현장기록 로�
 if (typeof ciLoadStatus === 'function') ciLoadStatus(renderTable);  // 입실체크 상태 로드
 if (typeof ckLoadExtra === 'function') ckLoadExtra(function(){ if (typeof renderAll==='function') renderAll(); else renderTable(); if (typeof blkRenderBtn==='function') blkRenderBtn(); });
 if (typeof loadMemoData === 'function') loadMemoData();  // 예약별 메모 로드
-if (typeof bbqLoadSeats === 'function') bbqLoadSeats(renderTable);  // BBQ 자리 현황 로드
 
 document.getElementById('datePicker').addEventListener('change', e => {
   currentDate = e.target.value;
@@ -2185,7 +2179,6 @@ document.getElementById('datePicker').addEventListener('change', e => {
   if (typeof ciLoadStatus === 'function') ciLoadStatus(renderTable);
   if (typeof ckLoadExtra === 'function') ckLoadExtra(function(){ if (typeof renderAll==='function') renderAll(); else renderTable(); if (typeof blkRenderBtn==='function') blkRenderBtn(); });
   if (currentView === 'clean') { _clStatus = {}; clLoadStatus(renderCleaningView); }
-  if (typeof bbqLoadSeats === 'function') { _bbqSeats = {}; bbqLoadSeats(renderTable); }
 });
 setTimeout(() => location.reload(), 30 * 60 * 1000);
 
@@ -4408,7 +4401,6 @@ function showBrIsMsg(text, kind) {
 
 loadBranchNotices();
 hoLoad(true);
-
 
 
 
