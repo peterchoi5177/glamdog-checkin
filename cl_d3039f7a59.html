@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
 <!-- 자동 리로드 제거(2026-08-12): 전체 리로드 대신 복귀 시 데이터만 갱신 -->
 <title>글램독 통영 체크인 리스트</title>
-<!-- v2026-09-14 09:58 -->
+<!-- v2026-09-14 10:32 -->
 <style>
   :root {
     --navy: #1B3A5C;
@@ -1261,7 +1261,7 @@ function _submitPw() {
   <button class="btn-refresh" id="btnRefresh" onclick="refreshData()">🔄 새로고침</button>
   <button class="ho-btn" id="btnHandover" onclick="openHandoverModal()" style="display:none">🔄 인수인계<span class="ho-cnt" id="hoCnt">0</span></button>
   <button class="ho-btn" id="btnBlanket" onclick="openBlanketModal()" style="display:none;background:#0369a1">🛏️ 추가이불<span class="ho-cnt" id="blkCnt" style="color:#0369a1">0</span></button>
-  <span class="update-time">갱신: 2026-09-14 09:58</span>
+  <span class="update-time">갱신: 2026-09-14 10:32</span>
 </div>
 <div id="brNoticeBanner"></div>
 <div class="content" id="content">
@@ -1512,12 +1512,13 @@ var _fm = { bno:"", room:"", guest:"", nights:1, bbq:0, person:0, dog:0, bigdog:
 var _ciStatus = {};      // { room: 'done' }  — GAS에서 로드
 var _ciWaitOverride = {};// { room: true }  — 자동완료(연박 중간날) 세션 임시해제. 새로고침/날짜변경 시 리셋
 var _ciFilter = 'all';   // 'all' | 'wait' | 'done'
+function ciApplyStatus(res, cb) { if (res && res.ok) _ciStatus = res.data || {}; if (cb) cb(); }
 function ciLoadStatus(cb) {
   _ciWaitOverride = {};
-  gdCache('ci_' + currentBranch + '_' + currentDate,
+  return gdCache('ci_' + currentBranch + '_' + currentDate,
     GAS_ENDPOINT + '?action=getCheckinStatus&date=' + currentDate
       + '&branch=' + encodeURIComponent(currentBranch),
-    function(res){ if (res && res.ok) _ciStatus = res.data || {}; if (cb) cb(); });
+    function(res){ ciApplyStatus(res, cb); });
 }
 function toggleCheckinBtn(btn) { toggleCheckin(btn.getAttribute('data-room')); }
 // ISO 날짜(YYYY-MM-DD)를 delta일 이동 — UTC 기준으로 계산해 KST 타임존 밀림 방지
@@ -1629,16 +1630,17 @@ function hoFmtTime(s){
   var mm=d.getMonth()+1, dd=d.getDate(), hh=d.getHours(), mi=d.getMinutes();
   return mm+'/'+dd+' '+(hh<10?'0':'')+hh+':'+(mi<10?'0':'')+mi;
 }
+function hoApply(res, auto) {
+  if (!res || !res.ok) { _hoEnabled = false; hoRenderBtn(); return; }
+  _hoEnabled = !!res.enabled;
+  _hoItems = res.items || [];
+  hoRenderBtn();
+  if (_hoEnabled && auto && !_hoAutoShown && _hoItems.length > 0) { _hoAutoShown = true; openHandoverModal(); }
+}
 function hoLoad(auto) {
-  gdCache('ho_' + currentBranch,
+  return gdCache('ho_' + currentBranch,
     GAS_ENDPOINT + '?action=getHandover&branch=' + encodeURIComponent(currentBranch),
-    function(res){
-      if (!res || !res.ok) { _hoEnabled = false; hoRenderBtn(); return; }
-      _hoEnabled = !!res.enabled;
-      _hoItems = res.items || [];
-      hoRenderBtn();
-      if (_hoEnabled && auto && !_hoAutoShown && _hoItems.length > 0) { _hoAutoShown = true; openHandoverModal(); }
-    });
+    function(res){ hoApply(res, auto); });
 }
 function hoRenderBtn() {
   var btn = document.getElementById('btnHandover');
@@ -1711,11 +1713,12 @@ function hoResolve(el) {
 // ─── 추가이불 + 인원 편집 — 지점 전용 ─────────────────────
 var _ckExtra = {};   // { room: { persons: <num|null>, blanket: <bool> } }
 var _ckExtraEnabled = false;  // getCheckinExtra 성공(=GAS 배포됨) 시 활성화
+function ckApplyExtra(res, cb) { if (res && res.ok) { _ckExtra = res.data || {}; _ckExtraEnabled = true; } if (cb) cb(); }
 function ckLoadExtra(cb) {
-  fetch(GAS_ENDPOINT + '?action=getCheckinExtra&date=' + currentDate + '&branch=' + encodeURIComponent(currentBranch))
+  return gasFetch(GAS_ENDPOINT + '?action=getCheckinExtra&date=' + currentDate + '&branch=' + encodeURIComponent(currentBranch))
     .then(function(r){ return r.json(); })
-    .then(function(res){ if (res && res.ok) { _ckExtra = res.data || {}; _ckExtraEnabled = true; } if (cb) cb(); })
-    .catch(function(){ if (cb) cb(); });
+    .then(function(res){ ckApplyExtra(res, cb); })
+    .catch(function(){ gdNotifyFail(); if (cb) cb(); });
 }
 function effPersons(room, wd) {
   var o = _ckExtra[room];
@@ -1812,18 +1815,55 @@ function blkToggle(el) {
 // ─── 테이블 / 달력 JS ────────────────────────────────────
 
 // ── 즉시표시 캐시 (마지막 성공 응답을 먼저 그리고, 뒤에서 갱신) ──
+function gdCacheRead(key) {
+  try { var c = localStorage.getItem('gdc_' + key); return c ? JSON.parse(c) : null; } catch(e) { return null; }
+}
+function gdCacheStore(key, j) {
+  if (j && j.ok) { try { localStorage.setItem('gdc_' + key, JSON.stringify(j)); } catch(e) {} }
+}
 function gdCache(key, url, onRes) {
-  var ck = 'gdc_' + key;
-  try { var c = localStorage.getItem(ck); if (c) onRes(JSON.parse(c), true); } catch(e) {}
-  return fetch(url)
+  var cached = gdCacheRead(key);
+  if (cached) { try { onRes(cached, true); } catch(e) { console.warn(e); } }
+  return gasFetch(url)
     .then(function(r) { return r.text(); })
     .then(function(t) {
       var j = JSON.parse(t);
-      if (j && j.ok) { try { localStorage.setItem(ck, t); } catch(e) {} }
+      gdCacheStore(key, j);
       onRes(j, false);
       return j;
     })
-    .catch(function() { onRes(null, false); });
+    .catch(function(err) {
+      // 최종 실패: 캐시로 이미 그린 화면은 지우지 않고 유지
+      console.warn('[gdCache] ' + key + ' 실패:', err && err.message);
+      if (!cached) onRes(null, false);
+      gdNotifyFail();
+    });
+}
+
+// ── GAS GET 공통 가드 (2026-09-14) ──
+// 404·429·5xx·HTML(<) 응답·네트워크 오류 → 1.5초 후 최대 2회 재시도.
+// POST(쓰기)에는 쓰지 않는다: GAS가 이미 기록하고 응답만 유실된 경우 중복 기록 위험.
+function gasFetch(url, _left) {
+  var left = (_left == null) ? 2 : _left;
+  return fetch(url).then(function(r) {
+    if (r.status === 404 || r.status === 429 || r.status >= 500) throw new Error('HTTP ' + r.status);
+    return r.clone().text().then(function(t) {
+      if (/^\s*</.test(t)) throw new Error('HTML 응답');
+      return r;
+    });
+  }).catch(function(err) {
+    if (left <= 0) { console.warn('[GAS] 최종 실패:', url, err && err.message); throw err; }
+    console.warn('[GAS] 재시도 ' + (3 - left) + '/2:', url, err && err.message);
+    return new Promise(function(res) { setTimeout(res, 1500); })
+      .then(function() { return gasFetch(url, left - 1); });
+  });
+}
+// 최종 실패 알림 (1분에 한 번만)
+var _gdFailNotifiedAt = 0;
+function gdNotifyFail() {
+  if (Date.now() - _gdFailNotifiedAt < 60000) return;
+  _gdFailNotifiedAt = Date.now();
+  if (typeof showToast === 'function') showToast('⚠️ 일부 정보를 불러오지 못했습니다 — 🔄 새로고침을 눌러주세요');
 }
 
 function staysLabel(r) {
@@ -2180,33 +2220,35 @@ function renderTable() {
 
 
 // ─── 웰컴 실시간 로드 ─────────────────────────────────────
+function welcomeApply(res, dateStr) {
+  var dayData = {};
+  if (res && res.ok && res.data) {
+    res.data.forEach(function(e) {
+      if (e.room) dayData[(e.branch||currentBranch)+'|||'+e.room] = e;
+    });
+  }
+  var map = {}; map[dateStr] = dayData;
+  _welcomeData = map;
+  if (res && res.ok) _welcomeCache[dateStr] = map;   // 실패 응답은 캐시하지 않음 (다음 조회 때 다시 받음)
+  renderTable();  // 웰컴 데이터 반영해 재렌더
+}
 function loadWelcomeData(dateStr) {
   if (_welcomeCache[dateStr]) {
     _welcomeData = _welcomeCache[dateStr];
     renderTable();
-    return;
+    return Promise.resolve();
   }
   // 1) 먼저 현재 빈 데이터로 즉시 렌더 (현장기록 버튼 포함)
   _welcomeData = {};
   renderTable();
   // 2) 비동기로 웰컴 데이터 가져와 재렌더
-  fetch(GAS_ENDPOINT + '?action=getDayWelcomeData&date=' + dateStr + '&branch=' + encodeURIComponent(currentBranch))
+  return gasFetch(GAS_ENDPOINT + '?action=getDayWelcomeData&date=' + dateStr + '&branch=' + encodeURIComponent(currentBranch))
     .then(function(r) { return r.json(); })
-    .then(function(res) {
-      var dayData = {};
-      if (res && res.ok && res.data) {
-        res.data.forEach(function(e) {
-          if (e.room) dayData[(e.branch||currentBranch)+'|||'+e.room] = e;
-        });
-      }
-      var map = {}; map[dateStr] = dayData;
-      _welcomeData = map;
-      _welcomeCache[dateStr] = map;
-      renderTable();  // 웰컴 데이터 반영해 재렌더
-    })
+    .then(function(res) { welcomeApply(res, dateStr); })
     .catch(function(err) {
       // 오류 시 이미 위에서 renderTable() 호출됨 — 웰컴 없이 표시
       console.warn('웰컴 데이터 fetch 실패:', err);
+      gdNotifyFail();
     });
 }
 
@@ -2214,26 +2256,15 @@ function loadWelcomeData(dateStr) {
 function refreshData() {
   var btn = document.getElementById('btnRefresh');
   if (btn) { btn.textContent = '⏳ 로딩 중...'; btn.classList.add('spin'); }
-  delete _welcomeCache[currentDate];
-  loadWelcomeData(currentDate);
-  loadTodayFieldEntries();
-  setTimeout(function() {
-    if (btn) { btn.textContent = '🔄 새로고침'; btn.classList.remove('spin'); }
-  }, 1500);
+  var done = function() { if (btn) { btn.textContent = '🔄 새로고침'; btn.classList.remove('spin'); } };
+  Promise.resolve(gdLoadPage()).then(done, done);
 }
 
-loadWelcomeData(currentDate);  // 페이지 로드 시 웰컴 + 렌더
-loadTodayFieldEntries();       // 페이지 로드 시 오늘 현장기록 로드
-if (typeof ciLoadStatus === 'function') ciLoadStatus(renderTable);  // 입실체크 상태 로드
-if (typeof ckLoadExtra === 'function') ckLoadExtra(function(){ if (typeof renderAll==='function') renderAll(); else renderTable(); if (typeof blkRenderBtn==='function') blkRenderBtn(); });
-if (typeof loadMemoData === 'function') loadMemoData();  // 예약별 메모 로드
+// 페이지 로드 시 데이터 조회는 스크립트 끝의 gdLoadPage()가 1회로 처리 (2026-09-14)
 
 document.getElementById('datePicker').addEventListener('change', e => {
   currentDate = e.target.value;
-  loadWelcomeData(currentDate);
-  loadTodayFieldEntries();
-  if (typeof ciLoadStatus === 'function') ciLoadStatus(renderTable);
-  if (typeof ckLoadExtra === 'function') ckLoadExtra(function(){ if (typeof renderAll==='function') renderAll(); else renderTable(); if (typeof blkRenderBtn==='function') blkRenderBtn(); });
+  gdLoadPage();   // 웰컴·현장기록·입실체크·부가(+메모·공지·인수인계) 1회 조회
   if (currentView === 'clean') { _clStatus = {}; clLoadStatus(renderCleaningView); }
 });
 setTimeout(() => location.reload(), 30 * 60 * 1000);
@@ -2832,7 +2863,7 @@ function fmSave() {
       //    에러를 띄우기 전에 반드시 서버를 재조회해서 실제 저장 여부를 확인한다.
       btn.textContent="저장 확인 중...";
       var _bno=_fm.bno, _room=_fm.room, _total=total, _edit=_fm.editMode, _eid=_fm.entryId;
-      fetch(GAS_ENDPOINT+"?action=getDayEntries&date="+currentDate+"&branch="+encodeURIComponent(currentBranch)+"&_t="+Date.now())
+      gasFetch(GAS_ENDPOINT+"?action=getDayEntries&date="+currentDate+"&branch="+encodeURIComponent(currentBranch)+"&_t="+Date.now())
         .then(function(r){ return r.text(); })
         .then(function(t){
           var res=JSON.parse(t);
@@ -2909,31 +2940,32 @@ function updateFieldBtns() {
 
 // ─── 오늘 현장기록 로드 ──────────────────────────────────
 function loadTodayFieldEntries() {
-  gdCache('fe_' + currentBranch + '_' + currentDate,
+  return gdCache('fe_' + currentBranch + '_' + currentDate,
     GAS_ENDPOINT+"?action=getDayEntries&date="+currentDate+"&branch="+encodeURIComponent(currentBranch),
-    function(res){
-      if(!res) return;
-      _fieldEntries={};
-      if(res.ok && res.data && res.data.length>0){
-        res.data.forEach(function(e){
-          if(!e.bookingNo) return;
-          if(!_fieldEntries[e.bookingNo]) _fieldEntries[e.bookingNo]=[];
-          _fieldEntries[e.bookingNo].push({
-            entryId:e.entryId, total:e.total, payMethod:e.payMethod,
-            depositorName:e.depositorName||"",
-            bbq:Math.round((e.bbq||0)/20000), person:e.personCount||0, dog:e.dogCount||0, bigdog:e.bigDogCount||0,
-            bbqAmt:Number(e.bbq)||0, personAmt:Number(e.personAmount)||0, dogAmt:Number(e.dogAmount)||0, bigdogAmt:Number(e.bigDogAmount)||0,
-            etc:e.etcNote?[{note:e.etcNote,amount:e.etcAmount||0}]:[],
-            room:e.room, guest:e.guest
-          });
-        });
-      }
-      updateFieldBtns();
-      if (typeof renderTable === 'function' && typeof currentView !== 'undefined' && currentView === 'list') renderTable();
-      // 모달이 열려있으면 기존 기록 목록 갱신
-      var _ov = document.getElementById("fmOverlay");
-      if (_ov && _ov.classList.contains("open")) fmRenderExistList();
+    feApply);
+}
+function feApply(res) {
+  if(!res) return;
+  _fieldEntries={};
+  if(res.ok && res.data && res.data.length>0){
+    res.data.forEach(function(e){
+      if(!e.bookingNo) return;
+      if(!_fieldEntries[e.bookingNo]) _fieldEntries[e.bookingNo]=[];
+      _fieldEntries[e.bookingNo].push({
+        entryId:e.entryId, total:e.total, payMethod:e.payMethod,
+        depositorName:e.depositorName||"",
+        bbq:Math.round((e.bbq||0)/20000), person:e.personCount||0, dog:e.dogCount||0, bigdog:e.bigDogCount||0,
+        bbqAmt:Number(e.bbq)||0, personAmt:Number(e.personAmount)||0, dogAmt:Number(e.dogAmount)||0, bigdogAmt:Number(e.bigDogAmount)||0,
+        etc:e.etcNote?[{note:e.etcNote,amount:e.etcAmount||0}]:[],
+        room:e.room, guest:e.guest
+      });
     });
+  }
+  updateFieldBtns();
+  if (typeof renderTable === 'function' && typeof currentView !== 'undefined' && currentView === 'list') renderTable();
+  // 모달이 열려있으면 기존 기록 목록 갱신
+  var _ov = document.getElementById("fmOverlay");
+  if (_ov && _ov.classList.contains("open")) fmRenderExistList();
 }
 
 // ─── 현장기록 탭 조회 ────────────────────────────────────
@@ -2943,7 +2975,7 @@ function loadFieldRecords() {
   var area = document.getElementById('frTableArea');
   area.innerHTML = '<div class="fr-empty">불러오는 중...</div>';
   var url = GAS_ENDPOINT + "?action=getRangeEntries&fromDate=" + from + "&toDate=" + to + "&branch=" + encodeURIComponent(currentBranch);
-  fetch(url)
+  gasFetch(url)
     .then(function(r) { return r.text(); })
     .then(function(text) {
       var res;
@@ -3026,8 +3058,8 @@ function clLoadTeam() {
   } catch(e) {}
   var d = currentDate;
   Promise.all([
-    fetch(GAS_ENDPOINT + '?action=getCleanTeams&branch=' + encodeURIComponent(currentBranch) + '&date=' + d + '&_t=' + Date.now()).then(function(r){return r.json();}),
-    fetch(GAS_ENDPOINT + '?action=getShiftData&branch=' + encodeURIComponent(currentBranch) + '&fromDate=' + d + '&toDate=' + d + '&_t=' + Date.now()).then(function(r){return r.json();})
+    gasFetch(GAS_ENDPOINT + '?action=getCleanTeams&branch=' + encodeURIComponent(currentBranch) + '&date=' + d + '&_t=' + Date.now()).then(function(r){return r.json();}),
+    gasFetch(GAS_ENDPOINT + '?action=getShiftData&branch=' + encodeURIComponent(currentBranch) + '&fromDate=' + d + '&toDate=' + d + '&_t=' + Date.now()).then(function(r){return r.json();})
   ]).then(function(res) {
     if (d !== currentDate) return;
     var t = res[0], s = res[1];
@@ -3639,18 +3671,19 @@ clStartPolling();
 // ─── 운영확장 — 공지 (지점) ─────
 var _brNoticeAll = [];
 
+function noticeApply(res) {
+  if (!res || !res.ok) { _brNoticeAll = []; renderNoticeBanner([]); return; }
+  _brNoticeAll = res.data || [];
+  var unread = _brNoticeAll.filter(function(n){ return !n.isRead; });
+  renderNoticeBanner(unread);
+  updateNoticeBadge(_brNoticeAll);
+  if (typeof currentView !== 'undefined' && currentView === 'notice') renderNoticeHistory();
+}
 function loadBranchNotices() {
   if (!currentBranch) return;
-  gdCache('no_' + currentBranch,
+  return gdCache('no_' + currentBranch,
     GAS_ENDPOINT + "?action=getNotices&branch=" + encodeURIComponent(currentBranch),
-    function(res){
-      if (!res || !res.ok) { _brNoticeAll = []; renderNoticeBanner([]); return; }
-      _brNoticeAll = res.data || [];
-      var unread = _brNoticeAll.filter(function(n){ return !n.isRead; });
-      renderNoticeBanner(unread);
-      updateNoticeBadge(_brNoticeAll);
-      if (typeof currentView !== 'undefined' && currentView === 'notice') renderNoticeHistory();
-    });
+    noticeApply);
 }
 
 function renderNoticeBanner(items) {
@@ -3880,7 +3913,7 @@ function loadBranchExpenses() {
   area.innerHTML = '<div class="op-loading">⏳ 불러오는 중...</div>';
   var to = new Date();
   var from = new Date(); from.setDate(to.getDate() - 30);
-  fetch(GAS_ENDPOINT + '?action=getExpenses&branch=' + encodeURIComponent(currentBranch) +
+  gasFetch(GAS_ENDPOINT + '?action=getExpenses&branch=' + encodeURIComponent(currentBranch) +
         '&fromDate=' + _ymd(from) + '&toDate=' + _ymd(to))
     .then(function(r){ return r.json(); })
     .then(function(res){
@@ -3951,17 +3984,19 @@ function saveBookingMemo(el) {
     else if (typeof showToast === 'function') showToast('⚠️ 메모 저장 실패');
   }).catch(function(){ if (typeof showToast === 'function') showToast('⚠️ 네트워크 오류'); });
 }
+function memoApply(res) {
+  if (!res || !res.ok) return;
+  MEMO_ENABLED = true;   // 백엔드 준비됨 → 메모 편집 활성화
+  var map = {};
+  (res.data || []).forEach(function(m){ map[m.bookingNo] = m.memo; });
+  _memoData = map;
+  if (typeof renderAll === 'function') renderAll(); else if (typeof renderTable === 'function') renderTable();
+}
 function loadMemoData() {
-  fetch(GAS_ENDPOINT + '?action=getMemos&branch=' + encodeURIComponent(currentBranch))
+  return gasFetch(GAS_ENDPOINT + '?action=getMemos&branch=' + encodeURIComponent(currentBranch))
     .then(function(r){ return r.json(); })
-    .then(function(res){
-      if (!res || !res.ok) return;
-      MEMO_ENABLED = true;   // 백엔드 준비됨 → 메모 편집 활성화
-      var map = {};
-      (res.data || []).forEach(function(m){ map[m.bookingNo] = m.memo; });
-      _memoData = map;
-      if (typeof renderAll === 'function') renderAll(); else if (typeof renderTable === 'function') renderTable();
-    }).catch(function(){});
+    .then(memoApply)
+    .catch(function(){ gdNotifyFail(); });
 }
 
 // ─── 현금시제 (지점) ─────
@@ -3973,8 +4008,8 @@ function loadCashData() {
   if (sumArea) sumArea.innerHTML = '<div class="op-loading">⏳ 불러오는 중...</div>';
   var today = _ymd(new Date());
   var FROM = '2000-01-01';
-  var pEnt = fetch(GAS_ENDPOINT + '?action=getRangeEntries&fromDate=' + FROM + '&toDate=' + today + '&branch=' + encodeURIComponent(currentBranch)).then(function(r){ return r.json(); });
-  var pExp = fetch(GAS_ENDPOINT + '?action=getExpenses&fromDate=' + FROM + '&toDate=' + today + '&branch=' + encodeURIComponent(currentBranch)).then(function(r){ return r.json(); });
+  var pEnt = gasFetch(GAS_ENDPOINT + '?action=getRangeEntries&fromDate=' + FROM + '&toDate=' + today + '&branch=' + encodeURIComponent(currentBranch)).then(function(r){ return r.json(); });
+  var pExp = gasFetch(GAS_ENDPOINT + '?action=getExpenses&fromDate=' + FROM + '&toDate=' + today + '&branch=' + encodeURIComponent(currentBranch)).then(function(r){ return r.json(); });
   Promise.all([pEnt, pExp]).then(function(res){
     var entries  = (res[0] && res[0].ok) ? (res[0].data || []) : [];
     var expenses = (res[1] && res[1].ok) ? (res[1].data || []) : [];
@@ -4091,9 +4126,9 @@ function loadClosingData() {
   if (sumArea) sumArea.innerHTML = '<div class="op-loading">⏳ 불러오는 중...</div>';
   var today = _ymd(new Date());
   var FROM = '2000-01-01';
-  var pEnt = fetch(GAS_ENDPOINT + '?action=getRangeEntries&fromDate=' + FROM + '&toDate=' + today + '&branch=' + encodeURIComponent(currentBranch)).then(function(r){ return r.json(); });
-  var pExp = fetch(GAS_ENDPOINT + '?action=getExpenses&fromDate=' + FROM + '&toDate=' + today + '&branch=' + encodeURIComponent(currentBranch)).then(function(r){ return r.json(); });
-  var pCls = fetch(GAS_ENDPOINT + '?action=getClosing&date=' + _clsDate + '&branch=' + encodeURIComponent(currentBranch)).then(function(r){ return r.json(); }).catch(function(){ return {ok:false}; });
+  var pEnt = gasFetch(GAS_ENDPOINT + '?action=getRangeEntries&fromDate=' + FROM + '&toDate=' + today + '&branch=' + encodeURIComponent(currentBranch)).then(function(r){ return r.json(); });
+  var pExp = gasFetch(GAS_ENDPOINT + '?action=getExpenses&fromDate=' + FROM + '&toDate=' + today + '&branch=' + encodeURIComponent(currentBranch)).then(function(r){ return r.json(); });
+  var pCls = gasFetch(GAS_ENDPOINT + '?action=getClosing&date=' + _clsDate + '&branch=' + encodeURIComponent(currentBranch)).then(function(r){ return r.json(); }).catch(function(){ return {ok:false}; });
   Promise.all([pEnt, pExp, pCls]).then(function(res){
     var entries  = (res[0] && res[0].ok) ? (res[0].data || []) : [];
     var expenses = (res[1] && res[1].ok) ? (res[1].data || []) : [];
@@ -4258,7 +4293,7 @@ function loadBranchIssues() {
   var area = document.getElementById('brIssueListArea');
   if (!area) return;
   area.innerHTML = '<div class="op-loading">⏳ 불러오는 중...</div>';
-  fetch(GAS_ENDPOINT + '?action=getIssues&branch=' + encodeURIComponent(currentBranch) + '&status=전체')
+  gasFetch(GAS_ENDPOINT + '?action=getIssues&branch=' + encodeURIComponent(currentBranch) + '&status=전체')
     .then(function(r){ return r.json(); })
     .then(function(res){
       if (!res || !res.ok) { area.innerHTML = '<div class="op-error">조회 실패</div>'; return; }
@@ -4404,7 +4439,7 @@ function loadBranchComments(issueId) {
   var list = document.getElementById('brCommentList');
   if (!list) return;
   list.innerHTML = '<div class="op-loading">⏳</div>';
-  fetch(GAS_ENDPOINT + '?action=getComments&issueId=' + encodeURIComponent(issueId))
+  gasFetch(GAS_ENDPOINT + '?action=getComments&issueId=' + encodeURIComponent(issueId))
     .then(function(r){ return r.json(); })
     .then(function(res){
       if (!res || !res.ok) { list.innerHTML = '<div class="op-error">댓글 불러오기 실패</div>'; return; }
@@ -4452,8 +4487,95 @@ function showBrIsMsg(text, kind) {
   el.textContent = text;
 }
 
-loadBranchNotices();
-hoLoad(true);
+// ─── 페이지 데이터 통합 로드 (2026-09-14) ─────────────────
+// getPageData 1회로 웰컴·인수인계·입실체크·메모·공지·현장기록·부가를 받는다.
+// GAS에 getPageData가 없거나(unknown action) 최종 실패하면 기존 개별 호출로 폴백:
+//   1차 웰컴·인수인계·입실체크·메모 → 끝난 뒤 2차 공지·현장기록·부가 (동시 호출 수를 줄여 GAS 404 방지)
+// unknown action(GAS 미배포) 확인 시 10분간 getPageData 시도 생략 → 바로 폴백 (배포 후 최대 10분 내 자동 전환)
+var _gdPageDataOff = false;
+try { _gdPageDataOff = (Date.now() - Number(localStorage.getItem('gd_pd_off') || 0)) < 600000; } catch(e) {}
+var _gdLoadSeq = 0;
+function gdSafe(fn) {
+  try { return Promise.resolve(fn()).catch(function(e){ console.warn(e); }); }
+  catch(e) { console.warn(e); return Promise.resolve(); }
+}
+function gdAfterExtra() {
+  if (typeof renderAll === 'function') renderAll(); else renderTable();
+  if (typeof blkRenderBtn === 'function') blkRenderBtn();
+}
+function gdLoadPageFallback(auto) {
+  delete _welcomeCache[currentDate];
+  return Promise.all([
+    gdSafe(function(){ return loadWelcomeData(currentDate); }),
+    gdSafe(function(){ return hoLoad(auto); }),
+    gdSafe(function(){ return ciLoadStatus(renderTable); }),
+    gdSafe(function(){ return loadMemoData(); })
+  ]).then(function() {
+    return Promise.all([
+      gdSafe(function(){ return loadBranchNotices(); }),
+      gdSafe(function(){ return loadTodayFieldEntries(); }),
+      gdSafe(function(){ return ckLoadExtra(gdAfterExtra); })
+    ]);
+  });
+}
+function gdApplyPageData(res, date, auto) {
+  var b = currentBranch;
+  // [응답 키, gdCache 키(즉시표시용), 적용, 부분 실패 시 개별 재조회]
+  var steps = [
+    ['welcome',       null,                   function(p){ welcomeApply(p, date); },         function(){ delete _welcomeCache[date]; return loadWelcomeData(date); }],
+    ['handover',      'ho_' + b,              function(p){ hoApply(p, auto); },              function(){ return hoLoad(auto); }],
+    ['checkinStatus', 'ci_' + b + '_' + date, function(p){ ciApplyStatus(p, renderTable); }, function(){ return ciLoadStatus(renderTable); }],
+    ['memos',         null,                   function(p){ memoApply(p); },                  function(){ return loadMemoData(); }],
+    ['notices',       'no_' + b,              function(p){ noticeApply(p); },                function(){ return loadBranchNotices(); }],
+    ['dayEntries',    'fe_' + b + '_' + date, function(p){ feApply(p); },                    function(){ return loadTodayFieldEntries(); }],
+    ['checkinExtra',  null,                   function(p){ ckApplyExtra(p, gdAfterExtra); }, function(){ return ckLoadExtra(gdAfterExtra); }]
+  ];
+  steps.forEach(function(s) {
+    var p = res[s[0]];
+    if (p && p.ok) {
+      if (s[1]) gdCacheStore(s[1], p);
+      gdSafe(function(){ s[2](p); });
+    } else {
+      console.warn('[getPageData] ' + s[0] + ' 실패 → 개별 재조회:', p && p.error);
+      gdSafe(s[3]);
+    }
+  });
+}
+function gdLoadPage(opts) {
+  var auto = !!(opts && opts.auto);
+  var date = currentDate, b = currentBranch, seq = ++_gdLoadSeq;
+  _ciWaitOverride = {};
+  // 1) 즉시 표시: 마지막 성공 응답(gdCache 캐시)으로 먼저 그림
+  _welcomeData = _welcomeCache[date] || {};
+  gdSafe(renderTable);
+  [['ci_' + b + '_' + date, function(c){ ciApplyStatus(c, renderTable); }],
+   ['fe_' + b + '_' + date, feApply],
+   ['no_' + b,              noticeApply],
+   ['ho_' + b,              function(c){ hoApply(c, auto); }]
+  ].forEach(function(s) { var c = gdCacheRead(s[0]); if (c) gdSafe(function(){ s[1](c); }); });
+  if (_gdPageDataOff) return gdLoadPageFallback(auto);
+  // 2) 서버 1회 조회
+  return gasFetch(GAS_ENDPOINT + '?action=getPageData&branch=' + encodeURIComponent(b) + '&date=' + date)
+    .then(function(r) { return r.text(); })
+    .then(function(t) {
+      var res = JSON.parse(t);
+      if (!res || !res.ok) {
+        if (res && res.error === 'unknown action') {   // GAS 미배포
+          _gdPageDataOff = true;
+          try { localStorage.setItem('gd_pd_off', String(Date.now())); } catch(e) {}
+        }
+        throw new Error((res && res.error) || 'getPageData 실패');
+      }
+      if (seq !== _gdLoadSeq) return;   // 그 사이 날짜 변경 등으로 새 조회가 나감 → 옛 응답 버림
+      gdApplyPageData(res, date, auto);
+    })
+    .catch(function(err) {
+      if (seq !== _gdLoadSeq) return;
+      console.warn('[getPageData] 개별 호출로 폴백:', err && err.message);
+      return gdLoadPageFallback(auto);
+    });
+}
+try { gdLoadPage({ auto: true }); } catch(e) { console.error('[gdLoadPage]', e); }
 
 // ── 화면 복귀 시 데이터만 갱신 (전체 리로드 대신) ──
 var _gdLastSync = Date.now();
@@ -4461,10 +4583,7 @@ document.addEventListener('visibilitychange', function() {
   if (document.hidden) return;
   if (Date.now() - _gdLastSync < 300000) return;   // 5분 이내면 생략
   _gdLastSync = Date.now();
-  if (typeof ciLoadStatus === 'function') ciLoadStatus(function(){ if (typeof renderAll === 'function') renderAll(); });
-  if (typeof loadTodayFieldEntries === 'function') loadTodayFieldEntries();
-  if (typeof loadBranchNotices === 'function') loadBranchNotices();
-  if (typeof hoLoad === 'function') hoLoad(false);
+  gdLoadPage();   // 입실체크·현장기록·공지·인수인계(+웰컴·메모·부가) 1회 조회
 });
 
 
