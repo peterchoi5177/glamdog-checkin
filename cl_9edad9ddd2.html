@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
 <!-- 자동 리로드 제거(2026-08-12): 전체 리로드 대신 복귀 시 데이터만 갱신 -->
 <title>글램독 양양 체크인 리스트</title>
-<!-- v2026-09-26 18:05 -->
+<!-- v2026-09-26 18:39 -->
 <style>
   :root {
     --navy: #1B3A5C;
@@ -1261,7 +1261,7 @@ function _submitPw() {
   <button class="btn-refresh" id="btnRefresh" onclick="refreshData()">🔄 새로고침</button>
   <button class="ho-btn" id="btnHandover" onclick="openHandoverModal()" style="display:none">🔄 인수인계<span class="ho-cnt" id="hoCnt">0</span></button>
   <button class="ho-btn" id="btnBlanket" onclick="openBlanketModal()" style="display:none;background:#0369a1">🛏️ 추가이불<span class="ho-cnt" id="blkCnt" style="color:#0369a1">0</span></button>
-  <span class="update-time">갱신: 2026-09-26 18:05</span>
+  <span class="update-time">갱신: 2026-09-26 18:39</span>
 </div>
 <div id="brNoticeBanner"></div>
 <div class="content" id="content">
@@ -1312,20 +1312,53 @@ function _submitPw() {
   .sh-cnt-over{color:#dc2626;font-weight:800;}
   .sh-legend{display:flex;flex-wrap:wrap;gap:12px;margin:12px 2px;font-size:12px;color:#64748b;align-items:center;}
   .sh-err{background:#fef2f2;border:1px solid #fecaca;color:#991b1b;padding:12px;border-radius:10px;margin:10px 0;font-size:14px;}
+  .sh-seg{display:inline-flex;border:1.5px solid #1B3A5C;border-radius:8px;overflow:hidden;}
+  .sh-seg button{padding:8px 14px;border:none;background:#fff;color:#1B3A5C;font-weight:800;font-size:14px;cursor:pointer;}
+  .sh-seg button.on{background:#1B3A5C;color:#fff;}
+  .sh-brush{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin:0 0 8px;font-size:12px;color:#64748b;}
+  .sh-brush .lbl{font-weight:800;color:#475569;margin-right:2px;}
+  .sh-brush button{padding:6px 11px;border:1.5px solid #d7dde5;background:#fff;border-radius:8px;font-weight:800;font-size:12px;cursor:pointer;color:#334155;}
+  .sh-brush button.on{border-color:#1B3A5C;box-shadow:0 0 0 2px #1B3A5C inset;}
+  table.sh-grid.sh-month{width:auto;min-width:0;}
+  .sh-month th,.sh-month td{padding:3px 2px;}
+  .sh-month th.sh-mday{min-width:50px;width:50px;font-size:11px;vertical-align:top;}
+  .sh-month .sh-namecell{position:sticky;left:0;z-index:2;background:#fff;min-width:100px;max-width:120px;font-size:12px;padding:4px 8px;}
+  .sh-month thead .sh-namecell{background:#f8fafc;z-index:3;}
+  .sh-month .sh-memorow .sh-namecell{background:#fffdf5;}
+  .sh-month .sh-cell{padding:8px 0;font-size:11px;border-radius:6px;}
+  .sh-month .sh-wk{border-left:3px solid #94a3b8;}
+  .sh-month .sh-mtoday{background:#eff6ff;}
+  .sh-month .sh-memocell{min-height:26px;max-height:46px;overflow:hidden;font-size:10px;padding:2px 3px;line-height:1.3;}
+  .sh-month .sh-grouprow td{padding:3px 0;}
+  .sh-month .sh-grouprow .gl{position:sticky;left:8px;}
+  .sh-mbadge{display:block;border-radius:5px;font-size:10px;font-weight:800;padding:1px 0;margin-top:2px;white-space:nowrap;}
+  .sh-mb-ok{background:#ecfdf5;color:#065f46;}
+  .sh-mb-short{background:#fef2f2;color:#991b1b;}
+  .sh-mb-zero{color:#cbd5e1;}
   .sh-ov{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.45);z-index:9998;display:none;align-items:flex-end;justify-content:center;}
   .sh-ov.open{display:flex;}
   .sh-sheet{background:#fff;border-radius:16px 16px 0 0;width:100%;max-width:640px;max-height:85vh;overflow-y:auto;padding:16px;}
   </style>
   <div class="sh-bar">
-    <button class="sh-nav" onclick="shMove(-1)">&#8249; 이전주</button>
-    <button class="sh-nav" onclick="shGoThisWeek()">이번주</button>
-    <button class="sh-nav" onclick="shMove(1)">다음주 &#8250;</button>
+    <span class="sh-seg"><button id="shModeW" onclick="shSetMode('week')">주간</button><button id="shModeM" onclick="shSetMode('month')">월간</button></span>
+    <button class="sh-nav" id="shPrevBtn" onclick="shMove(-1)">&#8249; 이전주</button>
+    <button class="sh-nav" id="shNowBtn" onclick="shGoThisWeek()">이번주</button>
+    <button class="sh-nav" id="shNextBtn" onclick="shMove(1)">다음주 &#8250;</button>
     <span class="sh-week" id="shWeekLabel"></span>
     <button class="sh-staffbtn" onclick="shStaffOpen()">&#128101; 스태프 관리</button>
     <button class="sh-staffbtn" onclick="shAutoDraft()">&#10024; 자동 초안</button>
     <button class="sh-staffbtn" onclick="shMonthOpen()">&#128202; 월별 집계</button>
     <button class="sh-staffbtn" onclick="shCopyWeek()">&#128203; 복사</button>
     <button class="sh-save" id="shSaveBtn" onclick="shSave()" disabled>저장</button>
+  </div>
+  <div class="sh-brush" id="shBrush">
+    <span class="lbl">입력 방식</span>
+    <button data-b="" onclick="shSetBrush('')">&#128260; 탭할 때마다 순환</button>
+    <button data-b="AM" onclick="shSetBrush('AM')"><span class="sh-c-AM" style="padding:1px 6px;border-radius:4px;">오전</span> 칠하기</button>
+    <button data-b="PM" onclick="shSetBrush('PM')"><span class="sh-c-PM" style="padding:1px 6px;border-radius:4px;">오후</span> 칠하기</button>
+    <button data-b="ALL" onclick="shSetBrush('ALL')"><span class="sh-c-ALL" style="padding:1px 6px;border-radius:4px;">올데이</span> 칠하기</button>
+    <button data-b="OFF" onclick="shSetBrush('OFF')"><span class="sh-c-OFF" style="padding:1px 6px;border-radius:4px;">OFF</span> 칠하기</button>
+    <button data-b="CLR" onclick="shSetBrush('CLR')">&#129533; 지우기</button>
   </div>
   <div class="sh-today" id="shToday" style="display:none"></div>
   <div class="sh-tablewrap" id="shiftArea"></div>
@@ -1334,7 +1367,7 @@ function _submitPw() {
     <span><span class="sh-cell sh-c-PM" style="display:inline;padding:2px 8px;">오후</span> 볼런티어 16~20시 · 직원 15~22시</span>
     <span><span class="sh-cell sh-c-ALL" style="display:inline;padding:2px 8px;">올데이</span> 오픈~마감 풀타임 (매니저)</span>
     <span><span class="sh-cell sh-c-OFF" style="display:inline;padding:2px 8px;">OFF</span> 휴무 확정</span>
-    <span>&#128221; 메모칸에 제초·점검·단체 등 기록 (공휴일은 자동 표시) · 빈칸=미정 · 셀을 탭하면 오전&#8594;오후&#8594;올데이&#8594;OFF&#8594;빈칸 순환 · 윗줄 배지=청소(오전) 판정 · 아랫줄 &#128718;&#65039;=체크인 수와 오후 커버 인원(올데이 포함)</span>
+    <span>&#128221; 메모칸에 제초·점검·단체 등 기록 (공휴일은 자동 표시) · 빈칸=미정 · 셀을 탭하면 오전&#8594;오후&#8594;올데이&#8594;OFF&#8594;빈칸 순환 (칠하기 모드: 고른 값으로 바로 입력, 같은 값을 다시 탭하면 지워짐) · 윗줄 배지=청소(오전) 판정 · 아랫줄 &#128718;&#65039;=체크인 수와 오후 커버 인원(올데이 포함)</span>
   </div>
   <!-- 월별 근무 집계 모달 -->
   <div class="sh-ov" id="shMonthOv" onclick="if(event.target===this)shMonthClose()">
@@ -4707,7 +4740,8 @@ document.addEventListener('visibilitychange', function() {
 var SHIFT_TYPE_CAP   = {'매니저':5, '볼런티어':3.5, '직원':5, '파트타임':5};
 var SHIFT_TYPE_LIMIT = {'매니저':0, '볼런티어':4,   '직원':5, '파트타임':0};   // 주당 기준일수 (0=제한 없음)
 var SHIFT_PART_CAP   = 5;   // 파트타임 1명 처리량 → 부족분 호출 인원 계산
-var _sh = { weekStart:null, staff:[], grid:{}, orig:{}, dirty:{}, loaded:false, err:'', co:null, stale:0 };
+var _sh = { weekStart:null, monthStart:null, mode:'month', brush:'', loadSeq:0, staff:[], grid:{}, orig:{}, dirty:{}, loaded:false, err:'', co:null, stale:0 };
+try{ var _shM=localStorage.getItem('shMode'); if(_shM==='week'||_shM==='month') _sh.mode=_shM; }catch(e){}
 var SHIFT_HOLIDAYS = {"2026-01-01": "신정", "2026-02-16": "설 연휴", "2026-02-17": "설날", "2026-02-18": "설 연휴", "2026-03-01": "삼일절", "2026-03-02": "삼일절 대체", "2026-05-05": "어린이날", "2026-05-24": "부처님오신날", "2026-05-25": "부처님오신날 대체", "2026-06-06": "현충일", "2026-08-15": "광복절", "2026-08-17": "광복절 대체", "2026-09-24": "추석 연휴", "2026-09-25": "추석", "2026-09-26": "추석 연휴", "2026-10-03": "개천절", "2026-10-05": "개천절 대체", "2026-10-09": "한글날", "2026-12-25": "성탄절", "2027-01-01": "신정", "2027-02-06": "설 연휴", "2027-02-07": "설날", "2027-02-08": "설 연휴", "2027-02-09": "설 대체공휴일", "2027-03-01": "삼일절", "2027-05-03": "Alternative holiday for Labor Day", "2027-05-05": "어린이날", "2027-05-13": "부처님오신날", "2027-06-06": "현충일", "2027-07-19": "Alternative holiday for Constitution Day", "2027-08-15": "광복절", "2027-08-16": "광복절 대체", "2027-09-14": "추석 연휴", "2027-09-15": "추석", "2027-09-16": "추석 연휴", "2027-10-03": "개천절", "2027-10-04": "개천절 대체", "2027-10-09": "한글날", "2027-10-11": "한글날 대체", "2027-12-25": "성탄절", "2027-12-27": "Alternative holiday for Christmas Day", "2028-01-01": "신정", "2028-01-26": "설 연휴", "2028-01-27": "설날", "2028-01-28": "설 연휴", "2028-03-01": "삼일절", "2028-05-02": "부처님오신날", "2028-05-05": "어린이날", "2028-06-06": "현충일", "2028-08-15": "광복절", "2028-10-02": "추석 연휴", "2028-10-03": "Chuseok; National Foundation Day", "2028-10-04": "추석 연휴", "2028-10-05": "추석 대체", "2028-10-09": "한글날", "2028-12-25": "성탄절"};
 var MEMO_ID = '_MEMO_';
 
@@ -4715,6 +4749,24 @@ function shPad(n){ return (n<10?'0':'')+n; }
 function shISO(d){ return d.getFullYear()+'-'+shPad(d.getMonth()+1)+'-'+shPad(d.getDate()); }
 function shAddDays(iso,n){ var d=new Date(iso+'T00:00:00'); d.setDate(d.getDate()+n); return shISO(d); }
 function shMonday(iso){ var d=new Date(iso+'T00:00:00'); var w=(d.getDay()+6)%7; d.setDate(d.getDate()-w); return shISO(d); }
+function shMonthFirst(iso){ return iso.substring(0,8)+'01'; }
+function shMonthLast(ms){ return shISO(new Date(parseInt(ms.substring(0,4),10), parseInt(ms.substring(5,7),10), 0)); }
+function shAddMonths(ms,n){ var d=new Date(ms+'T00:00:00'); d.setDate(1); d.setMonth(d.getMonth()+n); return shISO(d); }
+// 현재 화면에 보이는 날짜들 (주간 7일 / 월간 해당 월 전체)
+function shViewDays(){
+  var out=[];
+  if(_sh.mode==='month'){
+    var last=shMonthLast(_sh.monthStart);
+    for(var d=_sh.monthStart; d<=last; d=shAddDays(d,1)) out.push(d);
+  } else { for(var i=0;i<7;i++) out.push(shAddDays(_sh.weekStart,i)); }
+  return out;
+}
+function shViewKey(){ return _sh.mode==='month' ? ('M'+_sh.monthStart) : _sh.weekStart; }
+// 불러올 범위 — 월간은 주간 한도 계산을 위해 월 앞뒤 걸친 주 전체 포함
+function shLoadRange(){
+  if(_sh.mode==='month') return [shMonday(_sh.monthStart), shAddDays(shMonday(shMonthLast(_sh.monthStart)),6)];
+  return [shAddDays(_sh.weekStart,-28), shAddDays(_sh.weekStart,6)];
+}
 function _shToast(m){ if(typeof showToast==='function'){ showToast(m); } else { alert(m); } }
 
 // GAS 간헐 실패 대비 공용 재시도 fetch (비JSON·네트워크 오류 시 1.5초 간격 재시도)
@@ -4751,21 +4803,26 @@ function shCheckinMap(){
 
 function shiftInit(){
   if(!_sh.weekStart) _sh.weekStart = shMonday(shISO(new Date()));
+  if(!_sh.monthStart) _sh.monthStart = shMonthFirst(shISO(new Date()));
   if(!_sh.loaded && !_sh.err) shLoad(); else shRender();
 }
 
 function shLoad(){
-  var from=shAddDays(_sh.weekStart,-28), to=shAddDays(_sh.weekStart,6);
+  var rg=shLoadRange(), from=rg[0], to=rg[1];
+  var vkey=shViewKey();
+  var seq=++_sh.loadSeq;   // 빠르게 이동할 때 늦게 온 이전 응답이 덮어쓰지 않도록
   var area=document.getElementById('shiftArea');
   var url=GAS_ENDPOINT+'?action=getShiftData&branch='+encodeURIComponent(currentBranch)+'&fromDate='+from+'&toDate='+to;
   var MAX=3;   // GAS 간헐 HTML 응답·지연 대비 자동 재시도
   function attempt(n){
+    if(seq!==_sh.loadSeq) return;
     if(area) area.innerHTML='<div style="padding:30px;text-align:center;color:#94a3b8;">근무표 불러오는 중&#8230;'
       +(n>1?(' <span style="color:#b45309;">(재시도 '+(n-1)+'/'+(MAX-1)+')</span>'):'')+'</div>';
     fetch(url+'&_t='+Date.now())
       .then(function(r){ return r.text(); })
       .then(function(t){
         var res=null;
+        if(seq!==_sh.loadSeq) return;
         try{ res=JSON.parse(t); }catch(e){ throw 'NONJSON'; }
         if(!res.ok) throw (res.error||'GAS 오류');
         _sh.staff=res.staff||[];
@@ -4774,17 +4831,18 @@ function shLoad(){
         _sh.orig=JSON.parse(JSON.stringify(_sh.grid));
         _sh.dirty={}; _sh.err=''; _sh.loaded=true; _sh.stale=0;
         try{ localStorage.setItem('shCache_'+currentBranch,
-          JSON.stringify({t:Date.now(), weekStart:_sh.weekStart, staff:_sh.staff, grid:_sh.grid})); }catch(e){}
+          JSON.stringify({t:Date.now(), weekStart:vkey, staff:_sh.staff, grid:_sh.grid})); }catch(e){}
         shRender();
         var ov=document.getElementById('shStaffOv');
         if(ov && ov.classList.contains('open')) shStaffRenderList();
       })
       .catch(function(e){
+        if(seq!==_sh.loadSeq) return;
         if(n<MAX){ setTimeout(function(){ attempt(n+1); }, 1200*n); return; }
         // 최종 실패 — 같은 주의 마지막 성공 캐시가 있으면 보기 전용으로 표시
         var c=null;
         try{ c=JSON.parse(localStorage.getItem('shCache_'+currentBranch)||'null'); }catch(e2){}
-        if(c && c.weekStart===_sh.weekStart && c.staff){
+        if(c && c.weekStart===vkey && c.staff){
           _sh.staff=c.staff; _sh.grid=c.grid||{};
           _sh.orig=JSON.parse(JSON.stringify(_sh.grid));
           _sh.dirty={}; _sh.err=''; _sh.loaded=true; _sh.stale=c.t;
@@ -4805,8 +4863,42 @@ function shConfirmDiscard(){
   if(!n) return true;
   return confirm('저장 안 된 변경 '+n+'건이 있습니다. 이동하면 사라집니다. 계속할까요?');
 }
-function shMove(n){ if(!shConfirmDiscard()) return; _sh.weekStart=shAddDays(_sh.weekStart,7*n); _sh.err=''; shLoad(); }
-function shGoThisWeek(){ if(!shConfirmDiscard()) return; _sh.weekStart=shMonday(shISO(new Date())); _sh.err=''; shLoad(); }
+function shMove(n){
+  if(!shConfirmDiscard()) return;
+  if(_sh.mode==='month') _sh.monthStart=shAddMonths(_sh.monthStart,n);
+  else _sh.weekStart=shAddDays(_sh.weekStart,7*n);
+  _sh.dirty={}; _sh.err=''; _sh.loaded=false; shLoad();
+}
+function shGoThisWeek(){
+  if(!shConfirmDiscard()) return;
+  var t=shISO(new Date());
+  _sh.weekStart=shMonday(t); _sh.monthStart=shMonthFirst(t);
+  _sh.dirty={}; _sh.err=''; _sh.loaded=false; shLoad();
+}
+// 주간 ↔ 월간 전환 (보던 날짜 근처 유지)
+function shSetMode(m){
+  if(m===_sh.mode) return;
+  if(!shConfirmDiscard()) return;
+  var t=shISO(new Date());
+  if(m==='month'){
+    var ref=shAddDays(_sh.weekStart||shMonday(t),3);
+    _sh.monthStart=shMonthFirst(ref);
+  } else {
+    var ms=_sh.monthStart||shMonthFirst(t);
+    _sh.weekStart=(shMonthFirst(t)===ms)?shMonday(t):shMonday(ms);
+  }
+  _sh.mode=m;
+  try{ localStorage.setItem('shMode',m); }catch(e){}
+  _sh.dirty={}; _sh.err=''; _sh.loaded=false; shLoad();
+}
+// 입력 방식: ''=탭할 때마다 순환 / AM·PM·ALL·OFF=그 값으로 칠하기 / CLR=지우기
+function shSetBrush(b){ _sh.brush=b; shRenderBrush(); }
+function shRenderBrush(){
+  var bs=document.querySelectorAll('#shBrush button');
+  for(var i=0;i<bs.length;i++){
+    if((bs[i].getAttribute('data-b')||'')===_sh.brush) bs[i].classList.add('on'); else bs[i].classList.remove('on');
+  }
+}
 
 // ── 일자별 메모 (공휴일은 자동 표시, 사용자 메모는 저장) ──
 function shEditMemo(dateIso){
@@ -4866,7 +4958,7 @@ function shRenderHistory(){
     }
   });
   items.sort(function(a,b){ return b.ts-a.ts; });
-  var h='<h4>&#128220; 변경 히스토리 <span style="font-weight:400;color:#94a3b8;">(이 주 기준 · 최근 20건)</span></h4>';
+  var h='<h4>&#128220; 변경 히스토리 <span style="font-weight:400;color:#94a3b8;">('+(_sh.mode==='month'?'이 달 화면 기준':'이 주 기준')+' · 최근 20건)</span></h4>';
   if(!items.length){ h+='<div style="font-size:12px;color:#cbd5e1;">아직 변경 기록이 없습니다.</div>'; }
   else {
     items.slice(0,20).forEach(function(it){
@@ -4886,16 +4978,30 @@ function shCycle(dateIso, sid){
   if(_sh.stale){ _shToast('&#128274; 보기 전용 — 서버 재연결 후 수정할 수 있습니다'); return; }
   var k=dateIso+'|'+sid;
   var cur=_sh.grid[k]||'';
-  var next={'':'AM','AM':'PM','PM':'ALL','ALL':'OFF','OFF':''}[cur];
+  var next;
+  if(_sh.brush==='CLR') next='';
+  else if(_sh.brush) next=(cur===_sh.brush)?'':_sh.brush;   // 같은 값을 다시 칠하면 지움
+  else next={'':'AM','AM':'PM','PM':'ALL','ALL':'OFF','OFF':''}[cur];
   if(next) _sh.grid[k]=next; else delete _sh.grid[k];
   if((_sh.orig[k]||'')===(next||'')) delete _sh.dirty[k]; else _sh.dirty[k]=true;
   shRender();
 }
 
 function shRender(){
+  var isM=(_sh.mode==='month');
   var we=shAddDays(_sh.weekStart,6);
   var lbl=document.getElementById('shWeekLabel');
-  if(lbl) lbl.textContent=_sh.weekStart.substring(5).replace('-','/')+' ~ '+we.substring(5).replace('-','/');
+  if(lbl) lbl.textContent=isM
+    ? (_sh.monthStart.substring(0,4)+'년 '+parseInt(_sh.monthStart.substring(5,7),10)+'월')
+    : (_sh.weekStart.substring(5).replace('-','/')+' ~ '+we.substring(5).replace('-','/'));
+  var _mw=document.getElementById('shModeW'), _mm=document.getElementById('shModeM');
+  if(_mw) _mw.className=isM?'':'on';
+  if(_mm) _mm.className=isM?'on':'';
+  var _pb=document.getElementById('shPrevBtn'), _nb=document.getElementById('shNowBtn'), _xb=document.getElementById('shNextBtn');
+  if(_pb) _pb.innerHTML=isM?'&#8249; 이전달':'&#8249; 이전주';
+  if(_nb) _nb.innerHTML=isM?'이번달':'이번주';
+  if(_xb) _xb.innerHTML=isM?'다음달 &#8250;':'다음주 &#8250;';
+  shRenderBrush();
   var saveBtn=document.getElementById('shSaveBtn');
   var dn=Object.keys(_sh.dirty).length;
   if(saveBtn){ saveBtn.disabled=!dn; saveBtn.textContent=dn?('저장 ('+dn+'건)'):'저장'; }
@@ -4911,6 +5017,7 @@ function shRender(){
     return;
   }
   if(!_sh.loaded){ area.innerHTML='<div style="padding:30px;text-align:center;color:#94a3b8;">근무표 불러오는 중&#8230;</div>'; return; }
+  if(isM){ shRenderMonth(area,tEl); return; }
 
   var days=[]; for(var i=0;i<7;i++) days.push(shAddDays(_sh.weekStart,i));
   var co=shCheckoutMap();
@@ -5045,6 +5152,138 @@ function shRender(){
   }
 }
 
+// ── 월간 그리드 (스태프 × 해당 월 전체 날짜) ──
+function shRenderMonth(area,tEl){
+  var days=shViewDays();
+  var co=shCheckoutMap(), ciMap=shCheckinMap();
+  var wd=['일','월','화','수','목','금','토'];
+  var todayIso=shISO(new Date());
+  var first=days[0], last=days[days.length-1];
+  var mStaff=_sh.staff.filter(function(s){
+    if(s.end && s.end<first) return false;
+    if(s.start && s.start>last) return false;
+    return true;
+  });
+  function isWork(v){ return v==='AM'||v==='PM'||v==='ALL'; }
+  // 월에 걸친 주(월요일 시작) 목록 — 주간 한도 초과 판정용
+  var weeks=[];
+  days.forEach(function(d){ var m=shMonday(d); if(weeks.indexOf(m)<0) weeks.push(m); });
+
+  var h='<table class="sh-grid sh-month"><thead><tr><th class="sh-namecell">스태프</th>';
+  days.forEach(function(d){
+    var dt=new Date(d+'T00:00:00'), dow=dt.getDay();
+    var need=co[d]||0, cap=0, pmN=0;
+    mStaff.forEach(function(s){
+      var v=_sh.grid[d+'|'+s.staffId];
+      if(v==='AM'||v==='ALL') cap+=(s.capacity||0);
+      if(v==='PM'||v==='ALL') pmN++;
+    });
+    var capTxt=(cap%1===0)?String(cap):cap.toFixed(1);
+    var badge, tip='퇴실(청소) '+need+'실 / 오전 풀 '+capTxt+'실';
+    if(!need) badge='<span class="sh-mbadge sh-mb-zero">&#129529;0</span>';
+    else if(cap>=need) badge='<span class="sh-mbadge sh-mb-ok">&#129529;'+need+'</span>';
+    else {
+      var part=Math.ceil((need-cap)/SHIFT_PART_CAP);
+      badge='<span class="sh-mbadge sh-mb-short">&#129529;'+need+' +'+part+'</span>';
+      tip+=' / 파트 '+part+'명 필요';
+    }
+    var ciN=ciMap[d]||0, pmWarn=(ciN>0 && pmN===0);
+    tip+=' / 체크인 '+ciN+'건 / 오후 커버 '+pmN+'명';
+    var hol=SHIFT_HOLIDAYS[d]||'';
+    if(hol) tip=hol+' / '+tip;
+    var dcls=(dow===6?'sh-sat':(dow===0||hol?'sh-sun':''));
+    var cls='sh-mday'+(dow===1&&d!==first?' sh-wk':'')+(d===todayIso?' sh-mtoday':'');
+    h+='<th class="'+cls+'" title="'+tip+'"><div class="'+dcls+'" style="font-weight:800;font-size:13px;'+(d===todayIso?'color:#1d4ed8;':'')+'">'+dt.getDate()+'</div>'
+      +'<div class="'+dcls+'" style="font-size:10px;font-weight:700;">'+wd[dow]+(hol?' &#127881;':'')+'</div>'
+      +badge
+      +'<div style="font-size:10px;font-weight:600;margin-top:1px;color:'+(pmWarn?'#b45309':'#64748b')+';">&#128718;&#65039;'+ciN+'&#183;'+pmN+'</div></th>';
+  });
+  h+='<th style="min-width:64px;">이 달</th></tr></thead><tbody>';
+
+  // 메모 행
+  h+='<tr class="sh-memorow"><td class="sh-namecell"><b>&#128221; 메모</b></td>';
+  days.forEach(function(d){
+    var memo=_sh.grid[d+'|'+MEMO_ID]||'', hol=SHIFT_HOLIDAYS[d]||'';
+    var inner='';
+    if(hol) inner+='<div class="sh-memo-hol">'+hol+'</div>';
+    if(memo) inner+='<div>'+memo.replace(/</g,'&lt;')+'</div>';
+    if(!hol && !memo) inner='<div class="sh-memo-empty">＋</div>';
+    var tt=(hol?hol+' ':'')+memo.replace(/"/g,'&quot;').replace(/</g,'&lt;');
+    var dow=new Date(d+'T00:00:00').getDay();
+    h+='<td class="'+(dow===1&&d!==first?'sh-wk':'')+(d===todayIso?' sh-mtoday':'')+'"><div class="sh-memocell'+(_sh.dirty[d+'|'+MEMO_ID]?' sh-dirty':'')
+      +'" title="'+tt+'" onclick="shEditMemo(\''+d+'\')">'+inner+'</div></td>';
+  });
+  h+='<td></td></tr>';
+
+  var groups=[['매니저','&#128081; 매니저'],['직원','&#128084; 직원'],['볼런티어','&#127757; 볼런티어'],['파트타임','&#128222; 파트타임 (호출)']];
+  groups.forEach(function(g){
+    var members=mStaff.filter(function(s){ return s.type===g[0]; });
+    if(!members.length) return;
+    h+='<tr class="sh-grouprow"><td colspan="'+(days.length+2)+'"><span class="gl">'+g[1]+'</span></td></tr>';
+    members.forEach(function(s){
+      var mcnt=0;
+      h+='<tr><td class="sh-namecell"><b>'+s.name+'</b><br><span style="font-size:10px;color:#94a3b8;">'+(s.capacity||0)+'실</span></td>';
+      days.forEach(function(d){
+        var k=d+'|'+s.staffId, v=_sh.grid[k]||'';
+        if(isWork(v)) mcnt++;
+        var dow=new Date(d+'T00:00:00').getDay();
+        var tcls=(dow===1&&d!==first?'sh-wk':'')+(d===todayIso?' sh-mtoday':'');
+        var na=(s.start && d<s.start)||(s.end && d>s.end);
+        if(na){ h+='<td class="'+tcls+'"><span class="sh-cell sh-c-na">&#65293;</span></td>'; return; }
+        var cls=v?('sh-c-'+v):'sh-c-empty';
+        var txt=(v==='AM')?'오전':(v==='PM')?'오후':(v==='ALL')?'올데이':(v==='OFF')?'OFF':'&#183;';
+        h+='<td class="'+tcls+'"><span class="sh-cell '+cls+(_sh.dirty[k]?' sh-dirty':'')
+          +'" onclick="shCycle(\''+d+'\',\''+s.staffId+'\')">'+txt+'</span></td>';
+      });
+      // 주간 기준일수 초과 주 (월 경계 주는 앞뒤 달 날짜까지 포함해 판정)
+      var lim=SHIFT_TYPE_LIMIT[s.type]||0, overW=[];
+      if(lim){
+        weeks.forEach(function(ws){
+          var c=0; for(var i=0;i<7;i++){ if(isWork(_sh.grid[shAddDays(ws,i)+'|'+s.staffId])) c++; }
+          if(c>lim) overW.push(ws.substring(5).replace('-','/')+'주');
+        });
+      }
+      h+='<td><b>'+mcnt+'일</b>'
+        +(overW.length?('<br><span style="font-size:10px;color:#dc2626;font-weight:800;" title="주 '+lim+'일 기준 초과: '+overW.join(', ')+'">주'+lim+'일 초과 '+overW.length+'주</span>'):'')
+        +'</td></tr>';
+    });
+  });
+  if(!mStaff.length){
+    h+='<tr><td colspan="'+(days.length+2)+'" style="padding:26px;color:#94a3b8;">'
+      +'등록된 스태프가 없습니다. &#128101; 스태프 관리에서 추가하세요.</td></tr>';
+  }
+  h+='</tbody></table>';
+  if(_sh.stale){
+    var st=new Date(_sh.stale);
+    h='<div style="background:#fffbeb;border:1px solid #fde68a;color:#92400e;padding:10px 14px;border-radius:10px;margin-bottom:10px;font-size:13px;font-weight:600;">'
+      +'&#9888;&#65039; 서버 연결 실패 — '+shPad(st.getHours())+':'+shPad(st.getMinutes())+' 시점 데이터를 보기 전용으로 표시 중 '
+      +'<button class="sh-nav" style="margin-left:8px;padding:4px 12px;font-size:12px;" onclick="shLoad()">다시 연결</button></div>'+h;
+  }
+  area.innerHTML=h;
+  shRenderHistory();
+  // 오늘 열이 보이도록 가로 스크롤
+  if(days.indexOf(todayIso)>=0){
+    var idx=days.indexOf(todayIso);
+    area.scrollLeft=Math.max(0, idx*54-160);
+  }
+  if(tEl){
+    if(days.indexOf(todayIso)>=0){
+      var am=[],pm=[],ad=[];
+      mStaff.forEach(function(s){
+        var v=_sh.grid[todayIso+'|'+s.staffId];
+        if(v==='AM') am.push(s.name);
+        if(v==='PM') pm.push(s.name);
+        if(v==='ALL') ad.push(s.name);
+      });
+      tEl.style.display='';
+      tEl.innerHTML='&#128204; 오늘 '+todayIso.substring(5).replace('-','/')
+        +' — 오전: '+(am.join(', ')||'미배정')+' / 오후: '+(pm.join(', ')||'미배정')
+        +(ad.length?(' / 올데이: '+ad.join(', ')):'')
+        +' &#183; 청소 '+(co[todayIso]||0)+'실 &#183; 체크인 '+(ciMap[todayIso]||0)+'건';
+    } else tEl.style.display='none';
+  }
+}
+
 // 저장 (배치) + 재조회 검증 — GAS 간헐 유실 대비
 function shSave(){
   var keys=Object.keys(_sh.dirty);
@@ -5060,20 +5299,36 @@ function shSave(){
   if(_histLines.length){
     var who=shEditorName();
     var hk='_HIST_'+Date.now();
-    entries.push({ date:_sh.weekStart, staffId:hk, name:'변경기록',
+    var hDate=shViewDays()[0];
+    entries.push({ date:hDate, staffId:hk, name:'변경기록',
       shift: who+'||'+_histLines.slice(0,12).join(' / ')+(_histLines.length>12?(' 외 '+(_histLines.length-12)+'건'):'') });
-    _sh.grid[_sh.weekStart+'|'+hk]=entries[entries.length-1].shift;
+    _sh.grid[hDate+'|'+hk]=entries[entries.length-1].shift;
   }
   var dMin=entries[0].date, dMax=entries[0].date;
   entries.forEach(function(e){ if(e.date<dMin)dMin=e.date; if(e.date>dMax)dMax=e.date; });
   var btn=document.getElementById('shSaveBtn');
   if(btn){ btn.disabled=true; btn.textContent='저장 중…'; }
   // 그리드 저장은 멱등(같은 값 재전송 안전) → 자동 재시도 3회
-  shPostJson({action:'saveShiftWeek', branch:currentBranch, entries:entries}, 3)
-    .then(function(res){
-      if(!res||!res.ok) throw ((res&&res.error)||'저장 실패');
+  // GAS saveShiftWeek는 행 단위 기록 + 전역 스크립트 락 → 월 단위 대량 저장을 한 번에 보내면
+  // 락을 오래 잡아 현장기록 저장까지 막힘(8/8 사건). 40건씩 '순차' 전송해 락을 짧게 끊는다.
+  var CHUNK=40, chunks=[];
+  for(var ci=0; ci<entries.length; ci+=CHUNK) chunks.push(entries.slice(ci,ci+CHUNK));
+  var postErr=null;
+  function postChunk(i){
+    if(i>=chunks.length) return Promise.resolve();
+    if(btn && chunks.length>1) btn.textContent='저장 중… ('+(i+1)+'/'+chunks.length+')';
+    return shPostJson({action:'saveShiftWeek', branch:currentBranch, entries:chunks[i]}, 3)
+      .then(function(res){
+        if(!res||!res.ok) throw ((res&&res.error)||'저장 실패');
+        return postChunk(i+1);
+      });
+  }
+  postChunk(0)
+    .catch(function(e){ postErr=e; })   // 일부만 저장됐을 수 있음 → 아래 재조회로 실제 상태 판정
+    .then(function(){
+      if(btn) btn.textContent='저장 확인 중…';
       return shFetchJson(GAS_ENDPOINT+'?action=getShiftData&branch='+encodeURIComponent(currentBranch)
-        +'&fromDate='+dMin+'&toDate='+dMax+'&_t='+Date.now(), 2);
+        +'&fromDate='+dMin+'&toDate='+dMax+'&_t='+Date.now(), 3);
     })
     .then(function(res){
       if(!res||!res.ok) throw '저장 후 검증 조회 실패';
@@ -5089,7 +5344,7 @@ function shSave(){
             delete _sh.dirty[k];
           }
         });
-        _shToast('&#9888;&#65039; '+bad.length+'건 저장 확인 실패 — 다시 저장해주세요');
+        _shToast('&#9888;&#65039; '+bad.length+'건 저장 확인 실패'+(postErr?(' ('+postErr+')'):'')+' — 저장 버튼을 다시 눌러주세요 (저장된 건은 유지됩니다)');
       } else {
         keys.forEach(function(k){
           if(_sh.grid[k]) _sh.orig[k]=_sh.grid[k]; else delete _sh.orig[k];
@@ -5109,12 +5364,28 @@ function shSave(){
 //   3) 커버 보정: 그래도 풀<퇴실인 날은 잔여 한도 인원 추가
 //   4) 오후: 체크인 20+ → 2명, 5+ → 1명 (AM→PM 전환, PM 적은 사람 순)
 //   원칙: 빈칸만 채움 · 기존 입력 불변 · 파트타임 자동배정 없음 · 결과는 dirty(검토 후 저장)
+var SH_MIN_DEMAND=5;      // 이 미만 퇴실일은 직원·볼런티어 배정 안 함
+var SH_MGR3_DEMAND=15;    // 이 이상이면 매니저 3명
 function shAutoDraft(){
   if(!_sh.loaded){ _shToast('데이터 로딩 후 사용할 수 있습니다'); return; }
   if(_sh.stale){ _shToast('&#128274; 보기 전용 상태에서는 사용할 수 없습니다'); return; }
-  var MIN_DEMAND=5;      // 이 미만 퇴실일은 직원·볼런티어 배정 안 함
-  var MGR3_DEMAND=15;    // 이 이상이면 매니저 3명
-  var days=[]; for(var i=0;i<7;i++) days.push(shAddDays(_sh.weekStart,i));
+  // 화면에 보이는 날짜만 채움. 월간이면 걸친 주(월~일)마다 실행 — 주간 한도는 앞뒤 달 날짜까지 포함해 계산
+  var editable={}, weeks=[];
+  shViewDays().forEach(function(d){ editable[d]=true; var m=shMonday(d); if(weeks.indexOf(m)<0) weeks.push(m); });
+  var unassigned=[];
+  weeks.forEach(function(ws){ shAutoDraftWeek(ws, editable, unassigned); });
+  shRender();
+  var dn=Object.keys(_sh.dirty).length;
+  if(dn){
+    var msg='&#10024; 초안 배치 완료 ('+(_sh.mode==='month'?'이 달 전체':'이번 주')+') — 퇴실 '+SH_MIN_DEMAND+'실 미만 날은 배정하지 않았습니다. 검토 후 저장하세요.';
+    if(unassigned.length && weeks.length===1) msg+=' 수요 부족으로 미달: '+unassigned.join(', ')+' (나머지는 미정)';
+    _shToast(msg);
+  } else _shToast('채울 빈칸이 없습니다 (기존 입력은 건드리지 않습니다)');
+}
+function shAutoDraftWeek(ws, editable, unassigned){
+  var MIN_DEMAND=SH_MIN_DEMAND, MGR3_DEMAND=SH_MGR3_DEMAND;
+  var days=[]; for(var i=0;i<7;i++) days.push(shAddDays(ws,i));              // 주간 한도 계산용 (주 전체)
+  var eDays=days.filter(function(d){ return !!editable[d]; });              // 실제로 채울 날 (화면에 보이는 날)
   var co=shCheckoutMap(), ciM=shCheckinMap();
   function inT(s,d){ return !((s.start&&d<s.start)||(s.end&&d>s.end)); }
   var mans=_sh.staff.filter(function(s){return s.type==='매니저';});
@@ -5142,7 +5413,7 @@ function shAutoDraft(){
   }
 
   // 1. 매니저: 날짜별 필요 수만 올데이, 나머지 OFF (주간 근무일 균형 로테이션)
-  days.forEach(function(d){
+  eDays.forEach(function(d){
     var avail=mans.filter(function(s){ return inT(s,d); });
     if(!avail.length) return;
     var reqM=Math.min(avail.length, (co[d]||0)>=MGR3_DEMAND?3:2);
@@ -5157,7 +5428,7 @@ function shAutoDraft(){
   });
 
   // 2. 직원(최대5)·볼런티어(최대4): 퇴실 MIN_DEMAND+ 날에만, 수요 높은 날부터
-  var demandDays=days.slice().sort(function(a,b){ return (co[b]||0)-(co[a]||0); })
+  var demandDays=eDays.slice().sort(function(a,b){ return (co[b]||0)-(co[a]||0); })
                      .filter(function(d){ return (co[d]||0)>=MIN_DEMAND; });
   function fillByDemand(s, maxDays){
     var assigned=0;
@@ -5186,7 +5457,7 @@ function shAutoDraft(){
   });
 
   // 4. 오후 커버: CI 20+ → 2명 · 5+ → 1명 (직원·볼런티어 draft-AM을 PM으로, 청소 커버 유지 범위)
-  days.forEach(function(d){
+  eDays.forEach(function(d){
     var ci=ciM[d]||0;
     var target=(ci>=20)?2:((ci>=5)?1:0);
     if(!target) return;
@@ -5207,15 +5478,7 @@ function shAutoDraft(){
     }
   });
 
-  shRender();
-  var dn=Object.keys(_sh.dirty).length;
-  var unassigned=[];
   vols.forEach(function(s){ var c=wkCnt(s.staffId); if(c<4) unassigned.push(s.name+' '+c+'/4일'); });
-  if(dn){
-    var msg='&#10024; 초안 배치 완료 — 퇴실 '+MIN_DEMAND+'실 미만 날은 배정하지 않았습니다.';
-    if(unassigned.length) msg+=' 수요 부족으로 미달: '+unassigned.join(', ')+' (나머지는 미정)';
-    _shToast(msg);
-  } else _shToast('채울 빈칸이 없습니다 (기존 입력은 건드리지 않습니다)');
 }
 
 // ── 주간 근무표 복사 (카톡 공지용 텍스트) ───────────
@@ -5231,24 +5494,35 @@ function shCopyFallback(txt, done){
 }
 function shCopyWeek(){
   if(!_sh.loaded){ _shToast('데이터 로딩 후 사용할 수 있습니다'); return; }
-  var days=[]; for(var i=0;i<7;i++) days.push(shAddDays(_sh.weekStart,i));
+  var days=shViewDays();
+  var dl=days[days.length-1];
+  var isM=(_sh.mode==='month');
   var co=shCheckoutMap();
   var wd=['일','월','화','수','목','금','토'];
   var weekStaff=_sh.staff.filter(function(s){
     if(s.end && s.end<days[0]) return false;
-    if(s.start && s.start>days[6]) return false;
+    if(s.start && s.start>dl) return false;
     return true;
   });
   function md(d){ var t=new Date(d+'T00:00:00'); return (t.getMonth()+1)+'/'+t.getDate()+'('+wd[t.getDay()]+')'; }
   var L=[];
   L.push('\uD83D\uDCC5 글램독 '+currentBranch+' 근무표');
-  L.push(md(days[0])+' ~ '+md(days[6]));
+  L.push(md(days[0])+' ~ '+md(dl));
   days.forEach(function(d){
     var g={ALL:[],AM:[],PM:[],OFF:[]};
     weekStaff.forEach(function(s){
       var v=_sh.grid[d+'|'+s.staffId];
       if(v && g[v]) g[v].push(s.name);
     });
+    if(isM){   // 월간: 하루 한 줄로 압축
+      var parts=[];
+      if(g.ALL.length) parts.push('올데이 '+g.ALL.join(','));
+      if(g.AM.length)  parts.push('오전 '+g.AM.join(','));
+      if(g.PM.length)  parts.push('오후 '+g.PM.join(','));
+      if(g.OFF.length) parts.push('휴무 '+g.OFF.join(','));
+      L.push(md(d)+' | '+(parts.join(' / ')||'미정'));
+      return;
+    }
     L.push('');
     L.push('\u25A0 '+md(d)+' \u2014 청소 '+(co[d]||0)+'실');
     if(g.ALL.length) L.push('\uC62C\uB370\uC774: '+g.ALL.join(', '));
@@ -5257,6 +5531,7 @@ function shCopyWeek(){
     if(g.OFF.length) L.push('\uD734\uBB34: '+g.OFF.join(', '));
     if(!g.ALL.length&&!g.AM.length&&!g.PM.length&&!g.OFF.length) L.push('\uBBF8\uC815');
   });
+  if(isM) L.splice(2,0,'');
   if(Object.keys(_sh.dirty).length) L.push('','\u203B 저장 전 변경사항이 포함되어 있습니다');
   var txt=L.join('\n');
   function done(ok){
