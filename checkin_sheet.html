@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
 <!-- 자동 리로드 제거(2026-08-12): 전체 리로드 대신 복귀 시 데이터만 갱신 -->
 <title>글램독 체크인 리스트 (본사)</title>
-<!-- v2026-09-29 14:49 -->
+<!-- v2026-09-29 15:23 -->
 <style>
   :root {
     --navy: #1B3A5C;
@@ -1179,7 +1179,7 @@ function _submitPw() {
     <option value="">🏠 예약현황 (지점 선택)</option>
     <option value="cl_6a85a13087.html">가평(가평점)</option><option value="cl_806a86626b.html">가평(청평점)</option><option value="cl_8eacf6d6c1.html">경주</option><option value="cl_a88bfd0a7f.html">영흥도</option><option value="cl_9edad9ddd2.html">양양</option><option value="cl_d3039f7a59.html">통영</option>
   </select>
-  <span class="update-time">갱신: 2026-09-29 14:49</span>
+  <span class="update-time">갱신: 2026-09-29 15:23</span>
 </div>
 <div class="tabs" id="tabs"></div>
 <div class="content" id="content">
@@ -1383,6 +1383,8 @@ function renderTabs() {
 }
 
 
+// ── [보안 2026-09-29] 손님·예약자가 입력한 값은 글자로만 표시 (HTML 삽입 차단) ──
+function _xe(s) { return String(s == null ? '' : s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;'); }
 // ── 즉시표시 캐시 (마지막 성공 응답을 먼저 그리고, 뒤에서 갱신) ──
 function gdCacheRead(key) {
   try { var c = localStorage.getItem('gdc_' + key); return c ? JSON.parse(c) : null; } catch(e) { return null; }
@@ -1516,10 +1518,10 @@ function dogInfoHtml(wd) {
   }
   var parts = dogs.map(function(d, i) {
     var nm = d.name
-      ? '<b style="color:#1B3A5C">' + d.name + '</b>'
+      ? '<b style="color:#1B3A5C">' + _xe(d.name) + '</b>'
       : '<span style="color:#aaa">강아지 ' + (i + 1) + '</span>';
-    var br = d.breed  ? ' <span style="color:#777;font-size:10px">' + d.breed + '</span>' : '';
-    var wt = d.weight ? '<br><span style="color:#666;font-size:10px;padding-left:4px">(' + d.weight + ')</span>' : '';
+    var br = d.breed  ? ' <span style="color:#777;font-size:10px">' + _xe(d.breed) + '</span>' : '';
+    var wt = d.weight ? '<br><span style="color:#666;font-size:10px;padding-left:4px">(' + _xe(d.weight) + ')</span>' : '';
     return nm + br + wt;
   });
   return '<div style="font-size:12px;line-height:1.6">' + parts.join('<br>') + '</div>';
@@ -1532,7 +1534,7 @@ function fmtTime(t) {
   if (/^\d{1,2}:\d{2}$/.test(s)) return s;
   var m = s.match(/(\d{1,2}):(\d{2})/);
   if (m) return ('0' + m[1]).slice(-2) + ':' + m[2];
-  return s;
+  return _xe(s);
 }
 
 function bbqHtml(wd) {
@@ -1547,19 +1549,19 @@ function bbqHtml(wd) {
 
 function arriveHtml(wd) {
   if (!wd || !wd.arrivalTime) return '<div class="write-lines">' + writeLine() + '</div>';
-  var t = fmtTime(wd.arrivalTime) || wd.arrivalTime;
+  var t = fmtTime(wd.arrivalTime) || _xe(wd.arrivalTime);
   return '<div style="font-size:14px;font-weight:700;color:#1B3A5C;text-align:center">' + t + '</div>';
 }
 
 function memoHtml(wd) {
   if (!wd) return '<div class="write-lines">' + writeLine() + '</div>';
   if (!wd.request) return '<div style="font-size:11px;color:#ccc;text-align:center">—</div>';
-  return '<div style="font-size:11px;color:#444;line-height:1.6">' + wd.request + '</div>';
+  return '<div style="font-size:11px;color:#444;line-height:1.6">' + _xe(wd.request) + '</div>';
 }
 
 function memoCellHtml(bno, wd) {
   var reqHtml = (wd && wd.request)
-    ? '<div style="font-size:11px;color:#444;line-height:1.5;margin-bottom:3px">📋 ' + wd.request + '</div>' : '';
+    ? '<div style="font-size:11px;color:#444;line-height:1.5;margin-bottom:3px">📋 ' + _xe(wd.request) + '</div>' : '';
   var memoEnabled = (typeof MEMO_ENABLED !== 'undefined' && MEMO_ENABLED && bno);
   if (!memoEnabled) {
     if (reqHtml) return reqHtml;
@@ -1693,7 +1695,7 @@ function renderTable() {
     const hasRec = recList && recList.length > 0;
     const recSum = hasRec ? recList.reduce((s, e) => s + (Number(e.total) || 0), 0) : 0;
     const fldBtn = (typeof _fieldEntries !== 'undefined')
-      ? `<td class="col-field"><button class="field-btn${hasRec?' has-record':''}" data-bno="${bno}" data-room="${r.room}" data-guest="${r.guest}" data-nights="${r.nights||1}" onclick="openFM(this)">${hasRec ? '✏️ '+recSum.toLocaleString()+'원 ('+recList.length+'건)' : '+ 현장기록'}</button></td>`
+      ? `<td class="col-field"><button class="field-btn${hasRec?' has-record':''}" data-bno="${bno}" data-room="${r.room}" data-guest="${_xe(r.guest)}" data-nights="${r.nights||1}" onclick="openFM(this)">${hasRec ? '✏️ '+recSum.toLocaleString()+'원 ('+recList.length+'건)' : '+ 현장기록'}</button></td>`
       : '';
     const wd = getWelcomeEntry(currentDate, r.branch, r.room);
     const welcomeCheck = wd
@@ -1714,8 +1716,8 @@ function renderTable() {
       <td class="col-no">${idx + 1}</td>
       <td class="col-room"><span class="room-name">${r.room}</span></td>
       <td class="col-guest">
-        <div class="guest-name">${r.guest}${welcomeCheck}${rv}</div>
-        <div class="guest-phone">${r.phone}</div>
+        <div class="guest-name">${_xe(r.guest)}${welcomeCheck}${rv}</div>
+        <div class="guest-phone">${_xe(r.phone)}</div>
         ${rvLine}
         ${channelBadge(r.channel)}
         <div style="margin-top:5px">${ciBtn}</div>
