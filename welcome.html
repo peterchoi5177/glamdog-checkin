@@ -1054,6 +1054,7 @@ const NAME    = decodeURIComponent(params.get("name")    || "고객");
 const BRANCH  = decodeURIComponent(params.get("branch")  || "");
 const CHECKIN = decodeURIComponent(params.get("checkin") || "");
 const ROOM    = decodeURIComponent(params.get("room")    || "");
+const NIGHTS  = Math.max(1, parseInt(params.get("nights") || "1", 10) || 1);   // [PATCH 20261002] 박수
 
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 // 상태
@@ -1363,8 +1364,8 @@ function updateExtraCharges() {
 
   // 인원 추가요금
   if (personCount > BASE_PERSON) {
-    const extra = (personCount - BASE_PERSON) * EXTRA_PERSON_FEE;
-    rows.push(`👥 인원 추가 (${personCount - BASE_PERSON}명 × 20,000원) → <strong>${extra.toLocaleString()}원</strong>`);
+    const extra = (personCount - BASE_PERSON) * EXTRA_PERSON_FEE * NIGHTS;
+    rows.push(`👥 인원 추가 (${personCount - BASE_PERSON}명 × 20,000원${NIGHTS > 1 ? ` × ${NIGHTS}박` : ""}) → <strong>${extra.toLocaleString()}원</strong>`);
     total += extra;
   }
 
@@ -1392,7 +1393,9 @@ function updateExtraCharges() {
     }
   }
 
+  dogFee *= NIGHTS;   // [PATCH 20261002] 반려견 추가·10kg 초과는 박당
   if (dogFee > 0) {
+    if (NIGHTS > 1) dogFeeLines.push(`× ${NIGHTS}박`);
     const detail = dogFeeLines.length ? ` <span style="font-size:12px;color:#64748b;">(${dogFeeLines.join(' · ')})</span>` : "";
     rows.push(`🐾 반려견 추가 요금${detail} → <strong>${dogFee.toLocaleString()}원</strong>`);
     total += dogFee;
@@ -1413,7 +1416,7 @@ function updateExtraCharges() {
     listEl.innerHTML = '<div style="color:#22c55e; font-size:14px; font-weight:600;">✅ 현재 입력 기준 추가 요금 없음</div>';
   } else {
     listEl.innerHTML = rows.map(r => `<div style="border-bottom:1px solid #f1f5f9; padding:6px 0;">${r}</div>`).join("")
-      + `<div style="margin-top:8px; font-size:16px; font-weight:700; color:#1e293b;">합계: ${total.toLocaleString()}원</div>`;
+      + `<div style="margin-top:8px; font-size:16px; font-weight:700; color:#1e293b;">합계: ${total.toLocaleString()}원${NIGHTS > 1 ? ` <span style="font-size:13px;font-weight:600;color:#64748b;">(${NIGHTS}박 기준 · 바베큐는 1회)</span>` : ""}</div>`;
   }
 
   // 계좌 정보 — 해당 지점 계좌 1개만 표시
