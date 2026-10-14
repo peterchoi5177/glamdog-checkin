@@ -1,0 +1,1039 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="theme-color" content="#4A7C59">
+  <title>글램독 주변정보</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --green:       #4A7C59;
+      --green-dark:  #345A40;
+      --green-light: #EBF4EE;
+      --amber:       #C8793A;
+      --amber-light: #FDF0E6;
+      --blue:        #3B7DD8;
+      --blue-light:  #EBF2FC;
+      --text:        #1E1E1E;
+      --text-mid:    #555555;
+      --text-light:  #888888;
+      --bg:          #F7F7F4;
+      --white:       #FFFFFF;
+      --border:      #D8D8D0;
+      --shadow:      0 2px 12px rgba(0,0,0,0.10);
+      --radius:      14px;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+    body {
+      font-family: 'Noto Sans KR', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      overscroll-behavior: none;
+    }
+
+    /* -- 헤더 -- */
+    .header {
+      background: var(--green);
+      color: var(--white);
+      padding: 20px 20px 18px;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    .header-top { display: flex; align-items: center; gap: 10px; }
+    .header-logo { font-size: 22px; font-weight: 900; letter-spacing: -0.5px; }
+    .header-logo span { color: #A8D5B5; }
+    .header-subtitle { font-size: 12px; opacity: 0.8; margin-top: 1px; }
+
+    /* -- 지점 탭 -- */
+    .branch-tabs {
+      display: flex;
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: none;
+      gap: 6px;
+      padding: 12px 16px;
+      background: var(--white);
+      border-bottom: 1px solid var(--border);
+      position: sticky;
+      top: 68px;
+      z-index: 99;
+    }
+    .branch-tabs::-webkit-scrollbar { display: none; }
+    .branch-tab {
+      flex-shrink: 0;
+      padding: 8px 16px;
+      border: 1.5px solid var(--border);
+      border-radius: 99px;
+      font-size: 13px;
+      font-family: inherit;
+      font-weight: 500;
+      background: var(--white);
+      color: var(--text-mid);
+      cursor: pointer;
+      transition: all 0.15s;
+      white-space: nowrap;
+    }
+    .branch-tab.active {
+      border-color: var(--green);
+      background: var(--green);
+      color: var(--white);
+    }
+
+    /* -- 카테고리 필터 -- */
+    .category-tabs {
+      display: flex;
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: none;
+      gap: 6px;
+      padding: 10px 16px;
+      background: var(--bg);
+    }
+    .category-tabs::-webkit-scrollbar { display: none; }
+    .cat-tab {
+      flex-shrink: 0;
+      padding: 6px 14px;
+      border: 1.5px solid var(--border);
+      border-radius: 99px;
+      font-size: 12px;
+      font-family: inherit;
+      font-weight: 500;
+      background: var(--white);
+      color: var(--text-mid);
+      cursor: pointer;
+      transition: all 0.15s;
+      white-space: nowrap;
+    }
+    .cat-tab.active {
+      border-color: var(--green);
+      background: var(--green-light);
+      color: var(--green-dark);
+    }
+
+    /* -- 컨테이너 -- */
+    .container {
+      max-width: 480px;
+      margin: 0 auto;
+      padding: 12px 16px 40px;
+    }
+
+    /* -- 지점 콘텐츠 -- */
+    .branch-content { display: none; }
+    .branch-content.active { display: block; animation: fadeIn 0.3s ease; }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(8px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* -- 장소 카드 -- */
+    .place-card {
+      background: var(--white);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 16px 18px;
+      margin-bottom: 12px;
+      transition: transform 0.15s;
+    }
+    .place-card:active { transform: scale(0.98); }
+
+    .place-header {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      margin-bottom: 10px;
+    }
+    .place-emoji {
+      font-size: 28px;
+      line-height: 1;
+      flex-shrink: 0;
+      margin-top: 2px;
+    }
+    .place-info { flex: 1; }
+    .place-name {
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 2px;
+    }
+    .place-category {
+      display: inline-block;
+      font-size: 11px;
+      font-weight: 500;
+      padding: 2px 8px;
+      border-radius: 99px;
+      margin-bottom: 4px;
+    }
+    .place-category.food { background: #FFF3E0; color: #E65100; }
+    .place-category.cafe { background: #FFF8E1; color: #F57F17; }
+    .place-category.mart { background: #E8F5E9; color: #2E7D32; }
+    .place-category.play { background: #E3F2FD; color: #1565C0; }
+    .place-category.hospital { background: #FCE4EC; color: #C62828; }
+    .place-category.attraction { background: #F3E5F5; color: #6A1B9A; }
+
+    .place-desc {
+      font-size: 13px;
+      color: var(--text-mid);
+      line-height: 1.5;
+      margin-bottom: 10px;
+    }
+
+    .place-meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      font-size: 12px;
+      color: var(--text-light);
+    }
+    .place-meta-item {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .place-actions {
+      display: flex;
+      gap: 8px;
+      margin-top: 12px;
+      padding-top: 10px;
+      border-top: 1px solid var(--border);
+    }
+    .place-action-btn {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+      padding: 9px;
+      border: 1.5px solid var(--border);
+      border-radius: 10px;
+      font-size: 13px;
+      font-family: inherit;
+      font-weight: 500;
+      background: var(--white);
+      color: var(--text-mid);
+      cursor: pointer;
+      text-decoration: none;
+      transition: all 0.15s;
+    }
+    .place-action-btn:active {
+      background: var(--green-light);
+      border-color: var(--green);
+      color: var(--green-dark);
+    }
+
+    /* -- 섹션 제목 -- */
+    .section-title {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--text-light);
+      margin: 18px 0 10px;
+      padding-left: 2px;
+      letter-spacing: 0.3px;
+    }
+
+    /* -- 빈 상태 -- */
+    .empty-state {
+      text-align: center;
+      padding: 40px 20px;
+      color: var(--text-light);
+    }
+    .empty-state-icon { font-size: 48px; margin-bottom: 12px; }
+    .empty-state-text { font-size: 14px; line-height: 1.6; }
+
+    /* -- 팁 박스 -- */
+    .tip-box {
+      background: var(--blue-light);
+      border: 1px solid #B8D4F0;
+      border-radius: 10px;
+      padding: 12px 14px;
+      font-size: 13px;
+      color: var(--blue);
+      line-height: 1.5;
+      margin-bottom: 14px;
+    }
+    .tip-box strong { display: block; margin-bottom: 4px; font-size: 14px; }
+  </style>
+</head>
+<body>
+
+<!-- 헤더 -->
+<div class="header">
+  <div class="header-top">
+    <div>
+      <div class="header-logo">&#x1F43E; 글램독<span>.</span></div>
+      <div class="header-subtitle">주변정보 &mdash; 지점별 추천 장소</div>
+    </div>
+  </div>
+</div>
+
+<!-- 지점 탭 -->
+<div class="branch-tabs" id="branchTabs">
+  <button class="branch-tab active" data-branch="가평(가평점)" onclick="switchBranch(this)">가평점</button>
+  <button class="branch-tab" data-branch="가평(청평점)" onclick="switchBranch(this)">청평점</button>
+  <button class="branch-tab" data-branch="경주" onclick="switchBranch(this)">경주</button>
+  <button class="branch-tab" data-branch="영흥도" onclick="switchBranch(this)">영흥도</button>
+  <button class="branch-tab" data-branch="양양" onclick="switchBranch(this)">양양</button>
+  <button class="branch-tab" data-branch="통영" onclick="switchBranch(this)">통영</button>
+</div>
+
+<!-- 카테고리 필터 -->
+<div class="category-tabs" id="categoryTabs">
+  <button class="cat-tab active" data-cat="all" onclick="filterCategory(this)">전체</button>
+  <button class="cat-tab" data-cat="food" onclick="filterCategory(this)">맛집</button>
+  <button class="cat-tab" data-cat="cafe" onclick="filterCategory(this)">카페</button>
+  <button class="cat-tab" data-cat="mart" onclick="filterCategory(this)">마트/편의점</button>
+  <button class="cat-tab" data-cat="play" onclick="filterCategory(this)">반려견 놀이</button>
+  <button class="cat-tab" data-cat="hospital" onclick="filterCategory(this)">동물병원</button>
+  <button class="cat-tab" data-cat="attraction" onclick="filterCategory(this)">관광지</button>
+</div>
+
+<!-- 컨테이너 -->
+<div class="container">
+
+  <!-- ══════ 가평(가평점) ══════ -->
+  <div class="branch-content active" id="branch-가평(가평점)">
+
+    <div class="tip-box">
+      <strong>&#x1F4A1; 가평점 주변 팁</strong>
+      펜션에서 차로 5~10분 거리에 마트와 맛집이 모여 있어요. 식재료는 미리 준비하시는 걸 추천드려요!
+    </div>
+
+    <div class="section-title">&#x1F372; 맛집</div>
+
+    <div class="place-card" data-cat="food">
+      <div class="place-header">
+        <div class="place-emoji">&#x1F356;</div>
+        <div class="place-info">
+          <span class="place-category food">맛집</span>
+          <div class="place-name">(맛집 이름 추가 예정)</div>
+        </div>
+      </div>
+      <div class="place-desc">가평점 근처 추천 맛집 — 메뉴 및 설명 추가 예정</div>
+      <div class="place-meta">
+        <div class="place-meta-item">&#x1F697; 차량 약 _분</div>
+        <div class="place-meta-item">&#x1F4B0; 인당 약 _원</div>
+      </div>
+      <div class="place-actions">
+        <a class="place-action-btn" href="#" onclick="return false;">&#x1F4CD; 지도보기</a>
+        <a class="place-action-btn" href="#" onclick="return false;">&#x1F4DE; 전화</a>
+      </div>
+    </div>
+
+    <div class="section-title">&#x2615; 카페</div>
+
+    <div class="place-card" data-cat="cafe">
+      <div class="place-header">
+        <div class="place-emoji">&#x2615;</div>
+        <div class="place-info">
+          <span class="place-category cafe">카페</span>
+          <div class="place-name">(카페 이름 추가 예정)</div>
+        </div>
+      </div>
+      <div class="place-desc">반려견 동반 가능한 카페 — 설명 추가 예정</div>
+      <div class="place-meta">
+        <div class="place-meta-item">&#x1F697; 차량 약 _분</div>
+        <div class="place-meta-item">&#x1F436; 반려견 동반 가능</div>
+      </div>
+      <div class="place-actions">
+        <a class="place-action-btn" href="#" onclick="return false;">&#x1F4CD; 지도보기</a>
+        <a class="place-action-btn" href="#" onclick="return false;">&#x1F4DE; 전화</a>
+      </div>
+    </div>
+
+    <div class="section-title">&#x1F6D2; 마트 / 편의점</div>
+
+    <div class="place-card" data-cat="mart">
+      <div class="place-header">
+        <div class="place-emoji">&#x1F6D2;</div>
+        <div class="place-info">
+          <span class="place-category mart">마트</span>
+          <div class="place-name">(마트 이름 추가 예정)</div>
+        </div>
+      </div>
+      <div class="place-desc">바베큐 식재료, 간식 등 구매 가능 — 설명 추가 예정</div>
+      <div class="place-meta">
+        <div class="place-meta-item">&#x1F697; 차량 약 _분</div>
+        <div class="place-meta-item">&#x1F552; 영업시간: _시 ~ _시</div>
+      </div>
+      <div class="place-actions">
+        <a class="place-action-btn" href="#" onclick="return false;">&#x1F4CD; 지도보기</a>
+      </div>
+    </div>
+
+    <div class="section-title">&#x1F43E; 반려견 놀이</div>
+
+    <div class="place-card" data-cat="play">
+      <div class="place-header">
+        <div class="place-emoji">&#x1F3DE;&#xFE0F;</div>
+        <div class="place-info">
+          <span class="place-category play">반려견 놀이</span>
+          <div class="place-name">(산책로/공원 이름 추가 예정)</div>
+        </div>
+      </div>
+      <div class="place-desc">반려견과 함께 산책할 수 있는 코스 — 설명 추가 예정</div>
+      <div class="place-meta">
+        <div class="place-meta-item">&#x1F697; 차량 약 _분</div>
+      </div>
+      <div class="place-actions">
+        <a class="place-action-btn" href="#" onclick="return false;">&#x1F4CD; 지도보기</a>
+      </div>
+    </div>
+
+    <div class="section-title">&#x1FA7A; 동물병원 (응급)</div>
+
+    <div class="place-card" data-cat="hospital">
+      <div class="place-header">
+        <div class="place-emoji">&#x1F3E5;</div>
+        <div class="place-info">
+          <span class="place-category hospital">동물병원</span>
+          <div class="place-name">(동물병원 이름 추가 예정)</div>
+        </div>
+      </div>
+      <div class="place-desc">응급 시 이용 가능한 가장 가까운 동물병원 — 설명 추가 예정</div>
+      <div class="place-meta">
+        <div class="place-meta-item">&#x1F697; 차량 약 _분</div>
+        <div class="place-meta-item">&#x1F552; 진료시간: _시 ~ _시</div>
+      </div>
+      <div class="place-actions">
+        <a class="place-action-btn" href="#" onclick="return false;">&#x1F4CD; 지도보기</a>
+        <a class="place-action-btn" href="#" onclick="return false;">&#x1F4DE; 전화</a>
+      </div>
+    </div>
+
+    <div class="section-title">&#x1F3D4;&#xFE0F; 관광지</div>
+
+    <div class="place-card" data-cat="attraction">
+      <div class="place-header">
+        <div class="place-emoji">&#x1F3D4;&#xFE0F;</div>
+        <div class="place-info">
+          <span class="place-category attraction">관광지</span>
+          <div class="place-name">(관광지 이름 추가 예정)</div>
+        </div>
+      </div>
+      <div class="place-desc">가평 대표 관광지 — 설명 추가 예정</div>
+      <div class="place-meta">
+        <div class="place-meta-item">&#x1F697; 차량 약 _분</div>
+      </div>
+      <div class="place-actions">
+        <a class="place-action-btn" href="#" onclick="return false;">&#x1F4CD; 지도보기</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════ 가평(청평점) ══════ -->
+  <div class="branch-content" id="branch-가평(청평점)">
+
+    <div class="tip-box">
+      <strong>&#x1F4A1; 청평점 주변 팁</strong>
+      청평호 주변으로 카페와 식당이 있어요. 주말에는 혼잡할 수 있으니 일찍 방문하세요!
+    </div>
+
+    <div class="section-title">&#x1F372; 맛집</div>
+    <div class="place-card" data-cat="food">
+      <div class="place-header">
+        <div class="place-emoji">&#x1F356;</div>
+        <div class="place-info">
+          <span class="place-category food">맛집</span>
+          <div class="place-name">(맛집 이름 추가 예정)</div>
+        </div>
+      </div>
+      <div class="place-desc">청평점 근처 추천 맛집 — 설명 추가 예정</div>
+      <div class="place-meta"><div class="place-meta-item">&#x1F697; 차량 약 _분</div></div>
+      <div class="place-actions">
+        <a class="place-action-btn" href="#" onclick="return false;">&#x1F4CD; 지도보기</a>
+        <a class="place-action-btn" href="#" onclick="return false;">&#x1F4DE; 전화</a>
+      </div>
+    </div>
+
+    <div class="section-title">&#x2615; 카페</div>
+    <div class="place-card" data-cat="cafe">
+      <div class="place-header">
+        <div class="place-emoji">&#x2615;</div>
+        <div class="place-info">
+          <span class="place-category cafe">카페</span>
+          <div class="place-name">(카페 이름 추가 예정)</div>
+        </div>
+      </div>
+      <div class="place-desc">반려견 동반 가능한 카페 — 설명 추가 예정</div>
+      <div class="place-meta"><div class="place-meta-item">&#x1F697; 차량 약 _분</div></div>
+      <div class="place-actions">
+        <a class="place-action-btn" href="#" onclick="return false;">&#x1F4CD; 지도보기</a>
+      </div>
+    </div>
+
+    <div class="section-title">&#x1F6D2; 마트 / 편의점</div>
+    <div class="place-card" data-cat="mart">
+      <div class="place-header">
+        <div class="place-emoji">&#x1F6D2;</div>
+        <div class="place-info">
+          <span class="place-category mart">마트</span>
+          <div class="place-name">(마트 이름 추가 예정)</div>
+        </div>
+      </div>
+      <div class="place-desc">식재료 구매 — 설명 추가 예정</div>
+      <div class="place-meta"><div class="place-meta-item">&#x1F697; 차량 약 _분</div></div>
+      <div class="place-actions">
+        <a class="place-action-btn" href="#" onclick="return false;">&#x1F4CD; 지도보기</a>
+      </div>
+    </div>
+
+    <div class="section-title">&#x1F43E; 반려견 놀이</div>
+    <div class="place-card" data-cat="play">
+      <div class="place-header">
+        <div class="place-emoji">&#x1F3DE;&#xFE0F;</div>
+        <div class="place-info">
+          <span class="place-category play">반려견 놀이</span>
+          <div class="place-name">(산책로/공원 이름 추가 예정)</div>
+        </div>
+      </div>
+      <div class="place-desc">반려견 산책 코스 — 설명 추가 예정</div>
+      <div class="place-meta"><div class="place-meta-item">&#x1F697; 차량 약 _분</div></div>
+      <div class="place-actions">
+        <a class="place-action-btn" href="#" onclick="return false;">&#x1F4CD; 지도보기</a>
+      </div>
+    </div>
+
+    <div class="section-title">&#x1FA7A; 동물병원 (응급)</div>
+    <div class="place-card" data-cat="hospital">
+      <div class="place-header">
+        <div class="place-emoji">&#x1F3E5;</div>
+        <div class="place-info">
+          <span class="place-category hospital">동물병원</span>
+          <div class="place-name">(동물병원 이름 추가 예정)</div>
+        </div>
+      </div>
+      <div class="place-desc">응급 동물병원 — 설명 추가 예정</div>
+      <div class="place-meta"><div class="place-meta-item">&#x1F697; 차량 약 _분</div></div>
+      <div class="place-actions">
+        <a class="place-action-btn" href="#" onclick="return false;">&#x1F4CD; 지도보기</a>
+        <a class="place-action-btn" href="#" onclick="return false;">&#x1F4DE; 전화</a>
+      </div>
+    </div>
+
+    <div class="section-title">&#x1F3D4;&#xFE0F; 관광지</div>
+    <div class="place-card" data-cat="attraction">
+      <div class="place-header">
+        <div class="place-emoji">&#x1F3D4;&#xFE0F;</div>
+        <div class="place-info">
+          <span class="place-category attraction">관광지</span>
+          <div class="place-name">(관광지 이름 추가 예정)</div>
+        </div>
+      </div>
+      <div class="place-desc">청평 주변 관광지 — 설명 추가 예정</div>
+      <div class="place-meta"><div class="place-meta-item">&#x1F697; 차량 약 _분</div></div>
+      <div class="place-actions">
+        <a class="place-action-btn" href="#" onclick="return false;">&#x1F4CD; 지도보기</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════ 경주 ══════ -->
+  <div class="branch-content" id="branch-경주">
+
+    <div class="tip-box">
+      <strong>&#x1F4A1; 경주점 주변 팁</strong>
+      경주는 관광 명소가 풍부해요. 반려견 동반 가능한 유적지도 있으니 확인해 보세요!
+    </div>
+
+    <div class="section-title">&#x1F372; 맛집</div>
+    <div class="place-card" data-cat="food">
+      <div class="place-header">
+        <div class="place-emoji">&#x1F356;</div>
+        <div class="place-info">
+          <span class="place-category food">맛집</span>
+          <div class="place-name">(맛집 이름 추가 예정)</div>
+        </div>
+      </div>
+      <div class="place-desc">경주점 근처 추천 맛집 — 설명 추가 예정</div>
+      <div class="place-meta"><div class="place-meta-item">&#x1F697; 차량 약 _분</div></div>
+      <div class="place-actions">
+        <a class="place-action-btn" href="#" onclick="return false;">&#x1F4CD; 지도보기</a>
+        <a class="place-action-btn" href="#" onclick="return false;">&#x1F4DE; 전화</a>
+      </div>
+    </div>
+
+    <div class="section-title">&#x2615; 카페</div>
+    <div class="place-card" data-cat="cafe">
+      <div class="place-header">
+        <div class="place-emoji">&#x2615;</div>
+        <div class="place-info">
+          <span class="place-category cafe">카페</span>
+          <div class="place-name">(카페 이름 추가 예정)</div>
+        </div>
+      </div>
+      <div class="place-desc">반려견 동반 가능한 카페 — 설명 추가 예정</div>
+      <div class="place-meta"><div class="place-meta-item">&#x1F697; 차량 약 _분</div></div>
+      <div class="place-actions">
+        <a class="place-action-btn" href="#" onclick="return false;">&#x1F4CD; 지도보기</a>
+      </div>
+    </div>
+
+    <div class="section-title">&#x1F6D2; 마트 / 편의점</div>
+    <div class="place-card" data-cat="mart">
+      <div class="place-header">
+        <div class="place-emoji">&#x1F6D2;</div>
+        <div class="place-info">
+          <span class="place-category mart">마트</span>
+          <div class="place-name">(마트 이름 추가 예정)</div>
+        </div>
+      </div>
+      <div class="place-desc">식재료 구매 — 설명 추가 예정</div>
+      <div class="place-meta"><div class="place-meta-item">&#x1F697; 차량 약 _분</div></div>
+      <div class="place-actions">
+        <a class="place-action-btn" href="#" onclick="return false;">&#x1F4CD; 지도보기</a>
+      </div>
+    </div>
+
+    <div class="section-title">&#x1F43E; 반려견 놀이</div>
+    <div class="place-card" data-cat="play">
+      <div class="place-header">
+        <div class="place-emoji">&#x1F3DE;&#xFE0F;</div>
+        <div class="place-info">
+          <span class="place-category play">반려견 놀이</span>
+          <div class="place-name">(산책로/공원 이름 추가 예정)</div>
+        </div>
+      </div>
+      <div class="place-desc">반려견 산책 코스 — 설명 추가 예정</div>
+      <div class="place-meta"><div class="place-meta-item">&#x1F697; 차량 약 _분</div></div>
+      <div class="place-actions">
+        <a class="place-action-btn" href="#" onclick="return false;">&#x1F4CD; 지도보기</a>
+      </div>
+    </div>
+
+    <div class="section-title">&#x1FA7A; 동물병원 (응급)</div>
+    <div class="place-card" data-cat="hospital">
+      <div class="place-header">
+        <div class="place-emoji">&#x1F3E5;</div>
+        <div class="place-info">
+          <span class="place-category hospital">동물병원</span>
+          <div class="place-name">(동물병원 이름 추가 예정)</div>
+        </div>
+      </div>
+      <div class="place-desc">응급 동물병원 — 설명 추가 예정</div>
+      <div class="place-meta"><div class="place-meta-item">&#x1F697; 차량 약 _분</div></div>
+      <div class="place-actions">
+        <a class="place-action-btn" href="#" onclick="return false;">&#x1F4CD; 지도보기</a>
+        <a class="place-action-btn" href="#" onclick="return false;">&#x1F4DE; 전화</a>
+      </div>
+    </div>
+
+    <div class="section-title">&#x1F3EF; 관광지</div>
+    <div class="place-card" data-cat="attraction">
+      <div class="place-header">
+        <div class="place-emoji">&#x1F3EF;</div>
+        <div class="place-info">
+          <span class="place-category attraction">관광지</span>
+          <div class="place-name">(관광지 이름 추가 예정)</div>
+        </div>
+      </div>
+      <div class="place-desc">경주 대표 관광지 — 설명 추가 예정</div>
+      <div class="place-meta"><div class="place-meta-item">&#x1F697; 차량 약 _분</div></div>
+      <div class="place-actions">
+        <a class="place-action-btn" href="#" onclick="return false;">&#x1F4CD; 지도보기</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════ 영흥도 ══════ -->
+  <div class="branch-content" id="branch-영흥도">
+
+    <div class="tip-box">
+      <strong>&#x1F4A1; 영흥도점 주변 팁</strong>
+      섬 지역이라 마트가 제한적이에요. 식재료는 영흥대교 건너기 전에 준비하세요!
+    </div>
+
+    <div class="section-title">&#x1F372; 맛집</div>
+    <div class="place-card" data-cat="food">
+      <div class="place-header">
+        <div class="place-emoji">&#x1F99E;</div>
+        <div class="place-info">
+          <span class="place-category food">맛집</span>
+          <div class="place-name">(해산물 맛집 이름 추가 예정)</div>
+        </div>
+      </div>
+      <div class="place-desc">영흥도 신선한 해산물 맛집 — 설명 추가 예정</div>
+      <div class="place-meta"><div class="place-meta-item">&#x1F697; 차량 약 _분</div></div>
+      <div class="place-actions">
+        <a class="place-action-btn" href="#" onclick="return false;">&#x1F4CD; 지도보기</a>
+        <a class="place-action-btn" href="#" onclick="return false;">&#x1F4DE; 전화</a>
+      </div>
+    </div>
+
+    <div class="section-title">&#x2615; 카페</div>
+    <div class="place-card" data-cat="cafe">
+      <div class="place-header">
+        <div class="place-emoji">&#x2615;</div>
+        <div class="place-info">
+          <span class="place-category cafe">카페</span>
+          <div class="place-name">(카페 이름 추가 예정)</div>
+        </div>
+      </div>
+      <div class="place-desc">오션뷰 카페 — 설명 추가 예정</div>
+      <div class="place-meta"><div class="place-meta-item">&#x1F697; 차량 약 _분</div></div>
+      <div class="place-actions">
+        <a class="place-action-btn" href="#" onclick="return false;">&#x1F4CD; 지도보기</a>
+      </div>
+    </div>
+
+    <div class="section-title">&#x1F6D2; 마트 / 편의점</div>
+    <div class="place-card" data-cat="mart">
+      <div class="place-header">
+        <div class="place-emoji">&#x1F6D2;</div>
+        <div class="place-info">
+          <span class="place-category mart">마트</span>
+          <div class="place-name">(마트 이름 추가 예정)</div>
+        </div>
+      </div>
+      <div class="place-desc">가장 가까운 마트 — 설명 추가 예정</div>
+      <div class="place-meta"><div class="place-meta-item">&#x1F697; 차량 약 _분</div></div>
+      <div class="place-actions">
+        <a class="place-action-btn" href="#" onclick="return false;">&#x1F4CD; 지도보기</a>
+      </div>
+    </div>
+
+    <div class="section-title">&#x1F43E; 반려견 놀이</div>
+    <div class="place-card" data-cat="play">
+      <div class="place-header">
+        <div class="place-emoji">&#x1F3D6;&#xFE0F;</div>
+        <div class="place-info">
+          <span class="place-category play">반려견 놀이</span>
+          <div class="place-name">(해변/산책로 이름 추가 예정)</div>
+        </div>
+      </div>
+      <div class="place-desc">반려견과 해변 산책 — 설명 추가 예정</div>
+      <div class="place-meta"><div class="place-meta-item">&#x1F697; 차량 약 _분</div></div>
+      <div class="place-actions">
+        <a class="place-action-btn" href="#" onclick="return false;">&#x1F4CD; 지도보기</a>
+      </div>
+    </div>
+
+    <div class="section-title">&#x1FA7A; 동물병원 (응급)</div>
+    <div class="place-card" data-cat="hospital">
+      <div class="place-header">
+        <div class="place-emoji">&#x1F3E5;</div>
+        <div class="place-info">
+          <span class="place-category hospital">동물병원</span>
+          <div class="place-name">(동물병원 이름 추가 예정)</div>
+        </div>
+      </div>
+      <div class="place-desc">응급 동물병원 — 설명 추가 예정</div>
+      <div class="place-meta"><div class="place-meta-item">&#x1F697; 차량 약 _분</div></div>
+      <div class="place-actions">
+        <a class="place-action-btn" href="#" onclick="return false;">&#x1F4CD; 지도보기</a>
+        <a class="place-action-btn" href="#" onclick="return false;">&#x1F4DE; 전화</a>
+      </div>
+    </div>
+
+    <div class="section-title">&#x1F30A; 관광지</div>
+    <div class="place-card" data-cat="attraction">
+      <div class="place-header">
+        <div class="place-emoji">&#x1F30A;</div>
+        <div class="place-info">
+          <span class="place-category attraction">관광지</span>
+          <div class="place-name">(관광지 이름 추가 예정)</div>
+        </div>
+      </div>
+      <div class="place-desc">영흥도 관광 명소 — 설명 추가 예정</div>
+      <div class="place-meta"><div class="place-meta-item">&#x1F697; 차량 약 _분</div></div>
+      <div class="place-actions">
+        <a class="place-action-btn" href="#" onclick="return false;">&#x1F4CD; 지도보기</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════ 양양 ══════ -->
+  <div class="branch-content" id="branch-양양">
+
+    <div class="tip-box">
+      <strong>&#x1F4A1; 양양점 주변 팁</strong>
+      서핑 해변과 카페 거리가 가까워요. 반려견과 해변 산책도 가능합니다!
+    </div>
+
+    <div class="section-title">&#x1F372; 맛집</div>
+    <div class="place-card" data-cat="food">
+      <div class="place-header">
+        <div class="place-emoji">&#x1F356;</div>
+        <div class="place-info">
+          <span class="place-category food">맛집</span>
+          <div class="place-name">(맛집 이름 추가 예정)</div>
+        </div>
+      </div>
+      <div class="place-desc">양양점 근처 추천 맛집 — 설명 추가 예정</div>
+      <div class="place-meta"><div class="place-meta-item">&#x1F697; 차량 약 _분</div></div>
+      <div class="place-actions">
+        <a class="place-action-btn" href="#" onclick="return false;">&#x1F4CD; 지도보기</a>
+        <a class="place-action-btn" href="#" onclick="return false;">&#x1F4DE; 전화</a>
+      </div>
+    </div>
+
+    <div class="section-title">&#x2615; 카페</div>
+    <div class="place-card" data-cat="cafe">
+      <div class="place-header">
+        <div class="place-emoji">&#x2615;</div>
+        <div class="place-info">
+          <span class="place-category cafe">카페</span>
+          <div class="place-name">(카페 이름 추가 예정)</div>
+        </div>
+      </div>
+      <div class="place-desc">서핑 비치 근처 카페 — 설명 추가 예정</div>
+      <div class="place-meta"><div class="place-meta-item">&#x1F697; 차량 약 _분</div></div>
+      <div class="place-actions">
+        <a class="place-action-btn" href="#" onclick="return false;">&#x1F4CD; 지도보기</a>
+      </div>
+    </div>
+
+    <div class="section-title">&#x1F6D2; 마트 / 편의점</div>
+    <div class="place-card" data-cat="mart">
+      <div class="place-header">
+        <div class="place-emoji">&#x1F6D2;</div>
+        <div class="place-info">
+          <span class="place-category mart">마트</span>
+          <div class="place-name">(마트 이름 추가 예정)</div>
+        </div>
+      </div>
+      <div class="place-desc">식재료 구매 — 설명 추가 예정</div>
+      <div class="place-meta"><div class="place-meta-item">&#x1F697; 차량 약 _분</div></div>
+      <div class="place-actions">
+        <a class="place-action-btn" href="#" onclick="return false;">&#x1F4CD; 지도보기</a>
+      </div>
+    </div>
+
+    <div class="section-title">&#x1F43E; 반려견 놀이</div>
+    <div class="place-card" data-cat="play">
+      <div class="place-header">
+        <div class="place-emoji">&#x1F3D6;&#xFE0F;</div>
+        <div class="place-info">
+          <span class="place-category play">반려견 놀이</span>
+          <div class="place-name">(해변/산책로 이름 추가 예정)</div>
+        </div>
+      </div>
+      <div class="place-desc">반려견 해변 산책 — 설명 추가 예정</div>
+      <div class="place-meta"><div class="place-meta-item">&#x1F697; 차량 약 _분</div></div>
+      <div class="place-actions">
+        <a class="place-action-btn" href="#" onclick="return false;">&#x1F4CD; 지도보기</a>
+      </div>
+    </div>
+
+    <div class="section-title">&#x1FA7A; 동물병원 (응급)</div>
+    <div class="place-card" data-cat="hospital">
+      <div class="place-header">
+        <div class="place-emoji">&#x1F3E5;</div>
+        <div class="place-info">
+          <span class="place-category hospital">동물병원</span>
+          <div class="place-name">(동물병원 이름 추가 예정)</div>
+        </div>
+      </div>
+      <div class="place-desc">응급 동물병원 — 설명 추가 예정</div>
+      <div class="place-meta"><div class="place-meta-item">&#x1F697; 차량 약 _분</div></div>
+      <div class="place-actions">
+        <a class="place-action-btn" href="#" onclick="return false;">&#x1F4CD; 지도보기</a>
+        <a class="place-action-btn" href="#" onclick="return false;">&#x1F4DE; 전화</a>
+      </div>
+    </div>
+
+    <div class="section-title">&#x1F3D6;&#xFE0F; 관광지</div>
+    <div class="place-card" data-cat="attraction">
+      <div class="place-header">
+        <div class="place-emoji">&#x1F3D6;&#xFE0F;</div>
+        <div class="place-info">
+          <span class="place-category attraction">관광지</span>
+          <div class="place-name">(관광지 이름 추가 예정)</div>
+        </div>
+      </div>
+      <div class="place-desc">양양 관광 명소 — 설명 추가 예정</div>
+      <div class="place-meta"><div class="place-meta-item">&#x1F697; 차량 약 _분</div></div>
+      <div class="place-actions">
+        <a class="place-action-btn" href="#" onclick="return false;">&#x1F4CD; 지도보기</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════ 통영 ══════ -->
+  <div class="branch-content" id="branch-통영">
+
+    <div class="tip-box">
+      <strong>&#x1F4A1; 통영점 주변 팁</strong>
+      통영 중앙시장에서 신선한 해산물을 저렴하게 구매할 수 있어요. 바베큐 재료 추천!
+    </div>
+
+    <div class="section-title">&#x1F372; 맛집</div>
+    <div class="place-card" data-cat="food">
+      <div class="place-header">
+        <div class="place-emoji">&#x1F363;</div>
+        <div class="place-info">
+          <span class="place-category food">맛집</span>
+          <div class="place-name">(맛집 이름 추가 예정)</div>
+        </div>
+      </div>
+      <div class="place-desc">통영 대표 먹거리 — 설명 추가 예정</div>
+      <div class="place-meta"><div class="place-meta-item">&#x1F697; 차량 약 _분</div></div>
+      <div class="place-actions">
+        <a class="place-action-btn" href="#" onclick="return false;">&#x1F4CD; 지도보기</a>
+        <a class="place-action-btn" href="#" onclick="return false;">&#x1F4DE; 전화</a>
+      </div>
+    </div>
+
+    <div class="section-title">&#x2615; 카페</div>
+    <div class="place-card" data-cat="cafe">
+      <div class="place-header">
+        <div class="place-emoji">&#x2615;</div>
+        <div class="place-info">
+          <span class="place-category cafe">카페</span>
+          <div class="place-name">(카페 이름 추가 예정)</div>
+        </div>
+      </div>
+      <div class="place-desc">바다뷰 카페 — 설명 추가 예정</div>
+      <div class="place-meta"><div class="place-meta-item">&#x1F697; 차량 약 _분</div></div>
+      <div class="place-actions">
+        <a class="place-action-btn" href="#" onclick="return false;">&#x1F4CD; 지도보기</a>
+      </div>
+    </div>
+
+    <div class="section-title">&#x1F6D2; 마트 / 편의점</div>
+    <div class="place-card" data-cat="mart">
+      <div class="place-header">
+        <div class="place-emoji">&#x1F6D2;</div>
+        <div class="place-info">
+          <span class="place-category mart">마트</span>
+          <div class="place-name">(마트 이름 추가 예정)</div>
+        </div>
+      </div>
+      <div class="place-desc">식재료 구매 — 설명 추가 예정</div>
+      <div class="place-meta"><div class="place-meta-item">&#x1F697; 차량 약 _분</div></div>
+      <div class="place-actions">
+        <a class="place-action-btn" href="#" onclick="return false;">&#x1F4CD; 지도보기</a>
+      </div>
+    </div>
+
+    <div class="section-title">&#x1F43E; 반려견 놀이</div>
+    <div class="place-card" data-cat="play">
+      <div class="place-header">
+        <div class="place-emoji">&#x1F3D6;&#xFE0F;</div>
+        <div class="place-info">
+          <span class="place-category play">반려견 놀이</span>
+          <div class="place-name">(해변/산책로 이름 추가 예정)</div>
+        </div>
+      </div>
+      <div class="place-desc">반려견 산책 코스 — 설명 추가 예정</div>
+      <div class="place-meta"><div class="place-meta-item">&#x1F697; 차량 약 _분</div></div>
+      <div class="place-actions">
+        <a class="place-action-btn" href="#" onclick="return false;">&#x1F4CD; 지도보기</a>
+      </div>
+    </div>
+
+    <div class="section-title">&#x1FA7A; 동물병원 (응급)</div>
+    <div class="place-card" data-cat="hospital">
+      <div class="place-header">
+        <div class="place-emoji">&#x1F3E5;</div>
+        <div class="place-info">
+          <span class="place-category hospital">동물병원</span>
+          <div class="place-name">(동물병원 이름 추가 예정)</div>
+        </div>
+      </div>
+      <div class="place-desc">응급 동물병원 — 설명 추가 예정</div>
+      <div class="place-meta"><div class="place-meta-item">&#x1F697; 차량 약 _분</div></div>
+      <div class="place-actions">
+        <a class="place-action-btn" href="#" onclick="return false;">&#x1F4CD; 지도보기</a>
+        <a class="place-action-btn" href="#" onclick="return false;">&#x1F4DE; 전화</a>
+      </div>
+    </div>
+
+    <div class="section-title">&#x1F30A; 관광지</div>
+    <div class="place-card" data-cat="attraction">
+      <div class="place-header">
+        <div class="place-emoji">&#x1F30A;</div>
+        <div class="place-info">
+          <span class="place-category attraction">관광지</span>
+          <div class="place-name">(관광지 이름 추가 예정)</div>
+        </div>
+      </div>
+      <div class="place-desc">통영 관광 명소 — 설명 추가 예정</div>
+      <div class="place-meta"><div class="place-meta-item">&#x1F697; 차량 약 _분</div></div>
+      <div class="place-actions">
+        <a class="place-action-btn" href="#" onclick="return false;">&#x1F4CD; 지도보기</a>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /container -->
+
+<script>
+// URL 파라미터로 지점 자동 선택
+const params = new URLSearchParams(window.location.search);
+const branchParam = decodeURIComponent(params.get("branch") || "");
+
+let currentCategory = "all";
+
+function switchBranch(tabEl) {
+  document.querySelectorAll(".branch-tab").forEach(t => t.classList.remove("active"));
+  tabEl.classList.add("active");
+
+  const branch = tabEl.dataset.branch;
+  document.querySelectorAll(".branch-content").forEach(c => c.classList.remove("active"));
+  const target = document.getElementById("branch-" + branch);
+  if (target) target.classList.add("active");
+
+  // 카테고리 필터 리셋
+  currentCategory = "all";
+  document.querySelectorAll(".cat-tab").forEach(t => t.classList.toggle("active", t.dataset.cat === "all"));
+  applyFilter();
+
+  window.scrollTo({ top: 0, behavior: "smooth" });
+}
+
+function filterCategory(tabEl) {
+  document.querySelectorAll(".cat-tab").forEach(t => t.classList.remove("active"));
+  tabEl.classList.add("active");
+  currentCategory = tabEl.dataset.cat;
+  applyFilter();
+}
+
+function applyFilter() {
+  const activeBranch = document.querySelector(".branch-content.active");
+  if (!activeBranch) return;
+
+  const cards = activeBranch.querySelectorAll(".place-card");
+  const sections = activeBranch.querySelectorAll(".section-title");
+
+  if (currentCategory === "all") {
+    cards.forEach(c => c.style.display = "");
+    sections.forEach(s => s.style.display = "");
+    return;
+  }
+
+  // 카드 필터
+  cards.forEach(c => {
+    c.style.display = c.dataset.cat === currentCategory ? "" : "none";
+  });
+
+  // 섹션 제목: 해당 카테고리의 카드가 있는 섹션만 보이기
+  sections.forEach(s => {
+    let next = s.nextElementSibling;
+    let hasVisible = false;
+    while (next && !next.classList.contains("section-title")) {
+      if (next.classList.contains("place-card") && next.style.display !== "none") {
+        hasVisible = true;
+      }
+      next = next.nextElementSibling;
+    }
+    s.style.display = hasVisible ? "" : "none";
+  });
+}
+
+// 초기화
+window.addEventListener("DOMContentLoaded", () => {
+  if (branchParam) {
+    const tab = document.querySelector(`.branch-tab[data-branch="${branchParam}"]`);
+    if (tab) switchBranch(tab);
+  }
+});
+</script>
+</body>
+</html>
